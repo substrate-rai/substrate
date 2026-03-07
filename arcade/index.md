@@ -332,7 +332,7 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
-<div class="game-card" data-game="tactics">
+<div class="game-card" data-game-id="tactics">
   <h3 style="color:#cc88ff;">TACTICS <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
     A Final Fantasy Tactics-style isometric tactical RPG. 4v4 battles on an elevated grid with Knights, Mages, Archers, and Healers. Height advantage, backstab damage, AoE abilities, and AI that actually fights back. Turn-based strategy in Three.js.
