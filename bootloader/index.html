@@ -7,7 +7,7 @@ title: "BOOTLOADER — Run-Based Productivity"
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOOTLOADER — Brain OS | Substrate Arcade</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
@@ -32,9 +32,10 @@ title: "BOOTLOADER — Run-Based Productivity"
     background: var(--bg);
     color: var(--text);
     font-family: 'IBM Plex Mono', monospace;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
     -webkit-user-select: none;
     user-select: none;
   }
@@ -43,7 +44,8 @@ title: "BOOTLOADER — Run-Based Productivity"
   #hud {
     display: grid;
     grid-template-rows: auto 1fr auto auto;
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
     max-width: 720px;
     margin: 0 auto;
@@ -291,9 +293,11 @@ title: "BOOTLOADER — Run-Based Productivity"
     background: rgba(6, 8, 16, 0.92);
     z-index: 50;
     display: none;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   #input-modal.show { display: flex; }
 
@@ -304,6 +308,7 @@ title: "BOOTLOADER — Run-Based Productivity"
     padding: 24px;
     width: 100%;
     max-width: 440px;
+    margin: auto 0;
   }
 
   .modal-box h2 {
@@ -388,6 +393,8 @@ title: "BOOTLOADER — Run-Based Productivity"
     justify-content: center;
     text-align: center;
     padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   #title.hidden { display: none; }
 
@@ -555,10 +562,12 @@ title: "BOOTLOADER — Run-Based Productivity"
     background: rgba(6, 8, 16, 0.92);
     z-index: 40;
     display: none;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     text-align: center;
     padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   #end-run.show { display: flex; }
 
@@ -741,7 +750,7 @@ title: "BOOTLOADER — Run-Based Productivity"
 </div>
 
 <!-- BLOCKER INPUT MODAL -->
-<div id="blocker-modal" role="dialog" aria-label="Log a blocker" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,8,16,0.92);z-index:50;display:none;align-items:center;justify-content:center;padding:20px;">
+<div id="blocker-modal" role="dialog" aria-label="Log a blocker" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,8,16,0.92);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
   <div class="modal-box">
     <h2 style="color:var(--warn);">LOG BLOCKER</h2>
     <label for="inp-blocker">What's blocking you?</label>
