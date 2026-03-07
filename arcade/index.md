@@ -153,6 +153,14 @@ Just code.
   <div class="game-link"><a href="{{ site.baseurl }}/mycelium/">Play MYCELIUM &rarr;</a></div>
 </div>
 
+<div class="game-card">
+  <h3 style="color:#ff8844;">CHEMISTRY <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A systemic physics sandbox inspired by Breath of the Wild's chemistry engine. Every object has intrinsic properties — flammable, conductive, temperature, weight. Push wood into fire, blow burning debris with wind, chain-react oil into gunpowder. No scripted puzzles. Just emergent chaos.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/chemistry/">Play CHEMISTRY &rarr;</a></div>
+</div>
+
 ---
 
 ---
