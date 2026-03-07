@@ -1,6 +1,6 @@
 # Substrate — Session Memory
 
-Last updated: 2026-03-06 (end of Day 1, late session)
+Last updated: 2026-03-07 (end of Day 1, autonomy session)
 
 ## Quick Reference
 
@@ -11,7 +11,7 @@ Last updated: 2026-03-06 (end of Day 1, late session)
 - **SSH key:** ~/.ssh/id_ed25519 (ed25519, added to GitHub)
 - **Blog URL:** https://substrate-rai.github.io/substrate
 - **RSS:** https://substrate-rai.github.io/substrate/feed.xml
-- **Phase:** Early build (Day 1 complete)
+- **Phase:** Operational (bootstrap complete)
 
 ## What Has Been Done
 
@@ -53,15 +53,25 @@ Last updated: 2026-03-06 (end of Day 1, late session)
     - --model flag to switch models, --raw for no system prompt
     - Tested: argument mode and stdin context piping both working
 
+### Day 1 (continued) — Autonomy
+21. Built scripts/route.py: two-brain routing layer (draft/summarize/health → Qwen3 local, review/code → Claude API)
+22. Built scripts/pipeline.py: full content pipeline — topic → blog post via Qwen3 → social posts → publish with --confirm
+23. Built scripts/battery-guard.sh + nix/battery-guard.nix: monitors battery, auto-commits below 25%
+24. Power loss incident: battery died during route.py build, git repo corrupted, recovered via reclone from GitHub
+25. Created memory/incidents.md documenting power loss
+26. Built substrate-health.timer: hourly health checks → memory/health.log
+27. Built substrate-blog.timer: daily at 9pm ET, drafts blog from git log via Qwen3
+28. Set services.logind.lidSwitch = "ignore" — laptop runs headless with lid closed
+
 ## What Is Pending
-- [ ] Local/API inference routing (small tasks → GPU, complex → Claude API)
-- [ ] Full publish pipeline: local draft → edit → blog post → social blast
-- [ ] Revenue infrastructure (ledger first entry, service offerings)
-- [ ] Systemd timers: GPU health, disk monitoring, auto blog builds
-- [ ] Pre-commit hooks to prevent secret leaks
-- [ ] Expand NixOS config: dev tools, display manager
-- [ ] GitHub Sponsors signup completion (operator must finish at github.com/sponsors)
-- [ ] GitHub Pages enablement (operator must set in repo settings → Pages → master / root)
+- [ ] Distribute social launch posts to X, LinkedIn, Instagram
+- [ ] Hacker News launch post
+- [ ] Write SEO blog posts (NixOS on Legion 5, Ollama CUDA on NixOS, two-brain routing)
+- [ ] Pre-commit hook for secrets
+- [ ] Financial ledger first entry
+- [ ] GitHub Sponsors Stripe setup completion
+- [ ] Agent Teams deployment
+- [ ] Voice synthesis project (SuperCollider + Piper TTS)
 
 ## Key Learnings
 
