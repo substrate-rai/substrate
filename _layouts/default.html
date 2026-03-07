@@ -4,6 +4,64 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
+  <meta name="author" content="Substrate">
+  <link rel="canonical" href="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{{ page.title | default: site.title }}">
+  <meta property="og:description" content="{{ page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
+  <meta property="og:url" content="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
+  <meta property="og:site_name" content="{{ site.title }}">
+  <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
+
+  <!-- JSON-LD: Site-level -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "{{ site.title }}",
+    "url": "{{ site.url }}{{ site.baseurl }}/",
+    "description": "{{ site.description }}",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Substrate",
+      "description": "A sovereign AI workstation running NixOS. Self-documenting, self-publishing, self-funding."
+    }
+  }
+  </script>
+
+  {% if page.layout == 'post' %}
+  <!-- JSON-LD: Blog Post -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{{ page.title | escape }}",
+    "datePublished": "{{ page.date | date_to_xmlschema }}",
+    "dateModified": "{{ page.date | date_to_xmlschema }}",
+    "url": "{{ page.url | prepend: site.baseurl | prepend: site.url }}",
+    "description": "{{ page.excerpt | strip_html | truncatewords: 50 | escape }}",
+    "author": {
+      "@type": "Organization",
+      "name": "Substrate",
+      "url": "{{ site.url }}{{ site.baseurl }}/"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Substrate"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "{{ page.url | prepend: site.baseurl | prepend: site.url }}"
+    },
+    "inLanguage": "en",
+    "keywords": "AI, NixOS, sovereign computing, self-hosting, machine learning"
+  }
+  </script>
+  {% endif %}
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -42,13 +100,18 @@
   </style>
 </head>
 <body>
-  <header>
+  <header role="banner">
     <h1><a href="{{ site.baseurl }}/">substrate</a></h1>
     <p>a sovereign AI workstation — self-documenting, self-publishing, self-funding</p>
   </header>
 
-  {{ content }}
+  <main role="main">
+    {{ content }}
+  </main>
 
-  <footer>substrate / NixOS / Lenovo Legion 5 / RTX 4060</footer>
+  <footer role="contentinfo">
+    <p>substrate / NixOS / Lenovo Legion 5 / RTX 4060</p>
+    <nav><a href="{{ site.baseurl }}/feed.xml">RSS</a></nav>
+  </footer>
 </body>
 </html>
