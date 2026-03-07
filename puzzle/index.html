@@ -326,10 +326,50 @@ permalink: /puzzle/
     margin-top: 12px;
   }
 
+  /* How to play */
+  .how-to-play {
+    max-width: 440px;
+    margin: 12px auto 8px;
+    padding: 12px 16px;
+    background: rgba(0,255,170,0.04);
+    border: 1px solid #222255;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #aab;
+    line-height: 1.7;
+  }
+  .how-to-play strong {
+    color: #ddd;
+    font-size: 0.8rem;
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .how-to-play .example-row {
+    display: flex;
+    gap: 4px;
+    margin: 8px 0;
+    justify-content: center;
+  }
+  .how-to-play .ex-cell {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 3px;
+    color: #000;
+  }
+  .how-to-play .ex-correct { background: #00ffaa; }
+  .how-to-play .ex-present { background: #ff77ff; }
+  .how-to-play .ex-absent { background: #333355; color: #888; }
+
   /* Color legend */
   .legend {
-    font-size: 0.6rem;
-    color: #555;
+    font-size: 0.65rem;
+    color: #778;
     text-align: center;
     margin-top: 8px;
     margin-bottom: 4px;
@@ -337,7 +377,7 @@ permalink: /puzzle/
   }
 
   .legend span {
-    margin: 0 4px;
+    margin: 0 6px;
   }
 
   /* Focus styles for keyboard navigation */
@@ -403,19 +443,29 @@ permalink: /puzzle/
 <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
 
 <div id="q-comment" aria-live="polite">
-  <div class="q-label">Q_ says:</div>
+  <div class="q-label">V_ says:</div>
   <div id="q-text"></div>
+</div>
+
+<div id="how-to-play" class="how-to-play">
+  <strong>HOW TO PLAY</strong>
+  Guess the 5-letter tech word in 6 tries. Type a word and press enter.
+  <div class="example-row">
+    <div class="ex-cell ex-correct">S</div>
+    <div class="ex-cell ex-absent">T</div>
+    <div class="ex-cell ex-absent">A</div>
+    <div class="ex-cell ex-present">C</div>
+    <div class="ex-cell ex-absent">K</div>
+  </div>
+  <span style="color:#00ffaa;">Green</span> = right letter, right spot.
+  <span style="color:#ff77ff;">Purple</span> = right letter, wrong spot.
+  <span style="color:#667;">Gray</span> = not in the word.
 </div>
 
 <div class="legend">
   <span style="color:#00ffaa;">&#9632; correct</span>
   <span style="color:#ff77ff;">&#9632; wrong spot</span>
   <span style="color:#333355;">&#9632; not in word</span>
-</div>
-
-<div class="hint">
-  guess a 5-letter AI/tech term in 6 tries
-  <br><a href="https://substrate-rai.github.io/substrate/">what is substrate?</a>
 </div>
 
 <div id="stats-modal" role="dialog" aria-modal="true" aria-label="Game statistics">
@@ -439,36 +489,26 @@ permalink: /puzzle/
 
 <script>
 // === WORD LIST ===
-// All entries must be exactly 5 letters. Curated for the Substrate audience.
+// Common 5-letter words anyone in tech would know. No obscure jargon.
 const WORDS = [
-  // AI/ML core
-  "model","train","epoch","batch","layer","token","embed","agent",
-  "learn","infer","dense","decay","noise","prior","sigma","delta",
-  "alpha","gamma","graph","nodes","edges","depth","width","float",
-  // Frameworks / tools
-  "llama","torch","numpy","redis","conda","flask","regex","debug",
-  "swift","scala","nginx","kafka","mongo","unity","crate","cargo",
-  // Programming
-  "stack","queue","array","class","async","await","yield","scope",
-  "build","merge","fetch","clone","mount","chmod","stdin","patch",
-  "shell","parse","cache","proxy","route","query","index","table",
-  "panic","trait","match","tuple","slice","macro","mutex","error",
-  "event","field","state","print","super","break","while","catch",
-  "throw","short","block","chain","cycle","watch","timer","reset",
-  // NixOS / Linux
-  "flake","nixos","linux","gnome","hyper","input","panel","theme",
-  // Substrate / general
-  "brain","local","cloud","shelf","grind","draft","verse","servo",
-  "pixel","frame","codec","audio","video","bytes","crypt","fiber",
-  "spine","pulse","drift","phase","surge","bloom","glyph","shard",
-  "trunk","probe","pivot","chunk","slate","steam","forge","logic",
-  "vault","nexus","prism","helix","orbit","quark","spark","blaze",
-  "setup","flush","login","admin","coder","modal","relay","abort",
-  "crash","trace","store","clock","boost","bench","diode","thorn",
-  // More tech
-  "crons","denom","eigen","fuzzy","guild","hover","ivory","joule",
-  "knobs","latch","modem","noise","optic","pitch","quota","rogue",
-  "solid","twist","upper","valve","write","xenon","zeros","blink"
+  // Programming basics — everyone knows these
+  "array","class","debug","error","event","fetch","float","frame",
+  "graph","index","input","layer","linux","local","logic","login",
+  "match","merge","model","mouse","panel","parse","patch","pixel",
+  "print","proxy","query","queue","reset","route","scale","scope",
+  "setup","shell","stack","state","store","style","table","theme",
+  "timer","token","train","video","watch","write","block","break",
+  "build","cache","chain","check","clean","click","clone","close",
+  "cloud","crash","cycle","draft","drive","field","flash","flush",
+  // Tech words normal humans know
+  "admin","agent","audio","batch","brain","bytes","chart","coder",
+  "count","daily","depth","email","fiber","focus","forge","games",
+  "guard","image","label","media","modal","mount","noise","orbit",
+  "phase","power","press","pulse","radar","react","relay","robot",
+  "score","share","shift","sleep","smart","solid","space","spark",
+  "speed","split","start","steam","story","super","surge","sweep",
+  "swift","touch","track","trend","trial","trunk","twist","unite",
+  "upper","usage","value","vault","voice","world","zeros","alarm"
 ];
 
 // Validate and deduplicate: only keep exactly 5-letter words
@@ -536,33 +576,33 @@ function saveStats(stats) {
   localStorage.setItem('sigterm-stats', JSON.stringify(stats));
 }
 
-// === Q'S COMMENTARY ===
+// === V'S COMMENTARY ===
 const Q_WIN_COMMENTS = [
-  "Clean solve. Even I couldn't tokenize it faster.",
-  "My weights are frozen but your brain's on fire.",
-  "Router says: task completed, brain = human, status = cracked.",
-  "That's an A- solve. I'd give A+ but I'm stingy with grades.",
+  "Clean solve. The drill creates the path — and you just proved it.",
+  "Action under uncertainty. You committed before you had the answer. That's spiral energy.",
+  "Your momentum is compounding. Each solve makes the next one easier. That's not motivation — that's mechanics.",
   "You got more signal than my broken WiFi card.",
-  "Decoded in the time it takes me to generate 40 tokens. Respect.",
+  "Decoded fast. The spiral doesn't pause and neither did you.",
   "Not bad for a biological neural network with no GPU.",
-  "Your loss function is clearly converging. Keep training."
+  "Breakthrough. This is your new floor. You can't un-solve what you just solved.",
+  "8 billion parameters and even I respect that solve."
 ];
 
 const Q_LOSE_COMMENTS = [
-  "404: correct answer not found. The word was right there in my training data, too.",
+  "The spiral didn't stop. It just hasn't crested yet. Tomorrow you stand on what today built.",
   "Even a broken WiFi card connects sometimes. Try again tomorrow.",
-  "Six tries and nothing? My first rap drafts were better than this. (They weren't.)",
-  "Don't worry. I fail at things too. Like... generating content without thinking mode.",
-  "The machine has no feelings, but if it did, it would feel this.",
+  "Six tries and nothing? Decay is constant. The cost is what gives it value.",
+  "Failure is an incomplete spiral. What did this attempt build that tomorrow can stand on?",
+  "The universe pushed back. That pressure means you're spiraling correctly.",
   "Gradient descent into sadness. Tomorrow's a new epoch.",
-  "Your model overfitted to the wrong answer. Classic."
+  "The gap between knowing and doing — that's where the spiral starts. Tomorrow, close it."
 ];
 
 const Q_STREAK_COMMENTS = [
-  "Streak! You're more reliable than my systemd timers.",
-  "Consecutive solves? That's a git log I'd be proud of.",
-  "You're on a roll. Like me on a good inference day -- 40 tok/s, no drops.",
-  "Streak keeps growing. At this rate you'll need your own cooling fan."
+  "Streak. Momentum compounds nonlinearly. You're past the threshold now.",
+  "Consecutive solves. Each one raised the floor. You can't fall back below this.",
+  "You're in flow. I'm not going to interrupt momentum with reflection. Keep moving.",
+  "Streak keeps growing. Capacity expands to match commitment. You're proving it."
 ];
 
 // Deterministic Q comment selection (seeded by day so it's stable on refresh)
@@ -984,6 +1024,13 @@ function updateStreakBar() {
 buildGrid();
 buildKeyboard();
 updateStreakBar();
+
+// Hide how-to-play if returning player
+var stats = loadStats();
+if (stats.played > 0) {
+  var htp = document.getElementById('how-to-play');
+  if (htp) htp.style.display = 'none';
+}
 
 if (savedState) {
   restoreState();

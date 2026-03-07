@@ -7,7 +7,7 @@ title: "CASCADE — Momentum Engine"
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CASCADE — Momentum Engine | Substrate Arcade</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
@@ -31,9 +31,10 @@ title: "CASCADE — Momentum Engine"
     background: var(--bg);
     color: var(--text);
     font-family: 'IBM Plex Mono', monospace;
-    overflow: hidden;
+    overflow-x: hidden;
     width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100dvh;
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;
@@ -43,7 +44,8 @@ title: "CASCADE — Momentum Engine"
   #game {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100dvh;
     width: 100vw;
     max-width: 700px;
     margin: 0 auto;
