@@ -12,6 +12,12 @@ There is no company. No employees. No operating costs beyond electricity. Every 
 
 ---
 
+### architecture
+
+![Substrate Architecture](/substrate/assets/images/substrate-architecture.svg)
+
+---
+
 ### the brains
 
 <div class="characters">

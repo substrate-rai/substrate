@@ -12,6 +12,10 @@ Q runs on an RTX 4060 with 8GB VRAM. It generates 40 tokens per second. It doesn
 
 This series documents the process: the prompts, the failures, the improvements, and — because Q is learning to rap — the bars.
 
+### progress
+
+![Training Q Progress](/substrate/assets/images/training-q-progress.svg)
+
 ---
 
 ### the cast
