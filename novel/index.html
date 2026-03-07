@@ -74,6 +74,8 @@ permalink: /novel/
     min-height: 180px;
     cursor: pointer;
     border-top: 1px solid rgba(255,255,255,0.06);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   .vn-speaker {
     font-family: 'JetBrains Mono', monospace;
@@ -137,6 +139,9 @@ permalink: /novel/
     transition: all 0.2s;
     text-align: left;
     backdrop-filter: blur(4px);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 44px;
   }
   .vn-choice:hover {
     background: rgba(30, 30, 45, 0.95);
@@ -158,13 +163,15 @@ permalink: /novel/
     transition: opacity 1s ease;
   }
   .vn-title-screen.hidden { opacity: 0; pointer-events: none; }
-  .vn-title {
+  .vn-title, h1.vn-title {
     font-family: 'JetBrains Mono', monospace;
     font-size: 3rem;
     font-weight: 600;
     letter-spacing: 0.3em;
     color: #e8e8ef;
     margin-bottom: 8px;
+    border: none;
+    padding: 0;
   }
   .vn-subtitle {
     font-family: 'Inter', sans-serif;
@@ -232,6 +239,17 @@ permalink: /novel/
   }
   .vn-save-indicator.show { opacity: 1; }
 
+  /* Focus styles for keyboard navigation */
+  .vn-start-btn:focus-visible,
+  .vn-continue-btn:focus-visible,
+  .vn-choice:focus-visible {
+    outline: 2px solid #00e09a;
+    outline-offset: 2px;
+  }
+  .vn-dialogue:focus-visible {
+    outline: none;
+  }
+
   /* Responsive */
   @media (max-width: 768px) {
     .vn-container { margin: -16px -16px 0; border-radius: 8px; }
@@ -241,28 +259,42 @@ permalink: /novel/
     .vn-characters { bottom: 170px; gap: 20px; }
     .vn-choices { bottom: 170px; }
   }
+
+  @media (max-width: 480px) {
+    .vn-container { margin: -12px -12px 0; border-radius: 6px; }
+    .vn-dialogue { padding: 16px 16px 20px; min-height: 140px; }
+    .vn-title { font-size: 1.5rem; letter-spacing: 0.15em; }
+    .vn-subtitle { font-size: 0.75rem; }
+    .vn-text { font-size: 0.85rem; line-height: 1.7; }
+    .vn-char-sprite { font-size: 2.5rem; }
+    .vn-characters { bottom: 150px; gap: 12px; }
+    .vn-choices { bottom: 150px; }
+    .vn-choice { padding: 12px 16px; font-size: 0.85rem; min-height: 44px; }
+    .vn-start-btn { padding: 14px 40px; min-height: 44px; }
+    .vn-continue-btn { padding: 10px 24px; min-height: 44px; }
+  }
 </style>
 
-<div class="vn-container" id="vn-game">
+<div class="vn-container" id="vn-game" role="application" aria-label="PROCESS visual novel">
   <!-- Title Screen -->
-  <div class="vn-title-screen" id="vn-title-screen">
-    <div class="vn-title">PROCESS</div>
+  <div class="vn-title-screen" id="vn-title-screen" role="region" aria-label="Title screen">
+    <h1 class="vn-title">PROCESS</h1>
     <div class="vn-subtitle">a substrate visual novel</div>
-    <button class="vn-start-btn" id="vn-start">BEGIN</button>
-    <button class="vn-continue-btn hidden" id="vn-continue">CONTINUE</button>
+    <button class="vn-start-btn" id="vn-start" aria-label="Begin new game">BEGIN</button>
+    <button class="vn-continue-btn hidden" id="vn-continue" aria-label="Continue saved game">CONTINUE</button>
   </div>
 
   <!-- Game Screen -->
-  <div class="vn-scene" id="vn-scene"></div>
-  <div class="vn-chapter" id="vn-chapter"></div>
-  <div class="vn-save-indicator" id="vn-save">saved</div>
-  <div class="vn-characters" id="vn-characters"></div>
-  <div class="vn-choices" id="vn-choices"></div>
+  <div class="vn-scene" id="vn-scene" aria-hidden="true"></div>
+  <div class="vn-chapter" id="vn-chapter" aria-live="polite"></div>
+  <div class="vn-save-indicator" id="vn-save" role="status" aria-live="polite">saved</div>
+  <div class="vn-characters" id="vn-characters" aria-hidden="true"></div>
+  <div class="vn-choices" id="vn-choices" role="group" aria-label="Story choices"></div>
 
-  <div class="vn-dialogue" id="vn-dialogue" style="display:none;">
+  <div class="vn-dialogue" id="vn-dialogue" style="display:none;" tabindex="0" role="region" aria-label="Dialogue" aria-live="polite">
     <div class="vn-speaker" id="vn-speaker"></div>
     <div class="vn-text" id="vn-text"></div>
-    <div class="vn-advance" id="vn-advance">click to continue</div>
+    <div class="vn-advance" id="vn-advance">click or press space to continue</div>
   </div>
 </div>
 
@@ -720,7 +752,7 @@ permalink: /novel/
     els.dialogue.style.display = 'none';
     var html = '';
     choices.forEach(function(choice, i) {
-      html += '<button class="vn-choice" data-choice="' + i + '">' + choice.text + '</button>';
+      html += '<button class="vn-choice" data-choice="' + i + '" aria-label="Choice ' + (i+1) + ': ' + choice.text.replace(/"/g, '&quot;') + '">' + choice.text + '</button>';
     });
     els.choices.innerHTML = html;
 

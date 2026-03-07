@@ -462,6 +462,22 @@ title: "Substrate Radio"
       transform: translateX(-50%) translateY(0);
     }
 
+    /* Focus styles */
+    .ctrl-btn:focus-visible {
+      outline: 2px solid #e8a040;
+      outline-offset: 2px;
+    }
+    .request-btn:focus-visible,
+    .request-input:focus-visible {
+      outline: 2px solid #e8a040;
+      outline-offset: 2px;
+    }
+
+    /* Touch targets */
+    .volume-slider {
+      min-height: 44px;
+    }
+
     @media (max-width: 700px) {
       .bottom-grid { grid-template-columns: 1fr; }
       .station-header h1 { font-size: 1.6rem; }
@@ -498,12 +514,12 @@ title: "Substrate Radio"
       </div>
 
       <!-- Visualizer -->
-      <div class="visualizer-wrap">
-        <canvas id="visualizer"></canvas>
+      <div class="visualizer-wrap" aria-hidden="true">
+        <canvas id="visualizer" aria-label="Audio frequency visualizer"></canvas>
       </div>
 
       <!-- Now Playing -->
-      <div class="now-playing-display">
+      <div class="now-playing-display" role="status" aria-live="polite" aria-label="Now playing">
         <div class="np-label">now playing</div>
         <div class="np-track" id="npTrack">gradient_descent.wav</div>
         <div class="np-genre" id="npGenre">chill ambient</div>
@@ -511,23 +527,23 @@ title: "Substrate Radio"
       </div>
 
       <!-- Progress -->
-      <div class="progress-bar-wrap" id="progressBar">
+      <div class="progress-bar-wrap" id="progressBar" role="slider" aria-label="Track progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
         <div class="progress-bar-fill" id="progressFill"></div>
       </div>
 
       <!-- Controls -->
-      <div class="controls">
-        <button class="ctrl-btn" id="btnShuffle" title="Shuffle" onclick="toggleShuffle()">&#8645;</button>
-        <button class="ctrl-btn" id="btnPrev" title="Previous" onclick="prevTrack()">&#9198;</button>
-        <button class="ctrl-btn play-btn" id="btnPlay" title="Play" onclick="togglePlay()">&#9654;</button>
-        <button class="ctrl-btn" id="btnNext" title="Next" onclick="nextTrack()">&#9197;</button>
-        <button class="ctrl-btn" id="btnRepeat" title="Repeat" onclick="toggleRepeat()">&#8634;</button>
+      <div class="controls" role="group" aria-label="Playback controls">
+        <button class="ctrl-btn" id="btnShuffle" title="Shuffle" aria-label="Toggle shuffle" aria-pressed="false" onclick="toggleShuffle()">&#8645;</button>
+        <button class="ctrl-btn" id="btnPrev" title="Previous" aria-label="Previous track" onclick="prevTrack()">&#9198;</button>
+        <button class="ctrl-btn play-btn" id="btnPlay" title="Play" aria-label="Play" onclick="togglePlay()">&#9654;</button>
+        <button class="ctrl-btn" id="btnNext" title="Next" aria-label="Next track" onclick="nextTrack()">&#9197;</button>
+        <button class="ctrl-btn" id="btnRepeat" title="Repeat" aria-label="Toggle repeat" aria-pressed="false" onclick="toggleRepeat()">&#8634;</button>
       </div>
 
       <!-- Volume -->
       <div class="volume-wrap">
         <span class="volume-label">VOL</span>
-        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70" oninput="setVolume(this.value)">
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70" aria-label="Volume" oninput="setVolume(this.value)">
         <span class="volume-label" id="volumeVal">70%</span>
       </div>
 
@@ -536,7 +552,7 @@ title: "Substrate Radio"
     <!-- Up Next -->
     <div class="up-next">
       <h3>Up Next</h3>
-      <ul class="queue-list" id="queueList"></ul>
+      <ul class="queue-list" id="queueList" role="list" aria-label="Track queue"></ul>
     </div>
 
     <!-- Bottom Grid -->
@@ -576,11 +592,13 @@ title: "Substrate Radio"
           we will use your prompts. Requests are saved locally in your browser.
         </p>
         <div class="request-form">
+          <label for="requestInput" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Describe a track vibe</label>
           <input type="text" class="request-input" id="requestInput"
+                 aria-label="Request a track by describing a vibe or mood"
                  placeholder="e.g. rainy rooftop synthwave..."
                  maxlength="120"
                  onkeydown="if(event.key==='Enter')submitRequest()">
-          <button class="request-btn" onclick="submitRequest()">send</button>
+          <button class="request-btn" onclick="submitRequest()" aria-label="Submit track request">send</button>
         </div>
         <div class="requests-list" id="requestsList"></div>
 
@@ -608,7 +626,7 @@ title: "Substrate Radio"
   </div>
 
   <!-- Toast -->
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 // === Track list ===
@@ -755,7 +773,9 @@ function updateTimeDisplay() {
 
 function togglePlay() {
   isPlaying = !isPlaying;
-  document.getElementById('btnPlay').innerHTML = isPlaying ? '&#9646;&#9646;' : '&#9654;';
+  var playBtn = document.getElementById('btnPlay');
+  playBtn.innerHTML = isPlaying ? '&#9646;&#9646;' : '&#9654;';
+  playBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
 
   if (isPlaying) {
     if (isLiveMode && audioElement) {
@@ -850,13 +870,17 @@ function playCurrentTrack() {
 
 function toggleShuffle() {
   shuffleOn = !shuffleOn;
-  document.getElementById('btnShuffle').classList.toggle('active', shuffleOn);
+  var btn = document.getElementById('btnShuffle');
+  btn.classList.toggle('active', shuffleOn);
+  btn.setAttribute('aria-pressed', shuffleOn);
   showToast(shuffleOn ? 'Shuffle on' : 'Shuffle off');
 }
 
 function toggleRepeat() {
   repeatOn = !repeatOn;
-  document.getElementById('btnRepeat').classList.toggle('active', repeatOn);
+  var btn = document.getElementById('btnRepeat');
+  btn.classList.toggle('active', repeatOn);
+  btn.setAttribute('aria-pressed', repeatOn);
   showToast(repeatOn ? 'Repeat on' : 'Repeat off');
 }
 

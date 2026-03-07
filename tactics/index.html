@@ -7,7 +7,7 @@ title: "TACTICS — Substrate Arcade"
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TACTICS — Substrate Arcade</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
@@ -328,17 +328,151 @@ title: "TACTICS — Substrate Arcade"
   }
 
   #message-log.show { opacity: 1; }
+
+  /* Skip to game link */
+  #skip-to-game {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: #4488ff;
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 100;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  #skip-to-game:focus {
+    top: 0;
+  }
+
+  /* Focus-visible styles */
+  .action-btn:focus-visible, #restart-btn:focus-visible {
+    outline: 2px solid #ffdd44;
+    outline-offset: 2px;
+  }
+
+  /* Mobile: prevent scroll/bounce on canvas */
+  #game-canvas {
+    touch-action: none;
+  }
+
+  /* Mobile responsive styles */
+  @media (max-width: 768px) {
+    #turn-order {
+      padding: 4px 6px;
+      gap: 2px;
+    }
+    .turn-portrait {
+      width: 28px; height: 28px;
+      font-size: 11px;
+    }
+    .turn-class-label {
+      font-size: 6px;
+      bottom: -12px;
+    }
+
+    #phase-banner {
+      font-size: 16px;
+      padding: 6px 20px;
+      top: 48px;
+      letter-spacing: 2px;
+    }
+
+    #unit-info {
+      bottom: 8px; left: 8px;
+      padding: 10px 12px;
+      min-width: 170px;
+      max-width: 45vw;
+    }
+    #unit-info .unit-name { font-size: 13px; }
+    #unit-info .unit-class { font-size: 10px; }
+    #unit-info .stat-row { font-size: 10px; gap: 8px; }
+    #unit-info .ability-name { font-size: 9px; }
+    #unit-info .ability-desc { font-size: 9px; }
+
+    #tile-info {
+      bottom: 8px; right: 8px;
+      padding: 8px 10px;
+      min-width: 110px;
+      max-width: 40vw;
+      font-size: 10px;
+    }
+
+    #action-menu {
+      bottom: auto;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 200px;
+      padding: 8px;
+    }
+    .action-btn {
+      padding: 12px 16px;
+      font-size: 15px;
+      min-height: 44px;
+    }
+
+    #message-log {
+      top: 90px;
+      font-size: 11px;
+      padding: 3px 10px;
+      max-width: 90vw;
+    }
+
+    #end-screen h1 {
+      font-size: 32px;
+      letter-spacing: 4px;
+    }
+    #end-screen .subtitle {
+      font-size: 14px;
+    }
+    #restart-btn {
+      padding: 12px 32px;
+      font-size: 15px;
+      min-height: 44px;
+    }
+
+    #controls-hint {
+      font-size: 8px;
+      max-width: 50vw;
+    }
+
+    .damage-float {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    #unit-info {
+      bottom: 4px; left: 4px;
+      padding: 8px 10px;
+      min-width: 140px;
+      max-width: 50vw;
+    }
+    #tile-info {
+      bottom: 4px; right: 4px;
+      min-width: 90px;
+    }
+    #action-menu {
+      min-width: 180px;
+    }
+    #phase-banner {
+      font-size: 14px;
+      padding: 5px 14px;
+    }
+  }
 </style>
 </head>
 <body>
 
-<canvas id="game-canvas"></canvas>
+<a id="skip-to-game" href="#game-canvas">Skip to game</a>
+<canvas id="game-canvas" role="img" aria-label="Tactics game board — isometric tactical RPG battlefield" tabindex="0"></canvas>
 
-<div id="turn-order" class="ui-overlay"></div>
-<div id="phase-banner" class="ui-overlay"></div>
-<div id="message-log" class="ui-overlay"></div>
+<div id="turn-order" class="ui-overlay" role="status" aria-label="Turn order"></div>
+<div id="phase-banner" class="ui-overlay" role="alert" aria-live="assertive"></div>
+<div id="message-log" class="ui-overlay" role="log" aria-live="polite"></div>
 
-<div id="unit-info" class="ui-overlay">
+<div id="unit-info" class="ui-overlay" role="region" aria-label="Unit information">
   <div class="unit-name" id="ui-name"></div>
   <div class="unit-class" id="ui-class"></div>
   <div class="hp-bar-container"><div class="hp-bar-fill" id="ui-hp-bar"></div></div>
@@ -350,26 +484,26 @@ title: "TACTICS — Substrate Arcade"
   <div class="ability-desc" id="ui-ability-desc"></div>
 </div>
 
-<div id="tile-info" class="ui-overlay">
+<div id="tile-info" class="ui-overlay" role="region" aria-label="Tile information">
   <div class="tile-terrain" id="ti-terrain"></div>
   <div class="tile-elevation" id="ti-elev"></div>
   <div id="ti-occupant" style="margin-top:4px; color:#aaa; font-size:11px;"></div>
 </div>
 
-<div id="action-menu" class="ui-overlay">
-  <button class="action-btn" id="btn-move" onclick="game.startMove()">Move</button>
-  <button class="action-btn" id="btn-attack" onclick="game.startAttack()">Attack</button>
-  <button class="action-btn" id="btn-ability" onclick="game.startAbility()">Ability</button>
-  <button class="action-btn" id="btn-wait" onclick="game.doWait()">Wait</button>
+<div id="action-menu" class="ui-overlay" role="toolbar" aria-label="Unit actions">
+  <button class="action-btn" id="btn-move" role="button" aria-label="Move unit" onclick="game.startMove()">Move</button>
+  <button class="action-btn" id="btn-attack" role="button" aria-label="Attack enemy" onclick="game.startAttack()">Attack</button>
+  <button class="action-btn" id="btn-ability" role="button" aria-label="Use special ability" onclick="game.startAbility()">Ability</button>
+  <button class="action-btn" id="btn-wait" role="button" aria-label="Wait and end turn" onclick="game.doWait()">Wait</button>
 </div>
 
-<div id="end-screen" class="ui-overlay">
+<div id="end-screen" class="ui-overlay" role="dialog" aria-label="Game result">
   <h1 id="end-title"></h1>
   <div class="subtitle" id="end-subtitle"></div>
-  <button id="restart-btn" onclick="game.restart()">Play Again</button>
+  <button id="restart-btn" role="button" aria-label="Restart game" onclick="game.restart()">Play Again</button>
 </div>
 
-<div id="controls-hint" class="ui-overlay">Q/E rotate | Scroll zoom | Click to select</div>
+<div id="controls-hint" class="ui-overlay" role="note" aria-label="Game controls">Q/E rotate | Scroll zoom | Click to select</div>
 <div id="footer" class="ui-overlay"><a href="{{ site.baseurl }}/arcade/">a Substrate Arcade production</a></div>
 
 <script>
@@ -566,10 +700,34 @@ class TacticsGame {
 
     // Events
     window.addEventListener('resize', () => this.onResize());
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => this.onResize(), 100);
+    });
     this.canvas.addEventListener('click', (e) => this.onClick(e));
     this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
     window.addEventListener('keydown', (e) => this.onKeyDown(e));
     this.canvas.addEventListener('wheel', (e) => this.onWheel(e));
+
+    // Touch support
+    this._touchState = { startTime: 0, startX: 0, startY: 0, moved: false, twoFinger: false };
+    this._lastPinchDist = 0;
+    this._lastTwoFingerAngle = 0;
+    this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
+    this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
+    this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e), { passive: false });
+
+    // Prevent iOS bounce/scroll on the whole page
+    document.body.addEventListener('touchmove', (e) => {
+      if (e.target === this.canvas || e.target.closest('#game-canvas')) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Update controls hint for touch devices
+    this._isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (this._isTouchDevice) {
+      document.getElementById('controls-hint').textContent = 'Tap to select | 2-finger drag to rotate | Pinch to zoom';
+    }
 
     this.clock = new THREE.Clock();
     this.init();
@@ -1749,6 +1907,95 @@ class TacticsGame {
     this.cameraRadius = Math.max(8, Math.min(25, this.cameraRadius));
     this.cameraHeight = this.cameraRadius * 0.75;
     this.updateCamera();
+  }
+
+  // ---- Touch Handlers ----
+  onTouchStart(e) {
+    e.preventDefault();
+    const touches = e.touches;
+
+    if (touches.length === 1) {
+      this._touchState.startTime = Date.now();
+      this._touchState.startX = touches[0].clientX;
+      this._touchState.startY = touches[0].clientY;
+      this._touchState.moved = false;
+      this._touchState.twoFinger = false;
+    } else if (touches.length === 2) {
+      this._touchState.twoFinger = true;
+      this._touchState.moved = true; // prevent tap on release
+      const dx = touches[1].clientX - touches[0].clientX;
+      const dy = touches[1].clientY - touches[0].clientY;
+      this._lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+      this._lastTwoFingerAngle = Math.atan2(dy, dx);
+    }
+  }
+
+  onTouchMove(e) {
+    e.preventDefault();
+    const touches = e.touches;
+
+    if (touches.length === 2) {
+      // Pinch to zoom
+      const dx = touches[1].clientX - touches[0].clientX;
+      const dy = touches[1].clientY - touches[0].clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (this._lastPinchDist > 0) {
+        const delta = this._lastPinchDist - dist;
+        this.cameraRadius += delta * 0.05;
+        this.cameraRadius = Math.max(8, Math.min(25, this.cameraRadius));
+        this.cameraHeight = this.cameraRadius * 0.75;
+        this.updateCamera();
+      }
+      this._lastPinchDist = dist;
+
+      // Two-finger drag to rotate
+      const angle = Math.atan2(dy, dx);
+      if (this._lastTwoFingerAngle !== 0) {
+        let angleDelta = angle - this._lastTwoFingerAngle;
+        // Normalize to prevent jumps
+        if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+        if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+        this.cameraAngle += angleDelta;
+        this.updateCamera();
+      }
+      this._lastTwoFingerAngle = angle;
+
+      this._touchState.twoFinger = true;
+      this._touchState.moved = true;
+    } else if (touches.length === 1 && !this._touchState.twoFinger) {
+      // Single finger drag detection (to distinguish from tap)
+      const moveX = touches[0].clientX - this._touchState.startX;
+      const moveY = touches[0].clientY - this._touchState.startY;
+      if (Math.abs(moveX) > 10 || Math.abs(moveY) > 10) {
+        this._touchState.moved = true;
+      }
+    }
+  }
+
+  onTouchEnd(e) {
+    e.preventDefault();
+
+    // Reset two-finger state
+    if (e.touches.length === 0) {
+      this._lastPinchDist = 0;
+      this._lastTwoFingerAngle = 0;
+    }
+
+    // Single tap: treat as click if finger didn't move much and was quick
+    if (!this._touchState.moved && !this._touchState.twoFinger && e.changedTouches.length > 0) {
+      const elapsed = Date.now() - this._touchState.startTime;
+      if (elapsed < 500) {
+        const touch = e.changedTouches[0];
+        // Synthesize a click via the raycaster
+        this.onClick({
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        });
+      }
+    }
+
+    this._touchState.twoFinger = false;
   }
 
   onResize() {

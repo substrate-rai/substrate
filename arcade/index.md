@@ -79,6 +79,9 @@ permalink: /arcade/
   .game-card .game-link a {
     color: #ffcc66;
     font-size: 0.85rem;
+    display: inline-block;
+    min-height: 44px;
+    line-height: 44px;
   }
   .arcade-principles {
     display: grid;
@@ -264,6 +267,35 @@ permalink: /arcade/
     text-align: center;
   }
 
+  /* Focus styles */
+  .star-rating .stars .star:focus-visible {
+    outline: 2px solid #ffcc66;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  .suggest-form button:focus-visible,
+  .suggest-form input:focus-visible,
+  .suggestion-vote button:focus-visible,
+  .game-card .game-link a:focus-visible {
+    outline: 2px solid #ffcc66;
+    outline-offset: 2px;
+  }
+
+  /* Ensure touch targets */
+  .suggestion-vote button {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .suggest-form button {
+    min-height: 44px;
+  }
+  .suggest-form input {
+    min-height: 44px;
+  }
+
   @media (max-width: 700px) {
     .arcade-principles { grid-template-columns: 1fr; }
     .arcade-logo { font-size: 2rem; }
@@ -356,6 +388,15 @@ Just code.
     A top-down chemistry puzzle. Trapped in a spaceship room with a locked door, a broken generator, and a bunch of objects with physical properties. No scripted solutions — only systems. Water conducts. Wood burns. Metal bridges. Figure it out. Among Us meets Breath of the Wild.
   </div>
   <div class="game-link"><a href="{{ site.baseurl }}/airlock/">Play AIRLOCK &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
+<div class="game-card" data-game-id="objection">
+  <h3 style="color:#ff4444;">OBJECTION! <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    An Ace Attorney-style courtroom drama about cybersecurity. Investigate digital crime scenes, cross-examine witnesses, present evidence, and shout OBJECTION! Three cases covering phishing, insider threats, and AI deepfakes. Learn real cybersecurity concepts while slamming desks. Claude AI is your expert witness.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/objection/">Play OBJECTION! &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -472,7 +513,8 @@ Just code.
       'substrate-radio': 'SUBSTRATE RADIO',
       'album-generator': 'ALBUM GENERATOR',
       'process': 'PROCESS',
-      'airlock': 'AIRLOCK'
+      'airlock': 'AIRLOCK',
+      'objection': 'OBJECTION!'
     };
     return names[id] || id.toUpperCase();
   }

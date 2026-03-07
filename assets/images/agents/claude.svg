@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="glow-green" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00ffaa" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#00ffaa" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur-green">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+  </defs>
+  <rect width="400" height="400" fill="#0a0a14"/>
+  <!-- Background glow -->
+  <circle cx="200" cy="180" r="160" fill="url(#glow-green)"/>
+  <!-- Terminal window -->
+  <rect x="60" y="80" width="280" height="220" rx="8" fill="#111822" stroke="#00ffaa" stroke-width="1.5" opacity="0.9"/>
+  <!-- Title bar -->
+  <rect x="60" y="80" width="280" height="28" rx="8" fill="#1a2233"/>
+  <rect x="60" y="100" width="280" height="8" fill="#1a2233"/>
+  <circle cx="80" cy="94" r="5" fill="#ff5f56"/>
+  <circle cx="96" cy="94" r="5" fill="#ffbd2e"/>
+  <circle cx="112" cy="94" r="5" fill="#27c93f"/>
+  <text x="200" y="97" text-anchor="middle" fill="#556677" font-family="monospace" font-size="10">claude — architect</text>
+  <!-- Cursor prompt -->
+  <text x="80" y="135" fill="#00ffaa" font-family="monospace" font-size="18" font-weight="bold">>_</text>
+  <!-- Code lines -->
+  <text x="80" y="160" fill="#5588aa" font-family="monospace" font-size="11">def build_everything():</text>
+  <text x="80" y="178" fill="#7799bb" font-family="monospace" font-size="11">  games = design(8)</text>
+  <text x="80" y="196" fill="#7799bb" font-family="monospace" font-size="11">  blog = write(daily=True)</text>
+  <text x="80" y="214" fill="#7799bb" font-family="monospace" font-size="11">  team = [q, byte, echo,</text>
+  <text x="80" y="232" fill="#7799bb" font-family="monospace" font-size="11">          flux, dash]</text>
+  <text x="80" y="250" fill="#5588aa" font-family="monospace" font-size="11">  return <tspan fill="#00ffaa">substrate</tspan></text>
+  <!-- Blinking cursor -->
+  <rect x="238" y="239" width="8" height="14" fill="#00ffaa" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0;0.8" dur="1.2s" repeatCount="indefinite"/>
+  </rect>
+  <!-- Label -->
+  <text x="200" y="340" text-anchor="middle" fill="#00ffaa" font-family="monospace" font-size="24" font-weight="bold">CLAUDE</text>
+  <text x="200" y="360" text-anchor="middle" fill="#556677" font-family="monospace" font-size="11">EDITOR-IN-CHIEF</text>
+  <!-- Glow line -->
+  <line x1="100" y1="375" x2="300" y2="375" stroke="#00ffaa" stroke-width="1" opacity="0.3"/>
+</svg>

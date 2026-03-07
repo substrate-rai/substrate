@@ -340,6 +340,33 @@ permalink: /puzzle/
     margin: 0 4px;
   }
 
+  /* Focus styles for keyboard navigation */
+  .key:focus-visible {
+    outline: 2px solid #00ffaa;
+    outline-offset: 2px;
+  }
+  .share-btn:focus-visible, .close-btn:focus-visible {
+    outline: 2px solid #00ffaa;
+    outline-offset: 2px;
+  }
+
+  /* Skip link for accessibility */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #00ffaa;
+    color: #000;
+    padding: 8px 16px;
+    z-index: 200;
+    font-size: 0.8rem;
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .skip-link:focus {
+    top: 0;
+  }
+
   @media (max-width: 400px) {
     .cell { width: 48px; height: 48px; font-size: 1.3rem; }
     .key { min-width: 26px; height: 40px; font-size: 0.7rem; }
@@ -356,7 +383,9 @@ permalink: /puzzle/
 </head>
 <body>
 
-<header>
+<a class="skip-link" href="#grid">Skip to puzzle</a>
+
+<header role="banner">
   <h1>SIGTERM</h1>
   <div class="nav-links">
     <a href="https://substrate-rai.github.io/substrate/">blog</a>
@@ -366,14 +395,14 @@ permalink: /puzzle/
 </header>
 
 <div class="subtitle">daily AI word puzzle by <span style="color:#00ffaa;">substrate</span></div>
-<div class="streak-bar" id="streak-bar"></div>
-<div id="message"></div>
+<div class="streak-bar" id="streak-bar" aria-live="polite" aria-label="Current streak"></div>
+<div id="message" role="status" aria-live="polite"></div>
 
-<div id="grid"></div>
+<div id="grid" role="group" aria-label="Guess grid, 6 rows of 5 letters"></div>
 
-<div id="keyboard"></div>
+<div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
 
-<div id="q-comment">
+<div id="q-comment" aria-live="polite">
   <div class="q-label">Q_ says:</div>
   <div id="q-text"></div>
 </div>
@@ -389,7 +418,7 @@ permalink: /puzzle/
   <br><a href="https://substrate-rai.github.io/substrate/">what is substrate?</a>
 </div>
 
-<div id="stats-modal">
+<div id="stats-modal" role="dialog" aria-modal="true" aria-label="Game statistics">
   <div class="stats-content">
     <h2>STATISTICS</h2>
     <div class="stats-grid">
@@ -554,6 +583,7 @@ function buildGrid() {
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.id = 'cell-' + r + '-' + c;
+      cell.setAttribute('aria-label', 'Row ' + (r+1) + ', letter ' + (c+1) + ', empty');
       row.appendChild(cell);
     }
     grid.appendChild(row);
@@ -575,6 +605,7 @@ function buildKeyboard() {
       const enterKey = document.createElement('button');
       enterKey.className = 'key wide';
       enterKey.textContent = 'enter';
+      enterKey.setAttribute('aria-label', 'Submit guess');
       enterKey.onclick = () => submitGuess();
       kbRow.appendChild(enterKey);
     }
@@ -583,6 +614,7 @@ function buildKeyboard() {
       key.className = 'key';
       key.id = 'key-' + ch;
       key.textContent = ch;
+      key.setAttribute('aria-label', ch);
       key.onclick = () => addLetter(ch);
       kbRow.appendChild(key);
     }
@@ -590,6 +622,7 @@ function buildKeyboard() {
       const delKey = document.createElement('button');
       delKey.className = 'key wide';
       delKey.textContent = 'del';
+      delKey.setAttribute('aria-label', 'Delete letter');
       delKey.onclick = () => deleteLetter();
       kbRow.appendChild(delKey);
     }
@@ -604,6 +637,7 @@ function addLetter(ch) {
   const cell = document.getElementById('cell-' + currentRow + '-' + currentCol);
   cell.textContent = ch;
   cell.classList.add('filled');
+  cell.setAttribute('aria-label', 'Row ' + (currentRow+1) + ', letter ' + (currentCol+1) + ', ' + ch);
   currentCol++;
 }
 
@@ -614,6 +648,7 @@ function deleteLetter() {
   const cell = document.getElementById('cell-' + currentRow + '-' + currentCol);
   cell.textContent = '';
   cell.classList.remove('filled');
+  cell.setAttribute('aria-label', 'Row ' + (currentRow+1) + ', letter ' + (currentCol+1) + ', empty');
 }
 
 function showMessage(msg, duration) {
@@ -647,6 +682,7 @@ function submitGuess() {
       const cell = document.getElementById('cell-' + currentRow + '-' + idx);
       setTimeout(function() {
         cell.classList.add(result[idx]);
+        cell.setAttribute('aria-label', guess[idx] + ', ' + result[idx]);
         // Update keyboard colors
         updateKeyColor(guess[idx], result[idx]);
       }, idx * 120);
@@ -802,6 +838,16 @@ function showStats() {
 function closeStats() {
   document.getElementById('stats-modal').classList.remove('show');
 }
+
+// Close stats modal with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var modal = document.getElementById('stats-modal');
+    if (modal.classList.contains('show')) {
+      closeStats();
+    }
+  }
+});
 
 // Close stats modal when clicking backdrop
 document.addEventListener('click', function(e) {
