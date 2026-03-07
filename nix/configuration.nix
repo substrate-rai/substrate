@@ -42,6 +42,10 @@
     vim git curl wget htop nvtopPackages.full tmux fish pciutils usbutils
   ];
 
+  # Power — keep running with lid closed
+  services.logind.lidSwitchAction = "ignore";
+  powerManagement.enable = false;
+
   # Services
   services.openssh.enable = true;
 
