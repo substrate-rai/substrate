@@ -35,6 +35,12 @@ substrate/
   memory/          — persistent context for the managing intelligence
 ```
 
+## Security
+
+- **Never commit:** IP addresses, passwords, API keys, SSIDs, network topology, or any credentials to this repo.
+- Use `[redacted]` as a placeholder when documenting network-specific details in memory or docs.
+- Secrets that services need should be managed out-of-band (e.g. agenix, sops-nix) — never inline in Nix config.
+
 ## Conventions
 
 - Commit messages use the format `category: short description` (lowercase, imperative).
