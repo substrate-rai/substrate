@@ -1,0 +1,1922 @@
+---
+layout: null
+permalink: /tactics/
+title: "TACTICS — Substrate Arcade"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TACTICS — Substrate Arcade</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a1a;
+    color: #c8d0e0;
+    font-family: 'IBM Plex Mono', monospace;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #game-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  .ui-overlay {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .ui-overlay * {
+    pointer-events: auto;
+  }
+
+  /* Turn Order Bar */
+  #turn-order {
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 4px;
+    background: rgba(10, 10, 30, 0.85);
+    border: 1px solid #2a2a5a;
+    border-radius: 6px;
+    padding: 6px 12px;
+  }
+
+  .turn-portrait {
+    width: 36px; height: 36px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .turn-portrait.active {
+    border-color: #ffdd44;
+    box-shadow: 0 0 10px #ffdd4488;
+    transform: scale(1.15);
+  }
+
+  .turn-portrait.player { background: #112244; color: #4488ff; }
+  .turn-portrait.enemy { background: #331122; color: #ff4444; }
+  .turn-portrait.dead { opacity: 0.25; text-decoration: line-through; }
+
+  .turn-class-label {
+    position: absolute;
+    bottom: -14px;
+    font-size: 7px;
+    color: #888;
+    white-space: nowrap;
+  }
+
+  /* Phase Banner */
+  #phase-banner {
+    top: 60px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 22px;
+    font-weight: 700;
+    padding: 8px 32px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.5s;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+
+  #phase-banner.show {
+    opacity: 1;
+  }
+
+  #phase-banner.player-phase {
+    color: #4488ff;
+    background: rgba(20, 40, 100, 0.8);
+    border: 1px solid #4488ff;
+    text-shadow: 0 0 20px #4488ff;
+  }
+
+  #phase-banner.enemy-phase {
+    color: #ff4444;
+    background: rgba(100, 20, 20, 0.8);
+    border: 1px solid #ff4444;
+    text-shadow: 0 0 20px #ff4444;
+  }
+
+  /* Unit Info Panel */
+  #unit-info {
+    bottom: 16px; left: 16px;
+    background: rgba(10, 10, 30, 0.9);
+    border: 1px solid #2a2a5a;
+    border-radius: 8px;
+    padding: 14px 18px;
+    min-width: 220px;
+    display: none;
+  }
+
+  #unit-info.show { display: block; }
+
+  #unit-info .unit-name {
+    font-size: 16px; font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  #unit-info .unit-class {
+    font-family: 'Comic Neue', cursive;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 8px;
+  }
+
+  #unit-info .stat-row {
+    display: flex; gap: 12px;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .stat-label { color: #666; }
+  .stat-value { color: #ddd; font-weight: 600; }
+
+  .hp-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #1a1a2e;
+    border-radius: 4px;
+    margin: 6px 0;
+    overflow: hidden;
+  }
+
+  .hp-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s;
+  }
+
+  .hp-bar-fill.player { background: linear-gradient(90deg, #2266cc, #44aaff); }
+  .hp-bar-fill.enemy { background: linear-gradient(90deg, #cc2222, #ff6644); }
+
+  #unit-info .ability-name {
+    font-size: 11px;
+    color: #aa88ff;
+    margin-top: 6px;
+  }
+
+  #unit-info .ability-desc {
+    font-family: 'Comic Neue', cursive;
+    font-size: 11px;
+    color: #777;
+  }
+
+  /* Tile Info */
+  #tile-info {
+    bottom: 16px; right: 16px;
+    background: rgba(10, 10, 30, 0.9);
+    border: 1px solid #2a2a5a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    min-width: 150px;
+    display: none;
+    font-size: 12px;
+  }
+
+  #tile-info.show { display: block; }
+
+  #tile-info .tile-terrain { font-weight: 600; margin-bottom: 4px; }
+  #tile-info .tile-elevation { color: #888; }
+
+  /* Action Menu */
+  #action-menu {
+    bottom: 180px; left: 16px;
+    background: rgba(10, 10, 30, 0.95);
+    border: 1px solid #3a3a6a;
+    border-radius: 8px;
+    padding: 6px;
+    display: none;
+    min-width: 160px;
+  }
+
+  #action-menu.show { display: block; }
+
+  .action-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #c8d0e0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+
+  .action-btn:hover {
+    background: rgba(68, 136, 255, 0.15);
+    border-color: #4488ff;
+    color: #fff;
+  }
+
+  .action-btn:disabled {
+    color: #444;
+    cursor: not-allowed;
+  }
+
+  .action-btn:disabled:hover {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  /* Victory / Defeat */
+  #end-screen {
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    background: rgba(5, 5, 15, 0.92);
+  }
+
+  #end-screen.show { display: flex; }
+
+  #end-screen h1 {
+    font-size: 48px;
+    letter-spacing: 6px;
+    margin-bottom: 16px;
+  }
+
+  #end-screen .subtitle {
+    font-family: 'Comic Neue', cursive;
+    font-size: 18px;
+    color: #888;
+    margin-bottom: 32px;
+  }
+
+  #restart-btn {
+    padding: 12px 36px;
+    background: transparent;
+    border: 2px solid #4488ff;
+    color: #4488ff;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  #restart-btn:hover {
+    background: #4488ff;
+    color: #0a0a1a;
+  }
+
+  /* Controls hint */
+  #controls-hint {
+    top: 8px; left: 8px;
+    font-size: 10px;
+    color: #444;
+  }
+
+  /* Footer */
+  #footer {
+    bottom: 4px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #333;
+  }
+
+  #footer a { color: #555; text-decoration: none; }
+  #footer a:hover { color: #00ffaa; }
+
+  /* Floating damage numbers */
+  .damage-float {
+    position: absolute;
+    font-weight: 700;
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 20;
+    animation: floatUp 1.2s ease-out forwards;
+    text-shadow: 0 0 6px rgba(0,0,0,0.8);
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1.2); }
+    70% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-60px) scale(0.8); }
+  }
+
+  /* Message log */
+  #message-log {
+    top: 110px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #aab;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: rgba(10,10,30,0.7);
+    padding: 4px 16px;
+    border-radius: 4px;
+  }
+
+  #message-log.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<canvas id="game-canvas"></canvas>
+
+<div id="turn-order" class="ui-overlay"></div>
+<div id="phase-banner" class="ui-overlay"></div>
+<div id="message-log" class="ui-overlay"></div>
+
+<div id="unit-info" class="ui-overlay">
+  <div class="unit-name" id="ui-name"></div>
+  <div class="unit-class" id="ui-class"></div>
+  <div class="hp-bar-container"><div class="hp-bar-fill" id="ui-hp-bar"></div></div>
+  <div class="stat-row"><span class="stat-label">HP</span><span class="stat-value" id="ui-hp"></span></div>
+  <div class="stat-row"><span class="stat-label">ATK</span><span class="stat-value" id="ui-atk"></span></div>
+  <div class="stat-row"><span class="stat-label">DEF</span><span class="stat-value" id="ui-def"></span></div>
+  <div class="stat-row"><span class="stat-label">SPD</span><span class="stat-value" id="ui-spd"></span></div>
+  <div class="ability-name" id="ui-ability"></div>
+  <div class="ability-desc" id="ui-ability-desc"></div>
+</div>
+
+<div id="tile-info" class="ui-overlay">
+  <div class="tile-terrain" id="ti-terrain"></div>
+  <div class="tile-elevation" id="ti-elev"></div>
+  <div id="ti-occupant" style="margin-top:4px; color:#aaa; font-size:11px;"></div>
+</div>
+
+<div id="action-menu" class="ui-overlay">
+  <button class="action-btn" id="btn-move" onclick="game.startMove()">Move</button>
+  <button class="action-btn" id="btn-attack" onclick="game.startAttack()">Attack</button>
+  <button class="action-btn" id="btn-ability" onclick="game.startAbility()">Ability</button>
+  <button class="action-btn" id="btn-wait" onclick="game.doWait()">Wait</button>
+</div>
+
+<div id="end-screen" class="ui-overlay">
+  <h1 id="end-title"></h1>
+  <div class="subtitle" id="end-subtitle"></div>
+  <button id="restart-btn" onclick="game.restart()">Play Again</button>
+</div>
+
+<div id="controls-hint" class="ui-overlay">Q/E rotate | Scroll zoom | Click to select</div>
+<div id="footer" class="ui-overlay"><a href="/arcade/">a Substrate Arcade production</a></div>
+
+<script>
+// ============================================================
+// TACTICS — A Final Fantasy Tactics-style Isometric Tactical RPG
+// ============================================================
+
+const GRID = 8;
+const TILE_SIZE = 1.2;
+const TILE_GAP = 0.05;
+const HEIGHT_SCALE = 0.5;
+
+// ---- Terrain & Map ----
+const TERRAIN = {
+  GRASS: { name: 'Grassland', color: 0x2a6e3f, passable: true },
+  STONE: { name: 'Stone', color: 0x5a5a6a, passable: true },
+  SAND:  { name: 'Sand', color: 0xb8a47a, passable: true },
+  WATER: { name: 'Water', color: 0x2244aa, passable: false }
+};
+
+function generateMap() {
+  const map = [];
+  for (let x = 0; x < GRID; x++) {
+    map[x] = [];
+    for (let z = 0; z < GRID; z++) {
+      let terrain = TERRAIN.GRASS;
+      let elevation = 0;
+
+      // Create interesting terrain
+      const cx = x - GRID/2, cz = z - GRID/2;
+      const dist = Math.sqrt(cx*cx + cz*cz);
+
+      // Center hill
+      if (dist < 2) {
+        elevation = 3;
+        terrain = TERRAIN.STONE;
+      } else if (dist < 3) {
+        elevation = 2;
+        terrain = TERRAIN.STONE;
+      } else if (dist < 3.8) {
+        elevation = 1;
+      }
+
+      // Corner plateaus
+      if ((x <= 1 && z <= 1) || (x >= GRID-2 && z >= GRID-2)) {
+        elevation = 2;
+        terrain = TERRAIN.STONE;
+      }
+      if ((x <= 1 && z >= GRID-2) || (x >= GRID-2 && z <= 1)) {
+        elevation = 1;
+        terrain = TERRAIN.SAND;
+      }
+
+      // Water features
+      if ((x === 2 && z >= 5 && z <= 6) || (x === 5 && z >= 1 && z <= 2)) {
+        terrain = TERRAIN.WATER;
+        elevation = 0;
+      }
+
+      // Sand edges
+      if (x === 0 || x === GRID-1 || z === 0 || z === GRID-1) {
+        if (terrain === TERRAIN.GRASS && elevation === 0) {
+          terrain = TERRAIN.SAND;
+        }
+      }
+
+      map[x][z] = { terrain, elevation, x, z };
+    }
+  }
+  return map;
+}
+
+// ---- Unit Classes ----
+const CLASSES = {
+  KNIGHT: {
+    name: 'Knight', icon: 'K', moveRange: 3, atkRange: 1,
+    hp: 50, atk: 14, def: 10, spd: 4,
+    ability: 'Shield Bash',
+    abilityDesc: 'Melee strike that pushes target back 1 tile.',
+    abilityRange: 1, abilityAoE: 0
+  },
+  MAGE: {
+    name: 'Mage', icon: 'M', moveRange: 2, atkRange: 3,
+    hp: 28, atk: 18, def: 4, spd: 5,
+    ability: 'Fireball',
+    abilityDesc: 'Explosive blast dealing damage in a 3x3 area.',
+    abilityRange: 3, abilityAoE: 1
+  },
+  ARCHER: {
+    name: 'Archer', icon: 'A', moveRange: 3, atkRange: 4,
+    hp: 35, atk: 15, def: 5, spd: 6,
+    ability: 'Rain of Arrows',
+    abilityDesc: 'Volley hitting a 2x2 area from above.',
+    abilityRange: 4, abilityAoE: 1
+  },
+  HEALER: {
+    name: 'Healer', icon: 'H', moveRange: 3, atkRange: 1,
+    hp: 30, atk: 8, def: 6, spd: 7,
+    ability: 'Heal',
+    abilityDesc: 'Restore 20 HP to an adjacent ally.',
+    abilityRange: 1, abilityAoE: 0
+  }
+};
+
+function createUnits() {
+  const players = [
+    { ...structuredClone(CLASSES.KNIGHT),  team: 'player', gx: 0, gz: 0, maxHp: CLASSES.KNIGHT.hp,  facing: {x:1,z:1}  },
+    { ...structuredClone(CLASSES.MAGE),    team: 'player', gx: 1, gz: 0, maxHp: CLASSES.MAGE.hp,    facing: {x:1,z:0}  },
+    { ...structuredClone(CLASSES.ARCHER),  team: 'player', gx: 0, gz: 1, maxHp: CLASSES.ARCHER.hp,  facing: {x:0,z:1}  },
+    { ...structuredClone(CLASSES.HEALER),  team: 'player', gx: 1, gz: 1, maxHp: CLASSES.HEALER.hp,  facing: {x:1,z:1}  }
+  ];
+  const enemies = [
+    { ...structuredClone(CLASSES.KNIGHT),  team: 'enemy', gx: GRID-1, gz: GRID-1, maxHp: CLASSES.KNIGHT.hp,  facing: {x:-1,z:-1} },
+    { ...structuredClone(CLASSES.MAGE),    team: 'enemy', gx: GRID-2, gz: GRID-1, maxHp: CLASSES.MAGE.hp,    facing: {x:-1,z:0}  },
+    { ...structuredClone(CLASSES.ARCHER),  team: 'enemy', gx: GRID-1, gz: GRID-2, maxHp: CLASSES.ARCHER.hp,  facing: {x:0,z:-1}  },
+    { ...structuredClone(CLASSES.HEALER),  team: 'enemy', gx: GRID-2, gz: GRID-2, maxHp: CLASSES.HEALER.hp,  facing: {x:-1,z:-1} }
+  ];
+  let id = 0;
+  [...players, ...enemies].forEach(u => {
+    u.id = id++;
+    u.alive = true;
+    u.hasMoved = false;
+    u.hasActed = false;
+    u.turnDone = false;
+  });
+  return [...players, ...enemies];
+}
+
+// ============================================================
+// GAME ENGINE
+// ============================================================
+class TacticsGame {
+  constructor() {
+    this.canvas = document.getElementById('game-canvas');
+    this.scene = new THREE.Scene();
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Camera — isometric-ish perspective
+    this.camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
+    this.cameraAngle = Math.PI * 0.25;
+    this.cameraRadius = 16;
+    this.cameraHeight = 12;
+    this.cameraTarget = new THREE.Vector3(GRID * TILE_SIZE / 2, 0, GRID * TILE_SIZE / 2);
+    this.updateCamera();
+
+    // Lighting
+    const ambient = new THREE.AmbientLight(0x334466, 0.6);
+    this.scene.add(ambient);
+
+    const dirLight = new THREE.DirectionalLight(0xffeedd, 0.8);
+    dirLight.position.set(8, 15, 8);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(2048, 2048);
+    dirLight.shadow.camera.left = -12; dirLight.shadow.camera.right = 12;
+    dirLight.shadow.camera.top = 12; dirLight.shadow.camera.bottom = -12;
+    this.scene.add(dirLight);
+
+    const rimLight = new THREE.DirectionalLight(0x6644aa, 0.3);
+    rimLight.position.set(-5, 8, -5);
+    this.scene.add(rimLight);
+
+    this.scene.fog = new THREE.FogExp2(0x0a0a1a, 0.02);
+
+    // Raycaster
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+
+    // Game state
+    this.map = null;
+    this.units = [];
+    this.turnOrder = [];
+    this.currentTurnIndex = 0;
+    this.state = 'IDLE'; // IDLE, SELECT_MOVE, SELECT_ATTACK, SELECT_ABILITY, ANIMATING, ENEMY_TURN, GAME_OVER
+    this.selectedUnit = null;
+    this.highlightedTiles = [];
+    this.tileMeshes = {};
+    this.unitMeshes = {};
+    this.highlightMeshes = [];
+    this.particles = [];
+    this.floatingDamage = [];
+    this.hpBarSprites = {};
+    this.animQueue = [];
+    this.round = 1;
+
+    // Events
+    window.addEventListener('resize', () => this.onResize());
+    this.canvas.addEventListener('click', (e) => this.onClick(e));
+    this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    window.addEventListener('keydown', (e) => this.onKeyDown(e));
+    this.canvas.addEventListener('wheel', (e) => this.onWheel(e));
+
+    this.clock = new THREE.Clock();
+    this.init();
+  }
+
+  init() {
+    // Clear scene objects (keep lights)
+    const toRemove = [];
+    this.scene.traverse(obj => {
+      if (obj.isMesh || obj.isGroup || obj.isSprite) toRemove.push(obj);
+    });
+    toRemove.forEach(obj => {
+      if (obj.parent) obj.parent.remove(obj);
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+        else obj.material.dispose();
+      }
+    });
+
+    this.map = generateMap();
+    this.units = createUnits();
+    this.tileMeshes = {};
+    this.unitMeshes = {};
+    this.highlightMeshes = [];
+    this.particles = [];
+    this.hpBarSprites = {};
+    this.state = 'IDLE';
+    this.selectedUnit = null;
+    this.round = 1;
+
+    this.buildTerrain();
+    this.buildUnits();
+    this.computeTurnOrder();
+    this.renderTurnOrder();
+    this.startTurn();
+
+    document.getElementById('end-screen').classList.remove('show');
+    document.getElementById('action-menu').classList.remove('show');
+
+    this.animate();
+  }
+
+  restart() {
+    this.init();
+  }
+
+  // ---- Scene Building ----
+  buildTerrain() {
+    const group = new THREE.Group();
+    group.name = 'terrain';
+
+    for (let x = 0; x < GRID; x++) {
+      for (let z = 0; z < GRID; z++) {
+        const tile = this.map[x][z];
+        const h = Math.max(0.2, tile.elevation * HEIGHT_SCALE + 0.2);
+        const geo = new THREE.BoxGeometry(TILE_SIZE - TILE_GAP, h, TILE_SIZE - TILE_GAP);
+        const color = tile.terrain.color;
+        const mat = new THREE.MeshStandardMaterial({
+          color,
+          roughness: 0.8,
+          metalness: 0.1
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(
+          x * TILE_SIZE + TILE_SIZE / 2,
+          h / 2,
+          z * TILE_SIZE + TILE_SIZE / 2
+        );
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+        mesh.userData = { tileX: x, tileZ: z };
+        group.add(mesh);
+        this.tileMeshes[`${x},${z}`] = mesh;
+
+        // Grid line on top
+        const edgesGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(
+          TILE_SIZE - TILE_GAP - 0.02, 0.01, TILE_SIZE - TILE_GAP - 0.02
+        ));
+        const edgesMat = new THREE.LineBasicMaterial({ color: 0x1a1a3a, opacity: 0.5, transparent: true });
+        const edges = new THREE.LineSegments(edgesGeo, edgesMat);
+        edges.position.set(mesh.position.x, h + 0.005, mesh.position.z);
+        group.add(edges);
+      }
+    }
+
+    this.scene.add(group);
+
+    // Base plane
+    const baseMat = new THREE.MeshStandardMaterial({ color: 0x060612, roughness: 1 });
+    const baseGeo = new THREE.PlaneGeometry(30, 30);
+    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+    baseMesh.rotation.x = -Math.PI / 2;
+    baseMesh.position.set(GRID * TILE_SIZE / 2, -0.01, GRID * TILE_SIZE / 2);
+    baseMesh.receiveShadow = true;
+    this.scene.add(baseMesh);
+  }
+
+  tileWorldPos(gx, gz) {
+    const tile = this.map[gx][gz];
+    const h = tile.elevation * HEIGHT_SCALE + 0.2;
+    return new THREE.Vector3(
+      gx * TILE_SIZE + TILE_SIZE / 2,
+      h,
+      gz * TILE_SIZE + TILE_SIZE / 2
+    );
+  }
+
+  buildUnitMesh(unit) {
+    const group = new THREE.Group();
+    const isPlayer = unit.team === 'player';
+    const baseColor = isPlayer ? 0x4488ff : 0xff4444;
+    const glowColor = isPlayer ? 0x2266cc : 0xcc2222;
+
+    let bodyGeo, bodyMat;
+
+    if (unit.icon === 'K') {
+      // Knight: tall box + shield
+      bodyGeo = new THREE.BoxGeometry(0.4, 0.8, 0.3);
+      bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.4, metalness: 0.5 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = 0.4;
+      body.castShadow = true;
+      group.add(body);
+
+      const shieldGeo = new THREE.BoxGeometry(0.1, 0.5, 0.4);
+      const shieldMat = new THREE.MeshStandardMaterial({ color: 0xaaaacc, roughness: 0.3, metalness: 0.7 });
+      const shield = new THREE.Mesh(shieldGeo, shieldMat);
+      shield.position.set(0.25, 0.35, 0);
+      shield.castShadow = true;
+      group.add(shield);
+
+      // Helmet
+      const helmetGeo = new THREE.BoxGeometry(0.3, 0.2, 0.25);
+      const helmet = new THREE.Mesh(helmetGeo, new THREE.MeshStandardMaterial({ color: 0x888899, metalness: 0.6 }));
+      helmet.position.y = 0.9;
+      group.add(helmet);
+    }
+    else if (unit.icon === 'M') {
+      // Mage: cone/triangle with glow
+      bodyGeo = new THREE.ConeGeometry(0.25, 0.9, 4);
+      bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.5, emissive: glowColor, emissiveIntensity: 0.3 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = 0.45;
+      body.castShadow = true;
+      group.add(body);
+
+      // Orb
+      const orbGeo = new THREE.SphereGeometry(0.1, 8, 8);
+      const orbMat = new THREE.MeshStandardMaterial({ color: 0xffaa22, emissive: 0xffaa22, emissiveIntensity: 0.8 });
+      const orb = new THREE.Mesh(orbGeo, orbMat);
+      orb.position.set(0, 0.95, 0);
+      group.add(orb);
+
+      // Glow light
+      const glow = new THREE.PointLight(isPlayer ? 0x4488ff : 0xff4444, 0.4, 2);
+      glow.position.set(0, 0.6, 0);
+      group.add(glow);
+    }
+    else if (unit.icon === 'A') {
+      // Archer: slim rectangle + bow line
+      bodyGeo = new THREE.BoxGeometry(0.25, 0.75, 0.25);
+      bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.6 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = 0.375;
+      body.castShadow = true;
+      group.add(body);
+
+      // Bow (curved line)
+      const bowCurve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(-0.2, 0.15, 0),
+        new THREE.Vector3(-0.35, 0.45, 0),
+        new THREE.Vector3(-0.2, 0.75, 0)
+      );
+      const bowGeo = new THREE.TubeGeometry(bowCurve, 8, 0.02, 4, false);
+      const bowMat = new THREE.MeshStandardMaterial({ color: 0x8b6914 });
+      const bow = new THREE.Mesh(bowGeo, bowMat);
+      group.add(bow);
+    }
+    else if (unit.icon === 'H') {
+      // Healer: cross shape
+      const armGeo = new THREE.BoxGeometry(0.15, 0.6, 0.15);
+      const armMat = new THREE.MeshStandardMaterial({ color: baseColor, emissive: glowColor, emissiveIntensity: 0.2 });
+      const vert = new THREE.Mesh(armGeo, armMat);
+      vert.position.y = 0.35;
+      vert.castShadow = true;
+      group.add(vert);
+
+      const horizGeo = new THREE.BoxGeometry(0.5, 0.15, 0.15);
+      const horiz = new THREE.Mesh(horizGeo, armMat.clone());
+      horiz.position.y = 0.45;
+      horiz.castShadow = true;
+      group.add(horiz);
+
+      // Aura
+      const auraGeo = new THREE.RingGeometry(0.3, 0.35, 16);
+      const auraMat = new THREE.MeshBasicMaterial({ color: 0x44ff88, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
+      const aura = new THREE.Mesh(auraGeo, auraMat);
+      aura.rotation.x = -Math.PI / 2;
+      aura.position.y = 0.05;
+      group.add(aura);
+    }
+
+    // Selection ring (hidden by default)
+    const ringGeo = new THREE.RingGeometry(0.35, 0.42, 16);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 0, side: THREE.DoubleSide });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.02;
+    ring.name = 'selectionRing';
+    group.add(ring);
+
+    // Position on map
+    const pos = this.tileWorldPos(unit.gx, unit.gz);
+    group.position.copy(pos);
+    group.userData = { unitId: unit.id };
+
+    this.scene.add(group);
+    this.unitMeshes[unit.id] = group;
+
+    // Facing
+    this.updateUnitFacing(unit);
+  }
+
+  buildUnits() {
+    this.units.forEach(u => this.buildUnitMesh(u));
+  }
+
+  updateUnitFacing(unit) {
+    const mesh = this.unitMeshes[unit.id];
+    if (!mesh) return;
+    const angle = Math.atan2(unit.facing.x, unit.facing.z);
+    mesh.rotation.y = angle;
+  }
+
+  // ---- Camera ----
+  updateCamera() {
+    const x = this.cameraTarget.x + Math.cos(this.cameraAngle) * this.cameraRadius;
+    const z = this.cameraTarget.z + Math.sin(this.cameraAngle) * this.cameraRadius;
+    this.camera.position.set(x, this.cameraHeight, z);
+    this.camera.lookAt(this.cameraTarget);
+  }
+
+  // ---- Turn System ----
+  computeTurnOrder() {
+    const alive = this.units.filter(u => u.alive);
+    alive.forEach(u => { u.hasMoved = false; u.hasActed = false; u.turnDone = false; });
+    this.turnOrder = alive.sort((a, b) => b.spd - a.spd);
+    this.currentTurnIndex = 0;
+  }
+
+  getCurrentUnit() {
+    return this.turnOrder[this.currentTurnIndex];
+  }
+
+  renderTurnOrder() {
+    const bar = document.getElementById('turn-order');
+    bar.innerHTML = '';
+    this.turnOrder.forEach((u, i) => {
+      const div = document.createElement('div');
+      div.className = `turn-portrait ${u.team}${i === this.currentTurnIndex ? ' active' : ''}${!u.alive ? ' dead' : ''}`;
+      div.textContent = u.icon;
+      const label = document.createElement('span');
+      label.className = 'turn-class-label';
+      label.textContent = u.name;
+      div.appendChild(label);
+      bar.appendChild(div);
+    });
+  }
+
+  startTurn() {
+    // Skip dead units
+    while (this.currentTurnIndex < this.turnOrder.length && !this.turnOrder[this.currentTurnIndex].alive) {
+      this.currentTurnIndex++;
+    }
+
+    if (this.currentTurnIndex >= this.turnOrder.length) {
+      // New round
+      this.round++;
+      this.computeTurnOrder();
+      this.startTurn();
+      return;
+    }
+
+    const unit = this.getCurrentUnit();
+    unit.hasMoved = false;
+    unit.hasActed = false;
+    unit.turnDone = false;
+    this.selectedUnit = unit;
+
+    this.renderTurnOrder();
+    this.showUnitInfo(unit);
+    this.selectUnitVisual(unit);
+
+    if (unit.team === 'player') {
+      this.showPhaseBanner('player');
+      this.state = 'IDLE';
+      this.showActionMenu(unit);
+    } else {
+      this.showPhaseBanner('enemy');
+      this.state = 'ENEMY_TURN';
+      document.getElementById('action-menu').classList.remove('show');
+      setTimeout(() => this.runEnemyAI(unit), 800);
+    }
+  }
+
+  advanceTurn() {
+    this.deselectUnitVisual();
+    this.clearHighlights();
+    document.getElementById('action-menu').classList.remove('show');
+
+    // Check win/lose
+    const playersAlive = this.units.filter(u => u.team === 'player' && u.alive).length;
+    const enemiesAlive = this.units.filter(u => u.team === 'enemy' && u.alive).length;
+
+    if (enemiesAlive === 0) {
+      this.endGame(true);
+      return;
+    }
+    if (playersAlive === 0) {
+      this.endGame(false);
+      return;
+    }
+
+    this.currentTurnIndex++;
+    this.startTurn();
+  }
+
+  // ---- Action Menu ----
+  showActionMenu(unit) {
+    const menu = document.getElementById('action-menu');
+    menu.classList.add('show');
+    document.getElementById('btn-move').disabled = unit.hasMoved;
+    document.getElementById('btn-attack').disabled = unit.hasActed;
+    document.getElementById('btn-ability').disabled = unit.hasActed;
+    document.getElementById('btn-move').textContent = unit.hasMoved ? 'Move (done)' : 'Move';
+    document.getElementById('btn-attack').textContent = unit.hasActed ? 'Attack (done)' : 'Attack';
+    document.getElementById('btn-ability').textContent = unit.hasActed ? `${unit.ability} (done)` : unit.ability;
+  }
+
+  startMove() {
+    if (!this.selectedUnit || this.selectedUnit.hasMoved) return;
+    this.state = 'SELECT_MOVE';
+    document.getElementById('action-menu').classList.remove('show');
+    const tiles = this.getMoveTiles(this.selectedUnit);
+    this.showHighlights(tiles, 0x2244ff);
+  }
+
+  startAttack() {
+    if (!this.selectedUnit || this.selectedUnit.hasActed) return;
+    this.state = 'SELECT_ATTACK';
+    document.getElementById('action-menu').classList.remove('show');
+    const tiles = this.getAttackTiles(this.selectedUnit);
+    this.showHighlights(tiles, 0xff2244);
+  }
+
+  startAbility() {
+    if (!this.selectedUnit || this.selectedUnit.hasActed) return;
+    this.state = 'SELECT_ABILITY';
+    document.getElementById('action-menu').classList.remove('show');
+    const tiles = this.getAbilityTargetTiles(this.selectedUnit);
+    this.showHighlights(tiles, 0xff8800);
+  }
+
+  doWait() {
+    if (!this.selectedUnit) return;
+    this.selectedUnit.turnDone = true;
+    this.advanceTurn();
+  }
+
+  // ---- Tile Calculations ----
+  getMoveTiles(unit) {
+    const range = unit.moveRange;
+    const tiles = [];
+    const visited = {};
+    const queue = [{ x: unit.gx, z: unit.gz, steps: 0 }];
+    visited[`${unit.gx},${unit.gz}`] = true;
+
+    while (queue.length > 0) {
+      const { x, z, steps } = queue.shift();
+      if (steps > 0) {
+        // Check not occupied by same team
+        const occupant = this.getUnitAt(x, z);
+        if (!occupant || occupant.team !== unit.team) {
+          if (!occupant) tiles.push({ x, z });
+        }
+      }
+      if (steps >= range) continue;
+
+      for (const [dx, dz] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const nx = x + dx, nz = z + dz;
+        if (nx < 0 || nx >= GRID || nz < 0 || nz >= GRID) continue;
+        if (visited[`${nx},${nz}`]) continue;
+        if (!this.map[nx][nz].terrain.passable) continue;
+        // Elevation check: can only climb 1 level
+        const elevDiff = Math.abs(this.map[nx][nz].elevation - this.map[x][z].elevation);
+        if (elevDiff > 1) continue;
+        visited[`${nx},${nz}`] = true;
+        queue.push({ x: nx, z: nz, steps: steps + 1 });
+      }
+    }
+    return tiles;
+  }
+
+  getAttackTiles(unit) {
+    const range = unit.atkRange;
+    const tiles = [];
+    for (let x = 0; x < GRID; x++) {
+      for (let z = 0; z < GRID; z++) {
+        const dist = Math.abs(x - unit.gx) + Math.abs(z - unit.gz);
+        if (dist >= 1 && dist <= range) {
+          tiles.push({ x, z });
+        }
+      }
+    }
+    return tiles;
+  }
+
+  getAbilityTargetTiles(unit) {
+    const range = unit.abilityRange;
+    const tiles = [];
+    for (let x = 0; x < GRID; x++) {
+      for (let z = 0; z < GRID; z++) {
+        const dist = Math.abs(x - unit.gx) + Math.abs(z - unit.gz);
+        if (unit.icon === 'H') {
+          // Heal: target adjacent allies
+          if (dist >= 1 && dist <= range) tiles.push({ x, z });
+        } else {
+          if (dist >= 1 && dist <= range) tiles.push({ x, z });
+        }
+      }
+    }
+    return tiles;
+  }
+
+  getAoETiles(cx, cz, radius) {
+    const tiles = [];
+    for (let x = cx - radius; x <= cx + radius; x++) {
+      for (let z = cz - radius; z <= cz + radius; z++) {
+        if (x >= 0 && x < GRID && z >= 0 && z < GRID) {
+          tiles.push({ x, z });
+        }
+      }
+    }
+    return tiles;
+  }
+
+  getUnitAt(gx, gz) {
+    return this.units.find(u => u.alive && u.gx === gx && u.gz === gz) || null;
+  }
+
+  manhattanDist(a, b) {
+    return Math.abs(a.gx - b.gx) + Math.abs(a.gz - b.gz);
+  }
+
+  // ---- Highlights ----
+  showHighlights(tiles, color) {
+    this.clearHighlights();
+    tiles.forEach(t => {
+      const tile = this.map[t.x][t.z];
+      const h = tile.elevation * HEIGHT_SCALE + 0.2 + 0.01;
+      const geo = new THREE.PlaneGeometry(TILE_SIZE - TILE_GAP - 0.05, TILE_SIZE - TILE_GAP - 0.05);
+      const mat = new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.35,
+        side: THREE.DoubleSide
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.set(t.x * TILE_SIZE + TILE_SIZE / 2, h, t.z * TILE_SIZE + TILE_SIZE / 2);
+      mesh.userData = { highlightTile: true, tileX: t.x, tileZ: t.z };
+      this.scene.add(mesh);
+      this.highlightMeshes.push(mesh);
+    });
+  }
+
+  clearHighlights() {
+    this.highlightMeshes.forEach(m => {
+      this.scene.remove(m);
+      m.geometry.dispose();
+      m.material.dispose();
+    });
+    this.highlightMeshes = [];
+  }
+
+  selectUnitVisual(unit) {
+    this.deselectUnitVisual();
+    const mesh = this.unitMeshes[unit.id];
+    if (!mesh) return;
+    const ring = mesh.getObjectByName('selectionRing');
+    if (ring) {
+      ring.material.opacity = 0.7;
+    }
+  }
+
+  deselectUnitVisual() {
+    Object.values(this.unitMeshes).forEach(mesh => {
+      const ring = mesh.getObjectByName('selectionRing');
+      if (ring) ring.material.opacity = 0;
+    });
+  }
+
+  // ---- Combat ----
+  calcDamage(attacker, defender, isAbility = false) {
+    let baseDmg = attacker.atk - defender.def;
+    if (baseDmg < 1) baseDmg = 1;
+
+    // Height advantage
+    const atkElev = this.map[attacker.gx][attacker.gz].elevation;
+    const defElev = this.map[defender.gx][defender.gz].elevation;
+    if (atkElev > defElev) baseDmg += 2;
+    if (atkElev < defElev) baseDmg -= 1;
+
+    // Backstab check
+    if (this.isBackstab(attacker, defender)) {
+      baseDmg = Math.floor(baseDmg * 1.5);
+    }
+
+    if (baseDmg < 1) baseDmg = 1;
+
+    // Ability modifiers
+    if (isAbility) {
+      if (attacker.icon === 'M') baseDmg = Math.floor(baseDmg * 1.2); // Fireball extra
+      if (attacker.icon === 'K') baseDmg = Math.floor(baseDmg * 0.9); // Shield bash slightly less raw damage
+    }
+
+    return baseDmg;
+  }
+
+  isBackstab(attacker, defender) {
+    // Check if attacker is behind defender
+    const dx = attacker.gx - defender.gx;
+    const dz = attacker.gz - defender.gz;
+    // Defender faces (facing.x, facing.z). Behind = attacking from same direction as facing
+    return (dx * defender.facing.x + dz * defender.facing.z) > 0;
+  }
+
+  async doAttackAction(attacker, targetX, targetZ) {
+    const defender = this.getUnitAt(targetX, targetZ);
+    if (!defender || defender.team === attacker.team) {
+      this.showMessage('No valid target there.');
+      this.state = 'IDLE';
+      this.showActionMenu(attacker);
+      return;
+    }
+
+    // Update facing
+    attacker.facing = { x: Math.sign(targetX - attacker.gx) || 0, z: Math.sign(targetZ - attacker.gz) || 0 };
+    this.updateUnitFacing(attacker);
+
+    const dmg = this.calcDamage(attacker, defender);
+    this.state = 'ANIMATING';
+
+    // Attack animation: lunge toward target
+    await this.animateAttack(attacker, defender);
+
+    defender.hp -= dmg;
+    this.spawnDamageNumber(defender, dmg, '#ff4444');
+    this.showMessage(`${attacker.name} hits ${defender.name} for ${dmg} damage!`);
+
+    // Defender faces attacker
+    defender.facing = { x: Math.sign(attacker.gx - defender.gx) || 0, z: Math.sign(attacker.gz - defender.gz) || 0 };
+    this.updateUnitFacing(defender);
+
+    if (defender.hp <= 0) {
+      defender.hp = 0;
+      defender.alive = false;
+      await this.animateDeath(defender);
+      this.showMessage(`${defender.name} has fallen!`);
+    }
+
+    attacker.hasActed = true;
+    this.showUnitInfo(attacker);
+
+    if (attacker.hasMoved && attacker.hasActed) {
+      setTimeout(() => this.advanceTurn(), 500);
+    } else {
+      this.state = 'IDLE';
+      this.showActionMenu(attacker);
+    }
+  }
+
+  async doAbilityAction(caster, targetX, targetZ) {
+    this.state = 'ANIMATING';
+    caster.facing = { x: Math.sign(targetX - caster.gx) || 0, z: Math.sign(targetZ - caster.gz) || 0 };
+    this.updateUnitFacing(caster);
+
+    if (caster.icon === 'H') {
+      // Heal
+      const ally = this.getUnitAt(targetX, targetZ);
+      if (!ally || ally.team !== caster.team || ally.id === caster.id) {
+        this.showMessage('Must target an adjacent ally.');
+        this.state = 'IDLE';
+        this.showActionMenu(caster);
+        return;
+      }
+      const healAmt = 20;
+      const actualHeal = Math.min(healAmt, ally.maxHp - ally.hp);
+      ally.hp += actualHeal;
+      this.spawnDamageNumber(ally, actualHeal, '#44ff88');
+      await this.spawnHealParticles(ally);
+      this.showMessage(`${caster.name} heals ${ally.name} for ${actualHeal} HP!`);
+    }
+    else if (caster.icon === 'K') {
+      // Shield Bash — damage + push back
+      const defender = this.getUnitAt(targetX, targetZ);
+      if (!defender || defender.team === caster.team) {
+        this.showMessage('No enemy target.');
+        this.state = 'IDLE';
+        this.showActionMenu(caster);
+        return;
+      }
+
+      const dmg = this.calcDamage(caster, defender, true);
+      await this.animateAttack(caster, defender);
+      defender.hp -= dmg;
+      this.spawnDamageNumber(defender, dmg, '#ff8844');
+      this.showMessage(`${caster.name} uses Shield Bash on ${defender.name} for ${dmg}!`);
+
+      // Push back
+      const pushX = targetX + Math.sign(targetX - caster.gx);
+      const pushZ = targetZ + Math.sign(targetZ - caster.gz);
+      if (pushX >= 0 && pushX < GRID && pushZ >= 0 && pushZ < GRID
+          && this.map[pushX][pushZ].terrain.passable && !this.getUnitAt(pushX, pushZ)) {
+        defender.gx = pushX;
+        defender.gz = pushZ;
+        await this.animateMove(defender, pushX, pushZ);
+      }
+
+      if (defender.hp <= 0) {
+        defender.hp = 0;
+        defender.alive = false;
+        await this.animateDeath(defender);
+      }
+    }
+    else if (caster.icon === 'M') {
+      // Fireball AoE
+      const aoeTiles = this.getAoETiles(targetX, targetZ, 1);
+      await this.spawnFireParticles(targetX, targetZ);
+      for (const t of aoeTiles) {
+        const victim = this.getUnitAt(t.x, t.z);
+        if (victim && victim.id !== caster.id) {
+          const dmg = this.calcDamage(caster, victim, true);
+          victim.hp -= dmg;
+          this.spawnDamageNumber(victim, dmg, '#ff6622');
+          if (victim.hp <= 0) {
+            victim.hp = 0;
+            victim.alive = false;
+            await this.animateDeath(victim);
+          }
+        }
+      }
+      this.showMessage(`${caster.name} casts Fireball!`);
+    }
+    else if (caster.icon === 'A') {
+      // Rain of Arrows AoE
+      const aoeTiles = this.getAoETiles(targetX, targetZ, 1);
+      await this.spawnArrowParticles(targetX, targetZ);
+      for (const t of aoeTiles) {
+        const victim = this.getUnitAt(t.x, t.z);
+        if (victim && victim.team !== caster.team) {
+          const dmg = this.calcDamage(caster, victim, true);
+          victim.hp -= dmg;
+          this.spawnDamageNumber(victim, dmg, '#ffaa00');
+          if (victim.hp <= 0) {
+            victim.hp = 0;
+            victim.alive = false;
+            await this.animateDeath(victim);
+          }
+        }
+      }
+      this.showMessage(`${caster.name} uses Rain of Arrows!`);
+    }
+
+    caster.hasActed = true;
+    this.showUnitInfo(caster);
+
+    if (caster.hasMoved && caster.hasActed) {
+      setTimeout(() => this.advanceTurn(), 500);
+    } else {
+      this.state = 'IDLE';
+      this.showActionMenu(caster);
+    }
+  }
+
+  // ---- Animations ----
+  animateAttack(attacker, defender) {
+    return new Promise(resolve => {
+      const mesh = this.unitMeshes[attacker.id];
+      if (!mesh) { resolve(); return; }
+      const startPos = mesh.position.clone();
+      const targetPos = this.tileWorldPos(defender.gx, defender.gz);
+      const lungePos = startPos.clone().lerp(targetPos, 0.4);
+
+      const duration = 300;
+      const startTime = Date.now();
+
+      const anim = () => {
+        const elapsed = Date.now() - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        if (t < 0.5) {
+          mesh.position.lerpVectors(startPos, lungePos, t * 2);
+        } else {
+          mesh.position.lerpVectors(lungePos, startPos, (t - 0.5) * 2);
+        }
+        if (t < 1) {
+          requestAnimationFrame(anim);
+        } else {
+          mesh.position.copy(startPos);
+          resolve();
+        }
+      };
+      anim();
+    });
+  }
+
+  animateMove(unit, toX, toZ) {
+    return new Promise(resolve => {
+      const mesh = this.unitMeshes[unit.id];
+      if (!mesh) { resolve(); return; }
+      const targetPos = this.tileWorldPos(toX, toZ);
+      const startPos = mesh.position.clone();
+      const duration = 400;
+      const startTime = Date.now();
+
+      const anim = () => {
+        const elapsed = Date.now() - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        mesh.position.lerpVectors(startPos, targetPos, ease);
+        // Hop
+        mesh.position.y += Math.sin(t * Math.PI) * 0.3;
+        if (t < 1) {
+          requestAnimationFrame(anim);
+        } else {
+          mesh.position.copy(targetPos);
+          resolve();
+        }
+      };
+      anim();
+    });
+  }
+
+  animateDeath(unit) {
+    return new Promise(resolve => {
+      const mesh = this.unitMeshes[unit.id];
+      if (!mesh) { resolve(); return; }
+      const duration = 600;
+      const startTime = Date.now();
+      const startY = mesh.position.y;
+
+      const anim = () => {
+        const elapsed = Date.now() - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        // Sink and fade
+        mesh.position.y = startY - t * 0.5;
+        mesh.traverse(child => {
+          if (child.material) {
+            child.material.transparent = true;
+            child.material.opacity = 1 - t;
+          }
+        });
+        if (t < 1) {
+          requestAnimationFrame(anim);
+        } else {
+          this.scene.remove(mesh);
+          resolve();
+        }
+      };
+      anim();
+    });
+  }
+
+  // ---- Particles ----
+  spawnFireParticles(gx, gz) {
+    return new Promise(resolve => {
+      const center = this.tileWorldPos(gx, gz);
+      center.y += 0.3;
+      const particles = [];
+      for (let i = 0; i < 40; i++) {
+        const geo = new THREE.SphereGeometry(0.06 + Math.random() * 0.06, 4, 4);
+        const mat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color().setHSL(0.05 + Math.random() * 0.08, 1, 0.5 + Math.random() * 0.3),
+          transparent: true, opacity: 1
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.copy(center);
+        mesh.userData.vel = new THREE.Vector3(
+          (Math.random() - 0.5) * 3,
+          Math.random() * 4 + 1,
+          (Math.random() - 0.5) * 3
+        );
+        mesh.userData.life = 0;
+        this.scene.add(mesh);
+        particles.push(mesh);
+      }
+
+      // Flash
+      const flashGeo = new THREE.SphereGeometry(1.5, 8, 8);
+      const flashMat = new THREE.MeshBasicMaterial({ color: 0xff6622, transparent: true, opacity: 0.6 });
+      const flash = new THREE.Mesh(flashGeo, flashMat);
+      flash.position.copy(center);
+      this.scene.add(flash);
+
+      const startTime = Date.now();
+      const duration = 800;
+
+      const anim = () => {
+        const elapsed = Date.now() - startTime;
+        const t = elapsed / duration;
+
+        flash.material.opacity = Math.max(0, 0.6 - t);
+        flash.scale.setScalar(1 + t);
+
+        particles.forEach(p => {
+          p.userData.life += 0.02;
+          p.position.add(p.userData.vel.clone().multiplyScalar(0.016));
+          p.userData.vel.y -= 6 * 0.016;
+          p.material.opacity = Math.max(0, 1 - p.userData.life);
+        });
+
+        if (t < 1) {
+          requestAnimationFrame(anim);
+        } else {
+          particles.forEach(p => { this.scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
+          this.scene.remove(flash); flashGeo.dispose(); flashMat.dispose();
+          resolve();
+        }
+      };
+      anim();
+    });
+  }
+
+  spawnHealParticles(unit) {
+    return new Promise(resolve => {
+      const pos = this.tileWorldPos(unit.gx, unit.gz);
+      const particles = [];
+      for (let i = 0; i < 20; i++) {
+        const geo = new THREE.SphereGeometry(0.04, 4, 4);
+        const mat = new THREE.MeshBasicMaterial({ color: 0x44ff88, transparent: true, opacity: 1 });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(
+          pos.x + (Math.random() - 0.5) * 0.8,
+          pos.y,
+          pos.z + (Math.random() - 0.5) * 0.8
+        );
+        mesh.userData.speed = 0.5 + Math.random() * 1.5;
+        mesh.userData.startY = mesh.position.y;
+        this.scene.add(mesh);
+        particles.push(mesh);
+      }
+
+      const startTime = Date.now();
+      const duration = 700;
+      const anim = () => {
+        const elapsed = Date.now() - startTime;
+        const t = elapsed / duration;
+        particles.forEach(p => {
+          p.position.y = p.userData.startY + t * p.userData.speed * 1.5;
+          p.material.opacity = Math.max(0, 1 - t);
+        });
+        if (t < 1) {
+          requestAnimationFrame(anim);
+        } else {
+          particles.forEach(p => { this.scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
+          resolve();
+        }
+      };
+      anim();
+    });
+  }
+
+  spawnArrowParticles(gx, gz) {
+    return new Promise(resolve => {
+      const center = this.tileWorldPos(gx, gz);
+      const particles = [];
+      for (let i = 0; i < 15; i++) {
+        const geo = new THREE.ConeGeometry(0.03, 0.2, 3);
+        const mat = new THREE.MeshBasicMaterial({ color: 0xddaa44, transparent: true, opacity: 1 });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.rotation.x = Math.PI;
+        mesh.position.set(
+          center.x + (Math.random() - 0.5) * 2,
+          center.y + 4 + Math.random() * 2,
+          center.z + (Math.random() - 0.5) * 2
+        );
+        mesh.userData.targetY = center.y + 0.1;
+        mesh.userData.delay = Math.random() * 300;
+        this.scene.add(mesh);
+        particles.push(mesh);
+      }
+
+      const startTime = Date.now();
+      const duration = 600;
+      const anim = () => {
+        const elapsed = Date.now() - startTime;
+        particles.forEach(p => {
+          const localT = Math.max(0, (elapsed - p.userData.delay) / (duration - p.userData.delay));
+          if (localT > 0 && localT <= 1) {
+            p.position.y = THREE.MathUtils.lerp(p.position.y, p.userData.targetY, 0.15);
+            p.material.opacity = localT > 0.8 ? 1 - (localT - 0.8) * 5 : 1;
+          }
+        });
+        if (elapsed < duration + 200) {
+          requestAnimationFrame(anim);
+        } else {
+          particles.forEach(p => { this.scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
+          resolve();
+        }
+      };
+      anim();
+    });
+  }
+
+  // ---- Damage Numbers ----
+  spawnDamageNumber(unit, value, color) {
+    const pos3d = this.tileWorldPos(unit.gx, unit.gz);
+    pos3d.y += 1;
+    const screenPos = pos3d.clone().project(this.camera);
+    const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+
+    const el = document.createElement('div');
+    el.className = 'damage-float';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.color = color;
+    el.textContent = (color === '#44ff88' ? '+' : '-') + value;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+
+  // ---- UI Helpers ----
+  showUnitInfo(unit) {
+    const panel = document.getElementById('unit-info');
+    panel.classList.add('show');
+    document.getElementById('ui-name').textContent = unit.name;
+    document.getElementById('ui-name').style.color = unit.team === 'player' ? '#4488ff' : '#ff4444';
+    document.getElementById('ui-class').textContent = unit.icon === 'K' ? 'Armored Vanguard' :
+      unit.icon === 'M' ? 'Arcane Channeler' : unit.icon === 'A' ? 'Sharpshooter' : 'Battle Medic';
+    document.getElementById('ui-hp').textContent = `${unit.hp} / ${unit.maxHp}`;
+    document.getElementById('ui-atk').textContent = unit.atk;
+    document.getElementById('ui-def').textContent = unit.def;
+    document.getElementById('ui-spd').textContent = unit.spd;
+    document.getElementById('ui-ability').textContent = unit.ability;
+    document.getElementById('ui-ability-desc').textContent = unit.abilityDesc;
+
+    const hpBar = document.getElementById('ui-hp-bar');
+    hpBar.style.width = (unit.hp / unit.maxHp * 100) + '%';
+    hpBar.className = 'hp-bar-fill ' + unit.team;
+  }
+
+  showTileInfo(x, z) {
+    const tile = this.map[x][z];
+    const panel = document.getElementById('tile-info');
+    panel.classList.add('show');
+    document.getElementById('ti-terrain').textContent = tile.terrain.name;
+    document.getElementById('ti-elev').textContent = `Elevation: ${tile.elevation}`;
+    const occ = this.getUnitAt(x, z);
+    document.getElementById('ti-occupant').textContent = occ ? `${occ.name} (${occ.team})` : '';
+  }
+
+  showPhaseBanner(phase) {
+    const banner = document.getElementById('phase-banner');
+    banner.textContent = phase === 'player' ? 'Player Phase' : 'Enemy Phase';
+    banner.className = `ui-overlay ${phase}-phase show`;
+    setTimeout(() => banner.classList.remove('show'), 1500);
+  }
+
+  showMessage(msg) {
+    const el = document.getElementById('message-log');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(this._msgTimeout);
+    this._msgTimeout = setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  endGame(victory) {
+    this.state = 'GAME_OVER';
+    const screen = document.getElementById('end-screen');
+    screen.classList.add('show');
+    document.getElementById('end-title').textContent = victory ? 'VICTORY' : 'DEFEAT';
+    document.getElementById('end-title').style.color = victory ? '#44ff88' : '#ff4444';
+    document.getElementById('end-subtitle').textContent = victory
+      ? `Battle won in ${this.round} rounds.`
+      : 'Your forces have fallen.';
+  }
+
+  // ---- Input Handling ----
+  onClick(e) {
+    if (this.state === 'ANIMATING' || this.state === 'ENEMY_TURN' || this.state === 'GAME_OVER') return;
+
+    this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+
+    // First check highlights
+    if (this.highlightMeshes.length > 0) {
+      const hHits = this.raycaster.intersectObjects(this.highlightMeshes);
+      if (hHits.length > 0) {
+        const hx = hHits[0].object.userData.tileX;
+        const hz = hHits[0].object.userData.tileZ;
+        this.handleTileClick(hx, hz);
+        return;
+      }
+    }
+
+    // Check tile meshes
+    const tileMeshArr = Object.values(this.tileMeshes);
+    const hits = this.raycaster.intersectObjects(tileMeshArr);
+    if (hits.length > 0) {
+      const tx = hits[0].object.userData.tileX;
+      const tz = hits[0].object.userData.tileZ;
+      this.handleTileClick(tx, tz);
+    }
+  }
+
+  handleTileClick(tx, tz) {
+    if (this.state === 'SELECT_MOVE') {
+      // Check if valid move tile
+      const isHighlighted = this.highlightMeshes.some(m => m.userData.tileX === tx && m.userData.tileZ === tz);
+      if (isHighlighted && !this.getUnitAt(tx, tz)) {
+        this.clearHighlights();
+        const unit = this.selectedUnit;
+        // Update facing toward destination
+        const dx = tx - unit.gx;
+        const dz = tz - unit.gz;
+        if (dx !== 0 || dz !== 0) {
+          unit.facing = { x: Math.sign(dx), z: Math.sign(dz) };
+        }
+        unit.gx = tx;
+        unit.gz = tz;
+        this.state = 'ANIMATING';
+        this.animateMove(unit, tx, tz).then(() => {
+          this.updateUnitFacing(unit);
+          unit.hasMoved = true;
+          if (unit.hasMoved && unit.hasActed) {
+            this.advanceTurn();
+          } else {
+            this.state = 'IDLE';
+            this.showActionMenu(unit);
+          }
+        });
+      } else {
+        // Cancel
+        this.clearHighlights();
+        this.state = 'IDLE';
+        this.showActionMenu(this.selectedUnit);
+      }
+    }
+    else if (this.state === 'SELECT_ATTACK') {
+      const isHighlighted = this.highlightMeshes.some(m => m.userData.tileX === tx && m.userData.tileZ === tz);
+      if (isHighlighted) {
+        this.clearHighlights();
+        this.doAttackAction(this.selectedUnit, tx, tz);
+      } else {
+        this.clearHighlights();
+        this.state = 'IDLE';
+        this.showActionMenu(this.selectedUnit);
+      }
+    }
+    else if (this.state === 'SELECT_ABILITY') {
+      const isHighlighted = this.highlightMeshes.some(m => m.userData.tileX === tx && m.userData.tileZ === tz);
+      if (isHighlighted) {
+        this.clearHighlights();
+        this.doAbilityAction(this.selectedUnit, tx, tz);
+      } else {
+        this.clearHighlights();
+        this.state = 'IDLE';
+        this.showActionMenu(this.selectedUnit);
+      }
+    }
+    else if (this.state === 'IDLE') {
+      // Show info about whatever is on that tile
+      this.showTileInfo(tx, tz);
+      const unit = this.getUnitAt(tx, tz);
+      if (unit) {
+        this.showUnitInfo(unit);
+      }
+    }
+  }
+
+  onMouseMove(e) {
+    if (this.state === 'GAME_OVER') return;
+    this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+
+    const tileMeshArr = Object.values(this.tileMeshes);
+    const hits = this.raycaster.intersectObjects(tileMeshArr);
+    if (hits.length > 0) {
+      const tx = hits[0].object.userData.tileX;
+      const tz = hits[0].object.userData.tileZ;
+      this.showTileInfo(tx, tz);
+    }
+  }
+
+  onKeyDown(e) {
+    if (e.key === 'q' || e.key === 'Q') {
+      this.cameraAngle -= 0.3;
+      this.updateCamera();
+    }
+    if (e.key === 'e' || e.key === 'E') {
+      this.cameraAngle += 0.3;
+      this.updateCamera();
+    }
+    if (e.key === 'Escape') {
+      if (this.state === 'SELECT_MOVE' || this.state === 'SELECT_ATTACK' || this.state === 'SELECT_ABILITY') {
+        this.clearHighlights();
+        this.state = 'IDLE';
+        if (this.selectedUnit && this.selectedUnit.team === 'player') {
+          this.showActionMenu(this.selectedUnit);
+        }
+      }
+    }
+  }
+
+  onWheel(e) {
+    this.cameraRadius += e.deltaY * 0.01;
+    this.cameraRadius = Math.max(8, Math.min(25, this.cameraRadius));
+    this.cameraHeight = this.cameraRadius * 0.75;
+    this.updateCamera();
+  }
+
+  onResize() {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  // ============================================================
+  // ENEMY AI
+  // ============================================================
+  async runEnemyAI(unit) {
+    if (!unit.alive || this.state === 'GAME_OVER') {
+      this.advanceTurn();
+      return;
+    }
+
+    const allies = this.units.filter(u => u.team === 'enemy' && u.alive && u.id !== unit.id);
+    const enemies = this.units.filter(u => u.team === 'player' && u.alive);
+
+    if (enemies.length === 0) {
+      this.advanceTurn();
+      return;
+    }
+
+    // AI behavior by class
+    if (unit.icon === 'H') {
+      await this.aiHealer(unit, allies, enemies);
+    } else if (unit.icon === 'M') {
+      await this.aiMage(unit, allies, enemies);
+    } else if (unit.icon === 'A') {
+      await this.aiArcher(unit, allies, enemies);
+    } else {
+      await this.aiKnight(unit, allies, enemies);
+    }
+
+    await this.delay(400);
+    this.advanceTurn();
+  }
+
+  async aiHealer(unit, allies, enemies) {
+    // Check if any ally needs healing
+    const hurtAllies = allies.filter(a => a.hp < a.maxHp * 0.7);
+    hurtAllies.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+
+    if (hurtAllies.length > 0) {
+      const target = hurtAllies[0];
+      // Move adjacent to target if needed
+      const dist = this.manhattanDist(unit, target);
+      if (dist > 1) {
+        await this.aiMoveToward(unit, target.gx, target.gz);
+      }
+      // Heal if adjacent
+      const newDist = this.manhattanDist(unit, target);
+      if (newDist <= 1) {
+        await this.doAbilityAction(unit, target.gx, target.gz);
+        return;
+      }
+    }
+
+    // Otherwise, move toward nearest enemy and attack if possible
+    const nearest = this.findNearest(unit, enemies);
+    if (nearest) {
+      await this.aiMoveToward(unit, nearest.gx, nearest.gz);
+      const dist = this.manhattanDist(unit, nearest);
+      if (dist <= unit.atkRange) {
+        unit.facing = { x: Math.sign(nearest.gx - unit.gx) || 0, z: Math.sign(nearest.gz - unit.gz) || 0 };
+        this.updateUnitFacing(unit);
+        await this.doAttackAction(unit, nearest.gx, nearest.gz);
+      }
+    }
+  }
+
+  async aiMage(unit, allies, enemies) {
+    // Look for clusters
+    let bestTarget = null;
+    let bestScore = -1;
+
+    for (const e of enemies) {
+      const aoeTiles = this.getAoETiles(e.gx, e.gz, 1);
+      let score = 0;
+      for (const t of aoeTiles) {
+        const u = this.getUnitAt(t.x, t.z);
+        if (u && u.team === 'player') score += 2;
+        if (u && u.team === 'enemy') score -= 3; // Don't hit allies
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestTarget = e;
+      }
+    }
+
+    if (!bestTarget) bestTarget = enemies[0];
+
+    // Move into range
+    const dist = this.manhattanDist(unit, bestTarget);
+    if (dist > unit.abilityRange) {
+      await this.aiMoveToward(unit, bestTarget.gx, bestTarget.gz);
+    }
+
+    const newDist = this.manhattanDist(unit, bestTarget);
+    if (newDist <= unit.abilityRange && bestScore >= 2) {
+      await this.doAbilityAction(unit, bestTarget.gx, bestTarget.gz);
+    } else if (newDist <= unit.atkRange) {
+      await this.doAttackAction(unit, bestTarget.gx, bestTarget.gz);
+    }
+  }
+
+  async aiArcher(unit, allies, enemies) {
+    // Target lowest HP enemy
+    const sorted = [...enemies].sort((a, b) => a.hp - b.hp);
+    const target = sorted[0];
+
+    const dist = this.manhattanDist(unit, target);
+    if (dist > unit.atkRange) {
+      await this.aiMoveToward(unit, target.gx, target.gz);
+    }
+
+    const newDist = this.manhattanDist(unit, target);
+    if (newDist <= unit.atkRange) {
+      await this.doAttackAction(unit, target.gx, target.gz);
+    }
+  }
+
+  async aiKnight(unit, allies, enemies) {
+    // Charge nearest enemy
+    const nearest = this.findNearest(unit, enemies);
+    if (!nearest) return;
+
+    const dist = this.manhattanDist(unit, nearest);
+    if (dist > 1) {
+      await this.aiMoveToward(unit, nearest.gx, nearest.gz);
+    }
+
+    const newDist = this.manhattanDist(unit, nearest);
+    if (newDist <= 1) {
+      // Use shield bash if available (50% chance) or normal attack
+      if (Math.random() > 0.5) {
+        await this.doAbilityAction(unit, nearest.gx, nearest.gz);
+      } else {
+        await this.doAttackAction(unit, nearest.gx, nearest.gz);
+      }
+    }
+  }
+
+  async aiMoveToward(unit, targetX, targetZ) {
+    const moveTiles = this.getMoveTiles(unit);
+    if (moveTiles.length === 0) return;
+
+    // Find tile closest to target
+    let bestTile = null;
+    let bestDist = Infinity;
+    for (const t of moveTiles) {
+      const d = Math.abs(t.x - targetX) + Math.abs(t.z - targetZ);
+      if (d < bestDist) {
+        bestDist = d;
+        bestTile = t;
+      }
+    }
+
+    if (bestTile && (bestTile.x !== unit.gx || bestTile.z !== unit.gz)) {
+      unit.facing = { x: Math.sign(bestTile.x - unit.gx) || 0, z: Math.sign(bestTile.z - unit.gz) || 0 };
+      unit.gx = bestTile.x;
+      unit.gz = bestTile.z;
+      await this.animateMove(unit, bestTile.x, bestTile.z);
+      this.updateUnitFacing(unit);
+      unit.hasMoved = true;
+    }
+  }
+
+  findNearest(unit, targets) {
+    let nearest = null;
+    let nearDist = Infinity;
+    for (const t of targets) {
+      const d = this.manhattanDist(unit, t);
+      if (d < nearDist) {
+        nearDist = d;
+        nearest = t;
+      }
+    }
+    return nearest;
+  }
+
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ---- Main Loop ----
+  animate() {
+    requestAnimationFrame(() => this.animate());
+
+    const delta = this.clock.getDelta();
+    const time = this.clock.getElapsedTime();
+
+    // Animate selection ring pulse
+    if (this.selectedUnit && this.unitMeshes[this.selectedUnit.id]) {
+      const mesh = this.unitMeshes[this.selectedUnit.id];
+      const ring = mesh.getObjectByName('selectionRing');
+      if (ring && ring.material.opacity > 0) {
+        ring.material.opacity = 0.4 + Math.sin(time * 4) * 0.3;
+        ring.rotation.z = time * 0.5;
+      }
+    }
+
+    // Animate highlight tiles pulse
+    this.highlightMeshes.forEach(m => {
+      m.material.opacity = 0.2 + Math.sin(time * 3) * 0.15;
+    });
+
+    // Animate unit meshes (idle bob for mages)
+    this.units.forEach(u => {
+      if (!u.alive) return;
+      const mesh = this.unitMeshes[u.id];
+      if (!mesh) return;
+      if (u.icon === 'M') {
+        // Subtle float
+        const baseY = this.tileWorldPos(u.gx, u.gz).y;
+        if (this.state !== 'ANIMATING' || this.selectedUnit?.id !== u.id) {
+          mesh.position.y = baseY + Math.sin(time * 2 + u.id) * 0.05;
+        }
+      }
+    });
+
+    this.renderer.render(this.scene, this.camera);
+  }
+}
+
+// Start the game
+const game = new TacticsGame();
+</script>
+
+</body>
+</html>
