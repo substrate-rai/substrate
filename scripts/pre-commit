@@ -1,62 +1,64 @@
 #!/usr/bin/env bash
 # pre-commit — reject commits containing secrets
 #
-# Checks staged files for IP addresses, passwords, API keys, AWS credentials,
-# and other sensitive patterns. Allowlists known-safe patterns.
+# Checks staged diff for IP addresses, passwords, API keys, AWS credentials,
+# and private keys. Symlink into .git/hooks/pre-commit.
 
 set -euo pipefail
 
 RED='\033[0;31m'
 RESET='\033[0m'
 
-PATTERNS=(
-    # IPv4 addresses (skip 0.0.0.0, 127.0.0.1, localhost-style)
-    '\b(?<!\.)(10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\b'
-    '\b(?<!\.)(172\.(1[6-9]|2[0-9]|3[01])\.[0-9]{1,3}\.[0-9]{1,3})\b'
-    '\b(?<!\.)(192\.168\.[0-9]{1,3}\.[0-9]{1,3})\b'
+# Get staged diff once, excluding this hook itself
+DIFF=$(git diff --cached --diff-filter=ACMR -U0 -- . ':!scripts/pre-commit' 2>/dev/null || true)
 
-    # API keys and tokens
-    'ANTHROPIC_API_KEY\s*=\s*sk-'
-    'OPENAI_API_KEY\s*=\s*sk-'
-    'api[_-]?key\s*[=:]\s*["\x27][A-Za-z0-9_\-]{20,}'
-    'token\s*[=:]\s*["\x27][A-Za-z0-9_\-]{20,}'
+if [[ -z "$DIFF" ]]; then
+    exit 0
+fi
 
-    # AWS credentials
-    'AKIA[0-9A-Z]{16}'
-    'aws_secret_access_key\s*=\s*\S+'
-    'aws_access_key_id\s*=\s*\S+'
+# Filter to added lines only (skip removals, headers, and known-safe files)
+ADDED=$(echo "$DIFF" | grep '^+' | grep -v '^+++' | grep -v '\[redacted\]' || true)
 
-    # Passwords
-    'password\s*[=:]\s*["\x27][^\s"'\'']{4,}'
-    'passwd\s*[=:]\s*["\x27][^\s"'\'']{4,}'
-
-    # Private keys
-    '-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'
-
-    # Generic secrets
-    'secret[_-]?key\s*[=:]\s*["\x27][A-Za-z0-9_\-]{8,}'
-)
-
-# Files to skip
-SKIP_PATTERNS='(\.gitignore|CLAUDE\.md|scripts/pre-commit|\.md)$'
+if [[ -z "$ADDED" ]]; then
+    exit 0
+fi
 
 failed=false
 
-for pattern in "${PATTERNS[@]}"; do
-    # Check only staged content (diff of what's being committed)
-    matches=$(git diff --cached --diff-filter=ACMR -U0 | \
-        grep -P "$pattern" | \
-        grep -Ev "$SKIP_PATTERNS" | \
-        grep -v '^\-' | \
-        grep -v '\[redacted\]' || true)
-
+check_pattern() {
+    local label="$1"
+    local pattern="$2"
+    local matches
+    matches=$(echo "$ADDED" | grep -P -- "$pattern" 2>/dev/null || true)
     if [[ -n "$matches" ]]; then
-        echo -e "${RED}pre-commit: blocked — possible secret detected${RESET}"
+        echo -e "${RED}pre-commit: $label${RESET}"
         echo "$matches"
         echo ""
         failed=true
     fi
-done
+}
+
+# Private IPv4 ranges
+check_pattern "private IP address (10.x)" '\b10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b'
+check_pattern "private IP address (172.x)" '\b172\.(1[6-9]|2[0-9]|3[01])\.[0-9]{1,3}\.[0-9]{1,3}\b'
+check_pattern "private IP address (192.168.x)" '\b192\.168\.[0-9]{1,3}\.[0-9]{1,3}\b'
+
+# API keys
+check_pattern "Anthropic API key" 'sk-ant-[A-Za-z0-9]+'
+check_pattern "OpenAI API key" 'sk-[A-Za-z0-9]{20,}'
+
+# AWS credentials
+check_pattern "AWS access key" 'AKIA[0-9A-Z]{16}'
+check_pattern "AWS secret key" 'aws_secret_access_key\s*=\s*\S+'
+
+# Passwords
+check_pattern "password assignment" '(?i)(password|passwd)\s*[=:]\s*\S+'
+
+# Private keys
+check_pattern "private key" 'BEGIN.*PRIVATE KEY'
+
+# Generic high-entropy secrets
+check_pattern "secret key assignment" '(?i)secret.?key\s*[=:]\s*\S{8,}'
 
 if $failed; then
     echo -e "${RED}Commit rejected. Remove secrets or use [redacted] as placeholder.${RESET}"
