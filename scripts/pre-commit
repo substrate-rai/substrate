@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# pre-commit — reject commits containing secrets
+#
+# Checks staged files for IP addresses, passwords, API keys, AWS credentials,
+# and other sensitive patterns. Allowlists known-safe patterns.
+
+set -euo pipefail
+
+RED='\033[0;31m'
+RESET='\033[0m'
+
+PATTERNS=(
+    # IPv4 addresses (skip 0.0.0.0, 127.0.0.1, localhost-style)
+    '\b(?<!\.)(10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\b'
+    '\b(?<!\.)(172\.(1[6-9]|2[0-9]|3[01])\.[0-9]{1,3}\.[0-9]{1,3})\b'
+    '\b(?<!\.)(192\.168\.[0-9]{1,3}\.[0-9]{1,3})\b'
+
+    # API keys and tokens
+    'ANTHROPIC_API_KEY\s*=\s*sk-'
+    'OPENAI_API_KEY\s*=\s*sk-'
+    'api[_-]?key\s*[=:]\s*["\x27][A-Za-z0-9_\-]{20,}'
+    'token\s*[=:]\s*["\x27][A-Za-z0-9_\-]{20,}'
+
+    # AWS credentials
+    'AKIA[0-9A-Z]{16}'
+    'aws_secret_access_key\s*=\s*\S+'
+    'aws_access_key_id\s*=\s*\S+'
+
+    # Passwords
+    'password\s*[=:]\s*["\x27][^\s"'\'']{4,}'
+    'passwd\s*[=:]\s*["\x27][^\s"'\'']{4,}'
+
+    # Private keys
+    '-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'
+
+    # Generic secrets
+    'secret[_-]?key\s*[=:]\s*["\x27][A-Za-z0-9_\-]{8,}'
+)
+
+# Files to skip
+SKIP_PATTERNS='(\.gitignore|CLAUDE\.md|scripts/pre-commit|\.md)$'
+
+failed=false
+
+for pattern in "${PATTERNS[@]}"; do
+    # Check only staged content (diff of what's being committed)
+    matches=$(git diff --cached --diff-filter=ACMR -U0 | \
+        grep -P "$pattern" | \
+        grep -Ev "$SKIP_PATTERNS" | \
+        grep -v '^\-' | \
+        grep -v '\[redacted\]' || true)
+
+    if [[ -n "$matches" ]]; then
+        echo -e "${RED}pre-commit: blocked — possible secret detected${RESET}"
+        echo "$matches"
+        echo ""
+        failed=true
+    fi
+done
+
+if $failed; then
+    echo -e "${RED}Commit rejected. Remove secrets or use [redacted] as placeholder.${RESET}"
+    echo "To bypass (emergency only): git commit --no-verify"
+    exit 1
+fi
