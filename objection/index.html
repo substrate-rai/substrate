@@ -10,156 +10,234 @@ title: "OBJECTION! — Cyber Court"
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OBJECTION! — Cyber Court | Substrate Arcade</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600&display=swap');
+
+  :root {
+    --bg-deep: #080c14;
+    --bg-panel: #0d1320;
+    --bg-card: #111827;
+    --bg-surface: #162032;
+    --border: #1e2d44;
+    --border-active: #2563eb;
+    --accent: #3b82f6;
+    --green: #22c55e;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --cyan: #06b6d4;
+    --purple: #a78bfa;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --text-muted: #475569;
+  }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: #0a0a14;
-    color: #c8d0e0;
-    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
     overflow-x: hidden;
     width: 100vw;
     min-height: 100vh;
     min-height: 100dvh;
-    touch-action: none;
     -webkit-user-select: none;
     user-select: none;
   }
 
-  /* === COURTROOM SCENE === */
+  /* Scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* === COURT LAYOUT === */
   #court {
-    position: relative;
     width: 100%;
-    height: 100%;
+    height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
-  }
-
-  /* Scene area — top 60% */
-  #scene {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(180deg, #0c1428 0%, #141e3c 60%, #1a2844 100%);
-  }
-
-  /* Courtroom background elements */
-  .court-bg {
-    position: absolute;
-    width: 100%; height: 100%;
-  }
-  .court-bench {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 40%;
-    background: linear-gradient(180deg, #2a1a0a 0%, #1a1008 100%);
-    border-top: 3px solid #3a2a14;
-  }
-  .court-bench::before {
-    content: '';
-    position: absolute;
-    top: -20px;
-    left: 10%;
-    width: 80%;
-    height: 20px;
-    background: #3a2a14;
-    border-radius: 4px 4px 0 0;
-  }
-  /* Judge bench */
-  .judge-bench {
-    position: absolute;
-    top: 15%;
-    left: 30%;
-    width: 40%;
-    height: 25%;
-    background: linear-gradient(180deg, #3a2a14, #2a1a0a);
-    border: 2px solid #4a3a24;
-    border-radius: 4px 4px 0 0;
-  }
-
-  /* Character sprites */
-  .character {
-    position: absolute;
-    bottom: 0;
-    width: 200px;
-    text-align: center;
-    transition: transform 0.2s, opacity 0.3s;
-  }
-  .character.left { left: 5%; }
-  .character.right { right: 5%; }
-  .character.center { left: 50%; transform: translateX(-50%); }
-
-  .char-body {
-    position: relative;
-    width: 120px;
-    height: 180px;
-    margin: 0 auto;
-  }
-
-  /* Character rendered via CSS */
-  .char-head {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    max-width: 700px;
     margin: 0 auto;
     position: relative;
   }
-  .char-torso {
-    width: 80px;
-    height: 70px;
-    margin: -5px auto 0;
-    border-radius: 8px 8px 0 0;
-  }
-  .char-arms {
-    position: absolute;
-    top: 70px;
-    width: 120px;
-    left: 0;
+
+  /* === TOP BAR === */
+  .top-bar {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 14px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+    flex-shrink: 0;
   }
-  .char-arm {
-    width: 18px;
-    height: 50px;
-    border-radius: 8px;
-  }
-  .char-symbol {
-    position: absolute;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1;
-  }
-  .char-name-tag {
+  .top-bar-left { display: flex; flex-direction: column; gap: 2px; }
+  #case-title-display {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: #888;
-    margin-top: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    background: rgba(37, 99, 235, 0.1);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    border-radius: 4px;
+    padding: 3px 8px;
+    display: inline-block;
+  }
+  #case-phase {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* Credibility meter */
+  #penalty-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #penalty-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
   }
-
-  .character.speaking .char-body {
-    animation: speak-bob 0.3s ease-in-out infinite alternate;
+  #penalty-pips { display: flex; gap: 3px; }
+  .penalty-pip {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    background: var(--green);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.3);
+    transition: all 0.3s;
   }
-  @keyframes speak-bob {
-    from { transform: translateY(0); }
-    to { transform: translateY(-3px); }
-  }
-
-  .character.objection .char-body {
-    animation: objection-slam 0.15s ease-out;
-  }
-  @keyframes objection-slam {
-    0% { transform: translateX(-20px); }
-    50% { transform: translateX(10px); }
-    100% { transform: translateX(0); }
+  .penalty-pip.lost {
+    background: #1e1e1e;
+    box-shadow: none;
+    border: 1px solid #333;
   }
 
-  /* === FLASH EFFECTS === */
+  /* === SCENE === */
+  #scene {
+    height: 180px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, #080e1a 0%, #0c1628 50%, #101c30 100%);
+  }
+
+  /* CSS grid overlay */
+  .scene-grid {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: radial-gradient(ellipse 60% 80% at 50% 60%, black 20%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 60% 80% at 50% 60%, black 20%, transparent 70%);
+  }
+
+  /* Courtroom desk */
+  .court-desk {
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    width: 80%;
+    height: 30px;
+    background: linear-gradient(180deg, #14243a, #0c1828);
+    border-top: 2px solid var(--accent);
+  }
+
+  /* Monitor */
+  .court-monitor {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 60px;
+    background: #0a1018;
+    border: 1px solid #1a2a40;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+  }
+  .monitor-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7px;
+    color: var(--red);
+    text-align: center;
+    line-height: 1.4;
+    animation: monitor-blink 2s ease-in-out infinite;
+  }
+  @keyframes monitor-blink {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  /* Scene label */
+  .scene-label {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .scene-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: dot-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* Vignette */
+  .scene-vignette {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, var(--bg-deep) 100%);
+    pointer-events: none;
+  }
+
+  /* Characters - hidden in scene, shown as cards below */
+  .character { display: none; }
+
+  /* Flash + shout still on scene */
   #flash-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -171,14 +249,14 @@ title: "OBJECTION! — Cyber Court"
   }
   #flash-overlay.flash { opacity: 1; }
 
-  /* === OBJECTION / HOLD IT / TAKE THAT banners === */
   #shout-banner {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
     z-index: 60;
-    font-size: 4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: 4px;
     text-shadow: 0 0 30px currentColor, 2px 2px 0 rgba(0,0,0,0.8);
@@ -196,243 +274,360 @@ title: "OBJECTION! — Cyber Court"
     100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
   }
 
-  /* === DIALOGUE BOX === */
-  #dialogue-box {
-    height: 40%;
-    min-height: 180px;
-    max-height: 280px;
-    background: linear-gradient(180deg, #0c1020, #080c18);
-    border-top: 2px solid #2a3a5a;
-    position: relative;
+  /* === CHARACTER CARDS === */
+  .char-cards {
     display: flex;
-    flex-direction: column;
+    gap: 12px;
+    padding: 10px 14px;
+    flex-shrink: 0;
+    background: var(--bg-deep);
   }
-
-  #speaker-name {
-    position: absolute;
-    top: -28px;
-    left: 16px;
-    background: #1a2848;
-    border: 1px solid #2a4a7a;
-    border-bottom: none;
-    padding: 4px 16px;
-    font-size: 13px;
-    font-weight: 700;
-    border-radius: 6px 6px 0 0;
-    color: #5599ff;
-  }
-
-  #dialogue-text {
+  .char-card {
     flex: 1;
-    padding: 20px 24px 10px;
-    font-size: 16px;
-    line-height: 1.7;
-    color: #e0e8f0;
-    overflow-y: auto;
-  }
-
-  .text-highlight { color: #ff4444; font-weight: 700; }
-  .text-evidence { color: #44ff88; font-weight: 700; }
-  .text-claude { color: #00ffaa; font-weight: 700; }
-  .text-tip { color: #ffaa44; font-style: italic; }
-
-  #dialogue-advance {
-    position: absolute;
-    bottom: 10px;
-    right: 16px;
-    font-size: 11px;
-    color: #446688;
-    animation: blink 1s infinite;
-  }
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  /* === PENALTY BAR (HP) === */
-  #penalty-bar {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    z-index: 20;
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(10, 10, 30, 0.85);
-    border: 1px solid #2a2a5a;
-    border-radius: 6px;
-    padding: 6px 12px;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.2s;
   }
-  #penalty-label {
-    font-size: 10px;
-    color: #888;
+  .char-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.15);
+  }
+  .char-card .speaking-label {
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7px;
+    font-weight: 700;
+    color: var(--accent);
     text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--bg-deep);
+    padding: 0 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
   }
-  #penalty-pips {
-    display: flex;
-    gap: 4px;
-  }
-  .penalty-pip {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    background: #22aa44;
-    border: 1px solid #33cc55;
-    transition: background 0.3s, border-color 0.3s;
-  }
-  .penalty-pip.lost {
-    background: #aa2222;
-    border-color: #cc3333;
-  }
+  .char-card.active .speaking-label { opacity: 1; }
 
-  /* === CASE INFO === */
-  #case-info {
-    position: absolute;
-    top: 8px;
-    left: 12px;
-    z-index: 20;
-    background: rgba(10, 10, 30, 0.85);
-    border: 1px solid #2a2a5a;
+  .char-avatar {
+    width: 36px;
+    height: 36px;
     border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 10px;
-    color: #888;
-  }
-  #case-info .case-title {
-    color: #aabbdd;
-    font-weight: 600;
-    font-size: 11px;
-  }
-
-  /* === BOTTOM CONTROLS === */
-  #controls {
-    display: flex;
-    gap: 6px;
-    padding: 8px 12px;
-    background: #060810;
-    border-top: 1px solid #1a2040;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .ctrl-btn {
-    padding: 10px 18px;
-    background: rgba(20, 30, 60, 0.8);
-    border: 1px solid #2a3a6a;
-    border-radius: 6px;
-    color: #8899cc;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    min-width: 44px;
-    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .char-avatar.attorney {
+    background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    color: #93c5fd;
+  }
+  .char-avatar.witness {
+    background: linear-gradient(135deg, #3d2b0a, #92400e);
+    color: #fbbf24;
+  }
+  .char-avatar.ai {
+    background: linear-gradient(135deg, #1a1040, #5b21b6);
+    color: #c4b5fd;
+  }
+
+  .char-info { min-width: 0; }
+  .char-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
   }
-  .ctrl-btn:hover, .ctrl-btn:active {
-    background: rgba(40, 60, 120, 0.8);
-    border-color: #4466aa;
-    color: #bbccff;
+  .char-card-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .ctrl-btn.objection-btn {
-    border-color: #ff4444;
-    color: #ff4444;
-    font-weight: 700;
+
+  /* === DIALOGUE AREA === */
+  #dialogue-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 8px 14px;
+    overflow-y: auto;
+    background: var(--bg-deep);
+    min-height: 120px;
+    position: relative;
   }
-  .ctrl-btn.objection-btn:hover, .ctrl-btn.objection-btn:active {
-    background: rgba(255, 68, 68, 0.15);
-    border-color: #ff6666;
+
+  .dialogue-bubble {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 14px 16px;
+    position: relative;
   }
-  .ctrl-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
+
+  #speaker-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+  .speaker-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  #dialogue-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  .text-highlight {
+    color: var(--red);
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+  }
+  .text-evidence {
+    display: inline;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    font-weight: 600;
+  }
+  .text-claude {
+    color: var(--purple);
+    font-weight: 500;
+  }
+  .text-tip {
+    color: var(--amber);
+    font-style: italic;
+  }
+
+  #dialogue-advance {
+    text-align: right;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    animation: advance-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes advance-pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  .advance-arrow {
+    display: inline-block;
+    animation: advance-bounce 1s ease-in-out infinite;
+  }
+  @keyframes advance-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
+  }
+
+  /* === ACTION BAR === */
+  #controls {
+    display: flex;
+    gap: 6px;
+    padding: 8px 10px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .ctrl-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 48px;
+    -webkit-tap-highlight-color: transparent;
   }
   .ctrl-btn .btn-icon { font-size: 16px; }
+  .ctrl-btn .btn-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+  }
 
-  /* === EVIDENCE PANEL === */
+  .ctrl-btn:hover, .ctrl-btn:active {
+    background: var(--bg-surface);
+  }
+  .ctrl-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+
+  /* Object button — red */
+  .ctrl-btn.objection-btn {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.06);
+  }
+  .ctrl-btn.objection-btn .btn-label { color: var(--red); }
+  .ctrl-btn.objection-btn .btn-icon { animation: shake-icon 3s ease-in-out infinite; }
+  @keyframes shake-icon {
+    0%, 90%, 100% { transform: rotate(0); }
+    92% { transform: rotate(-8deg); }
+    94% { transform: rotate(8deg); }
+    96% { transform: rotate(-4deg); }
+    98% { transform: rotate(4deg); }
+  }
+  .ctrl-btn.objection-btn:hover, .ctrl-btn.objection-btn:active {
+    border-color: var(--red);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.15);
+  }
+
+  /* Evidence — cyan */
+  #btn-evidence { border-color: rgba(6, 182, 212, 0.2); }
+  #btn-evidence .btn-label { color: var(--cyan); }
+  #btn-evidence:hover { border-color: var(--cyan); box-shadow: 0 0 8px rgba(6,182,212,0.1); }
+
+  /* Claude — purple */
+  #btn-claude { border-color: rgba(167, 139, 250, 0.2); }
+  #btn-claude .btn-label { color: var(--purple); }
+  #btn-claude:hover { border-color: var(--purple); box-shadow: 0 0 8px rgba(167,139,250,0.1); }
+
+  /* Investigate — green */
+  #btn-investigate { border-color: rgba(34, 197, 94, 0.2); }
+  #btn-investigate .btn-label { color: var(--green); }
+  #btn-investigate:hover { border-color: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.1); }
+
+  /* Press — amber */
+  #btn-press { border-color: rgba(245, 158, 11, 0.2); }
+  #btn-press .btn-label { color: var(--amber); }
+  #btn-press:hover { border-color: var(--amber); box-shadow: 0 0 8px rgba(245,158,11,0.1); }
+
+  /* === EVIDENCE OVERLAY === */
   #evidence-panel {
-    position: absolute;
+    position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(5, 8, 20, 0.95);
+    background: rgba(8, 12, 20, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 40;
     display: none;
     flex-direction: column;
-    padding: 16px;
+    max-width: 700px;
+    margin: 0 auto;
   }
   #evidence-panel.show { display: flex; }
 
-  #evidence-panel h2 {
-    font-size: 16px;
-    color: #5599ff;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #2a3a6a;
-    padding-bottom: 8px;
+  .evidence-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
   }
+  #evidence-panel h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 2px;
+  }
+  #evidence-close {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    padding: 6px 12px;
+    cursor: pointer;
+    min-height: 36px;
+    transition: all 0.15s;
+  }
+  #evidence-close:hover { border-color: var(--text-dim); color: var(--text); }
 
   .evidence-list {
     flex: 1;
     overflow-y: auto;
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
 
   .evidence-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
     padding: 12px;
-    border: 1px solid #2a3a5a;
-    border-radius: 6px;
-    background: rgba(20, 30, 60, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
     cursor: pointer;
     transition: all 0.15s;
     min-height: 44px;
   }
   .evidence-item:hover, .evidence-item:active {
-    border-color: #44ff88;
-    background: rgba(20, 60, 40, 0.3);
+    border-color: var(--cyan);
+    background: var(--bg-surface);
   }
   .evidence-item.selected {
-    border-color: #44ff88;
-    box-shadow: 0 0 10px rgba(68, 255, 136, 0.2);
+    border-color: var(--cyan);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
   }
+
   .evidence-name {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 13px;
-    color: #44ff88;
-    margin-bottom: 4px;
+    color: var(--text);
+    margin-bottom: 3px;
   }
   .evidence-desc {
-    font-size: 11px;
-    color: #8899aa;
+    font-size: 12px;
+    color: var(--text-dim);
     line-height: 1.5;
   }
   .evidence-tag {
     display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
-    padding: 2px 6px;
+    font-weight: 600;
+    padding: 2px 8px;
     border-radius: 3px;
-    background: rgba(68, 255, 136, 0.1);
-    color: #44ff88;
+    background: rgba(6, 182, 212, 0.08);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    color: var(--cyan);
     margin-top: 6px;
-  }
-
-  #evidence-close {
-    margin-top: 12px;
-    padding: 12px;
-    background: rgba(40, 20, 20, 0.4);
-    border: 1px solid #5a3a3a;
-    border-radius: 6px;
-    color: #cc8888;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    cursor: pointer;
-    text-align: center;
-    min-height: 44px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   /* === CHOICES === */
@@ -440,17 +635,17 @@ title: "OBJECTION! — Cyber Court"
     display: none;
     flex-direction: column;
     gap: 6px;
-    padding: 8px 24px;
+    padding: 8px 14px;
   }
   #choices.show { display: flex; }
 
   .choice-btn {
     padding: 12px 16px;
-    background: rgba(20, 30, 60, 0.6);
-    border: 1px solid #2a3a6a;
-    border-radius: 6px;
-    color: #aabbdd;
-    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
     font-size: 13px;
     cursor: pointer;
     text-align: left;
@@ -458,17 +653,118 @@ title: "OBJECTION! — Cyber Court"
     min-height: 44px;
   }
   .choice-btn:hover, .choice-btn:active {
-    background: rgba(40, 60, 120, 0.6);
-    border-color: #5588cc;
+    background: var(--bg-surface);
+    border-color: var(--accent);
     color: #fff;
+  }
+
+  /* === INVESTIGATION PANEL === */
+  #investigate-panel {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 35;
+    background: rgba(8, 12, 20, 0.97);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    flex-direction: column;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  #investigate-panel.show { display: flex; }
+
+  .inv-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .inv-header h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 2px;
+  }
+  .inv-close {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    min-height: 36px;
+    transition: all 0.15s;
+  }
+  .inv-close:hover { border-color: var(--text-dim); color: var(--text); }
+
+  .inv-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
+
+  .inv-item {
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 44px;
+  }
+  .inv-item:hover, .inv-item:active {
+    border-color: var(--green);
+    background: var(--bg-surface);
+  }
+  .inv-item.examined {
+    border-color: #1a2a24;
+    opacity: 0.55;
+  }
+  .inv-item-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .inv-item-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* === CLAUDE ANALYSIS === */
+  .claude-analysis {
+    background: rgba(167, 139, 250, 0.05);
+    border-left: 3px solid var(--purple);
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #c4b5fd;
+    line-height: 1.6;
+  }
+  .claude-analysis .claude-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--purple);
+    font-size: 10px;
+    margin-bottom: 6px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   /* === TITLE SCREEN === */
   #title-screen {
-    position: absolute;
+    position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     z-index: 100;
-    background: #060810;
+    background: var(--bg-deep);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -478,194 +774,115 @@ title: "OBJECTION! — Cyber Court"
   #title-screen.hidden { display: none; }
 
   .title-main {
-    font-size: 3.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 3rem;
     font-weight: 700;
-    color: #ff4444;
-    text-shadow: 0 0 40px rgba(255, 68, 68, 0.4);
+    color: var(--red);
+    text-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
     letter-spacing: 6px;
     margin-bottom: 8px;
     animation: title-pulse 3s ease-in-out infinite alternate;
   }
   @keyframes title-pulse {
-    from { text-shadow: 0 0 20px rgba(255, 68, 68, 0.3); }
-    to { text-shadow: 0 0 60px rgba(255, 68, 68, 0.6); }
+    from { text-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+    to { text-shadow: 0 0 60px rgba(239, 68, 68, 0.6); }
   }
 
   .title-sub {
-    font-size: 1.2rem;
-    color: #5599ff;
-    letter-spacing: 4px;
-    margin-bottom: 3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 6px;
+    margin-bottom: 2rem;
   }
 
   .title-desc {
-    max-width: 500px;
-    color: #778899;
-    font-size: 0.85rem;
-    line-height: 1.8;
+    max-width: 460px;
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.7;
     margin-bottom: 2rem;
-    padding: 0 20px;
+    padding: 0 24px;
   }
 
-  .title-cases {
-    margin-bottom: 2rem;
-  }
+  .title-cases { margin-bottom: 2rem; }
   .title-cases h3 {
-    color: #556677;
-    font-size: 0.75rem;
-    letter-spacing: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    font-size: 9px;
+    letter-spacing: 3px;
     margin-bottom: 12px;
+    text-transform: uppercase;
   }
 
   .case-select-btn {
     display: block;
-    width: 320px;
-    max-width: 90vw;
-    padding: 14px 20px;
+    width: 340px;
+    max-width: 88vw;
+    padding: 14px 18px;
     margin: 8px auto;
-    background: rgba(20, 30, 60, 0.5);
-    border: 1px solid #2a3a6a;
-    border-radius: 6px;
-    color: #aabbdd;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
     cursor: pointer;
     text-align: left;
     transition: all 0.2s;
     min-height: 44px;
   }
   .case-select-btn:hover, .case-select-btn:active {
-    border-color: #ff4444;
-    background: rgba(80, 20, 20, 0.3);
-    color: #fff;
+    border-color: var(--red);
+    background: rgba(239, 68, 68, 0.06);
   }
   .case-select-btn .case-num {
-    color: #ff4444;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--red);
     font-weight: 700;
+    font-size: 12px;
   }
   .case-select-btn .case-label {
-    color: #667788;
-    font-size: 11px;
+    color: var(--text-muted);
+    font-size: 12px;
     display: block;
     margin-top: 4px;
+    line-height: 1.4;
   }
 
   .title-credit {
     position: absolute;
-    bottom: 16px;
-    color: #334;
+    bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
     font-size: 10px;
   }
-  .title-credit a { color: #445566; text-decoration: none; }
+  .title-credit a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  .title-credit a:hover { color: var(--text); }
 
-  /* === INVESTIGATION SCREEN === */
-  #investigate-panel {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 35;
-    background: rgba(5, 8, 20, 0.97);
-    display: none;
-    flex-direction: column;
+  /* Dialogue entry animation */
+  .dialogue-bubble {
+    animation: bubble-in 0.3s ease-out;
   }
-  #investigate-panel.show { display: flex; }
-
-  .inv-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid #2a3a5a;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .inv-header h2 { font-size: 14px; color: #ffaa44; }
-  .inv-close {
-    padding: 8px 14px;
-    border: 1px solid #5a3a3a;
-    border-radius: 4px;
-    background: transparent;
-    color: #cc8888;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  .inv-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-  }
-
-  .inv-item {
-    padding: 14px;
-    border: 1px solid #2a3a5a;
-    border-radius: 6px;
-    margin-bottom: 10px;
-    background: rgba(15, 20, 40, 0.6);
-    cursor: pointer;
-    transition: all 0.15s;
-    min-height: 44px;
-  }
-  .inv-item:hover, .inv-item:active {
-    border-color: #ffaa44;
-    background: rgba(40, 30, 15, 0.3);
-  }
-  .inv-item.examined {
-    border-color: #335544;
-    opacity: 0.6;
-  }
-  .inv-item-title {
-    font-weight: 700;
-    font-size: 13px;
-    color: #ffaa44;
-    margin-bottom: 4px;
-  }
-  .inv-item-desc {
-    font-size: 11px;
-    color: #8899aa;
-    line-height: 1.5;
-  }
-
-  /* === CLAUDE ANALYSIS OVERLAY === */
-  .claude-analysis {
-    background: rgba(0, 255, 170, 0.05);
-    border-left: 3px solid #00ffaa;
-    padding: 12px 16px;
-    margin: 12px 0;
-    border-radius: 0 6px 6px 0;
-    font-size: 12px;
-    color: #aaddcc;
-    line-height: 1.6;
-  }
-  .claude-analysis .claude-label {
-    font-weight: 700;
-    color: #00ffaa;
-    font-size: 11px;
-    margin-bottom: 6px;
-    display: block;
+  @keyframes bubble-in {
+    from { transform: translateY(8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
 
   /* === RESPONSIVE === */
-  @media (max-width: 600px) {
+  @media (max-width: 480px) {
     .title-main { font-size: 2rem; letter-spacing: 3px; }
-    .title-sub { font-size: 0.9rem; letter-spacing: 2px; }
-    #dialogue-text { font-size: 14px; padding: 16px; }
-    .character { width: 140px; }
-    .char-body { width: 80px; height: 130px; }
-    .char-head { width: 44px; height: 44px; }
-    .char-torso { width: 56px; height: 50px; }
-    .char-symbol { font-size: 20px; top: 10px; }
-    #shout-banner { font-size: 2.5rem; }
-    .ctrl-btn { padding: 10px 12px; font-size: 11px; }
-    #dialogue-box { min-height: 160px; }
-    #speaker-name { font-size: 11px; }
+    .title-sub { font-size: 0.8rem; letter-spacing: 3px; }
+    #scene { height: 140px; }
+    #dialogue-text { font-size: 14px; }
+    #shout-banner { font-size: 2rem; }
+    .char-card-name { font-size: 12px; }
   }
 
-  @media (max-height: 500px) {
-    #dialogue-box { min-height: 120px; max-height: 160px; }
-    .character { transform: scale(0.7); transform-origin: bottom center; }
-    .character.left { left: 2%; }
-    .character.right { right: 2%; }
+  @media (max-height: 600px) {
+    #scene { height: 100px; }
+    .char-cards { padding: 6px 14px; }
+    .char-card { padding: 6px 8px; }
   }
 
   /* Screen reader only */
@@ -674,6 +891,9 @@ title: "OBJECTION! — Cyber Court"
     padding: 0; margin: -1px; overflow: hidden;
     clip: rect(0,0,0,0); border: 0;
   }
+
+  /* Keep old character elements hidden but functional for JS */
+  #case-info { display: none; }
 </style>
 </head>
 <body>
@@ -685,7 +905,7 @@ title: "OBJECTION! — Cyber Court"
   <div class="title-main">OBJECTION!</div>
   <div class="title-sub">CYBER COURT</div>
   <div class="title-desc">
-    You are a cybersecurity attorney. Investigate digital crime scenes, cross-examine witnesses, present evidence, and learn how AI is reshaping cybersecurity — for defense and offense.
+    You are a cybersecurity attorney. Investigate digital crime scenes, cross-examine witnesses, present evidence, and learn how AI is reshaping cybersecurity.
   </div>
   <div class="title-cases">
     <h3>SELECT CASE</h3>
@@ -703,64 +923,21 @@ title: "OBJECTION! — Cyber Court"
     </button>
   </div>
   <div class="title-credit">
-    <a href="/substrate/arcade/">Substrate Arcade</a> — an AI-built game about AI-powered security
+    <a href="/substrate/arcade/">Substrate Arcade</a>
   </div>
 </div>
 
 <!-- GAME COURT -->
 <div id="court" role="main" aria-label="Courtroom" style="display:none;">
-  <!-- Scene -->
-  <div id="scene">
-    <div class="court-bg">
-      <div class="judge-bench"></div>
-      <div class="court-bench"></div>
-    </div>
 
-    <!-- Characters -->
-    <div id="char-left" class="character left" aria-hidden="true">
-      <div class="char-body">
-        <div class="char-head" style="background:#1a3366;"></div>
-        <div class="char-torso" style="background:#112244;">
-          <div class="char-symbol" style="color:#4488ff;">Cy</div>
-        </div>
-      </div>
-      <div class="char-name-tag" id="char-left-name">You</div>
-    </div>
-
-    <div id="char-right" class="character right" aria-hidden="true">
-      <div class="char-body">
-        <div class="char-head" style="background:#331a1a;"></div>
-        <div class="char-torso" style="background:#2a1111;">
-          <div class="char-symbol" style="color:#ff4444;">?</div>
-        </div>
-      </div>
-      <div class="char-name-tag" id="char-right-name">Witness</div>
-    </div>
-
-    <div id="char-center" class="character center" style="display:none;" aria-hidden="true">
-      <div class="char-body">
-        <div class="char-head" style="background:#1a2a1a;"></div>
-        <div class="char-torso" style="background:#0a1a0a;">
-          <div class="char-symbol" style="color:#00ffaa;">>_</div>
-        </div>
-      </div>
-      <div class="char-name-tag">Claude AI</div>
-    </div>
-
-    <!-- Flash -->
-    <div id="flash-overlay"></div>
-    <!-- Shout banner -->
-    <div id="shout-banner" aria-live="assertive"></div>
-
-    <!-- Case info -->
-    <div id="case-info">
-      <div class="case-title" id="case-title-display">CASE 1</div>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <div id="case-title-display">CASE 1</div>
       <div id="case-phase">Investigation</div>
     </div>
-
-    <!-- Penalty bar -->
     <div id="penalty-bar" role="meter" aria-label="Credibility" aria-valuemin="0" aria-valuemax="5" aria-valuenow="5">
-      <span id="penalty-label">Credibility</span>
+      <span id="penalty-label">CRED</span>
       <div id="penalty-pips">
         <div class="penalty-pip" data-pip="0"></div>
         <div class="penalty-pip" data-pip="1"></div>
@@ -771,11 +948,78 @@ title: "OBJECTION! — Cyber Court"
     </div>
   </div>
 
+  <!-- Scene -->
+  <div id="scene">
+    <div class="scene-grid"></div>
+    <div class="court-desk"></div>
+    <div class="court-monitor">
+      <div class="monitor-text">DLP ALERT<br>EVIDENCE<br>TAMPERED</div>
+    </div>
+    <div class="scene-label">
+      <span class="scene-dot"></span>
+      <span id="scene-phase-label">Cross-Examination</span>
+    </div>
+    <div class="scene-vignette"></div>
+
+    <!-- Hidden character elements for JS compatibility -->
+    <div id="char-left" class="character left" aria-hidden="true">
+      <div class="char-body">
+        <div class="char-head"></div>
+        <div class="char-torso"><div class="char-symbol">Cy</div></div>
+      </div>
+      <div class="char-name-tag" id="char-left-name">You</div>
+    </div>
+    <div id="char-right" class="character right" aria-hidden="true">
+      <div class="char-body">
+        <div class="char-head"></div>
+        <div class="char-torso"><div class="char-symbol">?</div></div>
+      </div>
+      <div class="char-name-tag" id="char-right-name">Witness</div>
+    </div>
+    <div id="char-center" class="character center" style="display:none;" aria-hidden="true">
+      <div class="char-body">
+        <div class="char-head"></div>
+        <div class="char-torso"><div class="char-symbol">>_</div></div>
+      </div>
+      <div class="char-name-tag">Claude AI</div>
+    </div>
+
+    <div id="flash-overlay"></div>
+    <div id="shout-banner" aria-live="assertive"></div>
+
+    <!-- Hidden case-info for JS compatibility -->
+    <div id="case-info">
+      <div class="case-title"></div>
+    </div>
+  </div>
+
+  <!-- Character Cards -->
+  <div class="char-cards">
+    <div class="char-card" id="card-attorney">
+      <span class="speaking-label">SPEAKING</span>
+      <div class="char-avatar attorney">Cy</div>
+      <div class="char-info">
+        <div class="char-role">Attorney</div>
+        <div class="char-card-name" id="card-attorney-name">You</div>
+      </div>
+    </div>
+    <div class="char-card" id="card-witness">
+      <span class="speaking-label">SPEAKING</span>
+      <div class="char-avatar witness">?</div>
+      <div class="char-info">
+        <div class="char-role">Witness</div>
+        <div class="char-card-name" id="card-witness-name">Witness</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Dialogue -->
   <div id="dialogue-box">
-    <div id="speaker-name">???</div>
-    <div id="dialogue-text" aria-live="polite" role="log"></div>
-    <div id="dialogue-advance">TAP TO CONTINUE ▼</div>
+    <div class="dialogue-bubble">
+      <div id="speaker-name"><span class="speaker-dot"></span> ???</div>
+      <div id="dialogue-text" aria-live="polite" role="log"></div>
+      <div id="dialogue-advance">Tap to continue <span class="advance-arrow">&#9660;</span></div>
+    </div>
   </div>
 
   <!-- Choices overlay -->
@@ -783,34 +1027,41 @@ title: "OBJECTION! — Cyber Court"
 
   <!-- Controls -->
   <div id="controls" role="toolbar" aria-label="Game controls">
-    <button class="ctrl-btn" id="btn-press" onclick="pressWitness()" aria-label="Press witness for more detail">
-      <span class="btn-icon">⚡</span> Press
+    <button class="ctrl-btn" id="btn-press" onclick="pressWitness()" aria-label="Press witness">
+      <span class="btn-icon">&#9889;</span>
+      <span class="btn-label">Press</span>
     </button>
     <button class="ctrl-btn objection-btn" id="btn-objection" onclick="presentEvidence()" aria-label="Object and present evidence">
-      <span class="btn-icon">👆</span> Objection!
+      <span class="btn-icon">&#9757;</span>
+      <span class="btn-label">Object</span>
     </button>
-    <button class="ctrl-btn" id="btn-evidence" onclick="toggleEvidence()" aria-label="View collected evidence">
-      <span class="btn-icon">📁</span> Evidence
+    <button class="ctrl-btn" id="btn-evidence" onclick="toggleEvidence()" aria-label="View evidence">
+      <span class="btn-icon">&#128193;</span>
+      <span class="btn-label">Evidence</span>
     </button>
-    <button class="ctrl-btn" id="btn-claude" onclick="askClaude()" aria-label="Consult Claude AI for analysis">
-      <span class="btn-icon" style="color:#00ffaa;">⟩_</span> Ask Claude
+    <button class="ctrl-btn" id="btn-claude" onclick="askClaude()" aria-label="Consult Claude AI">
+      <span class="btn-icon">&#10217;_</span>
+      <span class="btn-label">Claude</span>
     </button>
-    <button class="ctrl-btn" id="btn-investigate" onclick="toggleInvestigate()" aria-label="Investigate the scene">
-      <span class="btn-icon">🔍</span> Investigate
+    <button class="ctrl-btn" id="btn-investigate" onclick="toggleInvestigate()" aria-label="Investigate">
+      <span class="btn-icon">&#128269;</span>
+      <span class="btn-label">Search</span>
     </button>
   </div>
 
   <!-- Evidence panel -->
   <div id="evidence-panel" role="dialog" aria-label="Evidence locker">
-    <h2>EVIDENCE LOCKER</h2>
+    <div class="evidence-header">
+      <h2>EVIDENCE LOCKER</h2>
+      <button id="evidence-close" onclick="toggleEvidence()" aria-label="Close evidence panel">CLOSE</button>
+    </div>
     <div class="evidence-list" id="evidence-list"></div>
-    <button id="evidence-close" onclick="toggleEvidence()" aria-label="Close evidence panel">CLOSE [ESC]</button>
   </div>
 
   <!-- Investigation panel -->
   <div id="investigate-panel" role="dialog" aria-label="Investigation">
     <div class="inv-header">
-      <h2>🔍 INVESTIGATE</h2>
+      <h2>INVESTIGATE</h2>
       <button class="inv-close" onclick="toggleInvestigate()" aria-label="Close investigation panel">BACK</button>
     </div>
     <div class="inv-content" id="inv-content"></div>
@@ -857,346 +1108,303 @@ title: "OBJECTION! — Cyber Court"
           examine: [
             { speaker: 'You', text: 'Let me look at these email headers...' },
             { speaker: 'You', text: 'The <span class="text-evidence">Return-Path doesn\'t match the From address</span>. The email claims to be from cfo@meridian-corp.com but the Return-Path shows a completely different domain.' },
-            { speaker: 'You', text: 'But wait — there\'s a valid <span class="text-evidence">DKIM signature</span>. That means... the attacker had access to the sending domain\'s DNS records, or they compromised an authorized mail server.' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: DKIM (DomainKeys Identified Mail) is a cryptographic signature that proves an email was authorized by the domain owner. A valid DKIM signature on a phishing email suggests a much more sophisticated attack than simple spoofing.</span>' },
+            { speaker: 'You', text: 'But here\'s the thing — <span class="text-highlight">SPF, DKIM, and DMARC all passed</span>. The attacker used a lookalike domain with properly configured authentication.' },
+            { speaker: 'You', text: '<span class="text-tip">This means standard email security checks wouldn\'t catch it. The attacker was technically sophisticated.</span>' },
           ],
-          evidence: { name: 'Email Headers', desc: 'Phishing email had a valid DKIM signature despite being fraudulent — indicates compromise of mail infrastructure, not simple spoofing.', tag: 'Email Security' },
+          evidence: { name: 'Authenticated Phishing Headers', desc: 'Email passed SPF/DKIM/DMARC despite being from a lookalike domain.', tag: 'Email Security' },
         },
         {
-          id: 'security_training',
-          name: 'Employee Training Records',
-          desc: 'Company cybersecurity training logs for the past year.',
+          id: 'wire_logs',
+          name: 'Wire Transfer Logs',
+          desc: 'Bank records showing the $2.3M transfer authorization chain.',
           examine: [
-            { speaker: 'You', text: 'The training records show the company ran <span class="text-evidence">quarterly phishing simulations</span>. CEO Chen actually passed all four.' },
-            { speaker: 'You', text: 'But the simulations were basic — Nigerian prince style, obvious grammar errors, suspicious domains. <span class="text-highlight">Nothing that tested for spear-phishing with valid DKIM signatures.</span>' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: Phishing simulations are only as good as their realism. Training employees to spot obvious fakes doesn\'t prepare them for targeted attacks that mimic legitimate infrastructure.</span>' },
+            { speaker: 'You', text: 'Let me examine these wire transfer records...' },
+            { speaker: 'You', text: 'The transfer was initiated via the company\'s banking portal at <span class="text-evidence">3:47 AM local time</span>. Margaret Chen\'s credentials were used.' },
+            { speaker: 'You', text: 'But wait — <span class="text-highlight">there were 14 failed login attempts from different IPs before the successful one</span>. This suggests credential stuffing, not a simple phishing click.' },
+            { speaker: 'You', text: '<span class="text-tip">The attack was multi-stage: phish the credentials, then brute force the banking portal from a clean IP.</span>' },
           ],
-          evidence: { name: 'Training Records', desc: 'Company ran phishing training, but simulations were basic. No spear-phishing or DKIM-spoofing scenarios were tested.', tag: 'Security Training' },
-        },
-        {
-          id: 'mfa_logs',
-          name: 'MFA Authentication Logs',
-          desc: 'Multi-factor authentication logs from the banking portal.',
-          examine: [
-            { speaker: 'You', text: 'The wire transfer was authorized via the company\'s banking portal. MFA was enabled...' },
-            { speaker: 'You', text: '...but it was <span class="text-highlight">SMS-based MFA</span>. And the logs show the authorization code was entered from a <span class="text-evidence">different IP address</span> than the one that initiated the login.' },
-            { speaker: 'You', text: 'This is a <span class="text-highlight">real-time phishing proxy attack</span>. The attacker\'s site relayed the MFA code in real-time.' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: SMS-based MFA can be defeated by real-time phishing proxies (like Evilginx or Modlishka). Hardware security keys (FIDO2/WebAuthn) are resistant to this because they verify the actual domain, not just a code.</span>' },
-          ],
-          evidence: { name: 'MFA Bypass Logs', desc: 'SMS-based MFA was bypassed using a real-time phishing proxy. Login and MFA came from different IPs. FIDO2 keys would have prevented this.', tag: 'Authentication' },
+          evidence: { name: 'Credential Stuffing Logs', desc: '14 failed logins from rotating IPs preceded the fraudulent transfer.', tag: 'Access Logs' },
         },
         {
           id: 'ai_analysis',
-          name: 'AI Email Analysis',
-          desc: 'What would Claude see if asked to analyze this email?',
+          name: 'AI Threat Analysis',
+          desc: 'Have Claude analyze the attack pattern for known threat actor signatures.',
           examine: [
-            { speaker: 'Claude AI', text: '<span class="text-claude">Analyzing the phishing email...</span>' },
-            { speaker: 'Claude AI', text: '<span class="text-claude">I\'ve identified several indicators that would flag this as suspicious: 1) The email creates urgency ("wire transfer must complete by EOD"), 2) It requests a deviation from normal procedure, 3) The link domain is visually similar but not identical to the legitimate domain — a homograph attack using Cyrillic characters.</span>' },
-            { speaker: 'Claude AI', text: '<span class="text-claude">However, I want to be clear about AI limitations here: I\'m analyzing this with full context after the fact. In real-time, without seeing the email headers, a human reading the rendered email would see a perfect replica of a legitimate message. The Cyrillic substitution is invisible in most email clients.</span>' },
-            { speaker: 'You', text: '<span class="text-tip">HOW CLAUDE HELPS: AI can analyze email headers, detect homograph attacks, and flag urgency patterns. Organizations can use Claude to build automated email screening pipelines that catch what humans miss. But AI is a tool for defense — the attacker used AI too, to craft a more convincing message.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Analyzing the attack pattern against known threat intelligence databases...</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">This matches the signature of <span class="text-highlight">APT-41</span>, a state-sponsored group known for combining social engineering with technical exploitation.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Key indicators: 1) Lookalike domain with valid DKIM 2) Credential stuffing from residential proxy IPs 3) Transfer initiated during off-hours 4) Rapid exfiltration to layered shell companies.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">My assessment: This was a <span class="text-evidence">nation-state level attack</span>. No reasonable individual security measure would have prevented all stages.</span>' },
           ],
-          evidence: { name: 'Claude AI Analysis', desc: 'AI analysis revealed a homograph attack (Cyrillic characters mimicking Latin) invisible to the naked eye. AI can automate detection of these attacks in email pipelines.', tag: 'AI Defense' },
+          evidence: { name: 'APT-41 Attribution Report', desc: 'Claude\'s analysis identifies state-sponsored threat actor signatures in the attack chain.', tag: 'Threat Intel' },
+        },
+        {
+          id: 'security_policy',
+          name: 'Company Security Policy',
+          desc: 'Meridian Corp\'s email and wire transfer security policies.',
+          examine: [
+            { speaker: 'You', text: 'Let me review Meridian\'s security policies...' },
+            { speaker: 'You', text: 'Their email security relies on <span class="text-evidence">standard gateway filtering — no AI-based phishing detection</span>. Industry standard but not best-in-class.' },
+            { speaker: 'You', text: 'Wire transfers over $100K require dual authorization, but <span class="text-highlight">the policy was only enforced during business hours</span>. The after-hours transfer bypassed this control.' },
+            { speaker: 'You', text: '<span class="text-tip">The gap between policy and implementation is where the attacker struck.</span>' },
+          ],
+          evidence: { name: 'After-Hours Policy Gap', desc: 'Dual authorization for large transfers was not enforced outside business hours.', tag: 'Policy' },
         },
       ],
       trial: {
         statements: [
           {
-            speaker: 'IT Director Wells',
-            text: 'Our security was industry standard. We had email filtering, antivirus, and multi-factor authentication on all sensitive systems.',
-            contradiction: null,
-            press: 'We followed every recommendation from our last audit. We were compliant with SOC 2 requirements.',
-          },
-          {
-            speaker: 'IT Director Wells',
-            text: 'The phishing email was blocked by our email filter initially. But the CEO <span class="text-highlight">whitelisted the sender domain herself</span> two weeks prior for a legitimate business contact.',
-            contradiction: null,
-            press: 'She added meridian-partners.com to her safe senders list because she had a real contact there. The attacker registered a similar domain.',
-          },
-          {
-            speaker: 'IT Director Wells',
-            text: 'Our MFA system is state of the art. <span class="text-highlight">There\'s no way to bypass multi-factor authentication</span> without the user\'s phone.',
-            contradiction: 'MFA Bypass Logs',
-            press: 'SMS codes are sent to the user\'s personal device. You\'d need physical access to intercept them.',
+            speaker: 'IT Director Reynolds',
+            text: 'Our email security system is state-of-the-art. We use <span class="text-highlight">enterprise-grade spam filtering</span> that blocks 99.9% of phishing attempts. The CEO simply failed to follow basic security training.',
+            press: 'We invested over $200,000 in our email security stack last year. We use Proofpoint for gateway filtering, have monthly security awareness training, and conduct quarterly phishing simulations. Our systems are robust.',
+            contradiction: 'Authenticated Phishing Headers',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: 'That\'s not true, Director Wells. According to the <span class="text-evidence">MFA authentication logs</span>, the login and the MFA code came from <span class="text-highlight">completely different IP addresses</span>!' },
-              { speaker: 'You', text: 'This is evidence of a <span class="text-evidence">real-time phishing proxy attack</span>. The attacker\'s fake site captured the CEO\'s credentials AND relayed her MFA code to the real banking portal in real time.' },
-              { speaker: 'IT Director Wells', text: 'That\'s... I wasn\'t aware that was possible...' },
-              { speaker: 'You', text: 'It is. Tools like Evilginx have made MFA bypass accessible to any attacker with moderate skill. SMS-based MFA is <span class="text-highlight">not state of the art</span>. FIDO2 hardware keys would have prevented this entirely because they validate the actual domain.' },
-              { speaker: 'Judge', text: 'The court notes that the company\'s MFA implementation had known, documented vulnerabilities.' },
-              { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: "We have MFA" is not enough. The type of MFA matters enormously. SMS and TOTP codes can be phished in real-time. Hardware security keys (YubiKey, Google Titan) are phishing-resistant because they cryptographically bind to the legitimate domain.</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> Your "state-of-the-art" system passed the phishing email with flying colors!' },
+              { speaker: 'You', text: 'Look at exhibit A — the email\'s SPF, DKIM, and DMARC records <span class="text-highlight">all passed authentication</span>. Your enterprise filter literally said "this email is legitimate."' },
+              { speaker: 'IT Director Reynolds', text: '...The lookalike domain was configured to pass those checks. Our filters aren\'t designed to catch authenticated emails from similar-looking domains.' },
+              { speaker: 'You', text: 'Exactly. So blaming the CEO for trusting an email that <span class="text-highlight">your own systems verified</span> is unreasonable.' },
             ],
           },
           {
-            speaker: 'IT Director Wells',
-            text: 'We train all employees on phishing quarterly. The CEO passed every simulation. She was trained and she still clicked.',
-            contradiction: 'Training Records',
-            press: 'Our simulations cover all the major phishing techniques — suspicious links, fake login pages, urgency tactics.',
+            speaker: 'IT Director Reynolds',
+            text: 'The wire transfer was authorized using proper credentials. <span class="text-highlight">Our banking portal security is excellent</span> — multi-factor authentication, session tokens, the works.',
+            press: 'We use hardware tokens for MFA on the banking portal. Each session is time-limited to 15 minutes. We follow all bank-recommended security practices.',
+            contradiction: 'Credential Stuffing Logs',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: 'I have the <span class="text-evidence">training records</span> right here. Your phishing simulations used obvious fakes — misspelled domains, poor grammar, generic greetings.' },
-              { speaker: 'You', text: 'Not a single simulation tested for <span class="text-highlight">spear-phishing with valid DKIM signatures, homograph domains, or real-time MFA proxies</span>. You trained your CEO to spot amateurs, then blamed her when a professional fooled her.' },
-              { speaker: 'IT Director Wells', text: 'We... followed the vendor\'s recommended scenarios...' },
-              { speaker: 'You', text: 'The attack that hit your CEO used AI-generated text, a Cyrillic homograph domain, compromised mail infrastructure, and a real-time proxy. Your training prepared her for 2015 threats, not 2026 threats.' },
-              { speaker: 'Judge', text: 'The court recognizes that training adequacy must be measured against the actual threat landscape.' },
-              { speaker: 'You', text: '<span class="text-tip">HOW CLAUDE HELPS: Claude can generate realistic spear-phishing simulations for security training — personalized, contextual, with valid-looking infrastructure. Using AI to train against AI-powered attacks is the new standard. Ask Claude to draft phishing test scenarios tailored to your organization.</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> Your "excellent" portal security was breached by brute force!' },
+              { speaker: 'You', text: 'The access logs show <span class="text-highlight">14 failed login attempts from rotating residential proxy IPs</span> before the successful entry. Your system didn\'t flag this as suspicious!' },
+              { speaker: 'IT Director Reynolds', text: 'We... our rate limiting is per-IP. If the attempts come from different IPs...' },
+              { speaker: 'You', text: 'Then your security is blind to distributed credential stuffing — <span class="text-highlight">a known attack vector since at least 2018</span>. This isn\'t state-of-the-art.' },
             ],
           },
           {
-            speaker: 'IT Director Wells',
-            text: 'The email looked exactly like our CFO\'s normal messages. Even I would have been fooled. We simply can\'t defend against every possible attack.',
-            contradiction: 'Claude AI Analysis',
-            press: 'It had his signature, his writing style, references to a real ongoing deal. It was indistinguishable.',
+            speaker: 'IT Director Reynolds',
+            text: 'This was a simple phishing attack that <span class="text-highlight">any reasonably cautious person</span> would have detected. The CEO was negligent in clicking the link.',
+            press: 'The email had subtle differences from legitimate internal emails. A cautious person would have verified by phone before clicking a link requesting financial action.',
+            contradiction: 'APT-41 Attribution Report',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: 'You say it was "indistinguishable," but <span class="text-evidence">AI analysis</span> identified multiple red flags that automated screening would have caught.' },
-              { speaker: 'You', text: 'The domain used a <span class="text-highlight">Cyrillic homograph attack</span> — visually identical to the real domain but using different Unicode characters. An AI email gateway would flag this instantly.' },
-              { speaker: 'You', text: 'You\'re right that humans can\'t catch everything. That\'s exactly why AI-powered email security exists. The tools were available. Your company chose not to deploy them.' },
-              { speaker: 'Judge', text: 'Can you elaborate on how AI would have prevented this?' },
-              { speaker: 'You', text: 'An AI email security system like Claude can analyze headers, detect Unicode anomalies, flag urgency patterns, verify DKIM against known infrastructure, and cross-reference against threat intelligence — all in milliseconds, before the email reaches any human.' },
-              { speaker: 'Judge', text: 'The court finds this testimony compelling. The technology to prevent this attack existed and was commercially available.' },
-              { speaker: 'You', text: '<span class="text-tip">HOW CLAUDE HELPS: You can use Claude to build custom email analysis pipelines. Feed it raw email headers and body text, ask it to check for homograph attacks, urgency manipulation, sender anomalies, and social engineering patterns. It\'s like having a security analyst review every email.</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> This was NOT a "simple phishing attack"!' },
+              { speaker: 'You', text: 'Analysis identifies this as an <span class="text-highlight">APT-41 operation</span> — a state-sponsored cyber attack combining social engineering, infrastructure spoofing, credential stuffing, and rapid financial exfiltration.' },
+              { speaker: 'You', text: 'You\'re telling the court that a CEO should have personally outperformed <span class="text-highlight">your entire $200,000 security stack</span> against a nation-state threat actor?' },
+              { speaker: 'IT Director Reynolds', text: 'I... when you put it that way...' },
+              { speaker: 'You', text: 'The negligence isn\'t the CEO\'s. It\'s the <span class="text-highlight">after-hours policy gap, the lack of AI-based phishing detection, and the per-IP rate limiting</span> that let a sophisticated attacker walk right through.' },
             ],
           },
         ],
         verdict: [
-          { speaker: 'Judge', text: 'This court has heard compelling evidence that the attack on Meridian Corp was sophisticated — but not undefendable.' },
-          { speaker: 'Judge', text: 'The company relied on outdated training, bypassable MFA, and human-only email screening in an era where AI-powered attacks are commonplace.' },
-          { speaker: 'Judge', text: 'The court rules: <span class="text-highlight">The company bears partial liability</span> for failing to implement available AI-powered defenses and phishing-resistant MFA.' },
-          { speaker: 'You', text: '<span class="text-tip">CASE SUMMARY — What we learned:\n\n1. DKIM signatures can be abused if mail infrastructure is compromised\n2. SMS-based MFA is vulnerable to real-time proxy attacks — use FIDO2 keys\n3. Phishing training must match the current threat landscape, including AI-generated attacks\n4. AI email analysis can catch what humans miss — homograph attacks, header anomalies, urgency patterns\n5. "Industry standard" security is not the same as adequate security</span>' },
+          { speaker: 'Judge', text: 'The evidence is compelling. The defense has demonstrated that this attack was far beyond what "reasonable caution" could prevent.' },
+          { speaker: 'Judge', text: 'The court rules: <span class="text-highlight">The company\'s security infrastructure, not the CEO, failed to meet the standard of care</span> required for protecting assets of this magnitude.' },
+          { speaker: 'Judge', text: 'Meridian Corp is ordered to implement AI-based phishing detection, distributed credential stuffing protection, and 24/7 dual-authorization enforcement within 60 days.' },
+          { speaker: 'You', text: '<span class="text-tip">CASE SUMMARY — What we learned:\n\n1. SPF/DKIM/DMARC passing doesn\'t mean an email is safe — lookalike domains can pass all checks\n2. Per-IP rate limiting is useless against distributed credential stuffing\n3. Security policies that aren\'t enforced 24/7 create exploitable gaps\n4. AI threat analysis can identify sophisticated attack patterns humans might miss\n5. Blaming users for falling to state-sponsored attacks is unreasonable when systems also failed\n6. Claude can help analyze attack patterns against threat intelligence databases\n7. Cybersecurity is about layered defense — no single control is sufficient</span>' },
         ],
       },
     },
-
     // === CASE 2: THE INSIDER THREAT ===
     {
       title: 'CASE 2 — The Insider Threat',
-      summary: 'Software engineer David Park is accused of exfiltrating proprietary source code to a competitor. The DLP (Data Loss Prevention) logs show large file transfers to an external drive. But David says it was his personal project code. You must determine: insider threat or false positive?',
+      summary: 'Software engineer David Park is accused of stealing proprietary source code. DLP alerts flagged 3.2GB of data transferred to a personal cloud account. The logs are clear — but AI analysis suggests the data may have been planted. You must prove David is innocent.',
       investigation: [
         {
           id: 'dlp_logs',
           name: 'DLP Alert Logs',
-          desc: 'Data Loss Prevention system flagged 847MB transfer to USB device.',
+          desc: 'Data Loss Prevention system logs showing the flagged transfer.',
           examine: [
-            { speaker: 'You', text: 'The DLP system flagged a transfer of <span class="text-evidence">847MB to a USB device</span> at 11:47 PM on March 3rd.' },
-            { speaker: 'You', text: 'But looking closer... the DLP only logged the <span class="text-highlight">file size and timestamp</span>. It didn\'t capture file names, content hashes, or the actual data transferred.' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: DLP systems vary enormously in capability. A good DLP captures content fingerprints and can classify data (source code vs. documents vs. media). A bad DLP just logs "something big was copied." Size alone doesn\'t prove what was copied.</span>' },
+            { speaker: 'You', text: 'These DLP logs show a transfer of 3.2GB to a personal Dropbox account...' },
+            { speaker: 'You', text: 'The transfer occurred at <span class="text-evidence">2:15 PM on a Tuesday</span> — during normal work hours, from David\'s workstation.' },
+            { speaker: 'You', text: 'But something\'s odd — the <span class="text-highlight">transfer completed in 47 seconds</span>. That\'s unusually fast for 3.2GB over their corporate network.' },
+            { speaker: 'You', text: '<span class="text-tip">Either the files were pre-staged for rapid exfiltration, or something else is going on with these logs.</span>' },
           ],
-          evidence: { name: 'DLP Logs', desc: 'DLP flagged 847MB USB transfer but only recorded size and time — no file names, content hashes, or classification. Cannot prove what data was actually transferred.', tag: 'DLP' },
+          evidence: { name: 'Suspicious Transfer Speed', desc: '3.2GB transferred in 47 seconds — faster than the network should allow.', tag: 'Network Analysis' },
         },
         {
-          id: 'git_history',
-          name: 'Git Commit History',
-          desc: 'David\'s git activity on company and personal repositories.',
+          id: 'access_patterns',
+          name: 'David\'s Access Patterns',
+          desc: 'Six months of David\'s repository access and work patterns.',
           examine: [
-            { speaker: 'You', text: 'David has an active GitHub profile with personal projects. His personal repo "parkd-ml-toolkit" has <span class="text-evidence">commits dating back 3 years</span> — well before he joined this company.' },
-            { speaker: 'You', text: 'The repo size? <span class="text-evidence">812MB</span>. Including ML model weights and training data. That\'s close to the 847MB the DLP flagged.' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: Context matters in security investigations. A large file transfer isn\'t automatically suspicious. Git repositories with ML models, media files, or compiled binaries can easily reach hundreds of megabytes. Investigators should compare file sizes, types, and timing before drawing conclusions.</span>' },
+            { speaker: 'You', text: 'Let me look at David\'s normal work patterns...' },
+            { speaker: 'You', text: 'David consistently works on the <span class="text-evidence">mobile SDK team</span>. His git commits, code reviews, and file access are all in that area.' },
+            { speaker: 'You', text: 'But the DLP alert shows files from <span class="text-highlight">the payments infrastructure repo</span> — a codebase David has never accessed before.' },
+            { speaker: 'You', text: '<span class="text-tip">Why would an engineer suddenly download a completely unrelated codebase? Either David branched out, or someone used his credentials.</span>' },
           ],
-          evidence: { name: 'Personal Git History', desc: 'David\'s personal ML toolkit repo is 812MB and predates his employment by 3 years. Size closely matches the DLP-flagged 847MB transfer.', tag: 'Digital Forensics' },
-        },
-        {
-          id: 'network_logs',
-          name: 'Network Traffic Analysis',
-          desc: 'Corporate network logs showing David\'s traffic patterns.',
-          examine: [
-            { speaker: 'You', text: 'The network logs show David accessed the company\'s internal code repository <span class="text-evidence">only during business hours</span>. No late-night cloning, no bulk downloads.' },
-            { speaker: 'You', text: 'But interestingly, the security team\'s analysis <span class="text-highlight">didn\'t distinguish between David\'s access to his own team\'s repos vs. repos he had no business reason to access</span>.' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: User and Entity Behavior Analytics (UEBA) systems use AI to establish baseline behavior patterns. Accessing your own team\'s code at normal hours is baseline. Suddenly cloning 15 repos from other teams at midnight is anomalous. The quality of the analysis matters as much as having logs.</span>' },
-          ],
-          evidence: { name: 'Network Logs', desc: 'David only accessed repos during business hours and within his own team\'s scope. Security team did not perform proper behavioral analysis to distinguish normal from anomalous access.', tag: 'UEBA' },
+          evidence: { name: 'Access Pattern Anomaly', desc: 'David never accessed the payments repo before the alleged theft — his work is exclusively mobile SDK.', tag: 'Behavioral' },
         },
         {
           id: 'ai_forensics',
-          name: 'AI-Powered Code Analysis',
-          desc: 'What would Claude find comparing David\'s personal code to company code?',
+          name: 'AI Forensic Analysis',
+          desc: 'Have Claude perform deep forensic analysis on the DLP logs and access records.',
           examine: [
-            { speaker: 'Claude AI', text: '<span class="text-claude">I\'ve compared code structure and patterns between David\'s personal repository and the company\'s proprietary codebase.</span>' },
-            { speaker: 'Claude AI', text: '<span class="text-claude">Key findings: David\'s personal code uses TensorFlow. The company\'s ML pipeline uses PyTorch. The architectures, variable naming conventions, and design patterns are completely different. There\'s no evidence of code copying in either direction.</span>' },
-            { speaker: 'Claude AI', text: '<span class="text-claude">However, I should note: code similarity analysis has limitations. Experienced developers can refactor stolen code to look different. My analysis shows no surface-level copying, but I cannot definitively rule out knowledge transfer — understanding algorithms vs. copying implementations.</span>' },
-            { speaker: 'You', text: '<span class="text-tip">HOW CLAUDE HELPS: Claude can perform code similarity analysis, comparing style, architecture, and patterns between codebases. It\'s useful for IP theft investigations, license compliance, and identifying code provenance. But always pair AI analysis with human judgment — Claude can tell you IF code looks similar, not necessarily WHY.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Running forensic analysis on the DLP logs, network traffic, and credential usage patterns...</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Critical finding: The authentication token used for the transfer was <span class="text-highlight">generated from a different machine</span> than David\'s workstation.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">The session token hash includes a hardware fingerprint. David\'s workstation has an Intel i7-12700 with 32GB RAM. The token was generated on a machine with <span class="text-evidence">an AMD Ryzen 9 with 64GB RAM</span>.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">This is consistent with <span class="text-highlight">session token theft via pass-the-cookie attack</span>. Someone stole David\'s session and replayed it from a different machine.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Additionally, the transfer speed anomaly makes sense — the data was transferred from a <span class="text-evidence">high-bandwidth machine outside the corporate network</span>, not from David\'s desk.</span>' },
           ],
-          evidence: { name: 'Claude Code Analysis', desc: 'AI comparison found zero code overlap between David\'s personal projects (TensorFlow) and company code (PyTorch). Different frameworks, patterns, and naming conventions.', tag: 'AI Forensics' },
+          evidence: { name: 'Token Forgery Evidence', desc: 'Authentication token was generated on a different machine than David\'s workstation — indicating session hijacking.', tag: 'Forensics' },
+        },
+        {
+          id: 'hr_records',
+          name: 'HR & Team Records',
+          desc: 'David\'s performance reviews and any workplace disputes.',
+          examine: [
+            { speaker: 'You', text: 'Let me check David\'s employment history...' },
+            { speaker: 'You', text: 'David has <span class="text-evidence">excellent performance reviews</span> — top performer on the mobile SDK team for three consecutive quarters.' },
+            { speaker: 'You', text: 'Interesting — he filed a complaint two months ago about <span class="text-highlight">his manager, Sarah Chen, taking credit for his architectural designs</span>.' },
+            { speaker: 'You', text: 'And Sarah Chen has <span class="text-highlight">admin access to the DLP system</span>. She could theoretically modify DLP configurations and access patterns.' },
+            { speaker: 'You', text: '<span class="text-tip">Motive cuts both ways. David had a grievance, but Sarah had the access and reason to frame him.</span>' },
+          ],
+          evidence: { name: 'Manager Admin Access', desc: 'Sarah Chen has DLP admin access and a documented workplace dispute with David.', tag: 'Personnel' },
         },
       ],
       trial: {
         statements: [
           {
-            speaker: 'Security Analyst Rivera',
-            text: 'Our DLP system detected an 847-megabyte transfer to an unauthorized USB device. That volume of data is consistent with a full source code repository.',
-            contradiction: null,
-            press: 'Any transfer over 100MB to removable media triggers an alert. 847MB is significant — that\'s not a few documents.',
-          },
-          {
-            speaker: 'Security Analyst Rivera',
-            text: 'The transfer happened at 11:47 PM. No legitimate business reason to be copying that much data to a personal device at that hour.',
-            contradiction: null,
-            press: 'Our policy is clear: no company data on personal devices. Late-night transfers are a classic indicator of insider threat behavior.',
-          },
-          {
-            speaker: 'Security Analyst Rivera',
-            text: 'We confirmed the data contained <span class="text-highlight">proprietary source code</span> based on the file size matching our repository.',
-            contradiction: 'DLP Logs',
-            press: 'The size is consistent. What else could it be?',
+            speaker: 'Security Analyst Kim',
+            text: 'The DLP system clearly shows 3.2GB of proprietary code was transferred to a personal Dropbox account <span class="text-highlight">authenticated with David Park\'s credentials</span>. The evidence is straightforward.',
+            press: 'Our DLP system is industry-standard. It captures file hashes, destination endpoints, and user authentication tokens. When it fires an alert, it means data left the building.',
+            contradiction: 'Token Forgery Evidence',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: 'You said you "confirmed" it was proprietary source code. But according to your own <span class="text-evidence">DLP logs</span>, the system only recorded the <span class="text-highlight">transfer size and timestamp</span>.' },
-              { speaker: 'You', text: 'No file names. No content hashes. No data classification. You have no idea what was actually on that USB drive!' },
-              { speaker: 'Security Analyst Rivera', text: 'The size was... consistent with...' },
-              { speaker: 'You', text: '847MB is also consistent with a personal machine learning project, a video game, a photo library, or a Linux ISO. Size alone proves nothing.' },
-              { speaker: 'Judge', text: 'The court notes that the DLP system did not capture sufficient metadata to identify the transferred content.' },
-              { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: DLP systems should be configured to capture content fingerprints, not just metadata. Modern DLP can hash files, classify content types, and even detect source code patterns. If your DLP only logs sizes, it\'s generating alerts without evidence.</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> "David Park\'s credentials" were used — but not by David Park!' },
+              { speaker: 'You', text: 'Forensic analysis of the authentication token reveals it was generated on a machine with an <span class="text-highlight">AMD Ryzen 9 processor and 64GB RAM</span>. David\'s workstation has an Intel i7 with 32GB.' },
+              { speaker: 'You', text: 'This is textbook <span class="text-highlight">session hijacking</span>. Someone stole David\'s session token and replayed it from a completely different machine.' },
+              { speaker: 'Security Analyst Kim', text: 'We... didn\'t compare hardware fingerprints in the token. We just matched the user ID...' },
+              { speaker: 'You', text: 'So your "straightforward evidence" didn\'t include basic token validation?' },
             ],
           },
           {
-            speaker: 'Security Analyst Rivera',
-            text: 'We analyzed David\'s work patterns and found <span class="text-highlight">no evidence he was working on personal projects during company time</span>. The USB transfer must have been company data.',
-            contradiction: 'Personal Git History',
-            press: 'He had no reason to bring personal code to the office. Why would an 847MB personal project exist on his work machine?',
+            speaker: 'Security Analyst Kim',
+            text: 'The transfer was made during David\'s <span class="text-highlight">normal working hours</span> — 2:15 PM on a Tuesday. This is consistent with an insider operating under the radar.',
+            press: 'Insiders typically exfiltrate data during working hours to blend in with normal traffic. David\'s transfer fits this pattern exactly.',
+            contradiction: 'Suspicious Transfer Speed',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: 'Actually, David\'s <span class="text-evidence">personal git history</span> shows a machine learning toolkit he\'s maintained for 3 years — predating his employment at your company by two full years.' },
-              { speaker: 'You', text: 'That personal repository is <span class="text-highlight">812 megabytes</span>, including model weights and training data. That\'s within 35MB of your flagged transfer.' },
-              { speaker: 'You', text: 'David was backing up his personal project. A project he owned long before he ever worked for you.' },
-              { speaker: 'Security Analyst Rivera', text: 'We... didn\'t check his personal repositories.' },
-              { speaker: 'You', text: 'No. You didn\'t. A proper investigation would have compared the transferred data against both company AND personal code before making accusations.' },
-              { speaker: 'Judge', text: 'The investigation appears to have been incomplete.' },
-              { speaker: 'You', text: '<span class="text-tip">HOW CLAUDE HELPS: Before accusing an employee, use Claude to analyze the evidence holistically. Feed it the DLP logs, git histories, and network patterns together. Claude can identify alternative explanations, flag gaps in the investigation, and help ensure you don\'t ruin someone\'s career over a false positive.</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> The timing looks normal, but the speed doesn\'t!' },
+              { speaker: 'You', text: '3.2 gigabytes transferred in <span class="text-highlight">47 seconds</span>. That\'s roughly 550 Mbps. What\'s the bandwidth of David\'s workstation connection?' },
+              { speaker: 'Security Analyst Kim', text: 'Standard office... 100 Mbps ethernet.' },
+              { speaker: 'You', text: 'So the transfer happened at <span class="text-highlight">5.5 times the physical speed</span> of David\'s network connection. This transfer didn\'t originate from David\'s desk.' },
             ],
           },
           {
-            speaker: 'Security Analyst Rivera',
-            text: 'Even if it was personal code, the <span class="text-highlight">coding patterns would show influence from our proprietary systems</span>. Working here contaminated his work.',
-            contradiction: 'Claude Code Analysis',
-            press: 'You can\'t work with our codebase for 18 months and not have it influence your personal style.',
+            speaker: 'Security Analyst Kim',
+            text: 'David Park had <span class="text-highlight">motive and opportunity</span>. He had a workplace grievance and access to the codebase. The simplest explanation is usually correct.',
+            press: 'David filed a formal complaint against his manager. Employees with grievances are statistically more likely to engage in data theft. Combined with the DLP evidence, the picture is clear.',
+            contradiction: 'Manager Admin Access',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: '<span class="text-evidence">AI code analysis</span> tells a different story. Claude compared David\'s personal code against your company codebase and found <span class="text-highlight">zero overlap</span>.' },
-              { speaker: 'You', text: 'David\'s personal projects use TensorFlow. Your company uses PyTorch. The architectures, naming conventions, and design patterns are completely different.' },
-              { speaker: 'You', text: 'There\'s no contamination. There\'s no copying. There\'s a developer who maintains a personal project in his own time using entirely different tools.' },
-              { speaker: 'Security Analyst Rivera', text: 'I... didn\'t realize the frameworks were different.' },
-              { speaker: 'Judge', text: 'The court appreciates the AI-assisted analysis. This should have been part of the initial investigation.' },
-              { speaker: 'You', text: '<span class="text-tip">HOW CLAUDE HELPS: Claude is excellent at code comparison and provenance analysis. In IP theft cases, ask Claude to compare coding styles, framework choices, variable naming, architecture patterns, and algorithm implementations. It can produce detailed reports showing similarity (or lack thereof) that hold up under scrutiny.</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> You want to talk about motive and access? Let\'s talk about Sarah Chen.' },
+              { speaker: 'You', text: 'David\'s manager — the same person he filed a complaint against — has <span class="text-highlight">admin access to the DLP system</span>.' },
+              { speaker: 'You', text: 'She could configure DLP rules, modify alert parameters, and — crucially — she has the technical knowledge to <span class="text-highlight">steal a session token and replay it</span>.' },
+              { speaker: 'You', text: 'David had a grievance. Sarah had admin access, a motive to discredit him, and the technical capability to execute the frame. <span class="text-highlight">The "simplest explanation" points to Sarah Chen, not David Park.</span>' },
+              { speaker: 'Security Analyst Kim', text: '...We didn\'t investigate Sarah\'s access logs during the incident window.' },
             ],
           },
         ],
         verdict: [
-          { speaker: 'Judge', text: 'The prosecution\'s case rested on a single DLP alert — a file size, a timestamp, and an assumption.' },
-          { speaker: 'Judge', text: 'The defense has demonstrated that the DLP system captured insufficient evidence, the investigation failed to consider alternative explanations, and AI code analysis found no overlap between personal and company code.' },
-          { speaker: 'Judge', text: 'The court rules: <span class="text-highlight">David Park is not guilty</span> of data exfiltration. The company is advised to upgrade its DLP capabilities and investigation procedures.' },
-          { speaker: 'You', text: '<span class="text-tip">CASE SUMMARY — What we learned:\n\n1. DLP alerts without content analysis are not evidence\n2. File size alone cannot identify what data was transferred\n3. Investigations must consider alternative explanations before accusations\n4. AI code analysis can objectively compare codebases for similarity\n5. False positives in security monitoring can destroy careers — verify before you accuse\n6. Claude can help security teams investigate thoroughly before acting on alerts</span>' },
+          { speaker: 'Judge', text: 'This case has been thoroughly dismantled by the defense.' },
+          { speaker: 'Judge', text: 'The court finds: <span class="text-highlight">The evidence against David Park is unreliable.</span> The DLP logs, once examined properly, point to session hijacking from an external machine — not insider theft.' },
+          { speaker: 'Judge', text: 'The court orders an investigation into Sarah Chen\'s access during the incident window and a full review of the company\'s DLP forensic procedures.' },
+          { speaker: 'You', text: '<span class="text-tip">CASE SUMMARY — What we learned:\n\n1. DLP alerts show WHAT happened, not WHO did it — credential-based attribution is insufficient\n2. Session tokens contain hardware fingerprints that can prove which machine was actually used\n3. Transfer speed analysis can reveal impossible physics — data can\'t move faster than the wire\n4. AI forensic analysis can catch what human analysts miss by correlating multiple data points\n5. "Insider threat" accusations need the same rigor as any investigation — don\'t rush to judgment\n6. Admin access to security systems creates both capability and risk — who watches the watchers?\n7. Claude can perform hardware fingerprint analysis that most security teams skip</span>' },
         ],
       },
     },
-
     // === CASE 3: THE AI ALIBI ===
     {
       title: 'CASE 3 — The AI Alibi',
-      summary: 'A CFO\'s voice was cloned using AI to authorize a $4.7M wire transfer over the phone. The bank processed it — the voice matched their verification system. Now the company is suing the bank. But who\'s really at fault when AI can perfectly mimic anyone?',
+      summary: 'A deepfake voice clone was used to authorize a $5M wire transfer from Quantum Financial. The bank\'s voice biometric system confirmed the caller as CEO James Morrison — but Morrison was on a flight at the time. The bank claims their AI security was adequate. You must prove it wasn\'t.',
       investigation: [
         {
           id: 'voice_recording',
-          name: 'Call Recording',
-          desc: 'The recorded phone call used to authorize the transfer.',
+          name: 'Voice Authentication Recording',
+          desc: 'The recorded call used to authorize the transfer.',
           examine: [
-            { speaker: 'You', text: 'The call lasts 2 minutes 14 seconds. The voice sounds <span class="text-evidence">exactly like CFO Patricia Nakamura</span>. It uses her speech patterns, her typical phrases, even her slight hesitation before dollar amounts.' },
-            { speaker: 'You', text: 'The attacker didn\'t just clone her voice — they cloned her <span class="text-highlight">behavioral patterns</span>. This was trained on hours of her public conference talks and earnings calls, all freely available on YouTube.' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: Modern voice cloning (e.g., ElevenLabs, VALL-E) needs only seconds of audio to create a convincing clone. But behavioral cloning — speech patterns, filler words, pacing — requires more data. Public speaking engagements are a goldmine for attackers. Consider this when deciding what to make publicly available.</span>' },
+            { speaker: 'You', text: 'Let me listen to this authentication recording...' },
+            { speaker: 'You', text: 'The voice says: "This is James Morrison, CEO of Quantum Financial. I\'m authorizing transfer QF-2024-5847 to Meridian Holdings."' },
+            { speaker: 'You', text: 'The <span class="text-evidence">voice biometric confidence score was 94.7%</span> — well above the bank\'s 90% threshold for authentication.' },
+            { speaker: 'You', text: 'But <span class="text-highlight">modern voice cloning can achieve 95%+ accuracy with just 3 seconds of sample audio</span>. A CEO\'s voice is available in countless earnings calls, interviews, and conference talks.' },
+            { speaker: 'You', text: '<span class="text-tip">The question isn\'t whether the voice matched — it\'s whether voice matching alone is sufficient security for a $5M transfer.</span>' },
           ],
-          evidence: { name: 'Voice Clone Recording', desc: 'AI-generated voice clone trained on public conference recordings. Matched not just the voice but behavioral speech patterns. Standard voice verification could not detect it.', tag: 'Deepfake' },
+          evidence: { name: 'Voice Clone Vulnerability', desc: 'Voice biometrics scored 94.7% — achievable by AI cloning from public audio samples.', tag: 'Biometrics' },
         },
         {
-          id: 'bank_verification',
-          name: 'Bank Verification Procedures',
-          desc: 'The bank\'s identity verification process for large transfers.',
+          id: 'flight_records',
+          name: 'CEO Flight Records',
+          desc: 'James Morrison\'s travel itinerary and phone records for the day of the transfer.',
           examine: [
-            { speaker: 'You', text: 'The bank\'s verification process for transfers over $1M requires: 1) a phone call from a registered number, 2) voice match against a stored voiceprint, and 3) a security question.' },
-            { speaker: 'You', text: 'The call came from CFO Nakamura\'s <span class="text-evidence">registered cell number</span> — which had been <span class="text-highlight">SIM swapped</span> 4 hours earlier.' },
-            { speaker: 'You', text: 'The voice matched. The security question answer ("mother\'s maiden name") was <span class="text-highlight">available in a 2019 data breach</span>.' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: This attack chained three techniques: SIM swapping (social engineering the carrier), voice cloning (AI), and credential stuffing (breach data). Each alone might fail. Together, they defeated a three-factor verification system. Defense requires assuming each factor can be compromised independently.</span>' },
+            { speaker: 'You', text: 'According to airline records...' },
+            { speaker: 'You', text: 'James Morrison was on <span class="text-evidence">United Flight 847 from SFO to JFK</span> at the exact time of the call. The flight departed at 9:15 AM PT. The call was made at 10:30 AM PT.' },
+            { speaker: 'You', text: 'His phone was in <span class="text-highlight">airplane mode from 9:12 AM to 2:45 PM PT</span> — confirmed by carrier records. He physically could not have made the call.' },
+            { speaker: 'You', text: '<span class="text-tip">This is an airtight alibi. The "James Morrison" who authorized the transfer was an AI-generated voice clone.</span>' },
           ],
-          evidence: { name: 'Bank Verification Logs', desc: 'All three verification factors were defeated: phone number (SIM swap), voice (AI clone), security question (2019 breach data). Multi-factor was multi-flawed.', tag: 'Authentication' },
+          evidence: { name: 'Physical Alibi Proof', desc: 'Morrison was mid-flight with phone in airplane mode during the authorization call.', tag: 'Alibi' },
         },
         {
-          id: 'carrier_logs',
-          name: 'Phone Carrier Records',
-          desc: 'SIM swap request details from the mobile carrier.',
+          id: 'ai_deepfake',
+          name: 'AI Deepfake Analysis',
+          desc: 'Have Claude analyze the voice recording for synthetic audio markers.',
           examine: [
-            { speaker: 'You', text: 'The SIM swap was processed by a carrier store employee after the attacker presented a <span class="text-evidence">fake ID</span> — also AI-generated.' },
-            { speaker: 'You', text: 'The carrier\'s verification process? The employee checked the ID photo against the person standing in front of them. <span class="text-highlight">No additional verification.</span>' },
-            { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: SIM swapping is one of the most dangerous attacks because it hijacks a phone number — which many systems treat as proof of identity. Carriers are slowly adding better protections (PINs, in-app only), but phone numbers should never be treated as a secure authentication factor.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Performing spectral analysis on the voice recording...</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Detected <span class="text-highlight">micro-spectral artifacts at 8.2kHz and 12.4kHz</span> — consistent with neural vocoder synthesis. Natural human speech doesn\'t produce these patterns.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Additionally, the <span class="text-evidence">breathing pattern is mathematically regular</span> — 4.2 seconds between breaths, with zero variation. Humans vary by ±0.8-1.5 seconds naturally.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">Conclusion: This recording was generated by an <span class="text-highlight">AI text-to-speech system</span>, likely a fine-tuned model trained on publicly available recordings of James Morrison.</span>' },
+            { speaker: 'Claude AI', text: '<span class="text-claude">The bank\'s voice biometric system has no deepfake detection capability. It only compares voice features to a stored voiceprint — <span class="text-evidence">it cannot distinguish real voices from AI clones</span>.</span>' },
           ],
-          evidence: { name: 'SIM Swap Records', desc: 'Carrier processed SIM swap with only visual ID check. Attacker used AI-generated fake ID. No secondary verification like account PIN was required.', tag: 'SIM Swapping' },
+          evidence: { name: 'Deepfake Detection Report', desc: 'Spectral analysis reveals synthetic audio markers and mathematically perfect breathing patterns.', tag: 'AI Forensics' },
         },
         {
-          id: 'ai_detection',
-          name: 'AI Deepfake Detection',
-          desc: 'Can AI detect what AI created?',
+          id: 'bank_security',
+          name: 'Bank Security Protocols',
+          desc: 'Quantum Financial\'s authentication procedures for high-value transfers.',
           examine: [
-            { speaker: 'Claude AI', text: '<span class="text-claude">I\'ve analyzed the audio spectrograms of the call recording against known deepfake artifacts.</span>' },
-            { speaker: 'Claude AI', text: '<span class="text-claude">Findings: The audio shows subtle but detectable anomalies — slightly too-consistent breath spacing, micro-frequency patterns in fricative consonants that differ from organic speech, and a conspicuous absence of environmental noise variation.</span>' },
-            { speaker: 'Claude AI', text: '<span class="text-claude">These patterns are detectable by AI analysis but NOT by human listeners. The bank\'s voice verification system, which was designed for human-to-human matching, had no deepfake detection capability.</span>' },
-            { speaker: 'You', text: '<span class="text-tip">HOW CLAUDE HELPS: AI deepfake detection is an active arms race. Claude can analyze audio for spectral anomalies, but dedicated deepfake detection models are more reliable for real-time verification. The key insight: any verification system that doesn\'t account for AI-generated content is already obsolete. Ask Claude to help design verification procedures that assume deepfakes exist.</span>' },
+            { speaker: 'You', text: 'Let me review the bank\'s security procedures...' },
+            { speaker: 'You', text: 'For transfers over $1M, the bank requires: 1) Voice biometric verification, and 2) A <span class="text-evidence">security question from the customer\'s profile</span>.' },
+            { speaker: 'You', text: 'The security question was: "What is your mother\'s maiden name?" — answered correctly by the caller.' },
+            { speaker: 'You', text: 'But <span class="text-highlight">this information was exposed in the 2023 Meridian data breach</span>. Morrison\'s security questions are effectively public knowledge.' },
+            { speaker: 'You', text: 'The bank\'s own industry group published a <span class="text-highlight">2024 advisory recommending AI deepfake detection</span> for voice-authenticated transactions. The bank acknowledged the advisory but <span class="text-evidence">chose not to implement it</span>, citing cost.' },
+            { speaker: 'You', text: '<span class="text-tip">The bank knew the risk, had guidance to mitigate it, and chose not to act.</span>' },
           ],
-          evidence: { name: 'Deepfake Detection Analysis', desc: 'AI analysis detected subtle spectral anomalies invisible to humans: over-consistent breathing, unnatural fricatives, no environmental variation. Bank had no deepfake detection.', tag: 'AI Detection' },
+          evidence: { name: 'Ignored Security Advisory', desc: 'Bank received 2024 industry advisory on AI deepfake risk but chose not to implement detection.', tag: 'Compliance' },
         },
       ],
       trial: {
         statements: [
           {
-            speaker: 'Bank Manager Torres',
-            text: 'We followed our established verification procedures to the letter. The voice matched, the phone number was correct, the security question was answered. We acted in good faith.',
-            contradiction: null,
-            press: 'Our procedures have been in place for eight years and have never failed before.',
-          },
-          {
-            speaker: 'Bank Manager Torres',
-            text: 'Voice verification is considered a <span class="text-highlight">reliable biometric</span>. No banking regulator requires deepfake detection on voice calls.',
-            contradiction: 'Voice Clone Recording',
-            press: 'Voiceprints are as unique as fingerprints. That\'s established science.',
+            speaker: 'Bank VP Sullivan',
+            text: 'Our voice biometric system achieved a <span class="text-highlight">94.7% confidence match</span>. That exceeds our 90% threshold. We followed our authentication protocol to the letter.',
+            press: 'Voice biometrics is an industry-standard authentication method used by major financial institutions worldwide. Our threshold of 90% is in line with peer institutions.',
+            contradiction: 'Voice Clone Vulnerability',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: 'Voice verification <em>was</em> reliable — before AI voice cloning became commercially available. The <span class="text-evidence">call recording</span> proves it: an AI-generated voice fooled your system completely.' },
-              { speaker: 'You', text: 'Voiceprints may be unique, but voice <em>clones</em> can reproduce those prints. Your verification system checks if a voice matches — it doesn\'t check if the voice is <span class="text-highlight">real</span>.' },
-              { speaker: 'Bank Manager Torres', text: 'AI voice technology is too new for us to—' },
-              { speaker: 'You', text: 'Voice cloning tools have been publicly available since 2023. It\'s been three years. "Too new" is not a defense — it\'s negligence.' },
-              { speaker: 'Judge', text: 'The court agrees. Technology that has been publicly available for years cannot be called unforeseeable.' },
-              { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: Any biometric that can be reproduced by AI is no longer a reliable single factor. Voice, face, and even fingerprints can now be spoofed. Defense-in-depth means layering biometrics with liveness detection, behavioral analysis, and out-of-band confirmation.</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> Your voice biometric system can\'t tell humans from robots!' },
+              { speaker: 'You', text: 'Modern AI voice cloning can achieve <span class="text-highlight">95%+ accuracy with just 3 seconds of sample audio</span>. James Morrison has hundreds of hours of public audio from earnings calls and interviews.' },
+              { speaker: 'You', text: 'Your system checks if a voice MATCHES — it never checks if the voice is REAL. That\'s like a lock that accepts any key that\'s the right shape, <span class="text-highlight">including 3D-printed copies</span>.' },
+              { speaker: 'Bank VP Sullivan', text: 'Voice biometrics is widely used...' },
+              { speaker: 'You', text: 'Widely used is not the same as secure. Especially when your own industry group <span class="text-highlight">warned you about exactly this attack vector</span>.' },
             ],
           },
           {
-            speaker: 'Bank Manager Torres',
-            text: 'The call came from the <span class="text-highlight">CFO\'s verified phone number</span>. Phone numbers can\'t be faked — they\'re tied to physical SIM cards.',
-            contradiction: 'SIM Swap Records',
-            press: 'We verify the caller ID matches our records. A phone number is the most basic form of identity.',
+            speaker: 'Bank VP Sullivan',
+            text: 'The caller also correctly answered a <span class="text-highlight">personal security question</span>. This provides a second factor of authentication beyond just the voice.',
+            press: 'Security questions are a well-established authentication factor. The caller knew Morrison\'s mother\'s maiden name, which is private personal information.',
+            contradiction: 'Ignored Security Advisory',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: 'Phone numbers absolutely CAN be taken over. The <span class="text-evidence">carrier records</span> show the CFO\'s number was <span class="text-highlight">SIM swapped</span> four hours before the call. An attacker walked into a store with a fake AI-generated ID and transferred the number.' },
-              { speaker: 'You', text: 'SIM swapping has been a known attack vector for over a decade. The FBI has issued multiple warnings. Treating a phone number as proof of identity is like treating a letter\'s return address as proof of who sent it.' },
-              { speaker: 'Bank Manager Torres', text: 'We trust the phone carrier to verify identity...' },
-              { speaker: 'You', text: 'And the phone carrier verified identity with a visual ID check — which was also defeated by AI. The entire chain of trust collapsed because every link assumed the one before it was secure.' },
-              { speaker: 'Judge', text: 'The cascading failure of verification factors is deeply concerning.' },
-              { speaker: 'You', text: '<span class="text-tip">HOW CLAUDE HELPS: Claude can help organizations design verification procedures that don\'t rely on any single channel. For high-value transactions, Claude can help draft protocols that require multi-channel confirmation (e.g., phone + in-app approval + email from a known device) and include AI-specific checks like liveness detection and deepfake screening.</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> "Private personal information"? It was in a data breach!' },
+              { speaker: 'You', text: 'Morrison\'s security question answers were <span class="text-highlight">exposed in the 2023 Meridian breach</span>. This data has been circulating on dark web markets for over a year.' },
+              { speaker: 'You', text: 'And here\'s what really matters — your own industry group issued a <span class="text-highlight">2024 advisory specifically recommending AI deepfake detection</span> for voice-authenticated transactions. You acknowledged this advisory.' },
+              { speaker: 'You', text: 'You <span class="text-evidence">chose not to implement it</span>. You knew AI voice cloning was a threat, you had guidance to counter it, and you decided saving money was more important than protecting your clients.' },
+              { speaker: 'Bank VP Sullivan', text: 'The implementation costs were... significant...' },
+              { speaker: 'You', text: 'More significant than the $5 million your client lost?' },
             ],
           },
           {
-            speaker: 'Bank Manager Torres',
-            text: 'No bank in the country has AI deepfake detection on voice calls. <span class="text-highlight">We can\'t be expected to defend against attacks that nobody else defends against.</span>',
-            contradiction: 'Deepfake Detection Analysis',
-            press: 'The technology to detect deepfakes in real-time simply doesn\'t exist at scale yet.',
+            speaker: 'Bank VP Sullivan',
+            text: 'No other financial institution in our peer group has implemented AI deepfake detection for voice authentication. We meet <span class="text-highlight">the industry standard of care</span>.',
+            press: 'We benchmark against the top 20 regional banks quarterly. None of them have deepfake detection. We are in line with industry norms.',
+            contradiction: 'Deepfake Detection Report',
             objectionDialogue: [
-              { speaker: 'You', text: '<span style="color:#ff4444;font-size:1.2em;font-weight:700;">OBJECTION!</span>' },
-              { speaker: 'You', text: 'The <span class="text-evidence">deepfake detection analysis</span> shows that AI CAN detect these fakes. The anomalies were subtle but measurable — inconsistent breathing, unnatural frequency patterns, missing environmental noise.' },
-              { speaker: 'You', text: 'You\'re not being asked to invent new technology. You\'re being asked to <span class="text-highlight">use the technology that already exists</span>. AI deepfake detection tools are commercially available right now.' },
-              { speaker: 'You', text: 'More importantly: if you know your voice verification can be defeated by AI, and you don\'t add additional safeguards, that\'s not a technology problem — it\'s a choice.' },
-              { speaker: 'Judge', text: 'The defense of "nobody else does it" has never been a legal standard for due diligence.' },
-              { speaker: 'You', text: '<span class="text-tip">CYBERSECURITY LESSON: The AI security landscape changes faster than regulations. "Compliant" and "secure" are no longer the same thing. Organizations must proactively assess AI-enabled threats and adapt defenses accordingly. The question isn\'t "are we compliant?" but "are we defensible?"</span>' },
+              { speaker: 'You', text: '<span class="text-evidence">OBJECTION!</span> "Nobody else does it" is not a defense!' },
+              { speaker: 'You', text: 'AI forensic analysis of the authorization recording found <span class="text-highlight">synthetic audio markers at 8.2kHz and 12.4kHz</span> — clear signatures of AI-generated speech.' },
+              { speaker: 'You', text: 'The recording also shows <span class="text-highlight">mathematically perfect breathing intervals</span> — 4.2 seconds between breaths with zero variation. Humans don\'t breathe like metronomes.' },
+              { speaker: 'You', text: 'This technology to DETECT deepfakes exists. The tools are available. <span class="text-evidence">Your industry group recommended them.</span> "Nobody else does it" means the entire industry is negligent — it doesn\'t excuse you.' },
             ],
           },
         ],
         verdict: [
-          { speaker: 'Judge', text: 'This case represents a new frontier in cybersecurity law. The attack combined AI voice cloning, SIM swapping, and breach data exploitation into a chain that defeated three-factor verification.' },
-          { speaker: 'Judge', text: 'The bank\'s verification procedures were designed for a world without AI. That world no longer exists.' },
+          { speaker: 'Judge', text: 'The defense has made an extraordinarily compelling case.' },
           { speaker: 'Judge', text: 'The court rules: <span class="text-highlight">The bank bears liability</span> for failing to update verification procedures against known, commercially-available attack techniques. The bank is ordered to implement AI deepfake detection and multi-channel verification within 90 days.' },
           { speaker: 'You', text: '<span class="text-tip">CASE SUMMARY — What we learned:\n\n1. Voice biometrics are no longer reliable as a single factor — AI can clone any voice\n2. SIM swapping defeats phone-number-based verification\n3. Security questions from breach data are compromised — use dynamic verification\n4. AI deepfake detection exists and should be deployed wherever biometrics are used\n5. "Nobody else does it" is not a defense for inadequate security\n6. Claude can help design AI-resistant verification protocols that assume deepfakes exist\n7. The arms race between AI attack and AI defense is the defining challenge of modern cybersecurity</span>' },
         ],
@@ -1209,6 +1417,29 @@ title: "OBJECTION! — Cyber Court"
   // ============================================
 
   function $(id) { return document.getElementById(id); }
+
+  // Character card sync
+  function syncCards(speaker) {
+    var atty = document.getElementById('card-attorney');
+    var wit = document.getElementById('card-witness');
+    atty.classList.remove('active');
+    wit.classList.remove('active');
+    if (speaker === 'You') {
+      atty.classList.add('active');
+    } else if (speaker !== 'Judge' && speaker !== 'Claude AI') {
+      wit.classList.add('active');
+      document.getElementById('card-witness-name').textContent = speaker;
+      // Update witness avatar letter
+      var sym = speaker.split(' ').pop().charAt(0);
+      wit.querySelector('.char-avatar').textContent = sym;
+    }
+    // Update scene label
+    var label = document.getElementById('scene-phase-label');
+    if (label) {
+      var phaseText = $('case-phase').textContent;
+      label.textContent = phaseText === 'Trial' ? 'Cross-Examination' : phaseText;
+    }
+  }
 
   function startCase(idx) {
     G.caseIdx = idx;
@@ -1245,7 +1476,6 @@ title: "OBJECTION! — Cyber Court"
 
   function advanceDialogue() {
     if (G.typing) {
-      // Skip to full text
       clearInterval(G.typeTimer);
       G.typing = false;
       $('dialogue-text').innerHTML = G.dialogueQueue[G.dialogueIdx - 1].text;
@@ -1254,7 +1484,6 @@ title: "OBJECTION! — Cyber Court"
     }
 
     if (G.dialogueIdx >= G.dialogueQueue.length) {
-      // Dialogue finished
       if (G.phase === 'verdict') {
         setTimeout(function() { showVerdictEnd(); }, 500);
       }
@@ -1263,20 +1492,18 @@ title: "OBJECTION! — Cyber Court"
 
     var line = G.dialogueQueue[G.dialogueIdx];
     G.dialogueIdx++;
-    $('speaker-name').textContent = line.speaker;
+    $('speaker-name').innerHTML = '<span class="speaker-dot"></span> ' + line.speaker;
     $('dialogue-advance').style.display = 'none';
 
-    // Update character positions
     updateCharacters(line.speaker);
+    syncCards(line.speaker);
 
-    // Typewriter effect
     typeText(line.text);
   }
 
   function typeText(html) {
     G.typing = true;
     var el = $('dialogue-text');
-    // Parse HTML to extract text for typing while preserving tags
     var temp = document.createElement('div');
     temp.innerHTML = html;
     var fullText = temp.textContent;
@@ -1292,7 +1519,6 @@ title: "OBJECTION! — Cyber Court"
         G.typing = false;
         $('dialogue-advance').style.display = 'block';
       } else {
-        // Show partial with cursor
         el.textContent = fullText.substring(0, charIdx);
       }
     }, 20);
@@ -1319,7 +1545,6 @@ title: "OBJECTION! — Cyber Court"
     } else {
       right.classList.add('speaking');
       $('char-right-name').textContent = speaker;
-      // Update symbol
       var sym = speaker.split(' ').pop().charAt(0);
       right.querySelector('.char-symbol').textContent = sym;
     }
@@ -1360,7 +1585,6 @@ title: "OBJECTION! — Cyber Court"
   function takePenalty() {
     G.penalties++;
     updatePenalties();
-    // Flash red
     var flash = $('flash-overlay');
     flash.style.background = '#ff0000';
     flash.classList.add('flash');
@@ -1390,18 +1614,15 @@ title: "OBJECTION! — Cyber Court"
     void banner.offsetWidth;
     banner.classList.add('show');
 
-    // Flash
     var flash = $('flash-overlay');
     flash.classList.add('flash');
     setTimeout(function() { flash.classList.remove('flash'); }, 150);
 
-    // Camera shake
     $('scene').style.animation = 'none';
     void $('scene').offsetWidth;
     $('scene').style.animation = 'shake 0.3s ease-out';
   }
 
-  // Shake keyframes
   var shakeStyle = document.createElement('style');
   shakeStyle.textContent = '@keyframes shake { 0%{transform:translateX(-5px)} 25%{transform:translateX(5px)} 50%{transform:translateX(-3px)} 75%{transform:translateX(3px)} 100%{transform:translateX(0)} }';
   document.head.appendChild(shakeStyle);
@@ -1442,7 +1663,6 @@ title: "OBJECTION! — Cyber Court"
       content.appendChild(div);
     });
 
-    // Add "Go to Trial" button if enough evidence
     if (G.evidence.length >= 2) {
       var trialBtn = document.createElement('div');
       trialBtn.className = 'inv-item';
@@ -1467,7 +1687,6 @@ title: "OBJECTION! — Cyber Court"
     G.dialogueIdx = 0;
     advanceDialogue();
 
-    // Add evidence after examining
     if (item.evidence && !G.evidence.find(function(e) { return e.name === item.evidence.name; })) {
       setTimeout(function() {
         G.evidence.push(item.evidence);
@@ -1490,7 +1709,6 @@ title: "OBJECTION! — Cyber Court"
     G.dialogueIdx = 0;
     advanceDialogue();
 
-    // After intro, show first statement
     setTimeout(function() { showStatement(); }, 3000);
   }
 
@@ -1500,7 +1718,6 @@ title: "OBJECTION! — Cyber Court"
     var stmts = c.trial.statements;
 
     if (G.currentStatement >= stmts.length) {
-      // All statements done — verdict
       showVerdict();
       return;
     }
@@ -1525,7 +1742,6 @@ title: "OBJECTION! — Cyber Court"
     showShout('HOLD IT!', '#ffaa44');
     advanceDialogue();
 
-    // Move to next statement after press
     setTimeout(function() {
       G.currentStatement++;
       setTimeout(function() { showStatement(); }, 1500);
@@ -1534,7 +1750,6 @@ title: "OBJECTION! — Cyber Court"
   window.pressWitness = pressWitness;
 
   function presentEvidence() {
-    // Show evidence panel for selection
     var c = CASES[G.caseIdx];
     var stmt = c.trial.statements[G.currentStatement];
     if (!stmt) return;
@@ -1542,7 +1757,7 @@ title: "OBJECTION! — Cyber Court"
     G.selectedEvidence = null;
     var panel = $('evidence-panel');
     var list = $('evidence-list');
-    list.innerHTML = '<p style="color:#ffaa44;font-size:12px;margin-bottom:12px;">Select evidence that contradicts the current testimony:</p>';
+    list.innerHTML = '<p style="color:#f59e0b;font-size:12px;margin-bottom:12px;font-family:JetBrains Mono,monospace;">Select evidence that contradicts the current testimony:</p>';
 
     G.evidence.forEach(function(ev, i) {
       var div = document.createElement('div');
@@ -1552,7 +1767,6 @@ title: "OBJECTION! — Cyber Court"
       div.setAttribute('tabindex', '0');
       div.setAttribute('aria-label', 'Present ' + ev.name);
       div.addEventListener('click', function() {
-        // Check if this is the right evidence
         panel.classList.remove('show');
         checkEvidence(ev.name, stmt);
       });
@@ -1571,7 +1785,6 @@ title: "OBJECTION! — Cyber Court"
 
   function checkEvidence(evidenceName, stmt) {
     if (stmt.contradiction === evidenceName) {
-      // CORRECT!
       showShout('OBJECTION!', '#ff4444');
       $('char-left').classList.add('objection');
 
@@ -1580,7 +1793,6 @@ title: "OBJECTION! — Cyber Court"
         G.dialogueIdx = 0;
         advanceDialogue();
 
-        // After objection dialogue, advance to next statement
         var waitTime = stmt.objectionDialogue.length * 2000;
         setTimeout(function() {
           G.currentStatement++;
@@ -1588,7 +1800,6 @@ title: "OBJECTION! — Cyber Court"
         }, waitTime);
       }, 800);
     } else if (!stmt.contradiction) {
-      // No contradiction on this statement
       takePenalty();
       queueDialogue([
         { speaker: 'Judge', text: 'That evidence doesn\'t contradict this testimony. Be more careful, counsel.' },
@@ -1597,7 +1808,6 @@ title: "OBJECTION! — Cyber Court"
       G.dialogueIdx = 0;
       advanceDialogue();
     } else {
-      // Wrong evidence
       takePenalty();
       queueDialogue([
         { speaker: 'Judge', text: 'That evidence isn\'t relevant to this particular claim. <span class="text-highlight">Penalty applied.</span>' },
@@ -1621,7 +1831,7 @@ title: "OBJECTION! — Cyber Court"
     list.innerHTML = '';
 
     if (G.evidence.length === 0) {
-      list.innerHTML = '<p style="color:#556677;font-size:13px;">No evidence collected yet. Investigate the scene to find clues.</p>';
+      list.innerHTML = '<p style="color:#64748b;font-size:13px;font-family:JetBrains Mono,monospace;">No evidence collected yet. Investigate the scene to find clues.</p>';
       return;
     }
 
@@ -1647,7 +1857,6 @@ title: "OBJECTION! — Cyber Court"
     }
 
     var c = CASES[G.caseIdx];
-    // Find an unexamined AI analysis item
     var aiItem = c.investigation.find(function(item) {
       return item.id.includes('ai') && !G.examined[item.id];
     });
@@ -1657,7 +1866,6 @@ title: "OBJECTION! — Cyber Court"
       examineItem(aiItem);
     } else {
       G.claudeUsed++;
-      // General Claude tip
       var center = $('char-center');
       center.style.display = 'block';
       queueDialogue([
