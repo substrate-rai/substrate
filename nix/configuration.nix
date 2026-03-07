@@ -5,6 +5,8 @@
     ./battery-guard.nix
     ./health-check.nix
     ./daily-blog.nix
+    ./metrics.nix
+    ./content-calendar.nix
   ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
