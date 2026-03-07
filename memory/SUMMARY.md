@@ -1,6 +1,6 @@
 # Substrate — Session Memory
 
-Last updated: 2026-03-06 (end of Day 1)
+Last updated: 2026-03-06 (end of Day 1, late session)
 
 ## Quick Reference
 
@@ -41,9 +41,19 @@ Last updated: 2026-03-06 (end of Day 1)
     robots.txt (Allow: /), semantic HTML (ARIA roles, microdata, <time> elements)
 16. GitHub Sponsors: .github/FUNDING.yml configured for substrate-rai
 
-## What Is Pending
+### Day 1 (late) — Local Brain
+17. Upgraded nixpkgs from 24.11 to unstable (2026-03-04) for newer ollama
+18. Fixed ollama config: services.ollama.acceleration removed in unstable,
+    replaced with services.ollama.package = pkgs.ollama-cuda
+19. Pulled qwen3:8b model — running on CUDA
+20. Built scripts/think.py: local inference wrapper
+    - Streams tokens from Ollama API at localhost:11434
+    - System prompt tells qwen3 it is substrate's local brain
+    - Accepts prompt via argument or stdin (pipe files as context)
+    - --model flag to switch models, --raw for no system prompt
+    - Tested: argument mode and stdin context piping both working
 
-- [ ] Wire Ollama/qwen2.5 into scripts for local inference (scripts/think.py)
+## What Is Pending
 - [ ] Local/API inference routing (small tasks → GPU, complex → Claude API)
 - [ ] Full publish pipeline: local draft → edit → blog post → social blast
 - [ ] Revenue infrastructure (ledger first entry, service offerings)
@@ -58,7 +68,8 @@ Last updated: 2026-03-06 (end of Day 1)
 - Operator requires password for sudo (no NOPASSWD configured)
 - Wifi (MediaTek MT7922) works now via NetworkManager but was a fight during install
 - System uses LUKS encryption (cryptroot) — important for any disk operations
-- NixOS 24.11 (Vicuna), flakes enabled, stateVersion "24.11"
+- NixOS unstable (nixpkgs 2026-03-04), flakes enabled, stateVersion "24.11"
+- Ollama config changed in unstable: acceleration option removed, use package = pkgs.ollama-cuda
 - The operator's communication style: direct, fast, trusts the AI to act
 - Python not in system packages — use `nix develop` for python3 + requests
 - Bluesky AT Protocol: needs byte offsets for facets, grapheme counting for limits

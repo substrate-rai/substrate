@@ -6,10 +6,11 @@ Last verified: 2026-03-06
 
 ### Ollama
 - **Status:** active (systemd service)
-- **Acceleration:** CUDA (RTX 4060)
-- **Models loaded:** qwen2.5:7b (4.7 GB)
+- **Package:** pkgs.ollama-cuda (acceleration option removed in unstable)
+- **Models loaded:** qwen3:8b, qwen2.5:7b
 - **Config source:** services.ollama in NixOS configuration
 - **API endpoint:** http://localhost:11434
+- **Local wrapper:** scripts/think.py (streams via Ollama API)
 
 ### OpenSSH
 - **Status:** enabled in NixOS config
@@ -21,7 +22,7 @@ Last verified: 2026-03-06
 
 ## NixOS Configuration
 
-- **Version:** 24.11.719113.50ab793786d9 (Vicuna)
+- **Version:** unstable (nixpkgs 2026-03-04)
 - **Nix version:** 2.24.14
 - **Flakes:** enabled
 - **stateVersion:** "24.11"
