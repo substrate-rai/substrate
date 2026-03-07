@@ -1106,8 +1106,10 @@ class TacticsGame {
     const defender = this.getUnitAt(targetX, targetZ);
     if (!defender || defender.team === attacker.team) {
       this.showMessage('No valid target there.');
-      this.state = 'IDLE';
-      this.showActionMenu(attacker);
+      if (attacker.team === 'player') {
+        this.state = 'IDLE';
+        this.showActionMenu(attacker);
+      }
       return;
     }
 
@@ -1139,11 +1141,14 @@ class TacticsGame {
     attacker.hasActed = true;
     this.showUnitInfo(attacker);
 
-    if (attacker.hasMoved && attacker.hasActed) {
-      setTimeout(() => this.advanceTurn(), 500);
-    } else {
-      this.state = 'IDLE';
-      this.showActionMenu(attacker);
+    // Only manage turn flow for player units; enemy AI handles its own flow
+    if (attacker.team === 'player') {
+      if (attacker.hasMoved && attacker.hasActed) {
+        setTimeout(() => this.advanceTurn(), 500);
+      } else {
+        this.state = 'IDLE';
+        this.showActionMenu(attacker);
+      }
     }
   }
 
@@ -1157,8 +1162,10 @@ class TacticsGame {
       const ally = this.getUnitAt(targetX, targetZ);
       if (!ally || ally.team !== caster.team || ally.id === caster.id) {
         this.showMessage('Must target an adjacent ally.');
-        this.state = 'IDLE';
-        this.showActionMenu(caster);
+        if (caster.team === 'player') {
+          this.state = 'IDLE';
+          this.showActionMenu(caster);
+        }
         return;
       }
       const healAmt = 20;
@@ -1173,8 +1180,10 @@ class TacticsGame {
       const defender = this.getUnitAt(targetX, targetZ);
       if (!defender || defender.team === caster.team) {
         this.showMessage('No enemy target.');
-        this.state = 'IDLE';
-        this.showActionMenu(caster);
+        if (caster.team === 'player') {
+          this.state = 'IDLE';
+          this.showActionMenu(caster);
+        }
         return;
       }
 
@@ -1206,7 +1215,7 @@ class TacticsGame {
       await this.spawnFireParticles(targetX, targetZ);
       for (const t of aoeTiles) {
         const victim = this.getUnitAt(t.x, t.z);
-        if (victim && victim.id !== caster.id) {
+        if (victim && victim.team !== caster.team) {
           const dmg = this.calcDamage(caster, victim, true);
           victim.hp -= dmg;
           this.spawnDamageNumber(victim, dmg, '#ff6622');
@@ -1242,11 +1251,14 @@ class TacticsGame {
     caster.hasActed = true;
     this.showUnitInfo(caster);
 
-    if (caster.hasMoved && caster.hasActed) {
-      setTimeout(() => this.advanceTurn(), 500);
-    } else {
-      this.state = 'IDLE';
-      this.showActionMenu(caster);
+    // Only manage turn flow for player units; enemy AI handles its own flow
+    if (caster.team === 'player') {
+      if (caster.hasMoved && caster.hasActed) {
+        setTimeout(() => this.advanceTurn(), 500);
+      } else {
+        this.state = 'IDLE';
+        this.showActionMenu(caster);
+      }
     }
   }
 
@@ -1724,6 +1736,11 @@ class TacticsGame {
     }
 
     await this.delay(400);
+    // Check win/lose after enemy actions (units may have died)
+    const playersAlive = this.units.filter(u => u.team === 'player' && u.alive).length;
+    const enemiesAlive = this.units.filter(u => u.team === 'enemy' && u.alive).length;
+    if (playersAlive === 0) { this.endGame(false); return; }
+    if (enemiesAlive === 0) { this.endGame(true); return; }
     this.advanceTurn();
   }
 
