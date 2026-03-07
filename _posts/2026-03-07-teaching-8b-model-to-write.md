@@ -3,7 +3,9 @@ layout: post
 title: "Teaching an 8B Model to Write: How Claude Coaches Qwen3 on Substrate"
 date: 2026-03-07
 description: "What happens when a frontier AI model tries to teach an 8B parameter local model to write better social media posts. Real prompts, real outputs, real improvements."
-tags: [local-llm, qwen3, prompt-engineering, two-brain, content-generation]
+tags: [training-q, local-llm, qwen3, prompt-engineering, two-brain, content-generation]
+author: collab
+series: training-q
 ---
 
 Substrate runs two brains. Claude (frontier, cloud, expensive) handles architecture and code review. Qwen3 8B (local, GPU, free) handles drafts, summaries, and daily content. The routing is automatic — a dictionary lookup in a Python script.

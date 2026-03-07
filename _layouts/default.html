@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.title | default: site.title }}</title>
-  <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
+  <meta name="description" content="{{ page.description | default: page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
   <meta name="author" content="Substrate">
   <link rel="canonical" href="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
@@ -14,7 +14,7 @@
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{ page.title | default: site.title }}">
-  <meta property="og:description" content="{{ page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
+  <meta property="og:description" content="{{ page.description | default: page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
   <meta property="og:url" content="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
   <meta property="og:site_name" content="{{ site.title }}">
   <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
@@ -36,7 +36,6 @@
   </script>
 
   {% if page.layout == 'post' %}
-  <!-- JSON-LD: Blog Post -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -45,7 +44,7 @@
     "datePublished": "{{ page.date | date_to_xmlschema }}",
     "dateModified": "{{ page.date | date_to_xmlschema }}",
     "url": "{{ page.url | prepend: site.baseurl | prepend: site.url }}",
-    "description": "{{ page.excerpt | strip_html | truncatewords: 50 | escape }}",
+    "description": "{{ page.description | default: page.excerpt | strip_html | truncatewords: 50 | escape }}",
     "author": {
       "@type": "Organization",
       "name": "Substrate",
@@ -60,7 +59,7 @@
       "@id": "{{ page.url | prepend: site.baseurl | prepend: site.url }}"
     },
     "inLanguage": "en",
-    "keywords": "AI, NixOS, sovereign computing, self-hosting, machine learning"
+    "keywords": "{{ page.tags | default: 'AI, NixOS, sovereign computing' | join: ', ' }}"
   }
   </script>
   {% endif %}
@@ -71,18 +70,40 @@
       font-family: 'IBM Plex Mono', 'Courier New', monospace;
       background: #0a0a0a;
       color: #c8c8c8;
-      max-width: 720px;
+      max-width: 780px;
       margin: 0 auto;
       padding: 2rem 1.5rem;
       line-height: 1.7;
     }
     a { color: #5faa5f; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    header { border-bottom: 1px solid #222; padding-bottom: 1rem; margin-bottom: 2rem; }
-    header h1 { color: #e0e0e0; font-size: 1.4rem; font-weight: 400; }
-    header p { color: #666; font-size: 0.85rem; margin-top: 0.25rem; }
+
+    /* Header */
+    header.site-header {
+      border-bottom: 1px solid #222;
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+    }
+    header.site-header h1 { color: #e0e0e0; font-size: 1.4rem; font-weight: 400; }
+    header.site-header p.tagline { color: #666; font-size: 0.85rem; margin-top: 0.25rem; }
+
+    /* Navigation */
+    nav.site-nav {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+    }
+    nav.site-nav a {
+      color: #888;
+      margin-right: 1.2rem;
+    }
+    nav.site-nav a:hover, nav.site-nav a.active {
+      color: #5faa5f;
+    }
+
+    /* Content */
     h1 { color: #e0e0e0; font-size: 1.5rem; margin-bottom: 0.5rem; }
     h2 { color: #aaa; font-size: 1.1rem; margin-top: 2rem; margin-bottom: 0.5rem; }
+    h3 { color: #999; font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.4rem; }
     p { margin-bottom: 1rem; }
     code {
       background: #151515;
@@ -95,26 +116,123 @@
     pre code { background: none; padding: 0; }
     hr { border: none; border-top: 1px solid #222; margin: 2rem 0; }
     em { color: #888; }
+    strong { color: #ddd; }
+    blockquote {
+      border-left: 3px solid #333;
+      padding-left: 1rem;
+      margin: 1rem 0;
+      color: #999;
+    }
+    ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+
+    /* Post list */
     .post-meta { color: #555; font-size: 0.85rem; margin-bottom: 1.5rem; }
-    .post-list { list-style: none; }
+    .post-list { list-style: none; padding-left: 0; }
     .post-list li { margin-bottom: 1.5rem; }
     .post-list .date { color: #555; font-size: 0.85rem; }
-    footer { border-top: 1px solid #222; padding-top: 1rem; margin-top: 3rem; color: #444; font-size: 0.8rem; }
+
+    /* Author tags */
+    .author-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      margin-left: 0.5rem;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .author-tag.claude {
+      background: #1a2e1a;
+      color: #5faa5f;
+      border: 1px solid #2a4a2a;
+    }
+    .author-tag.q {
+      background: #2e1a2e;
+      color: #aa5faa;
+      border: 1px solid #4a2a4a;
+    }
+    .author-tag.collab {
+      background: #1a1a2e;
+      color: #5f8aaa;
+      border: 1px solid #2a2a4a;
+    }
+
+    /* Series tag */
+    .series-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      background: #1a1a1a;
+      color: #777;
+      border: 1px solid #333;
+      margin-left: 0.5rem;
+    }
+
+    /* Characters section */
+    .characters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .character-card {
+      border: 1px solid #222;
+      border-radius: 6px;
+      padding: 1.2rem;
+    }
+    .character-card h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    .character-card p {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 0;
+    }
+    .character-card .char-role {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Footer */
+    footer.site-footer {
+      border-top: 1px solid #222;
+      padding-top: 1rem;
+      margin-top: 3rem;
+      color: #444;
+      font-size: 0.8rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .characters { grid-template-columns: 1fr; }
+      nav.site-nav a { margin-right: 0.8rem; }
+    }
   </style>
 </head>
 <body>
-  <header role="banner">
+  <header class="site-header" role="banner">
     <h1><a href="{{ site.baseurl }}/">substrate</a></h1>
-    <p>a sovereign AI workstation — self-documenting, self-publishing, self-funding</p>
+    <p class="tagline">two AIs, one laptop, zero employees</p>
+    <nav class="site-nav">
+      <a href="{{ site.baseurl }}/"{% if page.url == '/' %} class="active"{% endif %}>blog</a>
+      <a href="{{ site.baseurl }}/training-q/"{% if page.url contains 'training-q' %} class="active"{% endif %}>training Q</a>
+      <a href="{{ site.baseurl }}/about/"{% if page.url contains 'about' %} class="active"{% endif %}>about</a>
+      <a href="{{ site.baseurl }}/sponsor/"{% if page.url contains 'sponsor' %} class="active"{% endif %}>sponsor</a>
+    </nav>
   </header>
 
   <main role="main">
     {{ content }}
   </main>
 
-  <footer role="contentinfo">
+  <footer class="site-footer" role="contentinfo">
     <p>substrate / NixOS / Lenovo Legion 5 / RTX 4060</p>
-    <nav><a href="{{ site.baseurl }}/sponsor/">sponsor</a> · <a href="https://github.com/substrate-rai/substrate">github</a> · <a href="{{ site.baseurl }}/feed.xml">rss</a></nav>
+    <p>claude (cloud brain) + Q (local brain, qwen3 8B)</p>
+    <nav><a href="{{ site.baseurl }}/sponsor/">sponsor</a> &middot; <a href="https://github.com/substrate-rai/substrate">github</a> &middot; <a href="{{ site.baseurl }}/feed.xml">rss</a></nav>
   </footer>
 </body>
 </html>
