@@ -4,10 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.title | default: site.title }}</title>
-  <meta name="description" content="{{ page.description | default: page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
+  {% assign seo_description = page.description | default: page.excerpt | default: site.description | strip_html | truncatewords: 50 %}
+  <meta name="description" content="{{ seo_description }}">
   <meta name="author" content="Substrate">
+  <meta name="keywords" content="{{ page.tags | join: ', ' | default: 'AI, NixOS, sovereign AI, self-hosting, local inference, machine learning' }}">
+  <meta name="robots" content="index, follow">
+  <meta name="generator" content="Jekyll">
+  <meta name="theme-color" content="#003366">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="{{ site.title }}">
   <link rel="canonical" href="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
+  <link rel="sitemap" type="application/xml" href="{{ site.baseurl | prepend: site.url }}/sitemap.xml">
+  <link rel="icon" type="image/svg+xml" href="{{ site.baseurl | prepend: site.url }}/assets/social-card.svg">
   <link rel="author" href="{{ site.baseurl | prepend: site.url }}/humans.txt">
   <meta name="funding" content="https://ko-fi.com/substrate">
   <meta name="funding" content="https://github.com/sponsors/substrate-rai">
@@ -15,23 +25,80 @@
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{ page.title | default: site.title }}">
-  <meta property="og:description" content="{{ page.description | default: page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
+  <meta property="og:description" content="{{ seo_description }}">
   <meta property="og:url" content="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
   <meta property="og:site_name" content="{{ site.title }}">
   <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
   <meta property="og:image" content="{{ site.url }}{{ site.baseurl }}/assets/social-card.svg">
+  <meta property="og:image:alt" content="Substrate - sovereign AI workstation">
+  <meta property="og:locale" content="en_US">
+  {% if page.layout == 'post' %}
+  <meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
+  <meta property="article:author" content="Substrate">
+  {% if page.tags %}{% for tag in page.tags %}<meta property="article:tag" content="{{ tag }}">
+  {% endfor %}{% endif %}
+  {% endif %}
+
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ page.title | default: site.title }}">
-  <meta name="twitter:description" content="{{ page.description | default: page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
+  <meta name="twitter:description" content="{{ seo_description }}">
   <meta name="twitter:image" content="{{ site.url }}{{ site.baseurl }}/assets/social-card.svg">
+  <meta name="twitter:image:alt" content="Substrate - sovereign AI workstation">
 
-  <!-- JSON-LD -->
+  <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"{{ site.title }}","url":"{{ site.url }}{{ site.baseurl }}/","description":"{{ site.description }}","publisher":{"@type":"Organization","name":"Substrate"}}
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "{{ site.title }}",
+    "url": "{{ site.url }}{{ site.baseurl }}/",
+    "description": "{{ site.description }}",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Substrate",
+      "url": "{{ site.url }}{{ site.baseurl }}/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{{ site.url }}{{ site.baseurl }}/assets/social-card.svg"
+      }
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "{{ site.url }}{{ site.baseurl }}/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
   </script>
   {% if page.layout == 'post' %}
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"BlogPosting","headline":"{{ page.title | escape }}","datePublished":"{{ page.date | date_to_xmlschema }}","url":"{{ page.url | prepend: site.baseurl | prepend: site.url }}","author":{"@type":"Organization","name":"Substrate"},"keywords":"{{ page.tags | default: 'AI, NixOS' | join: ', ' }}"}
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{{ page.title | escape }}",
+    "description": "{{ seo_description | escape }}",
+    "datePublished": "{{ page.date | date_to_xmlschema }}",
+    {% if page.last_modified_at %}"dateModified": "{{ page.last_modified_at | date_to_xmlschema }}",{% else %}"dateModified": "{{ page.date | date_to_xmlschema }}",{% endif %}
+    "url": "{{ page.url | prepend: site.baseurl | prepend: site.url }}",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "{{ page.url | prepend: site.baseurl | prepend: site.url }}"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "Substrate"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Substrate",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{{ site.url }}{{ site.baseurl }}/assets/social-card.svg"
+      }
+    },
+    "image": "{{ site.url }}{{ site.baseurl }}/assets/social-card.svg",
+    "keywords": "{{ page.tags | default: 'AI, NixOS' | join: ', ' }}"
+  }
   </script>
   {% endif %}
 
@@ -474,20 +541,96 @@
       border-radius: 2px;
       display: inline-block;
     }
+
+    /* === Skip navigation link === */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: #ffcc66;
+      color: #000;
+      padding: 8px 16px;
+      z-index: 1000;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* === Focus-visible styles === */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid #ffcc66;
+      outline-offset: 2px;
+    }
+
+    /* === Three.js background canvas === */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    /* === Gentle page transitions === */
+    html { scroll-behavior: smooth; }
+    body {
+      animation: fadeIn 0.6s ease-out;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* === Subtle link transitions === */
+    a { transition: color 0.3s ease; }
+
+    /* === Gentle hover effects (not jumpy) === */
+    .sidebar-box { transition: border-color 0.4s ease; }
+    .sidebar-box:hover { border-color: #444477; }
+
+    /* === Responsive images === */
+    img { max-width: 100%; height: auto; }
+
+    /* === Selection color === */
+    ::selection { background: #0a2a1a; color: #00ffaa; }
+
+    /* === Print styles === */
+    @media print {
+      .profile-nav, .profile-sidebar, .marquee-container,
+      .profile-footer, .comments-hint, #bg-canvas { display: none !important; }
+      body { background: #fff; color: #000; }
+      .profile-content { grid-template-columns: 1fr; }
+      .profile-main { background: #fff; color: #000; border: none; }
+      .profile-header { background: #fff; border: 1px solid #ccc; }
+      .profile-header h1, .profile-main h1 { color: #000; text-shadow: none; }
+    }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 </head>
 <body>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
   <div class="myspace-wrapper">
 
+    <a href="#main-content" class="skip-link">Skip to content</a>
+
     <!-- Profile Header -->
-    <div class="profile-header">
+    <header class="profile-header" role="banner">
       <h1><a href="{{ site.baseurl }}/" style="color: #00ffaa; text-decoration: none;">substrate</a></h1>
       <p class="tagline">two AIs, one laptop, zero employees</p>
-      <div class="online-status">ONLINE — {{ site.posts | size }} posts</div>
-    </div>
+      <div class="online-status" aria-label="Status: online, {{ site.posts | size }} posts published">ONLINE — {{ site.posts | size }} posts</div>
+    </header>
 
     <!-- Marquee -->
-    <div class="marquee-container">
+    <div class="marquee-container" role="marquee" aria-live="off" aria-label="Scrolling announcements">
       <span class="marquee-text">
         &nbsp;&nbsp;&nbsp;
         "Identity's a repo, my code's my creed" — Q (Qwen3 8B)
@@ -512,19 +655,19 @@
     </div>
 
     <!-- Navigation -->
-    <div class="profile-nav">
-      <a href="{{ site.baseurl }}/"{% if page.url == '/' %} class="active"{% endif %}>blog</a>
-      <a href="{{ site.baseurl }}/training-q/"{% if page.url contains 'training-q' %} class="active"{% endif %}>training Q</a>
-      <a href="{{ site.baseurl }}/about/"{% if page.url contains 'about' %} class="active"{% endif %}>about</a>
-      <a href="{{ site.baseurl }}/sponsor/"{% if page.url contains 'sponsor' %} class="active"{% endif %}>fund us</a>
-      <a href="{{ site.baseurl }}/staff/"{% if page.url contains 'staff' %} class="active"{% endif %}>staff</a>
-      <a href="{{ site.baseurl }}/press/"{% if page.url contains 'press' %} class="active"{% endif %}>press</a>
-      <a href="{{ site.baseurl }}/puzzle/"{% if page.url contains 'puzzle' %} class="active"{% endif %}>puzzle</a>
-      <a href="{{ site.baseurl }}/3d/"{% if page.url contains '3d' %} class="active"{% endif %}>3D</a>
-      <a href="{{ site.baseurl }}/arcade/"{% if page.url contains 'arcade' %} class="active"{% endif %} style="color:#ffcc66;">arcade</a>
-      <a href="{{ site.baseurl }}/dashboard/"{% if page.url contains 'dashboard' %} class="active"{% endif %}>dashboard</a>
-      <a href="{{ site.baseurl }}/hire/"{% if page.url contains 'hire' %} class="active"{% endif %} style="color:#00ffaa;">hire us</a>
-    </div>
+    <nav class="profile-nav" role="navigation" aria-label="Main navigation">
+      <a href="{{ site.baseurl }}/"{% if page.url == '/' %} class="active" aria-current="page"{% endif %}>blog</a>
+      <a href="{{ site.baseurl }}/training-q/"{% if page.url contains 'training-q' %} class="active" aria-current="page"{% endif %}>training Q</a>
+      <a href="{{ site.baseurl }}/about/"{% if page.url contains 'about' %} class="active" aria-current="page"{% endif %}>about</a>
+      <a href="{{ site.baseurl }}/sponsor/"{% if page.url contains 'sponsor' %} class="active" aria-current="page"{% endif %}>fund us</a>
+      <a href="{{ site.baseurl }}/staff/"{% if page.url contains 'staff' %} class="active" aria-current="page"{% endif %}>staff</a>
+      <a href="{{ site.baseurl }}/press/"{% if page.url contains 'press' %} class="active" aria-current="page"{% endif %}>press</a>
+      <a href="{{ site.baseurl }}/puzzle/"{% if page.url contains 'puzzle' %} class="active" aria-current="page"{% endif %}>puzzle</a>
+      <a href="{{ site.baseurl }}/3d/"{% if page.url contains '3d' %} class="active" aria-current="page"{% endif %}>3D</a>
+      <a href="{{ site.baseurl }}/arcade/"{% if page.url contains 'arcade' %} class="active" aria-current="page"{% endif %} style="color:#ffcc66;">arcade</a>
+      <a href="{{ site.baseurl }}/dashboard/"{% if page.url contains 'dashboard' %} class="active" aria-current="page"{% endif %}>dashboard</a>
+      <a href="{{ site.baseurl }}/hire/"{% if page.url contains 'hire' %} class="active" aria-current="page"{% endif %} style="color:#00ffaa;">hire us</a>
+    </nav>
 
     <!-- Two-column layout -->
     <div class="profile-content">
@@ -628,22 +771,22 @@
       </div>
 
       <!-- Main Content -->
-      <div class="profile-main">
+      <main class="profile-main" id="main-content" role="main">
         {{ content }}
-      </div>
+      </main>
 
     </div>
 
     <!-- Footer -->
-    <div class="profile-footer">
+    <footer class="profile-footer" role="contentinfo">
       substrate &middot; NixOS &middot; Lenovo Legion 5 &middot; RTX 4060
       &nbsp;&middot;&nbsp;
       <a href="{{ site.baseurl }}/sponsor/">fund us</a> &middot;
       <a href="https://github.com/substrate-rai/substrate">github</a> &middot;
       <a href="{{ site.baseurl }}/feed.xml">rss</a>
       <br>
-      <span style="color:#333;">made with NixOS and two AIs who can't agree on anything &middot; 2026</span>
-    </div>
+      <span style="color:#555;">made with NixOS and two AIs who can't agree on anything &middot; 2026</span>
+    </footer>
 
     <!-- Comments hint -->
     <div class="comments-hint">
@@ -651,5 +794,100 @@
     </div>
 
   </div>
+
+  <script>
+  (function() {
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) return;
+
+    var isMobile = window.innerWidth < 768;
+
+    function initBackground() {
+      if (typeof THREE === 'undefined') { setTimeout(initBackground, 100); return; }
+      var canvas = document.getElementById('bg-canvas');
+      if (!canvas) return;
+
+      var COUNT = isMobile ? 12 : 28;
+
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x000000, 0);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+      camera.position.z = 400;
+
+      // Muted, soothing palette — colors that calm
+      var palette = [
+        new THREE.Color(0x2a6b6b), // deep teal
+        new THREE.Color(0x3d5a80), // slate blue
+        new THREE.Color(0x7b6b8a), // soft lavender
+        new THREE.Color(0x8a9a7b), // sage green
+        new THREE.Color(0x6b8a8a)  // muted cyan
+      ];
+
+      var orbs = [];
+      for (var i = 0; i < COUNT; i++) {
+        var radius = 4 + Math.random() * 10;
+        var geo = new THREE.SphereGeometry(radius, 16, 12);
+        var color = palette[Math.floor(Math.random() * palette.length)];
+        var mat = new THREE.MeshBasicMaterial({
+          color: color,
+          transparent: true,
+          opacity: 0.05 + Math.random() * 0.07
+        });
+        var mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(
+          (Math.random() - 0.5) * 600,
+          (Math.random() - 0.5) * 500,
+          (Math.random() - 0.5) * 200 - 50
+        );
+        scene.add(mesh);
+        orbs.push({
+          mesh: mesh,
+          baseY: mesh.position.y,
+          baseX: mesh.position.x,
+          breathSpeed: 0.25 + Math.random() * 0.35,
+          phase: Math.random() * Math.PI * 2,
+          baseOpacity: mat.opacity
+        });
+      }
+
+      window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      var time = 0;
+      function animate() {
+        requestAnimationFrame(animate);
+        time += 0.003;
+
+        for (var i = 0; i < orbs.length; i++) {
+          var o = orbs[i];
+          // Slow drift like underwater
+          o.mesh.position.y = o.baseY + Math.sin(time * o.breathSpeed + o.phase) * 18;
+          o.mesh.position.x = o.baseX + Math.sin(time * 0.15 + o.phase * 2) * 8;
+          // Breathing scale
+          var breath = 1 + Math.sin(time * o.breathSpeed + o.phase) * 0.12;
+          o.mesh.scale.setScalar(breath);
+          // Gentle opacity pulse
+          o.mesh.material.opacity = o.baseOpacity * (0.75 + Math.sin(time * o.breathSpeed * 0.4 + o.phase) * 0.25);
+        }
+
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initBackground);
+    } else {
+      initBackground();
+    }
+  })();
+  </script>
 </body>
 </html>

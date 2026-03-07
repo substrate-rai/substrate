@@ -200,7 +200,7 @@ permalink: /arcade/
     border-color: #ffcc66;
   }
   .suggest-form input::placeholder {
-    color: #556;
+    color: #7788aa;
   }
   .suggest-form button {
     padding: 10px 20px;
@@ -345,8 +345,8 @@ Just code.
 
 ## Rankings
 
-<div id="rankings-container">
-  <p style="color:#556; font-size:0.85rem;">Rate the games above to see rankings here.</p>
+<div id="rankings-container" aria-live="polite" aria-label="Game rankings">
+  <p style="color:#8899aa; font-size:0.85rem;">Rate the games above to see rankings here.</p>
 </div>
 
 ---
@@ -407,15 +407,16 @@ Just code.
 ## Suggest a Game
 
 <div class="suggest-form">
-  <input type="text" id="suggestion-input" placeholder="Your game idea..." maxlength="200">
+  <label for="suggestion-input" class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">Suggest a game idea</label>
+  <input type="text" id="suggestion-input" aria-label="Suggest a game idea" placeholder="Your game idea..." maxlength="200">
   <button id="suggestion-submit">SUBMIT</button>
 </div>
 
-<div id="suggestions-list"></div>
+<div id="suggestions-list" aria-live="polite" aria-label="Game suggestions"></div>
 
 ---
 
-<p style="text-align:center; color:#556; font-size:0.8rem; margin-top:2rem;">
+<p style="text-align:center; color:#8899aa; font-size:0.8rem; margin-top:2rem;">
   Substrate Arcade is a division of <a href="{{ site.baseurl }}/about/" style="color:#77aaff;">Substrate</a> — a sovereign AI workstation.<br>
   All games rendered on an RTX 4060. All music produced on CUDA. All ideas generated at 40 tokens per second.
 </p>
@@ -466,6 +467,8 @@ Just code.
 
       var starsSpan = document.createElement('span');
       starsSpan.className = 'stars';
+      starsSpan.setAttribute('role', 'radiogroup');
+      starsSpan.setAttribute('aria-label', 'Rate ' + getGameName(gameId));
       var infoSpan = document.createElement('span');
       infoSpan.className = 'rating-info';
 
@@ -488,6 +491,17 @@ Just code.
       starsSpan.addEventListener('mouseout', function() {
         var allStars = starsSpan.querySelectorAll('.star');
         allStars.forEach(function(s) { s.classList.remove('hovered'); });
+      });
+
+      // Keyboard support for star rating
+      starsSpan.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          var star = e.target.closest('.star');
+          if (star) {
+            e.preventDefault();
+            star.click();
+          }
+        }
       });
 
       // Click to rate
@@ -521,7 +535,8 @@ Just code.
     var html = '';
     for (var i = 1; i <= 5; i++) {
       var filled = i <= userRating ? 'filled' : '';
-      html += '<span class="star ' + filled + '" data-value="' + i + '">' + (i <= userRating ? '\u2605' : '\u2606') + '</span>';
+      var checked = i === userRating ? ' aria-checked="true"' : ' aria-checked="false"';
+      html += '<span class="star ' + filled + '" data-value="' + i + '" role="radio"' + checked + ' aria-label="Rate ' + i + ' out of 5 stars" tabindex="0">' + (i <= userRating ? '\u2605' : '\u2606') + '</span>';
     }
     starsSpan.innerHTML = html;
 
@@ -548,7 +563,7 @@ Just code.
     }
 
     if (ranked.length === 0) {
-      container.innerHTML = '<p style="color:#556; font-size:0.85rem;">Rate the games above to see rankings here.</p>';
+      container.innerHTML = '<p style="color:#8899aa; font-size:0.85rem;">Rate the games above to see rankings here.</p>';
       return;
     }
 
@@ -611,7 +626,7 @@ Just code.
     var top = sorted.slice(0, 10);
 
     if (top.length === 0) {
-      container.innerHTML = '<p style="color:#556; font-size:0.85rem;">No suggestions yet. Be the first.</p>';
+      container.innerHTML = '<p style="color:#8899aa; font-size:0.85rem;">No suggestions yet. Be the first.</p>';
       return;
     }
 
@@ -620,7 +635,7 @@ Just code.
       html += '<div class="suggestion-item">';
       html += '<span class="suggestion-text">' + escapeHtml(item.text) + '</span>';
       html += '<span class="suggestion-vote">';
-      html += '<button data-suggestion-id="' + item.id + '" title="Upvote">&#9650;</button>';
+      html += '<button data-suggestion-id="' + item.id + '" title="Upvote" aria-label="Upvote suggestion: ' + escapeHtml(item.text).replace(/"/g, '&quot;') + '">&#9650;</button>';
       html += '<span class="vote-count">' + item.votes + '</span>';
       html += '</span>';
       html += '</div>';

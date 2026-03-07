@@ -6,12 +6,22 @@ layout: null
   <url>
     <loc>{{ site.url }}{{ site.baseurl }}/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+  {% for page in site.pages %}{% if page.layout and page.url != '/sitemap.xml' and page.url != '/feed.xml' and page.url != '/robots.txt' %}
+  <url>
+    <loc>{{ page.url | prepend: site.baseurl | prepend: site.url }}</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  {% endif %}{% endfor %}
   {% for post in site.posts %}
   <url>
     <loc>{{ post.url | prepend: site.baseurl | prepend: site.url }}</loc>
-    <lastmod>{{ post.date | date_to_xmlschema }}</lastmod>
+    <lastmod>{{ post.last_modified_at | default: post.date | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   {% endfor %}
