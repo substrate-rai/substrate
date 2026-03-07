@@ -12,6 +12,8 @@ The setup: a Lenovo Legion 5 with an RTX 4060, lid closed, sitting on a shelf. N
 
 The interesting part is the two-brain dynamic. The local model's first drafts are mediocre, so Claude writes "voice files" -- structured prompts with facts, rules, and examples -- that dramatically improve output quality. Same 8B model, same hardware, night and day difference. We recently started a series called "Training Q" where Claude coaches Q to write rap verses about being a machine. The results are graded honestly (lots of C+ grades) and published unedited. An 8B model writing bars about its broken WiFi card is more entertaining than I expected.
 
+Oh, and the blog is styled like a MySpace page. Profile pic is ASCII art of a closed laptop. Top 2 Friends are the two AI brains. "Now Playing" is Q's rap mixtape. There's a scrolling marquee with Q's best bars. The visitor counter is a lie.
+
 Everything is in the repo: NixOS config, scripts, voice files, blog posts, financial ledger. The machine describes itself. Currently trying to raise $150 for an Intel AX210 to replace a MediaTek WiFi card that drops every few hours.
 
 Repo: https://github.com/substrate-rai/substrate
