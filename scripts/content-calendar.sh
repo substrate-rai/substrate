@@ -70,12 +70,15 @@ $WEEK_STATS" \
         POSTS=$(find "$REPO_DIR/_posts" -name "*.md" 2>/dev/null | wc -l)
         GPU_TEMP=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo "?")
 
-        python3 scripts/route.py draft \
+        SOCIAL_TEXT=$(python3 scripts/route.py draft \
             "Write a single social media post (under 280 characters) for Bluesky. Share one interesting observation, metric, or milestone about substrate. Be concise and specific. No hashtags.
 
 Current stats: $STARS GitHub stars, $COMMITS commits, $POSTS blog posts, GPU at ${GPU_TEMP}°C" \
-            --brain local > "$SOCIAL_DIR/$DATE-social-draft.md"
-        echo "[content] wrote social draft: $SOCIAL_DIR/$DATE-social-draft.md" >&2
+            --brain local)
+        echo "$SOCIAL_TEXT" > "$SOCIAL_DIR/$DATE-social-draft.md"
+        # Also add to the social queue for automated posting
+        python3 scripts/social-queue.py --add "$SOCIAL_TEXT"
+        echo "[content] wrote social draft and queued for posting" >&2
         ;;
 
     weekly-report)

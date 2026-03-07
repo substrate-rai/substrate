@@ -6,6 +6,7 @@ Usage:
     python3 scripts/pipeline.py                   # draft from today's commits
     python3 scripts/pipeline.py --date 2026-03-06  # specific date
     python3 scripts/pipeline.py --dry-run          # print draft, don't write file
+    python3 scripts/pipeline.py --quality-loop     # draft local, review cloud
 
 Runs nightly at 9pm ET via systemd timer. Drafts locally via route.py,
 writes to blog/posts/ for operator review before publishing.
@@ -98,6 +99,28 @@ def draft_post(git_log, diff_stats, date_str):
     return result.stdout.strip()
 
 
+def quality_review(draft):
+    """Use route.py cloud brain to review and improve a draft."""
+    review_prompt = (
+        "You are reviewing a daily build log draft written by a local 8B model. "
+        "Fix factual errors, tighten prose, keep structure intact. "
+        "Output ONLY the revised text. No preamble.\n\n"
+        f"--- DRAFT ---\n{draft}\n--- END DRAFT ---"
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            os.path.join(SCRIPT_DIR, "route.py"),
+            "review", review_prompt,
+        ],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        print(f"warning: quality review failed, using raw draft: {result.stderr}", file=sys.stderr)
+        return draft
+    return result.stdout.strip()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Substrate daily blog pipeline.")
     parser.add_argument(
@@ -107,6 +130,10 @@ def main():
     parser.add_argument(
         "--dry-run", action="store_true",
         help="Print draft to stdout instead of writing file",
+    )
+    parser.add_argument(
+        "--quality-loop", action="store_true",
+        help="Review draft with cloud brain before writing (costs one API call)",
     )
     args = parser.parse_args()
 
@@ -124,6 +151,11 @@ def main():
 
     # Draft via local brain
     draft = draft_post(git_log, diff_stats, date_str)
+
+    # Optional quality review via cloud brain
+    if args.quality_loop:
+        print("[pipeline] running quality review via cloud brain...", file=sys.stderr)
+        draft = quality_review(draft)
 
     # Build the full post
     slug = f"{date_str}-build-log"
