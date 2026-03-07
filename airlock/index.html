@@ -1154,7 +1154,7 @@ function resizeCanvas() {
 
   const scaleX = maxW / 800;
   const scaleY = maxH / 600;
-  const scale = Math.min(scaleX, scaleY, 1); // never upscale beyond 1
+  const scale = Math.min(scaleX, scaleY); // fill available space on mobile
 
   gameWrapper.style.width = 800 + 'px';
   gameWrapper.style.height = 600 + 'px';
