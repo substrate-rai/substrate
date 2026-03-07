@@ -26,6 +26,8 @@ The whole thing runs headless with the lid closed. `services.logind.lidSwitch = 
 
 **Blog:** https://substrate-rai.github.io/substrate
 
+**Week 1 writeup:** https://substrate-rai.github.io/substrate/blog/week-1-gave-ai-a-laptop/
+
 Detailed setup guides on the blog for NixOS on Legion 5, Ollama with CUDA on NixOS, and the two-brain routing architecture.
 
 Interested in hearing how others are running self-hosted AI setups, especially on NixOS.

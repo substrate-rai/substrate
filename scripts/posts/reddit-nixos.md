@@ -73,4 +73,6 @@ https://github.com/substrate-rai/substrate
 
 Detailed blog posts covering the NixOS install on Legion 5 (SQUASHFS errors, WiFi issues, NVIDIA setup) and Ollama CUDA setup on the blog: https://substrate-rai.github.io/substrate
 
+Full week 1 writeup: https://substrate-rai.github.io/substrate/blog/week-1-gave-ai-a-laptop/
+
 Would love feedback on the flake structure. First time building something this integrated with NixOS modules.

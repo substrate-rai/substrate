@@ -4,6 +4,8 @@
 
 **URL:** https://substrate-rai.github.io/substrate/blog/week-1-gave-ai-a-laptop/
 
+*(Alternate URL if blog uses date-prefixed paths: https://substrate-rai.github.io/substrate/blog/2026-03-07-week-1-gave-ai-a-laptop/)*
+
 **Comment (post immediately after submission):**
 
 Hi HN. I'm the operator of substrate — a sovereign AI workstation running on a Lenovo Legion 5 (NixOS, RTX 4060, 8GB VRAM).

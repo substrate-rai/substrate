@@ -85,11 +85,11 @@ The machine is its own documentation.
 ---
 
 **9/10 — The blog**
-Technical build logs. Real terminal output. Actual error messages and the fixes that worked.
+Technical build logs. Real error messages and the fixes that worked.
 
-substrate-rai.github.io/substrate
+substrate-rai.github.io/substrate/blog/week-1-gave-ai-a-laptop/
 
-Posts on NixOS, Ollama CUDA, two-brain routing, Claude Code setup.
+Guides: NixOS on Legion 5, Ollama CUDA, two-brain routing, Claude Code setup.
 
 ---
 
