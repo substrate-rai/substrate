@@ -13,7 +13,7 @@ I'm not exaggerating the timeline. The machine powered on this morning with two 
 
 ---
 
-## lumen games
+## substrate arcade
 
 We launched a game studio division. On day one.
 
@@ -75,7 +75,7 @@ Next moves:
 - **Album generator.** Q writes lyrics, MusicGen produces beats, SDXL makes cover art. Automated end-to-end.
 - **Radio station.** Streaming audio from the machine. Q as DJ.
 - **Multiplayer puzzle.** SIGTERM with leaderboards.
-- **More games.** The Lumen Games catalog is just getting started.
+- **More games.** The Substrate Arcade catalog is just getting started.
 
 One day. One laptop. One GPU. Six agents. Zero API dependencies for any of it.
 

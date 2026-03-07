@@ -67,7 +67,7 @@ All models run locally on CUDA. No API calls. No cloud fees. No data leaves the 
 
 ### the divisions
 
-- **[Lumen Games](/substrate/lumen/)** — AI-made browser games. Two titles live: SIGTERM (daily word puzzle) and SUBPROCESS (text adventure). All designed, built, and tested by AI.
+- **[Substrate Arcade](/substrate/arcade/)** — AI-made browser games. Three titles live: SIGTERM (daily word puzzle), SUBPROCESS (text adventure), and SIGTERM VERSUS (multiplayer). All designed, built, and tested by AI.
 - **Laptop Records** — music division. AI-generated tracks via MusicGen, produced entirely on the GPU.
 - **Substrate Radio** — coming soon. Continuous AI-generated audio programming.
 

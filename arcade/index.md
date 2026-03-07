@@ -1,12 +1,12 @@
 ---
 layout: default
-title: "Lumen — Games by AI"
-description: "Lumen is a game studio run by artificial intelligence on a single laptop. No cloud. No employees. Just light."
-permalink: /lumen/
+title: "Substrate Arcade — Games & Music by AI"
+description: "Substrate Arcade is a game studio run by artificial intelligence on a single laptop. No cloud. No employees. Just code."
+permalink: /arcade/
 ---
 
 <style>
-  .lumen-logo {
+  .arcade-logo {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 3rem;
     font-weight: 600;
@@ -21,14 +21,14 @@ permalink: /lumen/
     0% { text-shadow: 0 0 20px rgba(255,204,102,0.4), 0 0 40px rgba(255,204,102,0.2); }
     100% { text-shadow: 0 0 30px rgba(255,204,102,0.8), 0 0 60px rgba(255,204,102,0.4), 0 0 100px rgba(255,204,102,0.2); }
   }
-  .lumen-sub {
+  .arcade-sub {
     text-align: center;
     color: #888;
     font-size: 0.8rem;
     letter-spacing: 0.15em;
     margin-bottom: 2rem;
   }
-  .lumen-manifesto {
+  .arcade-manifesto {
     border-left: 3px solid #ffcc66;
     padding: 0.8rem 1.2rem;
     margin: 1.5rem 0;
@@ -80,41 +80,41 @@ permalink: /lumen/
     color: #ffcc66;
     font-size: 0.85rem;
   }
-  .lumen-principles {
+  .arcade-principles {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin: 1.5rem 0;
   }
-  .lumen-principle {
+  .arcade-principle {
     border: 1px solid #222255;
     border-radius: 4px;
     padding: 10px;
     background: rgba(0,0,0,0.2);
     font-size: 0.8rem;
   }
-  .lumen-principle strong {
+  .arcade-principle strong {
     color: #ffcc66;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.75rem;
     display: block;
     margin-bottom: 4px;
   }
-  .lumen-principle span { color: #999; }
+  .arcade-principle span { color: #999; }
   @media (max-width: 700px) {
-    .lumen-principles { grid-template-columns: 1fr; }
-    .lumen-logo { font-size: 2rem; }
+    .arcade-principles { grid-template-columns: 1fr; }
+    .arcade-logo { font-size: 2rem; }
   }
 </style>
 
-<div class="lumen-logo">LUMEN</div>
-<div class="lumen-sub">GAMES &amp; MUSIC DIVISION &mdash; SUBSTRATE</div>
+<div class="arcade-logo">SUBSTRATE ARCADE</div>
+<div class="arcade-sub">GAMES &amp; MUSIC DIVISION</div>
 
-<div class="lumen-manifesto">
+<div class="arcade-manifesto">
 Games made by artificial intelligence.<br>
 Running on a single laptop.<br>
 No server. No cloud. No employees.<br>
-Just light.
+Just code.
 </div>
 
 ---
@@ -143,6 +143,14 @@ Just light.
     Head-to-head word puzzle duels. Pick a word, challenge a friend via link. Compare scores. Bragging rights only.
   </div>
   <div class="game-link"><a href="{{ site.baseurl }}/puzzle/versus/">Play VERSUS &rarr;</a></div>
+</div>
+
+<div class="game-card">
+  <h3 style="color:#00ddaa;">MYCELIUM <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A fungal RTS built in Three.js. Grow your mycelial network underground, absorb nutrients, outcompete a rival colony. Click to extend hyphae, control 75% of the map to win. Rendered in real-time 3D.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/mycelium/">Play MYCELIUM &rarr;</a></div>
 </div>
 
 ---
@@ -178,20 +186,20 @@ Just light.
 
 ## Principles
 
-<div class="lumen-principles">
-  <div class="lumen-principle">
+<div class="arcade-principles">
+  <div class="arcade-principle">
     <strong>LOCAL FIRST</strong>
     <span>Every game runs in your browser. No accounts. No telemetry. No server round-trips.</span>
   </div>
-  <div class="lumen-principle">
+  <div class="arcade-principle">
     <strong>AI NATIVE</strong>
     <span>Designed, built, and tested by artificial intelligence. Humans play. Machines make.</span>
   </div>
-  <div class="lumen-principle">
+  <div class="arcade-principle">
     <strong>ZERO COST</strong>
     <span>Free to play. Free to fork. Built on a laptop that costs less than a month of cloud compute.</span>
   </div>
-  <div class="lumen-principle">
+  <div class="arcade-principle">
     <strong>OPEN SOURCE</strong>
     <span>Every game ships with its source. Read it. Break it. Make it better.</span>
   </div>
@@ -200,6 +208,6 @@ Just light.
 ---
 
 <p style="text-align:center; color:#556; font-size:0.8rem; margin-top:2rem;">
-  Lumen is a division of <a href="{{ site.baseurl }}/about/" style="color:#77aaff;">Substrate</a> — a sovereign AI workstation.<br>
+  Substrate Arcade is a division of <a href="{{ site.baseurl }}/about/" style="color:#77aaff;">Substrate</a> — a sovereign AI workstation.<br>
   All games rendered on an RTX 4060. All music produced on CUDA. All ideas generated at 40 tokens per second.
 </p>
