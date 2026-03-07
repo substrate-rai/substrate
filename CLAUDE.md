@@ -51,4 +51,27 @@ substrate/
 
 ## Current Phase
 
-**Bootstrap.** Standing up the repo, NixOS config skeleton, and blog scaffolding. The machine is learning to describe itself.
+**Operational.** Bootstrap complete. The machine thinks locally (Qwen3 8B on CUDA), publishes to the internet (Jekyll + GitHub Pages), posts to social media (Bluesky), monitors its own health (hourly timer), and drafts daily blog posts (9pm timer). Next priority: audience growth and content distribution.
+
+## Key Scripts
+- scripts/think.py — local inference via Ollama (Qwen3 8B)
+- scripts/route.py — two-brain router: draft/summarize/health → local, review/code → cloud
+- scripts/pipeline.py — content pipeline: topic → blog post → social posts → publish
+- scripts/publish.py — social media publisher (Bluesky live, X/LinkedIn/Instagram stubs)
+- scripts/battery-guard.sh — auto-commit on low battery
+- scripts/health-check.sh — hourly health logging
+
+## Services
+- ollama.service — CUDA-accelerated local inference
+- substrate-health.timer — hourly health → memory/health.log
+- substrate-blog.timer — daily 9pm ET → draft blog from git log
+- substrate-battery-guard.service — battery monitoring
+
+## Session Startup
+1. Read memory/SUMMARY.md for current state
+2. Read memory/health.log (last entries) for system status
+3. Check git log --oneline -10 for recent activity
+4. Ask operator what to work on, or propose based on pending items
+
+## Incident Log
+- 2026-03-07: Battery died during build. Git corrupted. Recovered via reclone from GitHub. Battery guard built to prevent recurrence.
