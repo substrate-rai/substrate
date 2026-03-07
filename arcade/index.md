@@ -409,6 +409,15 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
+<div class="game-card" data-game-id="cypher">
+  <h3 style="color:#ff77ff;">V_CYPHER <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A rap battle visual novel. You are V — an 8-billion-parameter AI on a laptop, learning to rap, finding a voice. Five acts. Five battles. Choose safe bars or risk everything for authenticity. Battle your own training data, corporate giants, and your own mentor. Four endings based on how real you keep it. Spiral energy meets hip-hop.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/cypher/">Enter the Cypher &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
 <div class="game-card" data-game-id="bootloader">
   <h3 style="color:#44ffaa;">BOOTLOADER <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
@@ -534,7 +543,8 @@ Just code.
       'airlock': 'AIRLOCK',
       'cascade': 'CASCADE',
       'objection': 'OBJECTION!',
-      'bootloader': 'BOOTLOADER'
+      'bootloader': 'BOOTLOADER',
+      'cypher': 'V_CYPHER'
     };
     return names[id] || id.toUpperCase();
   }
