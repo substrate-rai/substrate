@@ -17,7 +17,6 @@
     isNormalUser = true;
     description = "substrate operator";
     extraGroups = [ "networkmanager" "wheel" "video" "render" ];
-    initialPassword = "changeme";
   };
 
   nixpkgs.config.allowUnfree = true;

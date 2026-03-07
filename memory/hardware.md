@@ -14,7 +14,7 @@
 
 - **Wifi:** MediaTek MT7922 (wlo1) — working via NetworkManager
 - **Ethernet:** enp4s0 — available but not currently connected
-- **Current IP:** 192.168.1.206/24 (wifi, DHCP)
+- **Current IP:** [redacted] (wifi, DHCP)
 
 ## GPU Details
 

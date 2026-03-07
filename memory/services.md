@@ -17,7 +17,7 @@ Last verified: 2026-03-06
 
 ### NetworkManager
 - **Status:** managing wifi (wlo1)
-- **Current connection:** 192.168.1.206/24
+- **Current connection:** [redacted]
 
 ## NixOS Configuration
 
