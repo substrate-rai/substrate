@@ -262,7 +262,7 @@ body {
 #footer a:hover { color: #44ffcc; }
 
 /* Cursor */
-#game-canvas { cursor: crosshair; }
+#game-canvas { cursor: crosshair; touch-action: none; }
 
 /* Tooltip */
 #tooltip {
@@ -350,7 +350,8 @@ body {
       <strong class="enemy-text">ENEMY FUNGUS</strong> (red) competes for the same resources<br><br>
       <strong>WIN</strong> by controlling 75% of all nutrient nodes<br>
       <strong>LOSE</strong> if the enemy takes 75% or your network disconnects<br><br>
-      <strong>SCROLL</strong> to zoom &bull; <strong>RIGHT-DRAG</strong> to pan
+      <strong>SCROLL</strong> to zoom &bull; <strong>RIGHT-DRAG</strong> to pan<br>
+      <strong>TAP</strong> to grow &bull; <strong>DRAG</strong> to pan &bull; <strong>PINCH</strong> to zoom
     </div>
     <button class="start-btn" id="start-btn">GERMINATE</button>
   </div>
@@ -1064,6 +1065,81 @@ function setupInput() {
     const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
     camZoom = Math.max(0.4, Math.min(3.0, camZoom * zoomFactor));
     updateCamera();
+  }, { passive: false });
+
+  // --- Touch controls ---
+  let touchStartTime = 0;
+  let touchStartPos = null;
+  let lastTouchDist = 0;
+  let lastTouchCenter = null;
+  let isTouchPanning = false;
+
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      touchStartTime = Date.now();
+      touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      isTouchPanning = false;
+    } else if (e.touches.length === 2) {
+      // Start pinch/pan
+      const t0 = e.touches[0], t1 = e.touches[1];
+      lastTouchDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      lastTouchCenter = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+      isTouchPanning = true;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1 && touchStartPos) {
+      const dx = e.touches[0].clientX - touchStartPos.x;
+      const dy = e.touches[0].clientY - touchStartPos.y;
+      if (Math.hypot(dx, dy) > 10) isTouchPanning = true;
+      if (isTouchPanning) {
+        camTarget.x -= dx / camZoom;
+        camTarget.y += dy / camZoom;
+        camTarget.x = Math.max(0, Math.min(MAP_W, camTarget.x));
+        camTarget.y = Math.max(0, Math.min(MAP_H, camTarget.y));
+        updateCamera();
+        touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    } else if (e.touches.length === 2) {
+      const t0 = e.touches[0], t1 = e.touches[1];
+      // Pinch zoom
+      const newDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      if (lastTouchDist > 0) {
+        const scale = newDist / lastTouchDist;
+        camZoom = Math.max(0.4, Math.min(3.0, camZoom * scale));
+      }
+      lastTouchDist = newDist;
+      // Two-finger pan
+      const center = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+      if (lastTouchCenter) {
+        camTarget.x -= (center.x - lastTouchCenter.x) / camZoom;
+        camTarget.y += (center.y - lastTouchCenter.y) / camZoom;
+        camTarget.x = Math.max(0, Math.min(MAP_W, camTarget.x));
+        camTarget.y = Math.max(0, Math.min(MAP_H, camTarget.y));
+      }
+      lastTouchCenter = center;
+      updateCamera();
+      isTouchPanning = true;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    // Single quick tap = grow
+    if (e.changedTouches.length === 1 && !isTouchPanning && Date.now() - touchStartTime < 300) {
+      const touch = e.changedTouches[0];
+      const w = screenToWorld(touch.clientX, touch.clientY);
+      playerGrow(w.x, w.y);
+    }
+    if (e.touches.length === 0) {
+      touchStartPos = null;
+      lastTouchDist = 0;
+      lastTouchCenter = null;
+      isTouchPanning = false;
+    }
   }, { passive: false });
 
   // Speed buttons

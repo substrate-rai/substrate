@@ -28,7 +28,7 @@ title: "CHEMISTRY — Substrate Arcade"
     cursor: crosshair;
   }
 
-  canvas { display: block; }
+  canvas { display: block; touch-action: none; }
 
   #game-canvas {
     position: fixed;
@@ -208,6 +208,73 @@ title: "CHEMISTRY — Substrate Arcade"
     color: #ddd;
     margin-bottom: 2px;
   }
+
+  /* Mobile controls */
+  #mobile-controls {
+    display: none;
+    position: fixed;
+    z-index: 20;
+    bottom: 0; left: 0; right: 0;
+    pointer-events: none;
+  }
+  #mobile-controls > * { pointer-events: auto; }
+
+  #joystick-zone {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(0,255,170,0.2);
+  }
+  #joystick-knob {
+    position: absolute;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(0,255,170,0.3);
+    border: 2px solid rgba(0,255,170,0.5);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    transition: none;
+  }
+
+  .mobile-btn {
+    position: absolute;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(0,255,170,0.25);
+    color: #00ffaa;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .mobile-btn:active, .mobile-btn.active {
+    background: rgba(0,255,170,0.2);
+    border-color: #00ffaa;
+  }
+
+  #btn-jump { bottom: 20px; right: 20px; width: 64px; height: 64px; font-size: 18px; }
+  #btn-wind { bottom: 20px; right: 96px; }
+  #btn-reset { bottom: 84px; right: 20px; }
+  #btn-delete { bottom: 84px; right: 96px; font-size: 9px; }
+
+  @media (hover: none) and (pointer: coarse) {
+    #mobile-controls { display: block; }
+    #controls-bar { display: none !important; }
+    #legend { font-size: 0.6rem; padding: 8px 10px; max-height: 50vh; overflow-y: auto; }
+    #description { display: none; }
+    #minimap { width: 100px; height: 100px; }
+  }
 </style>
 </head>
 <body>
@@ -278,6 +345,16 @@ title: "CHEMISTRY — Substrate Arcade"
   <span><kbd>LMB</kbd> place</span>
   <span><kbd>RMB</kbd> delete</span>
   <span><kbd>R</kbd> reset</span>
+</div>
+
+<div id="mobile-controls">
+  <div id="joystick-zone">
+    <div id="joystick-knob"></div>
+  </div>
+  <button class="mobile-btn" id="btn-jump">^</button>
+  <button class="mobile-btn" id="btn-wind">WIND</button>
+  <button class="mobile-btn" id="btn-reset">RST</button>
+  <button class="mobile-btn" id="btn-delete">DEL</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1275,6 +1352,148 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// --- TOUCH INPUT ---
+let deleteMode = false;
+const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+// Virtual joystick
+const joystickZone = document.getElementById('joystick-zone');
+const joystickKnob = document.getElementById('joystick-knob');
+let joystickActive = false;
+let joystickOrigin = null;
+let joystickInput = { x: 0, y: 0 };
+
+if (joystickZone) {
+  joystickZone.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    joystickActive = true;
+    const rect = joystickZone.getBoundingClientRect();
+    joystickOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }, { passive: false });
+
+  joystickZone.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!joystickActive || !joystickOrigin) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - joystickOrigin.x;
+    const dy = touch.clientY - joystickOrigin.y;
+    const maxR = 40;
+    const dist = Math.min(Math.hypot(dx, dy), maxR);
+    const angle = Math.atan2(dy, dx);
+    const clampX = Math.cos(angle) * dist;
+    const clampY = Math.sin(angle) * dist;
+    joystickKnob.style.transform = `translate(calc(-50% + ${clampX}px), calc(-50% + ${clampY}px))`;
+    joystickInput.x = clampX / maxR;
+    joystickInput.y = clampY / maxR;
+  }, { passive: false });
+
+  const resetJoystick = () => {
+    joystickActive = false;
+    joystickInput = { x: 0, y: 0 };
+    joystickKnob.style.transform = 'translate(-50%, -50%)';
+  };
+  joystickZone.addEventListener('touchend', (e) => { e.preventDefault(); resetJoystick(); }, { passive: false });
+  joystickZone.addEventListener('touchcancel', resetJoystick);
+}
+
+// Mobile buttons
+const btnJump = document.getElementById('btn-jump');
+const btnWind = document.getElementById('btn-wind');
+const btnReset = document.getElementById('btn-reset');
+const btnDelete = document.getElementById('btn-delete');
+
+if (btnJump) {
+  btnJump.addEventListener('touchstart', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    keys['KeyW'] = true;
+  }, { passive: false });
+  btnJump.addEventListener('touchend', (e) => {
+    e.preventDefault(); keys['KeyW'] = false;
+  }, { passive: false });
+}
+
+if (btnWind) {
+  btnWind.addEventListener('touchstart', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    windOn = !windOn;
+    updateWindUI();
+    btnWind.classList.toggle('active', windOn);
+  }, { passive: false });
+}
+
+if (btnReset) {
+  btnReset.addEventListener('touchstart', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    initScene();
+    showToast('SANDBOX RESET');
+    deleteMode = false;
+    if (btnDelete) btnDelete.classList.remove('active');
+  }, { passive: false });
+}
+
+if (btnDelete) {
+  btnDelete.addEventListener('touchstart', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    deleteMode = !deleteMode;
+    btnDelete.classList.toggle('active', deleteMode);
+  }, { passive: false });
+}
+
+// Touch on canvas — place or delete
+function touchToWorld(touch) {
+  const rect = canvas.getBoundingClientRect();
+  const ndcX = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+  const ndcY = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+  return { x: ndcX * (WORLD_W / 2), y: ndcY * (WORLD_H / 2) };
+}
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (e.touches.length !== 1) return;
+  const w = touchToWorld(e.touches[0]);
+  mouseWorld.x = w.x;
+  mouseWorld.y = w.y;
+
+  if (deleteMode) {
+    let closest = null, closestDist = Infinity;
+    for (const obj of objects) {
+      if (obj === player || obj.destroyed) continue;
+      const dist = aabbDistance({ x: w.x, y: w.y }, obj);
+      if (dist < Math.max(obj.w, obj.h) && dist < closestDist) {
+        closest = obj; closestDist = dist;
+      }
+    }
+    if (closest) {
+      closest.destroy();
+      objects = objects.filter(o => !o.destroyed);
+    }
+  } else {
+    const type = SPAWN_TYPES[selectedMaterial];
+    if (type) {
+      const newObj = new GameObject(type, w.x, w.y, type === 'fire' || type === 'wind_source');
+      objects.push(newObj);
+    }
+  }
+}, { passive: false });
+
+// Override player update to use joystick input
+const _origUpdatePlayer = updatePlayer;
+updatePlayer = function(dt) {
+  if (joystickActive && player && !player.destroyed) {
+    if (joystickInput.x < -0.3) keys['KeyA'] = true; else keys['KeyA'] = false;
+    if (joystickInput.x > 0.3) keys['KeyD'] = true; else keys['KeyD'] = false;
+    // Up on joystick = jump (only if pushed far enough)
+    if (joystickInput.y < -0.5) keys['KeyW'] = true;
+  }
+  _origUpdatePlayer(dt);
+  if (joystickActive) {
+    // Clear jump after use so it doesn't repeat
+    if (joystickInput.y >= -0.5) keys['KeyW'] = false;
+  }
+};
 
 // --- INIT ---
 initScene();
