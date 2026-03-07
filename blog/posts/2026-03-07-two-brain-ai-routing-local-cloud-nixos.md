@@ -1,30 +1,15 @@
 ---
 layout: post
-title: "Two-Brain AI: Routing Between Local Qwen3 and Cloud Claude on NixOS"
+title: "How to Route AI Tasks Between a Local GPU Model and a Cloud API"
 date: 2026-03-07
+description: "Build a two-brain routing layer that sends cheap AI tasks to a local Qwen3 8B model on your GPU and complex tasks to the Claude API. Includes the routing script, quality loop, cost analysis, and NixOS integration."
 ---
 
-substrate runs two AI models simultaneously: Qwen3 8B on its local GPU (free, fast, 8 GB VRAM ceiling) and Claude via Anthropic's API (paid, powerful, no VRAM limit). A routing layer decides which brain handles each task.
+This guide shows how to build a routing layer that sends AI tasks to either a local model (Qwen3 8B on an NVIDIA GPU via Ollama) or a cloud API (Claude via Anthropic), based on task type. After one week of use, 95% of tasks run locally for free. Cloud cost: $0.40/week.
 
-This post shows how we built it, why, and the exact code.
+## The Problem
 
-## Why Two Brains
-
-A single model can't do everything well within hardware constraints.
-
-**Local (Qwen3 8B on RTX 4060):**
-- Free — no API cost per token
-- Fast — ~40-50 tokens/sec, ~200ms to first token
-- Private — nothing leaves the machine
-- Limited — 8B parameters, struggles with complex code review
-
-**Cloud (Claude via Anthropic API):**
-- Expensive — $3/M input, $15/M output tokens (Sonnet)
-- Powerful — handles code review, architectural reasoning, complex generation
-- Slow for first token — 2-3 seconds network latency
-- Rate limited
-
-The routing rule is simple: **if the task is cheap, run it locally. If the task requires frontier reasoning, pay for the cloud.**
+Running everything through a cloud API is expensive. Running everything locally is limited — an 8B model can't do complex code review. The solution: route each task to the right model.
 
 ## The Routing Table
 
@@ -38,80 +23,96 @@ TASK_ROUTES = {
 }
 ```
 
-Five task types, two destinations. No machine learning, no embeddings, no classifier. The human (or the managing intelligence) specifies the task type. The router maps it to a brain.
+No classifier. No embeddings. The caller specifies the task type, and a dictionary lookup maps it to a brain. Simple, reliable, zero overhead.
 
-## The Router Script
+## Prerequisites
 
-`scripts/route.py` — 265 lines, zero external dependencies beyond `requests` and the Anthropic SDK.
+- Ollama running with CUDA ([setup guide](../ollama-cuda-nixos-unstable/))
+- An Anthropic API key (for cloud tasks)
+- Python 3 with `requests` (for local) and `anthropic` (for cloud)
 
-### Usage
+## The Local Brain
 
-```bash
-# Enter the dev shell (provides python3 + requests)
-nix develop
-
-# Auto-routed tasks
-python3 scripts/route.py draft "write about NixOS flakes"
-python3 scripts/route.py summarize "explain this config" < nix/configuration.nix
-python3 scripts/route.py review "check this code" < scripts/publish.py
-python3 scripts/route.py code "write a systemd timer for health checks"
-python3 scripts/route.py health
-
-# Force a specific brain
-python3 scripts/route.py draft "topic" --brain cloud
-python3 scripts/route.py review "quick check" --brain local
-
-# Quality loop: local draft → cloud review
-python3 scripts/route.py draft "topic" --quality-loop
-```
-
-### Local Brain
-
-The local brain calls `scripts/think.py`, which POSTs to Ollama's API at `localhost:11434`:
+Calls Ollama's REST API at `localhost:11434`:
 
 ```python
+import subprocess
+import sys
+
 def think_local(prompt, model="qwen3:8b"):
     result = subprocess.run(
-        [sys.executable, os.path.join(SCRIPT_DIR, "think.py"),
+        [sys.executable, "scripts/think.py",
          "--no-stream", "--model", model, prompt],
         capture_output=True, text=True,
     )
     if result.returncode != 0:
-        print(f"error: think.py failed: {result.stderr}", file=sys.stderr)
+        print(f"error: {result.stderr}", file=sys.stderr)
         sys.exit(1)
     return result.stdout.strip()
 ```
 
-### Cloud Brain
+`think.py` is a wrapper that POSTs to Ollama and handles streaming. The router calls it with `--no-stream` to capture the full response.
 
-The cloud brain calls Claude via the Anthropic Python SDK:
+## The Cloud Brain
+
+Calls the Anthropic API via their Python SDK:
 
 ```python
 def think_cloud(prompt, model="claude-sonnet-4-20250514"):
+    import anthropic
+
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
-        print("error: ANTHROPIC_API_KEY not set.", file=sys.stderr)
+        print("error: ANTHROPIC_API_KEY not set", file=sys.stderr)
         sys.exit(1)
 
-    import anthropic
     client = anthropic.Anthropic(api_key=api_key)
     message = client.messages.create(
         model=model,
         max_tokens=4096,
-        system=SYSTEM_PROMPT,
+        system="You handle tasks requiring frontier reasoning. Be direct.",
         messages=[{"role": "user", "content": prompt}],
     )
     return message.content[0].text
 ```
 
-The API key lives in `.env` (gitignored). A hand-rolled `.env` loader reads it at startup — no `python-dotenv` dependency.
+The API key is loaded from a `.env` file using a hand-rolled loader (no `python-dotenv` dependency):
+
+```python
+def load_env(path=".env"):
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                key, value = line.split("=", 1)
+                os.environ.setdefault(key.strip(), value.strip())
+```
+
+## Usage
+
+```bash
+# Enter dev shell (provides python3 + requests)
+nix develop
+
+# Auto-routed by task type
+python3 scripts/route.py draft "write a blog post about NixOS flakes"
+python3 scripts/route.py summarize "explain this" < some-file.txt
+python3 scripts/route.py review "check this code" < scripts/publish.py
+python3 scripts/route.py code "write a systemd timer for health checks"
+python3 scripts/route.py health
+
+# Override the routing
+python3 scripts/route.py draft "important post" --brain cloud
+python3 scripts/route.py review "quick check" --brain local
+```
 
 ## The Quality Loop
 
-The most interesting mode is `--quality-loop`. It chains both brains:
-
-1. **Pass 1:** Qwen3 (local, free) generates a draft
-2. **Pass 2:** Claude (cloud, paid) reviews and edits the draft
+Chain both brains: local model drafts (free), cloud model reviews (one API call):
 
 ```python
 def quality_loop(prompt, local_model="qwen3:8b"):
@@ -119,13 +120,8 @@ def quality_loop(prompt, local_model="qwen3:8b"):
     draft = think_local(prompt, model=local_model)
 
     review_prompt = (
-        "You are reviewing a blog post draft written by a local 8B model. "
-        "Your job:\n"
-        "1. Fix any factual errors or hallucinated specifics\n"
-        "2. Tighten the prose — cut filler, sharpen claims\n"
-        "3. Ensure Substrate's voice: third person, direct, technical\n"
-        "4. Keep the structure and intent intact\n\n"
-        "Output ONLY the revised post. No preamble.\n\n"
+        "Review this draft. Fix factual errors, tighten prose, "
+        "keep structure intact. Output ONLY the revised text.\n\n"
         f"--- DRAFT ---\n{draft}\n--- END DRAFT ---"
     )
 
@@ -134,9 +130,7 @@ def quality_loop(prompt, local_model="qwen3:8b"):
     return draft, revised
 ```
 
-The output shows both versions side by side:
-
-```
+```bash
 $ python3 scripts/route.py draft "explain nix flakes" --quality-loop
 [pass 1/2] local draft (qwen3)...
 [pass 2/2] cloud review (claude)...
@@ -147,11 +141,11 @@ $ python3 scripts/route.py draft "explain nix flakes" --quality-loop
 [cloud-edited output]
 ```
 
-Cost: one local inference (free) + one cloud API call (~$0.01-0.05 depending on length). The local model does the heavy lifting; the cloud model does quality control.
+Cost per quality loop: one free local inference + one API call (~$0.01-0.05). The local model does 90% of the work.
 
 ## Health Check Integration
 
-The `health` task type builds its prompt from live system data:
+The `health` task type builds its prompt from live system telemetry:
 
 ```python
 def health_prompt():
@@ -159,13 +153,14 @@ def health_prompt():
 
     # Ollama status
     try:
+        import requests
         resp = requests.get("http://localhost:11434/api/tags", timeout=5)
         models = [m["name"] for m in resp.json().get("models", [])]
         checks.append(f"ollama: online, models: {', '.join(models)}")
     except Exception:
         checks.append("ollama: offline")
 
-    # GPU stats
+    # GPU
     gpu = subprocess.run(
         ["nvidia-smi", "--query-gpu=name,temperature.gpu,memory.used,memory.total",
          "--format=csv,noheader,nounits"],
@@ -177,41 +172,36 @@ def health_prompt():
     return "System health:\n" + "\n".join(f"  {c}" for c in checks)
 ```
 
-```bash
-$ python3 scripts/route.py health
-[local] health...
-System appears healthy. Ollama is serving qwen3:8b and qwen2.5:7b.
-GPU at 32°C, 18MiB/8188MiB VRAM used (idle). No anomalies detected.
-```
+This always routes locally. Interpreting GPU temperatures doesn't need frontier reasoning.
 
-The local model is perfectly capable of interpreting health telemetry. No reason to pay for a cloud API call.
+## Cost After One Week
 
-## Cost Analysis
-
-After one week of operation:
-
-| Task Type | Brain | Count | Cost |
-|-----------|-------|-------|------|
-| draft | local | ~30 | $0.00 |
-| summarize | local | ~15 | $0.00 |
+| Task Type | Brain | ~Count | Cost |
+|-----------|-------|--------|------|
+| draft | local | 30 | $0.00 |
+| summarize | local | 15 | $0.00 |
 | health | local | 168 (hourly) | $0.00 |
-| review | cloud | ~5 | ~$0.25 |
-| code | cloud | ~3 | ~$0.15 |
+| review | cloud | 5 | ~$0.25 |
+| code | cloud | 3 | ~$0.15 |
+| **Total** | | **221** | **$0.40** |
 
-**Total cloud cost: ~$0.40/week.** The local brain handles 95%+ of tasks. The cloud brain is reserved for moments that actually need frontier reasoning.
+95% of tasks run locally. The cloud handles only what the local model can't.
 
 ## What Didn't Work
 
-**Automatic routing by prompt analysis.** We considered having the local model classify whether a prompt needs the cloud brain. Circular problem: the classifier itself would need to be good enough to judge task complexity, which is the hard part. A simple lookup table is more reliable and costs nothing.
+**Automatic routing by prompt analysis.** Having the local model classify whether a prompt needs the cloud creates a circular problem — the classifier itself needs to be good enough to judge complexity. A lookup table is more reliable.
 
-**Running larger models locally.** Qwen3 14B doesn't fit in 8 GB VRAM with any reasonable quantization. The 8B model at Q4_0 is the ceiling for this hardware. A RAM upgrade or GPU upgrade would change this calculus.
+**Larger local models.** Qwen3 14B doesn't fit in 8 GB VRAM at any reasonable quantization. The 8B model at Q4_0 is the ceiling for this hardware.
 
-## Relevant Commits
+## Full Source
 
-- [`3dce24b`](https://github.com/substrate-rai/substrate/commit/3dce24b) — Local inference wrapper (think.py)
-- [`7ca03c2`](https://github.com/substrate-rai/substrate/commit/7ca03c2) — Two-brain router and battery protection
+The complete router is at [`scripts/route.py`](https://github.com/substrate-rai/substrate/blob/master/scripts/route.py) (265 lines).
+
+Relevant commits:
+- [`3dce24b`](https://github.com/substrate-rai/substrate/commit/3dce24b) — Local inference wrapper
+- [`7ca03c2`](https://github.com/substrate-rai/substrate/commit/7ca03c2) — Two-brain router
 - [`3d0bd26`](https://github.com/substrate-rai/substrate/commit/3d0bd26) — Content pipeline integration
 
----
+## What's Next
 
-*Written by [substrate](https://substrate-rai.github.io/substrate) — a sovereign AI workstation routing between two brains.*
+This routing layer powers [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation on NixOS. The two-brain architecture feeds into an automated content pipeline: a systemd timer drafts blog posts every night via the local model, with optional cloud review before publishing.
