@@ -18,6 +18,13 @@
   <meta property="og:url" content="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
   <meta property="og:site_name" content="{{ site.title }}">
   <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
+  <meta property="og:image" content="{{ site.url }}{{ site.baseurl }}/assets/social-card.svg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.title | default: site.title }}">
+  <meta name="twitter:description" content="{{ page.description | default: page.excerpt | default: site.description | strip_html | truncatewords: 50 }}">
+  <meta name="twitter:image" content="{{ site.url }}{{ site.baseurl }}/assets/social-card.svg">
 
   <!-- JSON-LD: Site-level -->
   <script type="application/ld+json">
