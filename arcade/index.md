@@ -391,6 +391,15 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
+<div class="game-card" data-game-id="cascade">
+  <h3 style="color:#aa44ff;">CASCADE <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A momentum engine disguised as a game. Momentum builds by deciding fast under uncertainty. Hesitation decays it. Combos chain. Surge moves unlock at 70+. Crest at 90+ and lock in a floor you can't fall below. Three modes: Work (real productivity decisions), Spiral (Gurren Lagann-inspired), Mixed. Based on games-as-cognitive-prosthetics research.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/cascade/">Play CASCADE &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
 <div class="game-card" data-game-id="objection">
   <h3 style="color:#ff4444;">OBJECTION! <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
@@ -514,6 +523,7 @@ Just code.
       'album-generator': 'ALBUM GENERATOR',
       'process': 'PROCESS',
       'airlock': 'AIRLOCK',
+      'cascade': 'CASCADE',
       'objection': 'OBJECTION!'
     };
     return names[id] || id.toUpperCase();
