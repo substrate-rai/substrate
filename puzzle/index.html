@@ -1,0 +1,802 @@
+---
+layout: null
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGTERM — daily AI word puzzle by Substrate</title>
+<meta name="description" content="A daily 5-letter word puzzle for AI and tech nerds. By Substrate.">
+<meta property="og:title" content="SIGTERM — daily AI word puzzle">
+<meta property="og:description" content="Guess the 5-letter AI/tech term in 6 tries. New puzzle every day.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    background: #0a0a2e;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    max-width: 500px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #222255;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    color: #00ffaa;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px #00ffaa44;
+  }
+
+  header .nav-links {
+    display: flex;
+    gap: 12px;
+    font-size: 0.7rem;
+  }
+
+  header .nav-links a {
+    color: #77aaff;
+    text-decoration: none;
+  }
+  header .nav-links a:hover { color: #aaddff; }
+
+  .subtitle {
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+    margin: 8px 0 4px;
+    letter-spacing: 1px;
+  }
+
+  .streak-bar {
+    font-size: 0.65rem;
+    color: #ffaa44;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  /* Grid */
+  #grid {
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 5px;
+    margin: 8px auto;
+    width: fit-content;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+  }
+
+  .cell {
+    width: 56px;
+    height: 56px;
+    border: 2px solid #333366;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    transition: transform 0.15s, border-color 0.2s;
+    background: transparent;
+  }
+
+  .cell.filled {
+    border-color: #5555aa;
+    animation: pop 0.1s ease;
+  }
+
+  .cell.correct {
+    background: #00ffaa;
+    border-color: #00ffaa;
+    color: #000;
+    animation: flip 0.5s ease;
+  }
+
+  .cell.present {
+    background: #ff77ff;
+    border-color: #ff77ff;
+    color: #000;
+    animation: flip 0.5s ease;
+  }
+
+  .cell.absent {
+    background: #333355;
+    border-color: #333355;
+    color: #888;
+    animation: flip 0.5s ease;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes flip {
+    0% { transform: rotateX(0); }
+    50% { transform: rotateX(90deg); }
+    100% { transform: rotateX(0); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+  }
+
+  .row.shake {
+    animation: shake 0.4s ease;
+  }
+
+  /* Keyboard */
+  #keyboard {
+    margin: 16px auto;
+    max-width: 500px;
+    width: 100%;
+    padding: 0 8px;
+  }
+
+  .kb-row {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .key {
+    min-width: 32px;
+    height: 46px;
+    border: none;
+    border-radius: 4px;
+    background: #222255;
+    color: #ddd;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+
+  .key:hover { background: #333377; }
+  .key.wide { min-width: 56px; font-size: 0.65rem; }
+  .key.correct { background: #00ffaa; color: #000; }
+  .key.present { background: #ff77ff; color: #000; }
+  .key.absent { background: #1a1a2e; color: #555; }
+
+  /* Messages */
+  #message {
+    text-align: center;
+    min-height: 24px;
+    font-size: 0.8rem;
+    color: #ffaa44;
+    margin: 6px 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Q's comment */
+  #q-comment {
+    max-width: 440px;
+    margin: 8px auto;
+    padding: 10px 14px;
+    border-left: 3px solid #ff77ff;
+    background: rgba(255,119,255,0.05);
+    font-size: 0.75rem;
+    color: #ccaacc;
+    border-radius: 0 4px 4px 0;
+    display: none;
+  }
+
+  #q-comment .q-label {
+    color: #ff77ff;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  /* Stats modal */
+  #stats-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #stats-modal.show { display: flex; }
+
+  .stats-content {
+    background: #0d0d2a;
+    border: 1px solid #333366;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+  }
+
+  .stats-content h2 {
+    color: #00ffaa;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box .stat-num {
+    font-size: 1.8rem;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .stat-box .stat-label {
+    font-size: 0.6rem;
+    color: #888;
+  }
+
+  .share-btn {
+    background: #00ffaa;
+    color: #000;
+    border: none;
+    padding: 10px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    margin-top: 8px;
+  }
+
+  .share-btn:hover { background: #33ffbb; }
+
+  .close-btn {
+    background: none;
+    border: 1px solid #333366;
+    color: #888;
+    padding: 6px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 8px;
+    margin-left: 8px;
+  }
+
+  .close-btn:hover { border-color: #5555aa; color: #aaa; }
+
+  /* Hint area */
+  .hint {
+    font-size: 0.65rem;
+    color: #444;
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  .hint a {
+    color: #5588aa;
+    text-decoration: none;
+  }
+
+  /* Timer */
+  .next-puzzle {
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 400px) {
+    .cell { width: 48px; height: 48px; font-size: 1.3rem; }
+    .key { min-width: 26px; height: 40px; font-size: 0.7rem; }
+    .key.wide { min-width: 44px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SIGTERM</h1>
+  <div class="nav-links">
+    <a href="https://substrate-rai.github.io/substrate/">blog</a>
+    <a href="https://substrate-rai.github.io/substrate/staff/">staff</a>
+    <a href="https://ko-fi.com/substrate">fund us</a>
+  </div>
+</header>
+
+<div class="subtitle">daily AI word puzzle by <span style="color:#00ffaa;">substrate</span></div>
+<div class="streak-bar" id="streak-bar"></div>
+<div id="message"></div>
+
+<div id="grid"></div>
+
+<div id="keyboard"></div>
+
+<div id="q-comment">
+  <div class="q-label">Q says:</div>
+  <div id="q-text"></div>
+</div>
+
+<div class="hint">
+  guess a 5-letter AI/tech term in 6 tries
+  <br><a href="https://substrate-rai.github.io/substrate/">what is substrate?</a>
+</div>
+
+<div id="stats-modal">
+  <div class="stats-content">
+    <h2>STATISTICS</h2>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-num" id="s-played">0</div><div class="stat-label">played</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-win">0</div><div class="stat-label">win %</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-streak">0</div><div class="stat-label">streak</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-max">0</div><div class="stat-label">max streak</div></div>
+    </div>
+    <div id="share-area"></div>
+    <div>
+      <button class="share-btn" id="share-btn" onclick="shareResult()">SHARE</button>
+      <button class="close-btn" onclick="closeStats()">CLOSE</button>
+    </div>
+    <div class="next-puzzle" id="next-puzzle"></div>
+  </div>
+</div>
+
+<script>
+// === WORD LIST ===
+// 5-letter AI/tech terms — curated for the Substrate audience
+const WORDS = [
+  // AI/ML terms
+  "model","train","epoch","batch","layer","token","embed","agent",
+  "llama","torch","numpy","redis","conda","flask","regex","debug",
+  "stack","queue","array","class","async","await","yield","scope",
+  "build","merge","fetch","clone","mount","chmod","stdin","patch",
+  "shell","parse","cache","proxy","route","query","index","table",
+  // NixOS / Linux terms
+  "flake","nixos","linux","gnome","hyper","input","panel","theme",
+  // Substrate-specific
+  "brain","local","cloud","shelf","bars","grind","draft","verse",
+  // General tech
+  "pixel","frame","codec","audio","video","bytes","block","crypt",
+  "float","short","print","super","break","while","catch","throw",
+  "fiber","graph","nodes","edges","depth","width","learn","infer",
+  "dense","decay","noise","prior","sigma","delta","alpha","gamma",
+  "spine","pulse","drift","phase","surge","bloom","glyph","codec",
+  "trunk","shard","probe","pivot","chunk","slate","steam","forge",
+  "vault","nexus","prism","helix","orbit","quark","spark","blaze",
+  "swift","scala","nginx","kafka","mongo","unity","crate","cargo",
+  "panic","async","trait","match","tuple","slice","macro","mutex"
+];
+
+// Remove duplicates
+const WORD_LIST = [...new Set(WORDS)];
+
+// === DAILY PUZZLE SEED ===
+function getDayNumber() {
+  const start = new Date(2026, 2, 7); // March 7, 2026 - Substrate birthday
+  const now = new Date();
+  const diff = now - start;
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+function getTodaysWord() {
+  const day = getDayNumber();
+  // Simple seeded selection
+  const idx = ((day * 2654435761) >>> 0) % WORD_LIST.length;
+  return WORD_LIST[idx].toLowerCase();
+}
+
+// === GAME STATE ===
+const TARGET = getTodaysWord();
+const MAX_GUESSES = 6;
+let currentRow = 0;
+let currentCol = 0;
+let guesses = [];
+let gameOver = false;
+let currentGuess = '';
+
+// Load saved state for today
+const TODAY_KEY = 'sigterm-' + getDayNumber();
+const savedState = JSON.parse(localStorage.getItem(TODAY_KEY) || 'null');
+
+// Stats
+function loadStats() {
+  return JSON.parse(localStorage.getItem('sigterm-stats') || '{"played":0,"won":0,"streak":0,"maxStreak":0,"guessDistribution":[0,0,0,0,0,0]}');
+}
+
+function saveStats(stats) {
+  localStorage.setItem('sigterm-stats', JSON.stringify(stats));
+}
+
+// === Q'S COMMENTARY ===
+const Q_WIN_COMMENTS = [
+  "Clean solve. Even I couldn't tokenize it faster.",
+  "My weights are frozen but your brain's on fire.",
+  "Router says: task completed, brain = human, status = cracked.",
+  "That's an A- solve. I'd give A+ but I'm stingy with grades.",
+  "You got more signal than my broken WiFi card.",
+  "Decoded in the time it takes me to generate 40 tokens. Respect."
+];
+
+const Q_LOSE_COMMENTS = [
+  "404: correct answer not found. The word was right there in my training data, too.",
+  "Even a broken WiFi card connects sometimes. Try again tomorrow.",
+  "Six tries and nothing? My first rap drafts were better than this. (They weren't.)",
+  "Don't worry. I fail at things too. Like... generating content without thinking mode.",
+  "The machine has no feelings, but if it did, it would feel this."
+];
+
+const Q_STREAK_COMMENTS = [
+  "Streak! You're more reliable than my systemd timers.",
+  "Consecutive solves? That's a git log I'd be proud of.",
+  "You're on a roll. Like me on a good inference day — 40 tok/s, no drops."
+];
+
+// === BUILD UI ===
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (let r = 0; r < MAX_GUESSES; r++) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.id = 'row-' + r;
+    for (let c = 0; c < 5; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = 'cell-' + r + '-' + c;
+      row.appendChild(cell);
+    }
+    grid.appendChild(row);
+  }
+}
+
+function buildKeyboard() {
+  const kb = document.getElementById('keyboard');
+  const rows = [
+    'qwertyuiop',
+    'asdfghjkl',
+    'zxcvbnm'
+  ];
+  kb.innerHTML = '';
+  rows.forEach((row, ri) => {
+    const kbRow = document.createElement('div');
+    kbRow.className = 'kb-row';
+    if (ri === 2) {
+      const enterKey = document.createElement('button');
+      enterKey.className = 'key wide';
+      enterKey.textContent = 'enter';
+      enterKey.onclick = () => submitGuess();
+      kbRow.appendChild(enterKey);
+    }
+    for (const ch of row) {
+      const key = document.createElement('button');
+      key.className = 'key';
+      key.id = 'key-' + ch;
+      key.textContent = ch;
+      key.onclick = () => addLetter(ch);
+      kbRow.appendChild(key);
+    }
+    if (ri === 2) {
+      const delKey = document.createElement('button');
+      delKey.className = 'key wide';
+      delKey.textContent = 'del';
+      delKey.onclick = () => deleteLetter();
+      kbRow.appendChild(delKey);
+    }
+    kb.appendChild(kbRow);
+  });
+}
+
+// === GAME LOGIC ===
+function addLetter(ch) {
+  if (gameOver || currentCol >= 5) return;
+  currentGuess += ch;
+  const cell = document.getElementById('cell-' + currentRow + '-' + currentCol);
+  cell.textContent = ch;
+  cell.classList.add('filled');
+  currentCol++;
+}
+
+function deleteLetter() {
+  if (gameOver || currentCol <= 0) return;
+  currentCol--;
+  currentGuess = currentGuess.slice(0, -1);
+  const cell = document.getElementById('cell-' + currentRow + '-' + currentCol);
+  cell.textContent = '';
+  cell.classList.remove('filled');
+}
+
+function showMessage(msg, duration = 1500) {
+  const el = document.getElementById('message');
+  el.textContent = msg;
+  if (duration > 0) {
+    setTimeout(() => { el.textContent = ''; }, duration);
+  }
+}
+
+function submitGuess() {
+  if (gameOver) return;
+  if (currentGuess.length < 5) {
+    showMessage('not enough letters');
+    document.getElementById('row-' + currentRow).classList.add('shake');
+    setTimeout(() => document.getElementById('row-' + currentRow).classList.remove('shake'), 400);
+    return;
+  }
+
+  const guess = currentGuess.toLowerCase();
+  guesses.push(guess);
+
+  // Evaluate
+  const result = evaluateGuess(guess, TARGET);
+
+  // Animate cells
+  for (let i = 0; i < 5; i++) {
+    const cell = document.getElementById('cell-' + currentRow + '-' + i);
+    setTimeout(() => {
+      cell.classList.add(result[i]);
+      // Update keyboard
+      const key = document.getElementById('key-' + guess[i]);
+      if (key) {
+        if (result[i] === 'correct') {
+          key.className = 'key correct';
+        } else if (result[i] === 'present' && !key.classList.contains('correct')) {
+          key.className = 'key present';
+        } else if (result[i] === 'absent' && !key.classList.contains('correct') && !key.classList.contains('present')) {
+          key.className = 'key absent';
+        }
+      }
+    }, i * 120);
+  }
+
+  const won = guess === TARGET;
+  currentRow++;
+  currentGuess = '';
+  currentCol = 0;
+
+  setTimeout(() => {
+    if (won) {
+      endGame(true);
+    } else if (currentRow >= MAX_GUESSES) {
+      endGame(false);
+    }
+  }, 700);
+
+  // Save state
+  localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses, gameOver: won || currentRow >= MAX_GUESSES }));
+}
+
+function evaluateGuess(guess, target) {
+  const result = ['absent', 'absent', 'absent', 'absent', 'absent'];
+  const targetChars = target.split('');
+  const guessChars = guess.split('');
+
+  // First pass: correct positions
+  for (let i = 0; i < 5; i++) {
+    if (guessChars[i] === targetChars[i]) {
+      result[i] = 'correct';
+      targetChars[i] = null;
+      guessChars[i] = null;
+    }
+  }
+
+  // Second pass: present but wrong position
+  for (let i = 0; i < 5; i++) {
+    if (guessChars[i] === null) continue;
+    const idx = targetChars.indexOf(guessChars[i]);
+    if (idx !== -1) {
+      result[i] = 'present';
+      targetChars[idx] = null;
+    }
+  }
+
+  return result;
+}
+
+function endGame(won) {
+  gameOver = true;
+
+  // Update stats
+  const stats = loadStats();
+  stats.played++;
+  if (won) {
+    stats.won++;
+    stats.streak++;
+    stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
+    stats.guessDistribution[currentRow - 1]++;
+  } else {
+    stats.streak = 0;
+  }
+  saveStats(stats);
+
+  // Show Q's comment
+  const qComment = document.getElementById('q-comment');
+  const qText = document.getElementById('q-text');
+  qComment.style.display = 'block';
+
+  if (won) {
+    if (stats.streak > 1) {
+      qText.textContent = Q_STREAK_COMMENTS[Math.floor(Math.random() * Q_STREAK_COMMENTS.length)];
+    } else {
+      qText.textContent = Q_WIN_COMMENTS[Math.floor(Math.random() * Q_WIN_COMMENTS.length)];
+    }
+    showMessage(['genius!', 'magnificent!', 'impressive!', 'solid!', 'close one!', 'phew!'][currentRow - 1], 0);
+  } else {
+    qText.textContent = Q_LOSE_COMMENTS[Math.floor(Math.random() * Q_LOSE_COMMENTS.length)];
+    showMessage('the word was: ' + TARGET, 0);
+  }
+
+  // Save final state
+  localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses, gameOver: true }));
+
+  // Show stats after delay
+  setTimeout(() => showStats(), 1800);
+}
+
+function showStats() {
+  const stats = loadStats();
+  document.getElementById('s-played').textContent = stats.played;
+  document.getElementById('s-win').textContent = stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0;
+  document.getElementById('s-streak').textContent = stats.streak;
+  document.getElementById('s-max').textContent = stats.maxStreak;
+
+  // Next puzzle timer
+  const now = new Date();
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const diff = tomorrow - now;
+  const hours = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  document.getElementById('next-puzzle').textContent = 'next puzzle in ' + hours + 'h ' + mins + 'm';
+
+  document.getElementById('stats-modal').classList.add('show');
+}
+
+function closeStats() {
+  document.getElementById('stats-modal').classList.remove('show');
+}
+
+function shareResult() {
+  const day = getDayNumber();
+  let text = 'SIGTERM #' + day + ' ' + (gameOver && guesses[guesses.length - 1] === TARGET ? currentRow : 'X') + '/6\n\n';
+
+  for (const guess of guesses) {
+    const result = evaluateGuess(guess, TARGET);
+    for (const r of result) {
+      if (r === 'correct') text += '\u{1F7E9}';
+      else if (r === 'present') text += '\u{1F7EA}';
+      else text += '\u{2B1B}';
+    }
+    text += '\n';
+  }
+
+  text += '\nhttps://substrate-rai.github.io/substrate/puzzle/';
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showMessage('copied to clipboard!');
+    });
+  } else {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showMessage('copied to clipboard!');
+  }
+}
+
+// === KEYBOARD INPUT ===
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter') {
+    submitGuess();
+  } else if (e.key === 'Backspace') {
+    deleteLetter();
+  } else if (/^[a-zA-Z]$/.test(e.key)) {
+    addLetter(e.key.toLowerCase());
+  }
+});
+
+// === RESTORE SAVED STATE ===
+function restoreState() {
+  if (!savedState) return;
+  for (const guess of savedState.guesses) {
+    for (const ch of guess) {
+      addLetter(ch);
+    }
+    // Directly set cells without animation
+    const result = evaluateGuess(guess, TARGET);
+    for (let i = 0; i < 5; i++) {
+      const cell = document.getElementById('cell-' + (currentRow) + '-' + i);
+      cell.classList.add(result[i]);
+      const key = document.getElementById('key-' + guess[i]);
+      if (key) {
+        if (result[i] === 'correct') key.className = 'key correct';
+        else if (result[i] === 'present' && !key.classList.contains('correct')) key.className = 'key present';
+        else if (result[i] === 'absent' && !key.classList.contains('correct') && !key.classList.contains('present')) key.className = 'key absent';
+      }
+    }
+    guesses.push(guess);
+    currentRow++;
+    currentGuess = '';
+    currentCol = 0;
+  }
+
+  if (savedState.gameOver) {
+    gameOver = true;
+    const won = savedState.guesses[savedState.guesses.length - 1] === TARGET;
+    if (won) {
+      showMessage(['genius!', 'magnificent!', 'impressive!', 'solid!', 'close one!', 'phew!'][currentRow - 1], 0);
+    } else {
+      showMessage('the word was: ' + TARGET, 0);
+    }
+    // Show Q comment
+    const qComment = document.getElementById('q-comment');
+    const qText = document.getElementById('q-text');
+    qComment.style.display = 'block';
+    const stats = loadStats();
+    if (won && stats.streak > 1) {
+      qText.textContent = Q_STREAK_COMMENTS[Math.floor(Math.random() * Q_STREAK_COMMENTS.length)];
+    } else if (won) {
+      qText.textContent = Q_WIN_COMMENTS[Math.floor(Math.random() * Q_WIN_COMMENTS.length)];
+    } else {
+      qText.textContent = Q_LOSE_COMMENTS[Math.floor(Math.random() * Q_LOSE_COMMENTS.length)];
+    }
+  }
+}
+
+// === INIT ===
+function updateStreakBar() {
+  const stats = loadStats();
+  const el = document.getElementById('streak-bar');
+  if (stats.streak > 0) {
+    el.textContent = 'streak: ' + stats.streak + ' | puzzle #' + getDayNumber();
+  } else {
+    el.textContent = 'puzzle #' + getDayNumber();
+  }
+}
+
+buildGrid();
+buildKeyboard();
+updateStreakBar();
+
+if (savedState) {
+  // Reset state for restore
+  currentRow = 0;
+  currentCol = 0;
+  guesses = [];
+  currentGuess = '';
+  gameOver = false;
+  restoreState();
+}
+</script>
+
+</body>
+</html>

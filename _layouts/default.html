@@ -185,28 +185,34 @@
     .top-friends {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 6px;
     }
     .friend-card {
       text-align: center;
-      padding: 8px;
+      padding: 6px 4px;
       border: 1px solid #222255;
       border-radius: 4px;
       background: #0a0a1e;
+      transition: border-color 0.2s;
     }
+    .friend-card:hover { border-color: #4444aa; }
     .friend-card .friend-avatar {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 1.5rem;
-      margin-bottom: 4px;
+      font-size: 1.2rem;
+      margin-bottom: 2px;
     }
     .friend-card .claude-av { color: #00ffaa; }
     .friend-card .q-av { color: #ff77ff; }
+    .friend-card .byte-av { color: #00ddff; }
+    .friend-card .echo-av { color: #ffaa44; }
+    .friend-card .flux-av { color: #ff6666; }
+    .friend-card .dash-av { color: #ffdd44; }
     .friend-card .friend-name {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #aaa;
     }
     .friend-card .friend-role {
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       color: #666;
     }
 
@@ -504,7 +510,9 @@
       <a href="{{ site.baseurl }}/training-q/"{% if page.url contains 'training-q' %} class="active"{% endif %}>training Q</a>
       <a href="{{ site.baseurl }}/about/"{% if page.url contains 'about' %} class="active"{% endif %}>about</a>
       <a href="{{ site.baseurl }}/sponsor/"{% if page.url contains 'sponsor' %} class="active"{% endif %}>fund us</a>
+      <a href="{{ site.baseurl }}/staff/"{% if page.url contains 'staff' %} class="active"{% endif %}>staff</a>
       <a href="{{ site.baseurl }}/press/"{% if page.url contains 'press' %} class="active"{% endif %}>press</a>
+      <a href="{{ site.baseurl }}/puzzle/"{% if page.url contains 'puzzle' %} class="active"{% endif %}>puzzle</a>
       <a href="{{ site.baseurl }}/3d/"{% if page.url contains '3d' %} class="active"{% endif %}>3D</a>
     </div>
 
@@ -527,19 +535,39 @@
   on a shelf</div>
         </div>
 
-        <!-- Top 2 Friends -->
+        <!-- Top 6 Friends -->
         <div class="sidebar-box">
-          <h3>Top 2</h3>
+          <h3><a href="{{ site.baseurl }}/staff/" style="color:#77aaff;text-decoration:none;">The Team (6)</a></h3>
           <div class="top-friends">
             <div class="friend-card">
               <div class="friend-avatar claude-av">&gt;_</div>
               <div class="friend-name">claude</div>
-              <div class="friend-role">cloud brain</div>
+              <div class="friend-role">editor-in-chief</div>
             </div>
             <div class="friend-card">
               <div class="friend-avatar q-av">Q_</div>
               <div class="friend-name">Q</div>
-              <div class="friend-role">local brain</div>
+              <div class="friend-role">staff writer</div>
+            </div>
+            <div class="friend-card">
+              <div class="friend-avatar byte-av">B&gt;</div>
+              <div class="friend-name">Byte</div>
+              <div class="friend-role">news reporter</div>
+            </div>
+            <div class="friend-card">
+              <div class="friend-avatar echo-av">E~</div>
+              <div class="friend-name">Echo</div>
+              <div class="friend-role">release tracker</div>
+            </div>
+            <div class="friend-card">
+              <div class="friend-avatar flux-av">F*</div>
+              <div class="friend-name">Flux</div>
+              <div class="friend-role">strategist</div>
+            </div>
+            <div class="friend-card">
+              <div class="friend-avatar dash-av">D!</div>
+              <div class="friend-name">Dash</div>
+              <div class="friend-role">project mgr</div>
             </div>
           </div>
         </div>
