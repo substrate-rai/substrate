@@ -344,16 +344,16 @@ body {
     <h1>MYCELIUM</h1>
     <div class="subtitle">grow beneath the surface</div>
     <div class="instructions">
-      <strong>CLICK</strong> near your network to extend hyphae outward<br><br>
-      <strong>NUTRIENTS</strong> (yellow) fuel your growth &mdash; reach them to absorb<br><br>
-      <strong>WATER</strong> (blue) boosts growth speed &mdash; expand through patches<br><br>
-      <strong class="enemy-text">ENEMY FUNGUS</strong> (red) competes for the same resources<br><br>
-      <strong>WIN</strong> by controlling 75% of all nutrient nodes<br>
-      <strong>LOSE</strong> if the enemy takes 75% or your network disconnects<br><br>
-      <strong>SCROLL</strong> to zoom &bull; <strong>RIGHT-DRAG</strong> to pan<br>
-      <strong>TAP</strong> to grow &bull; <strong>DRAG</strong> to pan &bull; <strong>PINCH</strong> to zoom
+      <strong>TAP / CLICK</strong> near your network to expand<br><br>
+      <strong>CREEP</strong> &mdash; your network auto-spreads from frontier nodes<br><br>
+      <strong>NUTRIENTS</strong> (yellow) are minerals &mdash; absorb them to fuel expansion<br><br>
+      <strong>WATER</strong> (blue) is vespene &mdash; accelerates your creep spread<br><br>
+      <strong class="enemy-text">ENEMY SWARM</strong> (red) is rushing &mdash; expand or be consumed<br><br>
+      <strong>WIN</strong> by controlling 75% of all nodes<br>
+      <strong>LOSE</strong> if they take 75% or your network disconnects<br><br>
+      <strong>DRAG</strong> to pan &bull; <strong>PINCH</strong> to zoom
     </div>
-    <button class="start-btn" id="start-btn">GERMINATE</button>
+    <button class="start-btn" id="start-btn">SPAWN HATCHERY</button>
   </div>
 </div>
 
@@ -374,15 +374,17 @@ body {
 // MYCELIUM — A fungal RTS by Substrate
 // ============================================================
 
-const MAP_W = 800, MAP_H = 600;
-const NUTRIENT_COUNT = 60;
-const WATER_PATCH_COUNT = 12;
+const MAP_W = 500, MAP_H = 400;
+const NUTRIENT_COUNT = 40;
+const WATER_PATCH_COUNT = 8;
 const WIN_THRESHOLD = 0.75;
 const HYPHA_COST = 2;
-const MAX_HYPHA_LEN = 80;
-const GROWTH_INTERVAL_BASE = 800; // ms between enemy growth ticks
-const ABSORB_RADIUS = 25;
-const CONNECT_RADIUS = 70;
+const MAX_HYPHA_LEN = 60;
+const GROWTH_INTERVAL_BASE = 600; // ms between enemy growth ticks (faster = more Zerg pressure)
+const ABSORB_RADIUS = 22;
+const CONNECT_RADIUS = 55;
+const CREEP_INTERVAL = 1200; // ms between auto-spread ticks
+const CREEP_RANGE = 35; // auto-spread tendril length
 
 let scene, camera, renderer;
 let clock = new THREE.Clock();
@@ -451,7 +453,7 @@ function createBackground() {
   scene.add(bg);
 
   // Soil particles for texture
-  for (let i = 0; i < 400; i++) {
+  for (let i = 0; i < 250; i++) {
     const x = Math.random() * MAP_W;
     const y = Math.random() * MAP_H;
     const size = 1 + Math.random() * 3;
@@ -653,8 +655,8 @@ function initGame() {
 
   // Place water patches
   for (let i = 0; i < WATER_PATCH_COUNT; i++) {
-    const x = 60 + Math.random() * (MAP_W - 120);
-    const y = 60 + Math.random() * (MAP_H - 120);
+    const x = 40 + Math.random() * (MAP_W - 80);
+    const y = 40 + Math.random() * (MAP_H - 80);
     waterPatches.push(createWaterPatch(x, y));
   }
 
@@ -663,22 +665,22 @@ function initGame() {
     let x, y, valid;
     // Ensure nutrients aren't too close to each other
     do {
-      x = 40 + Math.random() * (MAP_W - 80);
-      y = 40 + Math.random() * (MAP_H - 80);
+      x = 30 + Math.random() * (MAP_W - 60);
+      y = 30 + Math.random() * (MAP_H - 60);
       valid = true;
       for (const n of nutrients) {
-        if (dist({ x, y }, n) < 35) { valid = false; break; }
+        if (dist({ x, y }, n) < 25) { valid = false; break; }
       }
     } while (!valid);
     nutrients.push(createNutrient(x, y));
   }
 
-  // Player spore — left side
-  const pSpore = createNode(100, MAP_H / 2, true, true);
+  // Player hatchery — left side
+  const pSpore = createNode(80, MAP_H / 2, true, true);
   playerNodes.push(pSpore);
 
-  // Enemy spore — right side
-  const eSpore = createNode(MAP_W - 100, MAP_H / 2, false, true);
+  // Enemy hatchery — right side
+  const eSpore = createNode(MAP_W - 80, MAP_H / 2, false, true);
   enemyNodes.push(eSpore);
 
   // Camera center
@@ -776,6 +778,7 @@ function absorbNutrient(nut, isPlayer, node) {
 
 // Enemy AI
 let enemyTimer = 0;
+let creepTimer = 0;
 function enemyTick(dt) {
   enemyTimer += dt * 1000 * gameSpeed;
   const interval = GROWTH_INTERVAL_BASE;
@@ -819,6 +822,53 @@ function enemyTick(dt) {
   newNode.connections.push(bestNode);
 
   checkAbsorption(newNode, false);
+}
+
+// Zerg-style creep spread — player network auto-expands slowly
+function creepSpread(dt) {
+  creepTimer += dt * 1000 * gameSpeed;
+  // Faster near water nodes
+  const hasWaterBoost = playerNodes.some(n => isInWater(n.x, n.y));
+  const interval = hasWaterBoost ? CREEP_INTERVAL * 0.6 : CREEP_INTERVAL;
+  if (creepTimer < interval) return;
+  creepTimer -= interval;
+
+  if (playerNodes.length === 0 || playerNutrients < 1) return;
+
+  // Pick a random frontier node (one with fewer connections = edge of network)
+  const frontier = playerNodes.filter(n => n.connections.length < 3);
+  if (frontier.length === 0) return;
+  const source = frontier[Math.floor(Math.random() * frontier.length)];
+
+  // Grow a short tendril in a random direction, biased toward nearest nutrient
+  let angle;
+  const nearNut = nutrients.find(nut => !nut.absorbed && dist(source, nut) < CREEP_RANGE * 3);
+  if (nearNut && Math.random() < 0.7) {
+    angle = Math.atan2(nearNut.y - source.y, nearNut.x - source.x);
+    angle += (Math.random() - 0.5) * 0.4; // slight wobble
+  } else {
+    angle = Math.random() * Math.PI * 2;
+  }
+
+  const len = CREEP_RANGE * (0.6 + Math.random() * 0.4);
+  let tx = source.x + Math.cos(angle) * len;
+  let ty = source.y + Math.sin(angle) * len;
+  tx = Math.max(10, Math.min(MAP_W - 10, tx));
+  ty = Math.max(10, Math.min(MAP_H - 10, ty));
+
+  // Don't place too close to existing
+  for (const n of playerNodes) {
+    if (dist({ x: tx, y: ty }, n) < 12) return;
+  }
+
+  playerNutrients -= 1;
+  const newNode = createNode(tx, ty, true);
+  playerNodes.push(newNode);
+  const edge = createEdge(source, newNode, true);
+  playerEdges.push(edge);
+  source.connections.push(newNode);
+  newNode.connections.push(source);
+  checkAbsorption(newNode, true);
 }
 
 // Check win/lose conditions
@@ -1187,6 +1237,7 @@ function gameLoop() {
 
   if (gameRunning && !gameOver && gameSpeed > 0) {
     enemyTick(dt);
+    creepSpread(dt);
     passiveIncome(dt);
 
     // Periodic checks

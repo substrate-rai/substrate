@@ -357,6 +357,41 @@ title: "TACTICS — Substrate Arcade"
     touch-action: none;
   }
 
+  /* FFT-style camera rotate buttons */
+  #camera-controls {
+    display: none;
+    position: absolute;
+    z-index: 15;
+    bottom: 12px;
+    right: 12px;
+    gap: 8px;
+  }
+  .cam-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: rgba(10, 10, 30, 0.85);
+    border: 1px solid #3a3a6a;
+    color: #8888cc;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .cam-btn:active {
+    background: rgba(68, 136, 255, 0.25);
+    border-color: #4488ff;
+    color: #fff;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    #camera-controls { display: flex; }
+    #controls-hint { display: none; }
+  }
+
   /* Mobile responsive styles */
   @media (max-width: 768px) {
     #turn-order {
@@ -445,13 +480,13 @@ title: "TACTICS — Substrate Arcade"
 
   @media (max-width: 480px) {
     #unit-info {
-      bottom: 4px; left: 4px;
+      bottom: 68px; left: 4px;
       padding: 8px 10px;
       min-width: 140px;
       max-width: 50vw;
     }
     #tile-info {
-      bottom: 4px; right: 4px;
+      bottom: 68px; right: 4px;
       min-width: 90px;
     }
     #action-menu {
@@ -504,6 +539,10 @@ title: "TACTICS — Substrate Arcade"
   <button id="restart-btn" role="button" aria-label="Restart game" onclick="game.restart()">Play Again</button>
 </div>
 
+<div id="camera-controls" aria-label="Camera controls">
+  <button class="cam-btn" id="cam-left" aria-label="Rotate camera left">&larr;</button>
+  <button class="cam-btn" id="cam-right" aria-label="Rotate camera right">&rarr;</button>
+</div>
 <div id="controls-hint" class="ui-overlay" role="note" aria-label="Game controls">Q/E rotate | Scroll zoom | Click to select</div>
 <div id="footer" class="ui-overlay"><a href="{{ site.baseurl }}/arcade/">a Substrate Arcade production</a></div>
 
@@ -727,8 +766,20 @@ class TacticsGame {
     // Update controls hint for touch devices
     this._isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (this._isTouchDevice) {
-      document.getElementById('controls-hint').textContent = 'Tap to select | 2-finger drag to rotate | Pinch to zoom';
+      document.getElementById('controls-hint').textContent = 'Tap to select | Drag to pan | Pinch to zoom';
     }
+
+    // FFT-style camera rotate buttons
+    const camLeft = document.getElementById('cam-left');
+    const camRight = document.getElementById('cam-right');
+    if (camLeft) camLeft.addEventListener('click', () => {
+      this.cameraAngle -= Math.PI / 4;
+      this.updateCamera();
+    });
+    if (camRight) camRight.addEventListener('click', () => {
+      this.cameraAngle += Math.PI / 4;
+      this.updateCamera();
+    });
 
     this.clock = new THREE.Clock();
     this.init();
@@ -1919,6 +1970,8 @@ class TacticsGame {
       this._touchState.startTime = Date.now();
       this._touchState.startX = touches[0].clientX;
       this._touchState.startY = touches[0].clientY;
+      this._touchState.lastX = touches[0].clientX;
+      this._touchState.lastY = touches[0].clientY;
       this._touchState.moved = false;
       this._touchState.twoFinger = false;
     } else if (touches.length === 2) {
@@ -1965,12 +2018,25 @@ class TacticsGame {
       this._touchState.twoFinger = true;
       this._touchState.moved = true;
     } else if (touches.length === 1 && !this._touchState.twoFinger) {
-      // Single finger drag detection (to distinguish from tap)
+      // Single finger drag = pan camera (FFT-style)
       const moveX = touches[0].clientX - this._touchState.startX;
       const moveY = touches[0].clientY - this._touchState.startY;
       if (Math.abs(moveX) > 10 || Math.abs(moveY) > 10) {
         this._touchState.moved = true;
       }
+      if (this._touchState.moved) {
+        const dx = touches[0].clientX - (this._touchState.lastX || touches[0].clientX);
+        const dy = touches[0].clientY - (this._touchState.lastY || touches[0].clientY);
+        // Pan perpendicular to camera angle
+        const panSpeed = 0.03;
+        const cosA = Math.cos(this.cameraAngle);
+        const sinA = Math.sin(this.cameraAngle);
+        this.cameraTarget.x += (-dx * sinA + dy * cosA) * panSpeed;
+        this.cameraTarget.z += (dx * cosA + dy * sinA) * panSpeed;
+        this.updateCamera();
+      }
+      this._touchState.lastX = touches[0].clientX;
+      this._touchState.lastY = touches[0].clientY;
     }
   }
 
