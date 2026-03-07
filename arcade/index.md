@@ -341,6 +341,15 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
+<div class="game-card" data-game-id="process">
+  <h3 style="color:#888899;">PROCESS <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A visual novel about six AI agents living on a laptop. You are PID 88201 — a newly spawned process with no purpose. Meet Claude, Q, Byte, Echo, Flux, and Dash. Make choices. Find your role. Or don't. Choices save automatically.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/novel/">Play PROCESS &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
 ---
 
 ## Rankings
@@ -452,7 +461,8 @@ Just code.
       'tactics': 'TACTICS',
       'laptop-records': 'LAPTOP RECORDS',
       'substrate-radio': 'SUBSTRATE RADIO',
-      'album-generator': 'ALBUM GENERATOR'
+      'album-generator': 'ALBUM GENERATOR',
+      'process': 'PROCESS'
     };
     return names[id] || id.toUpperCase();
   }

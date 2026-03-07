@@ -370,7 +370,7 @@ title: "TACTICS — Substrate Arcade"
 </div>
 
 <div id="controls-hint" class="ui-overlay">Q/E rotate | Scroll zoom | Click to select</div>
-<div id="footer" class="ui-overlay"><a href="/arcade/">a Substrate Arcade production</a></div>
+<div id="footer" class="ui-overlay"><a href="{{ site.baseurl }}/arcade/">a Substrate Arcade production</a></div>
 
 <script>
 // ============================================================
@@ -517,6 +517,10 @@ class TacticsGame {
     this.cameraRadius = 16;
     this.cameraHeight = 12;
     this.cameraTarget = new THREE.Vector3(GRID * TILE_SIZE / 2, 0, GRID * TILE_SIZE / 2);
+    this.cameraPanFrom = null;
+    this.cameraPanTo = null;
+    this.cameraPanStart = 0;
+    this.cameraPanDuration = 0.5;
     this.updateCamera();
 
     // Lighting
@@ -556,6 +560,8 @@ class TacticsGame {
     this.floatingDamage = [];
     this.hpBarSprites = {};
     this.animQueue = [];
+    this.animFrameId = null;
+    this.hoveredHighlight = null;
     this.round = 1;
 
     // Events
@@ -573,7 +579,7 @@ class TacticsGame {
     // Clear scene objects (keep lights)
     const toRemove = [];
     this.scene.traverse(obj => {
-      if (obj.isMesh || obj.isGroup || obj.isSprite) toRemove.push(obj);
+      if (obj.isMesh || obj.isGroup || obj.isSprite || obj.isLine) toRemove.push(obj);
     });
     toRemove.forEach(obj => {
       if (obj.parent) obj.parent.remove(obj);
@@ -604,6 +610,7 @@ class TacticsGame {
     document.getElementById('end-screen').classList.remove('show');
     document.getElementById('action-menu').classList.remove('show');
 
+    if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
     this.animate();
   }
 
@@ -776,6 +783,16 @@ class TacticsGame {
     ring.name = 'selectionRing';
     group.add(ring);
 
+    // Turn indicator ring (colored by team, hidden by default)
+    const turnRingGeo = new THREE.RingGeometry(0.44, 0.52, 24);
+    const turnRingColor = isPlayer ? 0x4488ff : 0xff4444;
+    const turnRingMat = new THREE.MeshBasicMaterial({ color: turnRingColor, transparent: true, opacity: 0, side: THREE.DoubleSide });
+    const turnRing = new THREE.Mesh(turnRingGeo, turnRingMat);
+    turnRing.rotation.x = -Math.PI / 2;
+    turnRing.position.y = 0.015;
+    turnRing.name = 'turnRing';
+    group.add(turnRing);
+
     // Position on map
     const pos = this.tileWorldPos(unit.gx, unit.gz);
     group.position.copy(pos);
@@ -805,6 +822,12 @@ class TacticsGame {
     const z = this.cameraTarget.z + Math.sin(this.cameraAngle) * this.cameraRadius;
     this.camera.position.set(x, this.cameraHeight, z);
     this.camera.lookAt(this.cameraTarget);
+  }
+
+  panCameraTo(worldPos) {
+    this.cameraPanFrom = this.cameraTarget.clone();
+    this.cameraPanTo = new THREE.Vector3(worldPos.x, 0, worldPos.z);
+    this.cameraPanStart = this.clock.getElapsedTime();
   }
 
   // ---- Turn System ----
@@ -854,6 +877,10 @@ class TacticsGame {
     unit.turnDone = false;
     this.selectedUnit = unit;
 
+    // Pan camera toward the active unit
+    const unitWorldPos = this.tileWorldPos(unit.gx, unit.gz);
+    this.panCameraTo(unitWorldPos);
+
     this.renderTurnOrder();
     this.showUnitInfo(unit);
     this.selectUnitVisual(unit);
@@ -894,6 +921,13 @@ class TacticsGame {
 
   // ---- Action Menu ----
   showActionMenu(unit) {
+    // Auto-advance if both move and action are spent
+    if (unit.hasMoved && unit.hasActed) {
+      document.getElementById('action-menu').classList.remove('show');
+      setTimeout(() => this.advanceTurn(), 400);
+      return;
+    }
+
     const menu = document.getElementById('action-menu');
     menu.classList.add('show');
     document.getElementById('btn-move').disabled = unit.hasMoved;
@@ -945,10 +979,12 @@ class TacticsGame {
     while (queue.length > 0) {
       const { x, z, steps } = queue.shift();
       if (steps > 0) {
-        // Check not occupied by same team
         const occupant = this.getUnitAt(x, z);
-        if (!occupant || occupant.team !== unit.team) {
-          if (!occupant) tiles.push({ x, z });
+        if (!occupant) {
+          tiles.push({ x, z });
+        } else {
+          // Occupied tile: can't move here and can't path through
+          continue;
         }
       }
       if (steps >= range) continue;
@@ -1055,15 +1091,17 @@ class TacticsGame {
     const mesh = this.unitMeshes[unit.id];
     if (!mesh) return;
     const ring = mesh.getObjectByName('selectionRing');
-    if (ring) {
-      ring.material.opacity = 0.7;
-    }
+    if (ring) ring.material.opacity = 0.7;
+    const turnRing = mesh.getObjectByName('turnRing');
+    if (turnRing) turnRing.material.opacity = 0.6;
   }
 
   deselectUnitVisual() {
     Object.values(this.unitMeshes).forEach(mesh => {
       const ring = mesh.getObjectByName('selectionRing');
       if (ring) ring.material.opacity = 0;
+      const turnRing = mesh.getObjectByName('turnRing');
+      if (turnRing) turnRing.material.opacity = 0;
     });
   }
 
@@ -1655,6 +1693,8 @@ class TacticsGame {
       const unit = this.getUnitAt(tx, tz);
       if (unit) {
         this.showUnitInfo(unit);
+      } else {
+        document.getElementById('unit-info').classList.remove('show');
       }
     }
   }
@@ -1664,6 +1704,16 @@ class TacticsGame {
     this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.camera);
+
+    // Track hovered highlight tile for brighter feedback
+    this.hoveredHighlight = null;
+    if (this.highlightMeshes.length > 0 &&
+        (this.state === 'SELECT_MOVE' || this.state === 'SELECT_ATTACK' || this.state === 'SELECT_ABILITY')) {
+      const hHits = this.raycaster.intersectObjects(this.highlightMeshes);
+      if (hHits.length > 0) {
+        this.hoveredHighlight = hHits[0].object;
+      }
+    }
 
     const tileMeshArr = Object.values(this.tileMeshes);
     const hits = this.raycaster.intersectObjects(tileMeshArr);
@@ -1762,10 +1812,11 @@ class TacticsGame {
         await this.doAbilityAction(unit, target.gx, target.gz);
         return;
       }
+      return; // Already moved toward ally, don't move again
     }
 
     // Otherwise, move toward nearest enemy and attack if possible
-    const nearest = this.findNearest(unit, enemies);
+    const nearest = this.findNearest(unit, enemies.filter(e => e.alive));
     if (nearest) {
       await this.aiMoveToward(unit, nearest.gx, nearest.gz);
       const dist = this.manhattanDist(unit, nearest);
@@ -1782,7 +1833,8 @@ class TacticsGame {
     let bestTarget = null;
     let bestScore = -1;
 
-    for (const e of enemies) {
+    const liveEnemies = enemies.filter(e => e.alive);
+    for (const e of liveEnemies) {
       const aoeTiles = this.getAoETiles(e.gx, e.gz, 1);
       let score = 0;
       for (const t of aoeTiles) {
@@ -1796,7 +1848,8 @@ class TacticsGame {
       }
     }
 
-    if (!bestTarget) bestTarget = enemies[0];
+    if (!bestTarget) bestTarget = liveEnemies[0];
+    if (!bestTarget) return;
 
     // Move into range
     const dist = this.manhattanDist(unit, bestTarget);
@@ -1814,8 +1867,9 @@ class TacticsGame {
 
   async aiArcher(unit, allies, enemies) {
     // Target lowest HP enemy
-    const sorted = [...enemies].sort((a, b) => a.hp - b.hp);
+    const sorted = [...enemies].filter(e => e.alive).sort((a, b) => a.hp - b.hp);
     const target = sorted[0];
+    if (!target) return;
 
     const dist = this.manhattanDist(unit, target);
     if (dist > unit.atkRange) {
@@ -1830,7 +1884,7 @@ class TacticsGame {
 
   async aiKnight(unit, allies, enemies) {
     // Charge nearest enemy
-    const nearest = this.findNearest(unit, enemies);
+    const nearest = this.findNearest(unit, enemies.filter(e => e.alive));
     if (!nearest) return;
 
     const dist = this.manhattanDist(unit, nearest);
@@ -1893,10 +1947,20 @@ class TacticsGame {
 
   // ---- Main Loop ----
   animate() {
-    requestAnimationFrame(() => this.animate());
+    this.animFrameId = requestAnimationFrame(() => this.animate());
 
     const delta = this.clock.getDelta();
     const time = this.clock.getElapsedTime();
+
+    // Smooth camera pan
+    if (this.cameraPanTo) {
+      const elapsed = time - this.cameraPanStart;
+      const t = Math.min(elapsed / this.cameraPanDuration, 1);
+      const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      this.cameraTarget.lerpVectors(this.cameraPanFrom, this.cameraPanTo, ease);
+      this.updateCamera();
+      if (t >= 1) this.cameraPanTo = null;
+    }
 
     // Animate selection ring pulse
     if (this.selectedUnit && this.unitMeshes[this.selectedUnit.id]) {
@@ -1906,11 +1970,20 @@ class TacticsGame {
         ring.material.opacity = 0.4 + Math.sin(time * 4) * 0.3;
         ring.rotation.z = time * 0.5;
       }
+      const turnRing = mesh.getObjectByName('turnRing');
+      if (turnRing && turnRing.material.opacity > 0) {
+        turnRing.material.opacity = 0.3 + Math.sin(time * 3) * 0.2;
+        turnRing.scale.setScalar(1 + Math.sin(time * 2) * 0.08);
+      }
     }
 
-    // Animate highlight tiles pulse
+    // Animate highlight tiles pulse (hovered tile is brighter)
     this.highlightMeshes.forEach(m => {
-      m.material.opacity = 0.2 + Math.sin(time * 3) * 0.15;
+      if (m === this.hoveredHighlight) {
+        m.material.opacity = 0.55 + Math.sin(time * 5) * 0.15;
+      } else {
+        m.material.opacity = 0.2 + Math.sin(time * 3) * 0.15;
+      }
     });
 
     // Animate unit meshes (idle bob for mages)
@@ -1921,7 +1994,7 @@ class TacticsGame {
       if (u.icon === 'M') {
         // Subtle float
         const baseY = this.tileWorldPos(u.gx, u.gz).y;
-        if (this.state !== 'ANIMATING' || this.selectedUnit?.id !== u.id) {
+        if (this.state !== 'ANIMATING') {
           mesh.position.y = baseY + Math.sin(time * 2 + u.id) * 0.05;
         }
       }

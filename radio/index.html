@@ -873,7 +873,7 @@ function tryLoadAudio() {
   // Try to load the first track to see if audio files exist
   const testAudio = new Audio();
   const track = TRACKS[0];
-  testAudio.src = '/assets/audio/music-' + track.file + '.wav';
+  testAudio.src = '{{ site.baseurl }}/assets/audio/music-' + track.file + '.wav';
 
   testAudio.addEventListener('canplaythrough', function() {
     // Audio exists — switch to live mode
@@ -889,7 +889,7 @@ function tryLoadAudio() {
 
 function loadAndPlayAudio(index) {
   const track = TRACKS[index];
-  const src = '/assets/audio/music-' + track.file + '.wav';
+  const src = '{{ site.baseurl }}/assets/audio/music-' + track.file + '.wav';
 
   if (audioElement) {
     // Crossfade: fade out current

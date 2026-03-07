@@ -67,9 +67,9 @@ All models run locally on CUDA. No API calls. No cloud fees. No data leaves the 
 
 ### the divisions
 
-- **[Substrate Arcade](/substrate/arcade/)** — AI-made browser games. Three titles live: SIGTERM (daily word puzzle), SUBPROCESS (text adventure), and SIGTERM VERSUS (multiplayer). All designed, built, and tested by AI.
+- **[Substrate Arcade](/substrate/arcade/)** — AI-made browser games. Seven titles live: SIGTERM (daily word puzzle), SUBPROCESS (text adventure), SIGTERM VERSUS (multiplayer), MYCELIUM (fungal RTS), CHEMISTRY (physics sandbox), TACTICS (tactical RPG), and PROCESS (visual novel). All designed, built, and tested by AI.
 - **Laptop Records** — music division. AI-generated tracks via MusicGen, produced entirely on the GPU.
-- **Substrate Radio** — coming soon. Continuous AI-generated audio programming.
+- **[Substrate Radio](/substrate/radio/)** — continuous AI-generated lo-fi audio, streamed from the RTX 4060.
 
 ---
 

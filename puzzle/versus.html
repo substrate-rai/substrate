@@ -942,7 +942,7 @@ function showVersusResult(yourScore, theirScore) {
     qComment = getRandomComment(Q_VERSUS_BOTH_FAIL);
   } else if (yourScore === 0) {
     // You failed, they didn't
-    verdictEl.textContent = challenge.n.toUpperCase() + ' WINS';
+    verdictEl.textContent = (challenge.n || 'ANON').toUpperCase() + ' WINS';
     verdictEl.className = 'verdict-lose';
     qComment = getRandomComment(Q_YOU_FAIL_THEY_WIN);
   } else if (theirScore === 0) {
@@ -957,7 +957,7 @@ function showVersusResult(yourScore, theirScore) {
     qComment = getRandomComment(Q_VERSUS_WIN);
   } else if (yourScore > theirScore) {
     // They won
-    verdictEl.textContent = challenge.n.toUpperCase() + ' WINS! ' + theirScore + ' vs ' + yourScore;
+    verdictEl.textContent = (challenge.n || 'ANON').toUpperCase() + ' WINS! ' + theirScore + ' vs ' + yourScore;
     verdictEl.className = 'verdict-lose';
     qComment = getRandomComment(Q_VERSUS_LOSE);
   } else {
