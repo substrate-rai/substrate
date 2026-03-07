@@ -1,0 +1,53 @@
+{ config, pkgs, ... }:
+
+{
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  boot.initrd.luks.devices."cryptroot" = {
+    device = "/dev/disk/by-uuid/63a9d542-ce50-42db-b67c-576a345f118c";
+  };
+
+  networking.hostName = "substrate";
+  networking.networkmanager.enable = true;
+
+  time.timeZone = "America/New_York";
+
+  users.users.operator = {
+    isNormalUser = true;
+    description = "substrate operator";
+    extraGroups = [ "networkmanager" "wheel" "video" "render" ];
+    initialPassword = "changeme";
+  };
+
+  nixpkgs.config.allowUnfree = true;
+
+  # GPU
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia = {
+    modesetting.enable = true;
+    open = true;
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
+  hardware.graphics.enable = true;
+  hardware.firmware = [ pkgs.linux-firmware ];
+
+  # Packages
+  environment.systemPackages = with pkgs; [
+    vim git curl wget htop nvtopPackages.full tmux fish pciutils usbutils
+  ];
+
+  # Services
+  services.openssh.enable = true;
+
+  services.ollama = {
+    enable = true;
+    acceleration = "cuda";
+  };
+
+  # Nix settings
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  system.stateVersion = "24.11";
+}
