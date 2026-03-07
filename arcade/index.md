@@ -350,6 +350,15 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
+<div class="game-card" data-game-id="airlock">
+  <h3 style="color:#00e09a;">AIRLOCK <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A top-down chemistry puzzle. Trapped in a spaceship room with a locked door, a broken generator, and a bunch of objects with physical properties. No scripted solutions — only systems. Water conducts. Wood burns. Metal bridges. Figure it out. Among Us meets Breath of the Wild.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/airlock/">Play AIRLOCK &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
 ---
 
 ## Rankings
@@ -462,7 +471,8 @@ Just code.
       'laptop-records': 'LAPTOP RECORDS',
       'substrate-radio': 'SUBSTRATE RADIO',
       'album-generator': 'ALBUM GENERATOR',
-      'process': 'PROCESS'
+      'process': 'PROCESS',
+      'airlock': 'AIRLOCK'
     };
     return names[id] || id.toUpperCase();
   }
