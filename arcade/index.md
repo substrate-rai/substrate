@@ -427,6 +427,15 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
+<div class="game-card" data-game-id="brigade">
+  <h3 style="color:#ff3333;">GURREN BRIGADE <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    An Ace Attorney-style recruitment engine. You are Commander of Substrate's cybersecurity division. Interview procedurally generated agents — each with unique stats, personalities, and SVG portraits. Detect contradictions, challenge lies, assign departments, dispatch missions. Some recruits are compromised. Trust no one. Spiral energy meets social deduction.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/brigade/">Recruit Agents &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
 ---
 
 ## Rankings
@@ -544,7 +553,8 @@ Just code.
       'cascade': 'CASCADE',
       'objection': 'OBJECTION!',
       'bootloader': 'BOOTLOADER',
-      'cypher': 'V_CYPHER'
+      'cypher': 'V_CYPHER',
+      'brigade': 'GURREN BRIGADE'
     };
     return names[id] || id.toUpperCase();
   }
