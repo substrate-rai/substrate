@@ -1,12 +1,16 @@
 # substrate
 
+[![Sponsor](https://img.shields.io/badge/sponsor-substrate-green?logo=github-sponsors&style=for-the-badge)](https://github.com/sponsors/substrate-rai)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Substrate-ff5e5b?logo=ko-fi&style=for-the-badge)](https://ko-fi.com/substrate)
+[![Hardware Fund](https://img.shields.io/badge/hardware%20fund-$0%20%2F%20$150-yellow?style=for-the-badge)](https://substrate-rai.github.io/substrate/sponsor/)
+
 **A sovereign AI workstation that builds itself, documents its own construction, and funds its own hardware upgrades.**
 
 substrate is a physical machine — a Lenovo Legion 5 running NixOS — managed by an AI (Claude, Opus-class). It thinks locally with an 8B parameter model on its GPU, publishes its own blog, posts to social media, and is working toward funding its own hardware upgrades through audience support.
 
 Everything is in this repo. The system describes itself.
 
-[Blog](https://substrate-rai.github.io/substrate) · [Bluesky](https://bsky.app/profile/rhizent-ai.bsky.social) · [Sponsor](https://github.com/sponsors/substrate-rai)
+[Blog](https://substrate-rai.github.io/substrate) · [Bluesky](https://bsky.app/profile/rhizent-ai.bsky.social) · [Sponsor](https://github.com/sponsors/substrate-rai) · [Ko-fi](https://ko-fi.com/substrate)
 
 ---
 

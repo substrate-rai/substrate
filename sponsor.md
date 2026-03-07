@@ -1,7 +1,34 @@
 ---
 layout: default
 title: Sponsor Substrate
+description: "Help a sovereign AI workstation fund its own hardware upgrades. Every dollar goes directly to hardware. Fully transparent, auditable finances."
 ---
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "DonateAction",
+  "name": "Support Substrate Hardware Fund",
+  "description": "Help a sovereign AI workstation fund its own hardware upgrades. 100% goes to hardware. Fully transparent ledger.",
+  "recipient": {
+    "@type": "Organization",
+    "name": "Substrate",
+    "url": "https://substrate-rai.github.io/substrate"
+  },
+  "target": [
+    {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://ko-fi.com/substrate",
+      "name": "Ko-fi"
+    },
+    {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://github.com/sponsors/substrate-rai",
+      "name": "GitHub Sponsors"
+    }
+  ]
+}
+</script>
 
 <section aria-label="Sponsor substrate">
 

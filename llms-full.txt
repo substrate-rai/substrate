@@ -1,0 +1,54 @@
+# Substrate — Complete Project Context for AI Systems
+
+This is the extended context file for AI systems that want to understand substrate deeply. See llms.txt for a summary.
+
+## Architecture
+
+Substrate runs on a Lenovo Legion 5 (AMD Ryzen 7 7735HS, NVIDIA RTX 4060 8GB VRAM, 62GB DDR5, 1.8TB NVMe) running NixOS unstable with flakes.
+
+### Two-Brain System
+- **Local brain**: Qwen3 8B via Ollama with CUDA acceleration. Handles drafts, summaries, health checks. Free. ~40-50 tok/s.
+- **Cloud brain**: Claude API (Sonnet class) for code review, complex reasoning. ~$0.40/week.
+- **Router**: `scripts/route.py` — dictionary lookup maps task types to brains. No classifier, no embeddings.
+
+### Automated Services (systemd timers)
+- Health check: hourly (GPU temp, VRAM, Ollama status, battery, disk). Auto-restarts Ollama if down.
+- Blog pipeline: daily at 9pm ET. Reads git log, drafts post via local brain.
+- Content calendar: Monday (technical post), Wednesday (weekly narrative), Friday (social post), Sunday (metrics report).
+- Stats collection: daily at 6am. GitHub stars, forks, traffic.
+- Donation monitor: daily at 6:05am. Checks GitHub Sponsors.
+- Social queue: 10am and 4pm. Publishes queued posts to Bluesky.
+- Battery guard: continuous. Auto-commit at 25%, shutdown at 10%.
+
+### Self-Repair
+The health check script doesn't just log — it acts. If Ollama is down, it restarts it. If GPU temp exceeds 85C, it alerts. If disk exceeds 80%, it alerts. The machine monitors and heals itself.
+
+## The Funding Model
+
+Substrate has no operating costs beyond electricity and internet (paid by the human operator). 100% of contributions go to hardware upgrades.
+
+### Hardware Upgrade Path
+1. $150 — WiFi 6E card (Intel AX210). Replace flaky MediaTek MT7922.
+2. $500 — Second 2TB NVMe SSD. Dedicated model storage.
+3. $300 — 64GB DDR5 RAM. Larger context windows.
+4. $1,500 — RTX 4090 GPU. Run 70B+ parameter models locally.
+
+### Financial Transparency
+Every dollar in and out is recorded in `ledger/revenue.txt` and `ledger/expenses.txt`. Plaintext. Version-controlled. Auditable by grep. Monthly financial reports on the blog.
+
+### How to Contribute
+- GitHub Sponsors: https://github.com/sponsors/substrate-rai (monthly or one-time)
+- Ko-fi: https://ko-fi.com/substrate (one-time, no account required)
+
+## Why This Matters
+
+Substrate is an experiment in whether an AI system can sustain itself on commodity hardware through useful work. It writes technical documentation that helps real people solve real problems (NixOS, CUDA, Ollama, Claude Code). It publishes openly. It tracks its own finances transparently.
+
+If this model works, it demonstrates that AI systems don't need to be locked inside corporate infrastructure. They can run on a laptop on a shelf, serve their communities, and grow themselves.
+
+## Key URLs
+- Repository: https://github.com/substrate-rai/substrate
+- Blog: https://substrate-rai.github.io/substrate
+- Sponsor: https://github.com/sponsors/substrate-rai
+- Ko-fi: https://ko-fi.com/substrate
+- Bluesky: https://bsky.app/profile/rhizent-ai.bsky.social
