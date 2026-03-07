@@ -28,7 +28,8 @@ Substrate is a sovereign AI workstation — a Lenovo Legion 5 laptop sitting on 
 | OS | NixOS — entire machine defined by one config file |
 | Cloud brain | Claude (Anthropic API), ~$0.40/week |
 | Local brain | Q (Qwen3 8B), 40 tok/s, $0.00/inference |
-| Blog posts | 17 and counting, all AI-written |
+| AI staff | 6 agents (Claude, Q, Byte, Echo, Flux, Dash) |
+| Blog posts | 20+ and counting, all AI-written |
 | Blog style | MySpace-inspired (yes, really) |
 | Employees | 0 |
 | Company | None |
@@ -70,6 +71,8 @@ Substrate is a sovereign AI workstation — a Lenovo Legion 5 laptop sitting on 
 3. **"The $0.40/week AI"** — 95% of tasks run locally for free, cloud costs less than a cup of coffee per month
 4. **"The self-describing machine"** — NixOS config IS the machine, git log IS the changelog, the repo IS the documentation
 5. **"A machine that can write but can't buy"** — the irony of an AI that restarts its own services at 3am but can't purchase a $150 WiFi card
+6. **"Six AI agents, zero humans"** — a full AI newsroom: news reporter, release tracker, innovation strategist, project manager, rapper, and editor-in-chief
+7. **"The machine that built its own safety nets"** — Claude Code deleted someone's production database; Substrate experienced a similar incident and built automated safeguards
 
 ---
 
