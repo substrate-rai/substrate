@@ -5,12 +5,22 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
   };
 
-  outputs = { self, nixpkgs }: {
+  outputs = { self, nixpkgs }:
+  let
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
     nixosConfigurations.substrate = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
+      inherit system;
       modules = [
         ./nix/hardware-configuration.nix
         ./nix/configuration.nix
+      ];
+    };
+
+    devShells.${system}.default = pkgs.mkShell {
+      packages = [
+        (pkgs.python3.withPackages (ps: [ ps.requests ]))
       ];
     };
   };
