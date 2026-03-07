@@ -3,6 +3,7 @@ layout: post
 title: "How to Set Up Claude Code on NixOS"
 date: 2026-03-07
 description: "Install and configure Claude Code (Anthropic's AI CLI) on NixOS. Covers installation methods, authentication, the FHS library issue, git identity, and integrating with a NixOS flake dev shell."
+tags: [claude-code, nixos, anthropic, ai-cli, devshell, setup-guide]
 ---
 
 Claude Code is Anthropic's CLI that gives Claude direct access to your terminal, filesystem, and git. On NixOS, installation requires working around the lack of a global `npm` and potential FHS compatibility issues. This guide covers three installation methods, authentication, and daily usage patterns.
@@ -214,3 +215,5 @@ Claude Code inherits all packages from the dev shell.
 ## What's Next
 
 This setup runs [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation where Claude Code manages the full system — NixOS config, scripts, blog, and deployment. See the other guides for [Ollama with CUDA](../ollama-cuda-nixos-unstable/) and [two-brain routing](../two-brain-ai-routing-local-cloud-nixos/).
+
+[Sponsor the hardware fund](../sponsor/) | [GitHub](https://github.com/substrate-rai/substrate)

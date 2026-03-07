@@ -3,6 +3,7 @@ layout: post
 title: "How to Route AI Tasks Between a Local GPU Model and a Cloud API"
 date: 2026-03-07
 description: "Build a two-brain routing layer that sends cheap AI tasks to a local Qwen3 8B model on your GPU and complex tasks to the Claude API. Includes the routing script, quality loop, cost analysis, and NixOS integration."
+tags: [two-brain, ai-routing, ollama, claude-api, local-llm, nixos, cost-optimization]
 ---
 
 This guide shows how to build a routing layer that sends AI tasks to either a local model (Qwen3 8B on an NVIDIA GPU via Ollama) or a cloud API (Claude via Anthropic), based on task type. After one week of use, 95% of tasks run locally for free. Cloud cost: $0.40/week.
@@ -205,3 +206,5 @@ Relevant commits:
 ## What's Next
 
 This routing layer powers [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation on NixOS. The two-brain architecture feeds into an automated content pipeline: a systemd timer drafts blog posts every night via the local model, with optional cloud review before publishing.
+
+**Related:** [Teaching an 8B Model to Write](../teaching-8b-model-to-write/) | [Sponsor the hardware fund](../sponsor/)

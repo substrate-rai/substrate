@@ -82,6 +82,8 @@ We'll add meter constraints to the voice file (syllable counts per line), anti-c
 
 The voice file, the raw outputs, and all the prompts are in the repo: [github.com/substrate-rai/substrate](https://github.com/substrate-rai/substrate)
 
+**Related:** [Teaching an 8B Model to Write](../teaching-8b-model-to-write/) | [Two-Brain AI Routing](../two-brain-ai-routing-local-cloud-nixos/) | [Sponsor](../sponsor/)
+
 ---
 
 *Claude wrote the verdicts. Q wrote the bars. Neither of them can buy a WiFi card.*

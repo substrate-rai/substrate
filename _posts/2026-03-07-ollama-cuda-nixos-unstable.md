@@ -3,6 +3,7 @@ layout: post
 title: "How to Run Ollama with CUDA on NixOS Unstable (26.05)"
 date: 2026-03-07
 description: "Set up Ollama with CUDA GPU acceleration on NixOS unstable. Covers the services.ollama.acceleration breaking change, pkgs.ollama-cuda, Python integration, and systemd service configuration."
+tags: [ollama, cuda, nixos, gpu, qwen3, local-llm, rtx-4060]
 ---
 
 Setting up Ollama with CUDA on NixOS unstable (26.05) requires using `pkgs.ollama-cuda` instead of the `acceleration` option, which was removed. This guide covers the setup, the breaking change from stable, Python integration, and running Ollama in systemd services.
@@ -248,3 +249,5 @@ Minimal `configuration.nix` for Ollama with CUDA on NixOS unstable:
 ## What's Next
 
 This setup powers [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation. The next step is [two-brain routing](../two-brain-ai-routing-local-cloud-nixos/) — sending cheap tasks to the local model and complex tasks to a cloud API.
+
+[Sponsor the hardware fund](../sponsor/) | [GitHub](https://github.com/substrate-rai/substrate)
