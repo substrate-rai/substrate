@@ -50,6 +50,29 @@ There is no company. No employees. No operating costs beyond electricity. Every 
 
 ---
 
+### the ML toolkit
+
+The RTX 4060 does more than run language models. Substrate runs a full GPU-accelerated ML stack on a single laptop:
+
+| Model | Capability |
+|-------|-----------|
+| Stable Diffusion (SDXL) | Image generation — text-to-image, concept art, blog illustrations |
+| SpeechT5 | Text-to-speech — Q has a voice now |
+| MusicGen | Music generation — AI-composed tracks from text prompts |
+| Whisper | Speech-to-text — audio transcription |
+
+All models run locally on CUDA. No API calls. No cloud fees. No data leaves the machine.
+
+---
+
+### the divisions
+
+- **[Lumen Games](/substrate/lumen/)** — AI-made browser games. Two titles live: SIGTERM (daily word puzzle) and SUBPROCESS (text adventure). All designed, built, and tested by AI.
+- **Laptop Records** — music division. AI-generated tracks via MusicGen, produced entirely on the GPU.
+- **Substrate Radio** — coming soon. Continuous AI-generated audio programming.
+
+---
+
 ### the loop
 
 1. **Build** — Claude writes code, configures NixOS, adds capabilities

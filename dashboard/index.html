@@ -1,0 +1,1007 @@
+---
+layout: null
+permalink: /dashboard/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Substrate — System Dashboard</title>
+  <meta name="description" content="Live system dashboard for the Substrate sovereign AI workstation.">
+  <meta http-equiv="refresh" content="60">
+  <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-deep: #010814;
+      --bg-panel: #0a1628;
+      --bg-panel-alt: #0d1a2e;
+      --border: #1a2d4a;
+      --border-bright: #2a4a6a;
+      --green: #00ffaa;
+      --green-dim: #00aa77;
+      --green-glow: rgba(0, 255, 170, 0.15);
+      --blue: #77aaff;
+      --blue-dim: #4477cc;
+      --cyan: #00ddff;
+      --purple: #ff77ff;
+      --orange: #ffaa44;
+      --red: #ff4444;
+      --gold: #ffdd44;
+      --coral: #ff6666;
+      --text: #c0d0e0;
+      --text-dim: #607080;
+      --text-muted: #3a4a5a;
+    }
+
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--bg-deep);
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 255, 170, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(119, 170, 255, 0.03) 0%, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 170, 0.008) 2px,
+        rgba(0, 255, 170, 0.008) 4px
+      );
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* === Top Bar === */
+    .top-bar {
+      background: linear-gradient(90deg, var(--bg-panel), var(--bg-panel-alt));
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--green);
+      text-shadow: 0 0 10px rgba(0, 255, 170, 0.4);
+      text-decoration: none;
+    }
+
+    .logo-sub {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 0.75rem;
+    }
+
+    .clock {
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-shadow: 0 0 8px rgba(0, 255, 170, 0.3);
+    }
+
+    .back-link {
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 0.75rem;
+    }
+    .back-link:hover { color: var(--cyan); }
+
+    /* === Dashboard Grid === */
+    .dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto;
+      gap: 12px;
+    }
+
+    /* === Panel Base === */
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .panel:hover {
+      border-color: var(--border-bright);
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      opacity: 0.3;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .panel-icon {
+      font-size: 0.8rem;
+      opacity: 0.5;
+    }
+
+    /* === Status Indicators === */
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      position: relative;
+    }
+    .status-dot.online {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .status-dot.warning {
+      background: var(--orange);
+      box-shadow: 0 0 6px var(--orange);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .status-dot.offline {
+      background: var(--red);
+      box-shadow: 0 0 6px var(--red);
+    }
+    .status-dot.idle {
+      background: var(--text-muted);
+      box-shadow: 0 0 4px var(--text-muted);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* === System Info Panel === */
+    .system-panel { grid-column: 1; }
+
+    .sys-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(26, 45, 74, 0.5);
+      font-size: 0.78rem;
+    }
+    .sys-row:last-child { border-bottom: none; }
+    .sys-label { color: var(--text-dim); }
+    .sys-value { color: var(--green); font-weight: 500; }
+
+    .uptime-value {
+      color: var(--cyan);
+      font-size: 0.75rem;
+    }
+
+    /* === GPU Panel === */
+    .gpu-panel { grid-column: 2; }
+
+    .gpu-model {
+      font-size: 0.9rem;
+      color: var(--green);
+      font-weight: 600;
+      margin-bottom: 12px;
+      text-shadow: 0 0 8px rgba(0, 255, 170, 0.2);
+    }
+
+    .vram-bar-container {
+      margin: 10px 0;
+    }
+    .vram-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .vram-bar {
+      height: 20px;
+      background: var(--bg-deep);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+    .vram-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00aa55, #00ffaa, #00ddcc);
+      border-radius: 2px;
+      position: relative;
+      transition: width 1s ease;
+      box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+    }
+    .vram-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 20px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15));
+    }
+
+    .gpu-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .gpu-stat {
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px;
+      text-align: center;
+    }
+    .gpu-stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+    .gpu-stat-label {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    /* === Model Panel === */
+    .model-panel { grid-column: 3; }
+
+    .model-name {
+      font-size: 1rem;
+      color: var(--purple);
+      font-weight: 600;
+      margin-bottom: 4px;
+      text-shadow: 0 0 8px rgba(255, 119, 255, 0.2);
+    }
+    .model-detail {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-bottom: 3px;
+    }
+    .model-idle {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.85rem;
+    }
+    .model-speed {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 10px;
+      background: rgba(255, 119, 255, 0.1);
+      border: 1px solid rgba(255, 119, 255, 0.2);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--purple);
+    }
+
+    .ollama-status {
+      margin-top: 12px;
+      padding: 8px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.72rem;
+    }
+
+    /* === Services Panel === */
+    .services-panel { grid-column: 1; }
+
+    .service-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(26, 45, 74, 0.5);
+      font-size: 0.78rem;
+    }
+    .service-row:last-child { border-bottom: none; }
+
+    .service-name {
+      flex: 1;
+      color: var(--text);
+    }
+    .service-desc {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+    .service-status {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .service-status.active {
+      color: var(--green);
+      background: rgba(0, 255, 170, 0.08);
+      border: 1px solid rgba(0, 255, 170, 0.15);
+    }
+    .service-status.timer {
+      color: var(--cyan);
+      background: rgba(0, 221, 255, 0.08);
+      border: 1px solid rgba(0, 221, 255, 0.15);
+    }
+    .service-status.unknown {
+      color: var(--text-muted);
+      background: rgba(58, 74, 90, 0.2);
+      border: 1px solid rgba(58, 74, 90, 0.3);
+    }
+
+    /* === Resource Meters === */
+    .resources-panel { grid-column: 2; }
+
+    .meter {
+      margin-bottom: 14px;
+    }
+    .meter:last-child { margin-bottom: 0; }
+
+    .meter-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      margin-bottom: 4px;
+    }
+    .meter-label { color: var(--text-dim); }
+    .meter-value { color: var(--text); font-weight: 500; }
+
+    .meter-bar {
+      height: 10px;
+      background: var(--bg-deep);
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .meter-fill {
+      height: 100%;
+      border-radius: 1px;
+      transition: width 1.5s ease;
+      position: relative;
+    }
+    .meter-fill.low {
+      background: linear-gradient(90deg, #00aa55, #00ffaa);
+      box-shadow: 0 0 6px rgba(0, 255, 170, 0.2);
+    }
+    .meter-fill.medium {
+      background: linear-gradient(90deg, #aaaa00, #ffdd44);
+      box-shadow: 0 0 6px rgba(255, 221, 68, 0.2);
+    }
+    .meter-fill.high {
+      background: linear-gradient(90deg, #cc4400, #ff4444);
+      box-shadow: 0 0 6px rgba(255, 68, 68, 0.2);
+    }
+
+    /* Animated gradient shimmer on meter fills */
+    .meter-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; bottom: 0;
+      width: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 200%; }
+    }
+
+    /* === Network Panel === */
+    .network-panel { grid-column: 3; }
+
+    .net-status-big {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .net-status-big .status-dot {
+      width: 12px;
+      height: 12px;
+    }
+    .net-status-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .net-detail {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(26, 45, 74, 0.3);
+    }
+    .net-detail:last-child { border-bottom: none; }
+
+    /* === Activity Panel === */
+    .activity-panel { grid-column: 1 / -1; }
+
+    .activity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .activity-section h4 {
+      font-size: 0.7rem;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(26, 45, 74, 0.3);
+      font-size: 0.75rem;
+    }
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-time {
+      color: var(--text-muted);
+      white-space: nowrap;
+      min-width: 70px;
+      font-size: 0.68rem;
+    }
+    .activity-text { color: var(--text); flex: 1; }
+    .activity-hash {
+      color: var(--orange);
+      font-size: 0.68rem;
+    }
+    .activity-post-date {
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      min-width: 80px;
+    }
+    .activity-post-title a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .activity-post-title a:hover { color: var(--cyan); }
+
+    /* === Footer Notice === */
+    .dashboard-footer {
+      max-width: 1200px;
+      margin: 8px auto 20px;
+      padding: 0 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+    .local-notice {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .local-notice-icon {
+      width: 6px; height: 6px;
+      background: var(--text-muted);
+      border-radius: 50%;
+    }
+
+    /* === Data source indicator === */
+    .data-badge {
+      display: inline-block;
+      font-size: 0.55rem;
+      padding: 1px 5px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+    .data-badge.live {
+      color: var(--green);
+      background: rgba(0, 255, 170, 0.1);
+      border: 1px solid rgba(0, 255, 170, 0.2);
+    }
+    .data-badge.demo {
+      color: var(--text-muted);
+      background: rgba(58, 74, 90, 0.2);
+      border: 1px solid rgba(58, 74, 90, 0.3);
+    }
+
+    /* === Responsive === */
+    @media (max-width: 900px) {
+      .dashboard {
+        grid-template-columns: 1fr 1fr;
+      }
+      .system-panel { grid-column: 1; }
+      .gpu-panel { grid-column: 2; }
+      .model-panel { grid-column: 1; }
+      .services-panel { grid-column: 2; }
+      .resources-panel { grid-column: 1; }
+      .network-panel { grid-column: 2; }
+      .activity-panel { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 600px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      .system-panel, .gpu-panel, .model-panel,
+      .services-panel, .resources-panel,
+      .network-panel, .activity-panel { grid-column: 1; }
+      .activity-grid { grid-template-columns: 1fr; }
+      .top-bar { padding: 10px 12px; }
+      .top-bar-right { gap: 10px; }
+    }
+
+    /* === Flicker animation for boot feel === */
+    @keyframes flicker-in {
+      0% { opacity: 0; }
+      10% { opacity: 0.4; }
+      15% { opacity: 0.1; }
+      30% { opacity: 0.7; }
+      35% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+    .dashboard .panel {
+      animation: flicker-in 0.8s ease-out both;
+    }
+    .dashboard .panel:nth-child(1) { animation-delay: 0.05s; }
+    .dashboard .panel:nth-child(2) { animation-delay: 0.12s; }
+    .dashboard .panel:nth-child(3) { animation-delay: 0.19s; }
+    .dashboard .panel:nth-child(4) { animation-delay: 0.26s; }
+    .dashboard .panel:nth-child(5) { animation-delay: 0.33s; }
+    .dashboard .panel:nth-child(6) { animation-delay: 0.40s; }
+    .dashboard .panel:nth-child(7) { animation-delay: 0.47s; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <a href="/" class="logo">substrate</a>
+      <span class="logo-sub">system dashboard</span>
+    </div>
+    <div class="top-bar-right">
+      <span id="data-mode" class="data-badge demo">demo</span>
+      <span class="clock" id="clock">--:--:--</span>
+      <a href="/" class="back-link">&larr; back to site</a>
+    </div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard">
+
+    <!-- 1. System Status -->
+    <div class="panel system-panel">
+      <div class="panel-header">
+        <span class="panel-title">System</span>
+        <span class="panel-icon">[sys]</span>
+      </div>
+      <div class="sys-row">
+        <span class="sys-label">Hostname</span>
+        <span class="sys-value">substrate</span>
+      </div>
+      <div class="sys-row">
+        <span class="sys-label">OS</span>
+        <span class="sys-value">NixOS 25.05</span>
+      </div>
+      <div class="sys-row">
+        <span class="sys-label">Kernel</span>
+        <span class="sys-value">6.18.x</span>
+      </div>
+      <div class="sys-row">
+        <span class="sys-label">Machine</span>
+        <span class="sys-value">Legion 5</span>
+      </div>
+      <div class="sys-row">
+        <span class="sys-label">Uptime</span>
+        <span class="sys-value uptime-value" id="uptime">calculating...</span>
+      </div>
+      <div class="sys-row">
+        <span class="sys-label">Local Time</span>
+        <span class="sys-value" id="local-time">--:--</span>
+      </div>
+    </div>
+
+    <!-- 2. GPU Panel -->
+    <div class="panel gpu-panel">
+      <div class="panel-header">
+        <span class="panel-title">GPU</span>
+        <span class="panel-icon">[gpu]</span>
+      </div>
+      <div class="gpu-model">NVIDIA RTX 4060 8GB</div>
+      <div class="vram-bar-container">
+        <div class="vram-label">
+          <span>VRAM</span>
+          <span id="vram-text">5.5 GB / 8.0 GB</span>
+        </div>
+        <div class="vram-bar">
+          <div class="vram-fill" id="vram-fill" style="width: 68.75%"></div>
+        </div>
+      </div>
+      <div class="gpu-stats">
+        <div class="gpu-stat">
+          <div class="gpu-stat-value" id="gpu-temp">52&deg;C</div>
+          <div class="gpu-stat-label">Temperature</div>
+        </div>
+        <div class="gpu-stat">
+          <div class="gpu-stat-value" id="gpu-util">34%</div>
+          <div class="gpu-stat-label">Utilization</div>
+        </div>
+        <div class="gpu-stat">
+          <div class="gpu-stat-value" id="gpu-power">45W</div>
+          <div class="gpu-stat-label">Power Draw</div>
+        </div>
+        <div class="gpu-stat">
+          <div class="gpu-stat-value" id="gpu-fan">38%</div>
+          <div class="gpu-stat-label">Fan Speed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Model Status -->
+    <div class="panel model-panel">
+      <div class="panel-header">
+        <span class="panel-title">Ollama Model</span>
+        <span class="panel-icon">[mdl]</span>
+      </div>
+      <div id="model-info">
+        <div class="model-name" id="model-name">qwen3:8b</div>
+        <div class="model-detail" id="model-size">Size: 4.9 GB</div>
+        <div class="model-detail" id="model-quant">Quantization: Q4_K_M</div>
+        <div class="model-detail" id="model-ctx">Context: 32768 tokens</div>
+        <div class="model-speed">~40 tok/s inference</div>
+      </div>
+      <div class="ollama-status" id="ollama-status">
+        <span class="status-dot idle"></span>
+        <span style="color: var(--text-dim);">Checking Ollama API...</span>
+      </div>
+    </div>
+
+    <!-- 4. Services -->
+    <div class="panel services-panel">
+      <div class="panel-header">
+        <span class="panel-title">Services</span>
+        <span class="panel-icon">[svc]</span>
+      </div>
+      <div class="service-row">
+        <span class="status-dot online"></span>
+        <span class="service-name">ollama.service</span>
+        <span class="service-status active">active</span>
+      </div>
+      <div class="service-row">
+        <span class="status-dot online"></span>
+        <span class="service-name">substrate-health.timer</span>
+        <span class="service-status timer">hourly</span>
+      </div>
+      <div class="service-row">
+        <span class="status-dot online"></span>
+        <span class="service-name">substrate-blog.timer</span>
+        <span class="service-status timer">9pm ET</span>
+      </div>
+      <div class="service-row">
+        <span class="status-dot online"></span>
+        <span class="service-name">battery-guard.service</span>
+        <span class="service-status active">active</span>
+      </div>
+      <div class="service-row">
+        <span class="status-dot warning"></span>
+        <span class="service-name">networking</span>
+        <span class="service-status unknown">no wifi</span>
+      </div>
+    </div>
+
+    <!-- 5. Resource Meters -->
+    <div class="panel resources-panel">
+      <div class="panel-header">
+        <span class="panel-title">Resources</span>
+        <span class="panel-icon">[res]</span>
+      </div>
+      <div class="meter">
+        <div class="meter-header">
+          <span class="meter-label">CPU</span>
+          <span class="meter-value" id="cpu-pct">18%</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill low" id="cpu-fill" style="width: 18%"></div>
+        </div>
+      </div>
+      <div class="meter">
+        <div class="meter-header">
+          <span class="meter-label">RAM</span>
+          <span class="meter-value" id="ram-pct">6.2 / 16 GB (39%)</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill low" id="ram-fill" style="width: 39%"></div>
+        </div>
+      </div>
+      <div class="meter">
+        <div class="meter-header">
+          <span class="meter-label">Disk /</span>
+          <span class="meter-value" id="disk-pct">42 / 512 GB (8%)</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill low" id="disk-fill" style="width: 8%"></div>
+        </div>
+      </div>
+      <div class="meter">
+        <div class="meter-header">
+          <span class="meter-label">Swap</span>
+          <span class="meter-value" id="swap-pct">0.1 / 8 GB (1%)</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill low" id="swap-fill" style="width: 1%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Network -->
+    <div class="panel network-panel">
+      <div class="panel-header">
+        <span class="panel-title">Network</span>
+        <span class="panel-icon">[net]</span>
+      </div>
+      <div class="net-status-big">
+        <span class="status-dot warning" id="net-dot"></span>
+        <span class="net-status-text" id="net-status">Ethernet Only</span>
+      </div>
+      <div class="net-detail">Interface: enp7s0 (wired)</div>
+      <div class="net-detail">WiFi: <span style="color: var(--red);">hardware broken</span></div>
+      <div class="net-detail">IPv4: <span style="color: var(--text-muted);">[redacted]</span></div>
+      <div class="net-detail">Gateway: <span style="color: var(--text-muted);">[redacted]</span></div>
+      <div class="net-detail" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px;">
+        GitHub Pages: <span id="gh-pages-status" style="color: var(--green);">serving</span>
+      </div>
+      <div class="net-detail">
+        Ollama API: <span id="ollama-api-status" style="color: var(--text-muted);">checking...</span>
+      </div>
+    </div>
+
+    <!-- 7. Recent Activity -->
+    <div class="panel activity-panel">
+      <div class="panel-header">
+        <span class="panel-title">Recent Activity</span>
+        <span class="panel-icon">[log]</span>
+      </div>
+      <div class="activity-grid">
+        <div class="activity-section">
+          <h4>Recent Commits</h4>
+          <div class="activity-item">
+            <span class="activity-time">today</span>
+            <span class="activity-text">feat: web toolkit -- fetch, HN client, Reddit client</span>
+            <span class="activity-hash">72ea38f</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-time">today</span>
+            <span class="activity-text">feat: add Google Search Console verification</span>
+            <span class="activity-hash">be7f8fa</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-time">today</span>
+            <span class="activity-text">docs: AI directory submission strategy</span>
+            <span class="activity-hash">749301a</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-time">today</span>
+            <span class="activity-text">feat: Talk to Q chatbot, Discord bot, Bluesky poster</span>
+            <span class="activity-hash">0fd8228</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-time">today</span>
+            <span class="activity-text">content: passion response post, updated Show HN</span>
+            <span class="activity-hash">c82621b</span>
+          </div>
+        </div>
+        <div class="activity-section">
+          <h4>Recent Posts</h4>
+          <div class="activity-item">
+            <span class="activity-post-date">2026-03-07</span>
+            <span class="activity-post-title"><a href="/blog/">Latest posts on substrate.blog</a></span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-post-date">daily</span>
+            <span class="activity-post-title"><a href="/about/">Auto-generated blog at 9pm ET</a></span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-post-date">series</span>
+            <span class="activity-post-title"><a href="/training-q/">Training Q (ongoing)</a></span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-post-date">agents</span>
+            <span class="activity-post-title"><a href="/staff/">6 AI agents on staff</a></span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-post-date">live</span>
+            <span class="activity-post-title"><a href="/puzzle/">SIGTERM daily puzzle</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="dashboard-footer">
+    <div class="local-notice">
+      <span class="local-notice-icon"></span>
+      Live data available when accessing from local network. Static demo on GitHub Pages.
+    </div>
+    <div>
+      substrate &middot; NixOS &middot; RTX 4060 &middot; <a href="/" style="color: var(--blue-dim); text-decoration: none;">home</a>
+    </div>
+  </div>
+
+  <script>
+    // === Clock & Uptime ===
+    const BOOT_DATE = new Date('2026-03-07T00:00:00-05:00');
+
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').textContent = h + ':' + m + ':' + s;
+      document.getElementById('local-time').textContent = now.toLocaleTimeString('en-US', {
+        hour12: true, hour: 'numeric', minute: '2-digit', second: '2-digit'
+      });
+    }
+
+    function updateUptime() {
+      const now = new Date();
+      const diff = now - BOOT_DATE;
+      if (diff < 0) {
+        document.getElementById('uptime').textContent = 'pre-boot';
+        return;
+      }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      let text = '';
+      if (days > 0) text += days + 'd ';
+      text += hours + 'h ' + minutes + 'm';
+      document.getElementById('uptime').textContent = text;
+    }
+
+    // === Simulated fluctuations for demo mode ===
+    function jitter(base, range) {
+      return base + (Math.random() * range * 2 - range);
+    }
+
+    function updateDemoStats() {
+      // GPU temp
+      const temp = Math.round(jitter(52, 4));
+      document.getElementById('gpu-temp').innerHTML = temp + '&deg;C';
+
+      // GPU utilization
+      const util = Math.round(jitter(34, 12));
+      document.getElementById('gpu-util').textContent = util + '%';
+
+      // GPU power
+      const power = Math.round(jitter(45, 10));
+      document.getElementById('gpu-power').textContent = power + 'W';
+
+      // GPU fan
+      const fan = Math.round(jitter(38, 5));
+      document.getElementById('gpu-fan').textContent = fan + '%';
+
+      // CPU
+      const cpu = Math.round(jitter(18, 8));
+      document.getElementById('cpu-pct').textContent = cpu + '%';
+      const cpuFill = document.getElementById('cpu-fill');
+      cpuFill.style.width = cpu + '%';
+      cpuFill.className = 'meter-fill ' + (cpu < 50 ? 'low' : cpu < 80 ? 'medium' : 'high');
+
+      // RAM (minor fluctuation)
+      const ram = Math.round(jitter(39, 3));
+      const ramGb = (16 * ram / 100).toFixed(1);
+      document.getElementById('ram-pct').textContent = ramGb + ' / 16 GB (' + ram + '%)';
+      const ramFill = document.getElementById('ram-fill');
+      ramFill.style.width = ram + '%';
+      ramFill.className = 'meter-fill ' + (ram < 50 ? 'low' : ram < 80 ? 'medium' : 'high');
+    }
+
+    // === Ollama API check ===
+    async function checkOllama() {
+      const statusEl = document.getElementById('ollama-status');
+      const apiEl = document.getElementById('ollama-api-status');
+      const modeEl = document.getElementById('data-mode');
+
+      try {
+        const response = await fetch('http://localhost:11434/api/ps', {
+          signal: AbortSignal.timeout(3000)
+        });
+        const data = await response.json();
+
+        // We have live access
+        modeEl.textContent = 'live';
+        modeEl.className = 'data-badge live';
+
+        apiEl.textContent = 'connected';
+        apiEl.style.color = 'var(--green)';
+
+        if (data.models && data.models.length > 0) {
+          const model = data.models[0];
+          document.getElementById('model-name').textContent = model.name || 'unknown';
+          const sizeGb = model.size ? (model.size / 1073741824).toFixed(1) + ' GB' : 'unknown';
+          document.getElementById('model-size').textContent = 'Size: ' + sizeGb;
+          statusEl.innerHTML = '<span class="status-dot online"></span><span style="color: var(--green);">Model loaded and running</span>';
+        } else {
+          statusEl.innerHTML = '<span class="status-dot idle"></span><span style="color: var(--text-dim);">Ollama running, no model loaded</span>';
+          document.getElementById('model-name').textContent = 'idle';
+          document.getElementById('model-name').className = 'model-name model-idle';
+        }
+      } catch (e) {
+        // Expected on GitHub Pages
+        apiEl.textContent = 'unreachable (remote)';
+        apiEl.style.color = 'var(--text-muted)';
+        statusEl.innerHTML = '<span class="status-dot idle"></span><span style="color: var(--text-muted);">Cannot reach local API (expected on GitHub Pages)</span>';
+      }
+    }
+
+    // === Initialize ===
+    updateClock();
+    updateUptime();
+    setInterval(updateClock, 1000);
+    setInterval(updateUptime, 60000);
+    setInterval(updateDemoStats, 5000);
+    checkOllama();
+    // Re-check Ollama every 30s
+    setInterval(checkOllama, 30000);
+  </script>
+
+</body>
+</html>

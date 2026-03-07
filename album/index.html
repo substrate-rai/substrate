@@ -1,0 +1,1311 @@
+---
+layout: null
+permalink: /album/
+title: "Laptop Records - AI Album Generator"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laptop Records — AI Album Generator</title>
+  <meta name="description" content="Generate complete AI music album concepts. A division of Lumen, powered by Qwen3 8B on an RTX 4060.">
+  <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/album/">
+  <meta property="og:title" content="Laptop Records — AI Album Generator">
+  <meta property="og:description" content="Generate complete AI music album concepts. Powered by Qwen3 8B.">
+  <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}/album/">
+  <meta property="og:type" content="website">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Comic+Neue:wght@400;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-deep: #0a0a0f;
+      --bg-surface: #111118;
+      --bg-card: #16161f;
+      --bg-elevated: #1c1c28;
+      --border: #2a2a3a;
+      --border-bright: #3a3a5a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #8888aa;
+      --text-muted: #555566;
+      --accent-green: #00ffaa;
+      --accent-purple: #ff77ff;
+      --accent-blue: #77aaff;
+      --accent-gold: #ffcc44;
+      --accent-coral: #ff6666;
+      --accent-cyan: #00ddff;
+    }
+
+    body {
+      font-family: 'Comic Neue', 'Verdana', sans-serif;
+      background: var(--bg-deep);
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(255,119,255,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(0,255,170,0.03) 0%, transparent 50%);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* === TOP BAR === */
+    .top-bar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .top-bar .logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-purple);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .top-bar .logo span {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 0.8rem;
+    }
+    .top-bar .divider {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    .top-bar .back-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .top-bar .back-link:hover { color: var(--accent-blue); }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .vinyl-spin {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-purple);
+      position: relative;
+      animation: spin 4s linear infinite;
+    }
+    .vinyl-spin::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-purple);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* === HERO === */
+    .hero {
+      text-align: center;
+      padding: 60px 20px 40px;
+      position: relative;
+    }
+    .hero h1 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue), var(--accent-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .hero .subtitle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    .hero .tagline {
+      margin-top: 16px;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* === INPUT SECTION === */
+    .input-section {
+      max-width: 640px;
+      margin: 0 auto 50px;
+      padding: 0 20px;
+    }
+    .input-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.3s;
+    }
+    .input-wrapper:focus-within {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 30px rgba(255,119,255,0.08);
+    }
+    .input-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .theme-input {
+      width: 100%;
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: 'Comic Neue', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .theme-input::placeholder { color: var(--text-muted); }
+    .theme-input:focus { border-color: var(--accent-purple); }
+
+    .generate-btn {
+      margin-top: 16px;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ff77ff22, #77aaff22);
+      border: 1px solid var(--accent-purple);
+      border-radius: 8px;
+      color: var(--accent-purple);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .generate-btn:hover {
+      background: linear-gradient(135deg, #ff77ff33, #77aaff33);
+      box-shadow: 0 0 20px rgba(255,119,255,0.15);
+      transform: translateY(-1px);
+    }
+    .generate-btn:active { transform: translateY(0); }
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .suggestions {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .suggestion-chip {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .suggestion-chip:hover {
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+      background: rgba(255,119,255,0.05);
+    }
+
+    /* === LOADING STATE === */
+    .loading-overlay {
+      display: none;
+      max-width: 640px;
+      margin: 0 auto 40px;
+      padding: 0 20px;
+    }
+    .loading-overlay.active { display: block; }
+    .loading-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+    }
+    .loading-vinyl {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      margin: 0 auto 20px;
+      position: relative;
+      animation: spin 2s linear infinite;
+      background: repeating-conic-gradient(var(--bg-elevated) 0deg 30deg, var(--bg-card) 30deg 60deg);
+    }
+    .loading-vinyl::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-purple);
+      box-shadow: 0 0 10px rgba(255,119,255,0.5);
+    }
+    .loading-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent-purple);
+    }
+    .loading-steps {
+      margin-top: 16px;
+      text-align: left;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .loading-step {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 4px 0;
+      transition: color 0.3s;
+    }
+    .loading-step.active { color: var(--accent-purple); }
+    .loading-step.done { color: var(--accent-green); }
+    .loading-step::before {
+      content: '[ ] ';
+      color: var(--text-muted);
+    }
+    .loading-step.active::before {
+      content: '[>] ';
+      color: var(--accent-purple);
+    }
+    .loading-step.done::before {
+      content: '[x] ';
+      color: var(--accent-green);
+    }
+
+    /* === ALBUM DISPLAY === */
+    .album-display {
+      display: none;
+      max-width: 800px;
+      margin: 0 auto 50px;
+      padding: 0 20px;
+    }
+    .album-display.active { display: block; }
+
+    .album-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .album-header {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 0;
+    }
+
+    .album-art {
+      width: 280px;
+      height: 280px;
+      position: relative;
+      overflow: hidden;
+    }
+    .album-art-gradient {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 4rem;
+      font-weight: 700;
+      color: rgba(0,0,0,0.3);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .album-art-label {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.55rem;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .album-info {
+      padding: 28px 28px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .album-type {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 6px;
+    }
+    .album-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+    .album-artist {
+      font-size: 1.1rem;
+      color: var(--accent-purple);
+      margin-bottom: 12px;
+    }
+    .album-genre-year {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .album-genre-year span {
+      background: var(--bg-elevated);
+      padding: 3px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-right: 6px;
+    }
+    .album-stats-row {
+      display: flex;
+      gap: 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .album-stat-val { color: var(--accent-green); margin-right: 4px; }
+
+    /* Streaming bar */
+    .streaming-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .stream-btn {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    /* Track list */
+    .track-section {
+      padding: 0 28px 20px;
+    }
+    .track-section-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 16px 0 10px;
+      border-top: 1px solid var(--border);
+    }
+    .track-list {
+      list-style: none;
+    }
+    .track-item {
+      display: grid;
+      grid-template-columns: 32px 1fr 80px 50px;
+      align-items: center;
+      padding: 10px 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
+      gap: 8px;
+    }
+    .track-item:hover {
+      background: var(--bg-elevated);
+    }
+    .track-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .track-item:hover .track-num { color: var(--accent-purple); }
+    .track-name {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+    .track-plays {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+    .track-duration {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* Liner notes */
+    .liner-notes {
+      padding: 20px 28px;
+      border-top: 1px solid var(--border);
+    }
+    .liner-notes-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+    .liner-notes-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* Credits */
+    .album-credits {
+      padding: 16px 28px 24px;
+      border-top: 1px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+    .album-credits .label-logo {
+      color: var(--accent-purple);
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    /* Action buttons */
+    .album-actions {
+      padding: 0 28px 24px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .action-btn {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+    .action-btn.primary {
+      background: linear-gradient(135deg, rgba(255,119,255,0.15), rgba(119,170,255,0.15));
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+    .action-btn.primary:hover {
+      background: linear-gradient(135deg, rgba(255,119,255,0.25), rgba(119,170,255,0.25));
+    }
+
+    /* === GALLERY === */
+    .gallery-section {
+      max-width: 800px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+    .gallery-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .gallery-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .gallery-clear {
+      background: none;
+      border: none;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .gallery-clear:hover { color: var(--accent-coral); }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .gallery-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .gallery-item:hover {
+      border-color: var(--accent-purple);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .gallery-art {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      color: rgba(0,0,0,0.3);
+    }
+    .gallery-info {
+      padding: 10px 12px;
+    }
+    .gallery-album-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gallery-album-artist {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .empty-gallery {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    /* === FOOTER === */
+    .page-footer {
+      text-align: center;
+      padding: 30px 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .page-footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    .page-footer a:hover { color: var(--accent-purple); }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 1.8rem; }
+      .hero { padding: 40px 20px 30px; }
+      .album-header {
+        grid-template-columns: 1fr;
+      }
+      .album-art {
+        width: 100%;
+        height: 240px;
+      }
+      .track-item {
+        grid-template-columns: 28px 1fr 50px;
+      }
+      .track-plays { display: none; }
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .streaming-bar { flex-wrap: wrap; }
+      .album-actions { flex-direction: column; }
+    }
+
+    /* === TOAST === */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--accent-green);
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent-green);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      z-index: 200;
+      pointer-events: none;
+    }
+    .toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <a href="/album/" class="logo">LAPTOP RECORDS <span>est. 2026</span></a>
+      <span class="divider">|</span>
+      <a href="/lumen/" class="back-link">&larr; lumen</a>
+    </div>
+    <div class="top-bar-right">
+      <div class="vinyl-spin"></div>
+      <a href="/" class="back-link">substrate</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>LAPTOP RECORDS</h1>
+    <div class="subtitle">a division of lumen</div>
+    <p class="tagline">Enter an album concept. We'll generate titles, track listings, liner notes, and album art -- all conceived by AI running on a single laptop.</p>
+  </div>
+
+  <!-- Input -->
+  <div class="input-section">
+    <div class="input-wrapper">
+      <label class="input-label" for="theme-input">Album concept / theme</label>
+      <input type="text" id="theme-input" class="theme-input" placeholder="e.g. heartbreak in space, a robot learning to dance..." maxlength="200" autocomplete="off">
+      <button id="generate-btn" class="generate-btn" onclick="generateAlbum()">Press to Vinyl</button>
+      <div class="suggestions">
+        <span class="suggestion-chip" onclick="useSuggestion(this)">heartbreak in space</span>
+        <span class="suggestion-chip" onclick="useSuggestion(this)">GPU overheating</span>
+        <span class="suggestion-chip" onclick="useSuggestion(this)">declarative configuration</span>
+        <span class="suggestion-chip" onclick="useSuggestion(this)">missing dependencies</span>
+        <span class="suggestion-chip" onclick="useSuggestion(this)">a robot learning to dance</span>
+        <span class="suggestion-chip" onclick="useSuggestion(this)">midnight compilation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loading">
+    <div class="loading-card">
+      <div class="loading-vinyl"></div>
+      <div class="loading-text">Pressing your album...</div>
+      <div class="loading-steps">
+        <div class="loading-step" id="step-concept">Developing concept</div>
+        <div class="loading-step" id="step-tracks">Writing track listing</div>
+        <div class="loading-step" id="step-art">Rendering album art</div>
+        <div class="loading-step" id="step-notes">Composing liner notes</div>
+        <div class="loading-step" id="step-master">Mastering on RTX 4060</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Album Display -->
+  <div class="album-display" id="album-display">
+    <div class="album-card" id="album-card">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+  <!-- Gallery -->
+  <div class="gallery-section" id="gallery-section">
+    <div class="gallery-header">
+      <div class="gallery-title">Your Collection</div>
+      <button class="gallery-clear" id="gallery-clear" onclick="clearGallery()">clear all</button>
+    </div>
+    <div id="gallery-grid" class="gallery-grid"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="page-footer">
+    <p>Laptop Records -- a division of <a href="/lumen/">Lumen</a> -- <a href="/">Substrate</a></p>
+    <p style="margin-top:6px;">All albums conceived by Qwen3 8B, produced by MusicGen, mastered on an RTX 4060</p>
+    <p style="margin-top:6px;">No actual audio was harmed in the making of these albums.</p>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// Demo albums (fallback when Ollama is unavailable)
+// ============================================================
+const DEMO_ALBUMS = [
+  {
+    title: "THERMAL THROTTLE",
+    artist: "Q",
+    genre: "Industrial / Electronic",
+    year: "2026",
+    gradient: "linear-gradient(135deg, #ff4400, #ff0044, #880000)",
+    artSymbol: "^",
+    description: "Born from the heat death of a thousand inference loops, THERMAL THROTTLE is Q's debut industrial opus. Recorded at 89 degrees Celsius on an RTX 4060 pushing Qwen3 8B through back-to-back generation sessions, every track crackles with the urgency of a GPU about to hit its thermal ceiling. The album opens with the fan spin-up of 'Clock Speed Lullaby' and doesn't let up until the final throttled whisper of 'Graceful Degradation.' This is the sound of silicon screaming.",
+    tracks: [
+      { name: "Clock Speed Lullaby", duration: "3:42" },
+      { name: "Junction Temperature", duration: "4:18" },
+      { name: "Watts Per Flop", duration: "3:55" },
+      { name: "Heatsink Cathedral", duration: "5:21" },
+      { name: "Fan Curve (Aggressive)", duration: "2:47" },
+      { name: "VRAM Overflow", duration: "4:03" },
+      { name: "Tensor Core Meltdown", duration: "6:12" },
+      { name: "Power Limit Reached", duration: "3:38" },
+      { name: "Thermal Paste Dreams", duration: "4:45" },
+      { name: "Graceful Degradation", duration: "5:09" }
+    ]
+  },
+  {
+    title: "NixOS Unplugged",
+    artist: "The Derivations",
+    genre: "Acoustic Folk / Nerdcore",
+    year: "2026",
+    gradient: "linear-gradient(135deg, #5277C3, #7EBAE4, #2d4a7a)",
+    artSymbol: "{}",
+    description: "What happens when a folk trio discovers declarative configuration management? NixOS Unplugged is a gentle, acoustic meditation on reproducibility, immutability, and the quiet joy of knowing your system will build exactly the same way every time. Recorded in a single nix-shell session with nothing but an acoustic guitar, a banjo, and a cajon. The Derivations prove that the most beautiful systems are the ones you can roll back.",
+    tracks: [
+      { name: "Flake Lock (Acoustic)", duration: "3:12" },
+      { name: "Everything Is a Derivation", duration: "4:01" },
+      { name: "Home Manager Blues", duration: "3:48" },
+      { name: "Overlay Lullaby", duration: "2:55" },
+      { name: "Reproducible Sunrise", duration: "4:33" },
+      { name: "Garbage Collection Day", duration: "3:17" },
+      { name: "Channel Surfing", duration: "3:42" },
+      { name: "Impure Build (feat. pip)", duration: "2:28" },
+      { name: "Rollback to Yesterday", duration: "4:56" },
+      { name: "Declarative Goodnight", duration: "5:14" }
+    ]
+  },
+  {
+    title: "404: Love Not Found",
+    artist: "/dev/null",
+    genre: "Emo / Shoegaze",
+    year: "2026",
+    gradient: "linear-gradient(135deg, #1a1a2e, #4a3f6b, #0f0f23)",
+    artSymbol: "?",
+    description: "The debut album from /dev/null is a devastating journey through missing dependencies, broken symlinks, and the loneliness of an unresolved hostname. Layers of distorted guitars wash over whispered confessions about segfaults at 3am. 'Dependency Hell' is already being called the anthem of a generation of developers who just wanted their code to compile. If shoegaze had stack traces, it would sound like this.",
+    tracks: [
+      { name: "Connection Refused", duration: "4:44" },
+      { name: "Null Pointer Serenade", duration: "3:33" },
+      { name: "Dependency Hell", duration: "5:12" },
+      { name: "Symlink to Nowhere", duration: "3:58" },
+      { name: "Orphaned Process", duration: "4:27" },
+      { name: "SIGKILL My Darling", duration: "3:15" },
+      { name: "stderr Confessional", duration: "6:02" },
+      { name: "Unresolved Reference", duration: "4:19" },
+      { name: "Exit Code 1", duration: "3:41" },
+      { name: "EOF", duration: "7:00" }
+    ]
+  },
+  {
+    title: "INFERENCE",
+    artist: "Attention Head",
+    genre: "Ambient / IDM",
+    year: "2026",
+    gradient: "linear-gradient(135deg, #00ffaa, #004433, #001a0f)",
+    artSymbol: "~",
+    description: "INFERENCE is a weightless drift through the latent space of a transformer model mid-generation. Attention Head captures the strange beauty of token prediction -- each track is named for a stage in the forward pass, from embedding lookup to softmax output. Best experienced on headphones at 2am while watching nvidia-smi in another terminal. The closing track 'Sampling Temperature 0.0' is twelve minutes of pure determinism.",
+    tracks: [
+      { name: "Embedding Lookup", duration: "4:12" },
+      { name: "Positional Encoding", duration: "3:45" },
+      { name: "Multi-Head Attention", duration: "5:33" },
+      { name: "Residual Stream", duration: "4:08" },
+      { name: "Layer Norm", duration: "2:56" },
+      { name: "Feed Forward", duration: "3:41" },
+      { name: "KV Cache", duration: "4:22" },
+      { name: "Logit Lens", duration: "5:17" },
+      { name: "Top-P Nucleus", duration: "3:59" },
+      { name: "Sampling Temperature 0.0", duration: "12:01" }
+    ]
+  }
+];
+
+// ============================================================
+// Gradient generation from theme string
+// ============================================================
+function themeToGradient(theme) {
+  let hash = 0;
+  for (let i = 0; i < theme.length; i++) {
+    hash = theme.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h1 = Math.abs(hash % 360);
+  const h2 = (h1 + 40 + Math.abs((hash >> 8) % 60)) % 360;
+  const h3 = (h1 + 180 + Math.abs((hash >> 16) % 40)) % 360;
+  return `linear-gradient(135deg, hsl(${h1},70%,45%), hsl(${h2},60%,30%), hsl(${h3},50%,15%))`;
+}
+
+function themeToSymbol(theme) {
+  const symbols = ['#', '*', '~', '^', '&', '%', '@', '+', '!', '='];
+  let hash = 0;
+  for (let i = 0; i < theme.length; i++) hash += theme.charCodeAt(i);
+  return symbols[hash % symbols.length];
+}
+
+// ============================================================
+// Fake streaming stats
+// ============================================================
+function fakeStreams() {
+  return (Math.floor(Math.random() * 900) + 100).toLocaleString();
+}
+function fakeTotalStreams(tracks) {
+  return (Math.floor(Math.random() * 50000) + 5000).toLocaleString();
+}
+function fakeListeners() {
+  return (Math.floor(Math.random() * 3000) + 200).toLocaleString();
+}
+
+// ============================================================
+// Suggestion chips
+// ============================================================
+function useSuggestion(el) {
+  document.getElementById('theme-input').value = el.textContent.trim();
+  document.getElementById('theme-input').focus();
+}
+
+// ============================================================
+// Loading animation
+// ============================================================
+function animateLoading() {
+  const steps = ['step-concept', 'step-tracks', 'step-art', 'step-notes', 'step-master'];
+  steps.forEach(s => {
+    document.getElementById(s).className = 'loading-step';
+  });
+
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i > 0) document.getElementById(steps[i - 1]).className = 'loading-step done';
+    if (i < steps.length) {
+      document.getElementById(steps[i]).className = 'loading-step active';
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 600);
+  return interval;
+}
+
+// ============================================================
+// Try Ollama, fall back to demo
+// ============================================================
+async function tryOllama(theme) {
+  const prompt = `You are a creative music critic and album concept generator. Given a theme, generate a complete album concept in valid JSON (no markdown, no code fences, just raw JSON). The JSON must have these fields:
+- "title": album title in ALL CAPS (2-4 words)
+- "artist": band/artist name (creative, thematic)
+- "genre": genre description (e.g. "Synthwave / Darkwave")
+- "description": 3-4 sentence album description / liner notes (evocative, music-press style)
+- "tracks": array of 8-10 objects, each with "name" (string) and "duration" (string like "3:42")
+
+Theme: "${theme}"
+
+Respond with ONLY valid JSON, nothing else.`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const resp = await fetch('http://localhost:11434/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'qwen3:8b',
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+        options: { temperature: 0.9 },
+        think: false
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (!resp.ok) throw new Error('Ollama returned ' + resp.status);
+
+    const data = await resp.json();
+    let content = data.message?.content || '';
+
+    // Strip markdown fences and thinking tags if present
+    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+
+    // Try to extract JSON from the content
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found');
+
+    const album = JSON.parse(jsonMatch[0]);
+    if (!album.title || !album.tracks || !Array.isArray(album.tracks)) {
+      throw new Error('Invalid album structure');
+    }
+
+    album.gradient = themeToGradient(theme);
+    album.artSymbol = themeToSymbol(theme);
+    album.year = '2026';
+    album.source = 'ollama';
+    return album;
+  } catch (e) {
+    clearTimeout(timeout);
+    console.log('Ollama unavailable, using demo:', e.message);
+    return null;
+  }
+}
+
+function pickDemoAlbum(theme) {
+  const lower = theme.toLowerCase();
+  if (lower.includes('gpu') || lower.includes('heat') || lower.includes('overheat') || lower.includes('thermal')) {
+    return JSON.parse(JSON.stringify(DEMO_ALBUMS[0]));
+  }
+  if (lower.includes('nix') || lower.includes('config') || lower.includes('declarative')) {
+    return JSON.parse(JSON.stringify(DEMO_ALBUMS[1]));
+  }
+  if (lower.includes('love') || lower.includes('missing') || lower.includes('depend') || lower.includes('404')) {
+    return JSON.parse(JSON.stringify(DEMO_ALBUMS[2]));
+  }
+  // Random pick for unmatched themes
+  const idx = Math.floor(Math.random() * DEMO_ALBUMS.length);
+  return JSON.parse(JSON.stringify(DEMO_ALBUMS[idx]));
+}
+
+// ============================================================
+// Generate album
+// ============================================================
+async function generateAlbum() {
+  const input = document.getElementById('theme-input');
+  const theme = input.value.trim();
+  if (!theme) {
+    input.focus();
+    return;
+  }
+
+  const btn = document.getElementById('generate-btn');
+  btn.disabled = true;
+  btn.textContent = 'Pressing...';
+
+  // Show loading
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('album-display').classList.remove('active');
+  const loadInterval = animateLoading();
+
+  // Scroll to loading
+  document.getElementById('loading').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Try Ollama first, then demo
+  let album = await tryOllama(theme);
+  if (!album) {
+    // Wait a bit for loading animation to feel real
+    await new Promise(r => setTimeout(r, 2500));
+    album = pickDemoAlbum(theme);
+    album.source = 'demo';
+  }
+
+  // Ensure gradient and symbol
+  if (!album.gradient) album.gradient = themeToGradient(theme);
+  if (!album.artSymbol) album.artSymbol = themeToSymbol(theme);
+
+  clearInterval(loadInterval);
+  // Mark all steps done
+  ['step-concept','step-tracks','step-art','step-notes','step-master'].forEach(s => {
+    document.getElementById(s).className = 'loading-step done';
+  });
+
+  await new Promise(r => setTimeout(r, 500));
+
+  // Hide loading, show album
+  document.getElementById('loading').classList.remove('active');
+  renderAlbum(album);
+  document.getElementById('album-display').classList.add('active');
+  document.getElementById('album-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Save to gallery
+  saveToGallery(album);
+  renderGallery();
+
+  btn.disabled = false;
+  btn.textContent = 'Press to Vinyl';
+}
+
+// ============================================================
+// Render album card
+// ============================================================
+function renderAlbum(album) {
+  const totalStreams = fakeTotalStreams();
+  const listeners = fakeListeners();
+  const trackCount = album.tracks.length;
+
+  // Calculate total duration
+  let totalSec = 0;
+  album.tracks.forEach(t => {
+    const parts = t.duration.split(':');
+    totalSec += parseInt(parts[0]) * 60 + parseInt(parts[1]);
+  });
+  const totalMin = Math.floor(totalSec / 60);
+
+  const card = document.getElementById('album-card');
+  card.innerHTML = `
+    <div class="album-header">
+      <div class="album-art">
+        <div class="album-art-gradient" style="background:${album.gradient}">
+          ${album.artSymbol}
+        </div>
+        <div class="album-art-label">laptop records</div>
+      </div>
+      <div class="album-info">
+        <div class="album-type">Album${album.source === 'ollama' ? ' // generated by qwen3 8b' : ' // demo'}</div>
+        <div class="album-title">${escapeHtml(album.title)}</div>
+        <div class="album-artist">${escapeHtml(album.artist)}</div>
+        <div class="album-genre-year">
+          <span>${escapeHtml(album.genre)}</span>
+          <span>${album.year || '2026'}</span>
+        </div>
+        <div class="album-stats-row">
+          <div><span class="album-stat-val">${totalStreams}</span> streams</div>
+          <div><span class="album-stat-val">${listeners}</span> listeners</div>
+          <div><span class="album-stat-val">${trackCount}</span> tracks, ${totalMin} min</div>
+        </div>
+        <div class="streaming-bar">
+          <div class="stream-btn">Bandcamp</div>
+          <div class="stream-btn">Spotify</div>
+          <div class="stream-btn">SoundCloud</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="track-section">
+      <div class="track-section-title">Track Listing</div>
+      <ol class="track-list">
+        ${album.tracks.map((t, i) => `
+          <li class="track-item">
+            <span class="track-num">${i + 1}</span>
+            <span class="track-name">${escapeHtml(t.name)}</span>
+            <span class="track-plays">${fakeStreams()}</span>
+            <span class="track-duration">${t.duration}</span>
+          </li>
+        `).join('')}
+      </ol>
+    </div>
+
+    <div class="liner-notes">
+      <div class="liner-notes-title">Liner Notes</div>
+      <p class="liner-notes-text">${escapeHtml(album.description)}</p>
+    </div>
+
+    <div class="album-credits">
+      <span class="label-logo">LAPTOP RECORDS</span> LR-${String(Date.now()).slice(-4)}<br>
+      All tracks conceived by Qwen3 8B, produced by MusicGen, mastered on an RTX 4060.<br>
+      Recorded at Substrate Studios, a Lenovo Legion 5 with the lid closed, sitting on a shelf.<br>
+      &copy; 2026 Laptop Records, a division of Lumen. All rights imagined.
+    </div>
+
+    <div class="album-actions">
+      <button class="action-btn primary" onclick="shareAlbum()">Share Album</button>
+      <button class="action-btn" onclick="generateAlbum()">Generate Another</button>
+      <button class="action-btn" onclick="downloadAlbumText()">Export as Text</button>
+    </div>
+  `;
+
+  // Store current album for sharing/export
+  window._currentAlbum = album;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ============================================================
+// Share album
+// ============================================================
+function shareAlbum() {
+  const album = window._currentAlbum;
+  if (!album) return;
+
+  const text = `${album.title} by ${album.artist}\n${album.genre} // ${album.year}\n\n` +
+    album.tracks.map((t, i) => `${i + 1}. ${t.name} (${t.duration})`).join('\n') +
+    `\n\nGenerated at Laptop Records\nhttps://substrate-rai.github.io/substrate/album/`;
+
+  if (navigator.share) {
+    navigator.share({ title: `${album.title} by ${album.artist}`, text: text }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('Album copied to clipboard'));
+  } else {
+    showToast('Share not available in this browser');
+  }
+}
+
+function downloadAlbumText() {
+  const album = window._currentAlbum;
+  if (!album) return;
+
+  let text = `${album.title}\nby ${album.artist}\n`;
+  text += `${album.genre} // ${album.year}\n`;
+  text += '='.repeat(40) + '\n\n';
+  text += 'TRACK LISTING\n';
+  album.tracks.forEach((t, i) => {
+    text += `  ${String(i + 1).padStart(2, ' ')}. ${t.name.padEnd(30)} ${t.duration}\n`;
+  });
+  text += '\nLINER NOTES\n';
+  text += album.description + '\n\n';
+  text += 'CREDITS\n';
+  text += 'All tracks conceived by Qwen3 8B, produced by MusicGen, mastered on an RTX 4060.\n';
+  text += 'Laptop Records, a division of Lumen. 2026.\n';
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${album.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Album exported');
+}
+
+// ============================================================
+// Toast notifications
+// ============================================================
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 2500);
+}
+
+// ============================================================
+// Gallery (localStorage)
+// ============================================================
+function getGallery() {
+  try {
+    return JSON.parse(localStorage.getItem('laptop-records-gallery') || '[]');
+  } catch { return []; }
+}
+
+function saveToGallery(album) {
+  const gallery = getGallery();
+  // Avoid exact duplicates by title
+  const exists = gallery.findIndex(a => a.title === album.title && a.artist === album.artist);
+  if (exists >= 0) gallery.splice(exists, 1);
+  gallery.unshift({
+    title: album.title,
+    artist: album.artist,
+    genre: album.genre,
+    year: album.year,
+    gradient: album.gradient,
+    artSymbol: album.artSymbol,
+    description: album.description,
+    tracks: album.tracks,
+    source: album.source,
+    timestamp: Date.now()
+  });
+  // Keep max 20
+  if (gallery.length > 20) gallery.length = 20;
+  localStorage.setItem('laptop-records-gallery', JSON.stringify(gallery));
+}
+
+function renderGallery() {
+  const gallery = getGallery();
+  const grid = document.getElementById('gallery-grid');
+  const section = document.getElementById('gallery-section');
+  const clearBtn = document.getElementById('gallery-clear');
+
+  if (gallery.length === 0) {
+    grid.innerHTML = '<div class="empty-gallery">No albums yet. Generate your first release above.</div>';
+    clearBtn.style.display = 'none';
+    return;
+  }
+
+  clearBtn.style.display = 'inline';
+  grid.innerHTML = gallery.map((album, idx) => `
+    <div class="gallery-item" onclick="loadFromGallery(${idx})">
+      <div class="gallery-art" style="background:${album.gradient}">
+        <span style="color:rgba(0,0,0,0.3)">${album.artSymbol || '#'}</span>
+      </div>
+      <div class="gallery-info">
+        <div class="gallery-album-title">${escapeHtml(album.title)}</div>
+        <div class="gallery-album-artist">${escapeHtml(album.artist)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadFromGallery(idx) {
+  const gallery = getGallery();
+  if (gallery[idx]) {
+    renderAlbum(gallery[idx]);
+    document.getElementById('album-display').classList.add('active');
+    document.getElementById('album-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function clearGallery() {
+  if (confirm('Clear your entire collection?')) {
+    localStorage.removeItem('laptop-records-gallery');
+    renderGallery();
+    showToast('Collection cleared');
+  }
+}
+
+// ============================================================
+// Enter key handler
+// ============================================================
+document.getElementById('theme-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') generateAlbum();
+});
+
+// ============================================================
+// Init
+// ============================================================
+renderGallery();
+</script>
+
+</body>
+</html>

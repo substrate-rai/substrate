@@ -18,10 +18,32 @@
       ];
     };
 
-    devShells.${system}.default = pkgs.mkShell {
-      packages = [
-        (pkgs.python3.withPackages (ps: [ ps.requests ]))
-      ];
+    devShells.${system} = {
+      default = pkgs.mkShell {
+        packages = [
+          (pkgs.python3.withPackages (ps: [ ps.requests ]))
+        ];
+      };
+
+      # ML toolkit — GPU-accelerated image/audio/speech
+      ml = pkgs.mkShell {
+        packages = [
+          (pkgs.python312.withPackages (ps: with ps; [
+            torch
+            torchvision
+            torchaudio
+            diffusers
+            transformers
+            accelerate
+            safetensors
+            pillow
+            soundfile
+            scipy
+            faster-whisper
+            requests
+          ]))
+        ];
+      };
     };
   };
 }
