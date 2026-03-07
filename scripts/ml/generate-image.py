@@ -72,7 +72,7 @@ def generate(prompt, model_key="sdxl-turbo", steps=None, guidance=None,
              width=512, height=512, output=None, seed=None):
     """Generate an image using diffusers."""
     import torch
-    from diffusers import AutoPipelineForText2Image, StableDiffusionPipeline
+    from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline
 
     model_info = MODELS[model_key]
     model_id = model_info["id"]
@@ -91,7 +91,7 @@ def generate(prompt, model_key="sdxl-turbo", steps=None, guidance=None,
 
     # Load pipeline
     if model_key == "sdxl-turbo":
-        pipe = AutoPipelineForText2Image.from_pretrained(
+        pipe = StableDiffusionXLPipeline.from_pretrained(
             model_id, torch_dtype=torch.float16, variant="fp16"
         )
     else:

@@ -8,7 +8,10 @@
   outputs = { self, nixpkgs }:
   let
     system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
+    pkgs = import nixpkgs {
+      inherit system;
+      config.allowUnfree = true;
+    };
   in {
     nixosConfigurations.substrate = nixpkgs.lib.nixosSystem {
       inherit system;
@@ -29,7 +32,7 @@
       ml = pkgs.mkShell {
         packages = [
           (pkgs.python312.withPackages (ps: with ps; [
-            torch
+            torchWithCuda
             torchvision
             torchaudio
             diffusers
