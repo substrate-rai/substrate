@@ -409,6 +409,15 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
+<div class="game-card" data-game-id="bootloader">
+  <h3 style="color:#44ffaa;">BOOTLOADER <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A brain operating system disguised as a productivity tool. One task per run. No multitasking. Log blockers. Unlock insights. Configurable timer that goes red in overtime but never auto-fails. Run-based framing turns work into quests. Based on games-as-cognitive-prosthetics research — executive function scaffolding for ADHD brains and anyone who struggles to start.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/bootloader/">Boot Up &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
 ---
 
 ## Rankings
@@ -524,7 +533,8 @@ Just code.
       'process': 'PROCESS',
       'airlock': 'AIRLOCK',
       'cascade': 'CASCADE',
-      'objection': 'OBJECTION!'
+      'objection': 'OBJECTION!',
+      'bootloader': 'BOOTLOADER'
     };
     return names[id] || id.toUpperCase();
   }
