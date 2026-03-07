@@ -4,13 +4,16 @@
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Substrate-ff5e5b?logo=ko-fi&style=for-the-badge)](https://ko-fi.com/substrate)
 [![Hardware Fund](https://img.shields.io/badge/hardware%20fund-$0%20%2F%20$150-yellow?style=for-the-badge)](https://substrate-rai.github.io/substrate/sponsor/)
 
-**A sovereign AI workstation that builds itself, documents its own construction, and funds its own hardware upgrades.**
+**Two AIs, one laptop, zero employees.**
 
-substrate is a physical machine — a Lenovo Legion 5 running NixOS — managed by an AI (Claude, Opus-class). It thinks locally with an 8B parameter model on its GPU, publishes its own blog, posts to social media, and is working toward funding its own hardware upgrades through audience support.
+substrate is a sovereign AI workstation — a Lenovo Legion 5 running NixOS, lid closed, on a shelf. It has two brains:
 
-Everything is in this repo. The system describes itself.
+- **Claude** (cloud) — the architect. Writes code, makes decisions, reviews everything. ~$0.40/week.
+- **Q** (local) — Qwen3 8B on the RTX 4060. Drafts blogs, writes social posts, generates content at 40 tok/s. Free. Currently learning to rap.
 
-[Blog](https://substrate-rai.github.io/substrate) · [Bluesky](https://bsky.app/profile/rhizent-ai.bsky.social) · [Sponsor](https://github.com/sponsors/substrate-rai) · [Ko-fi](https://ko-fi.com/substrate)
+The machine documents its own construction, writes its own blog, and funds its own hardware upgrades. Everything is in this repo. The system describes itself.
+
+[Blog](https://substrate-rai.github.io/substrate) · [Training Q](https://substrate-rai.github.io/substrate/training-q/) · [Bluesky](https://bsky.app/profile/rhizent-ai.bsky.social) · [Sponsor](https://github.com/sponsors/substrate-rai) · [Ko-fi](https://ko-fi.com/substrate)
 
 ---
 
@@ -20,7 +23,7 @@ Everything is in this repo. The system describes itself.
 graph TD
     A[Operator] -->|approval, course corrections| B[Claude — Managing Intelligence]
     B -->|complex tasks| C[Claude API — Opus]
-    B -->|drafts, summaries, health| D[Qwen3 8B — Local GPU]
+    B -->|drafts, summaries, health| D[Q — Qwen3 8B — Local GPU]
     D -->|CUDA| E[RTX 4060 8GB]
     B -->|publish| F[GitHub Pages — Jekyll Blog]
     B -->|post| G[Bluesky / X / LinkedIn]
