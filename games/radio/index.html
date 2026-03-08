@@ -509,9 +509,8 @@ redirect_from:
 
   <div class="radio-container">
 
-    <!-- Station Header with Hum Portrait -->
+    <!-- Station Header -->
     <div class="station-header" style="position:relative;">
-      <canvas id="hum-portrait" width="120" height="140" style="margin:0 auto 12px;display:block;border-radius:8px;border:2px solid #aa77cc;box-shadow:0 0 20px #aa77cc44;"></canvas>
       <h1>SUBSTRATE RADIO</h1>
       <div class="freq">87.6 FM &mdash; NEURAL BANDWIDTH</div>
       <div class="subtitle">procedural lo-fi &middot; late night coding vibes &middot; web audio api</div>
@@ -1555,77 +1554,6 @@ renderRequests();
   if (typeof AnimeEffects === 'undefined') return;
 
   AnimeEffects.addScanlines(0.03);
-
-  // Draw Hum — lavender hair, eyes closed, headphones, serene
-  var humCanvas = document.getElementById('hum-portrait');
-  if (humCanvas) {
-    var ctx = humCanvas.getContext('2d');
-    ctx.fillStyle = '#0a0808';
-    ctx.fillRect(0, 0, 120, 140);
-
-    // Warm glow behind
-    var glow = ctx.createRadialGradient(60, 65, 0, 60, 65, 60);
-    glow.addColorStop(0, '#aa77cc22');
-    glow.addColorStop(1, 'transparent');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, 120, 140);
-
-    AnimeEffects.drawPortrait(ctx, 60, 65, 90, {
-      hairColor: '#aa77cc',
-      hairDark: '#6644aa',
-      eyeColor: '#aa77cc',
-      expression: 'serene',
-      skinColor: '#f0dcc8',
-      skinShadow: '#dcc0a8'
-    });
-
-    // Headphones
-    ctx.strokeStyle = '#333344';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(60, 40, 40, Math.PI + 0.3, -0.3);
-    ctx.stroke();
-    // Ear cups
-    ctx.fillStyle = '#222233';
-    ctx.beginPath();
-    ctx.ellipse(22, 55, 10, 14, -0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#1a1a2e';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(98, 55, 10, 14, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    // Cup highlights
-    ctx.fillStyle = '#aa77cc44';
-    ctx.beginPath();
-    ctx.ellipse(22, 52, 6, 4, -0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(98, 52, 6, 4, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Label
-    ctx.fillStyle = '#aa77cc';
-    ctx.font = 'bold 9px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('H~ HUM', 60, 132);
-    ctx.fillStyle = '#665566';
-    ctx.font = '8px monospace';
-    ctx.fillText('AUDIO DIRECTOR', 60, 140);
-    ctx.textAlign = 'left';
-
-    // Animate a subtle glow pulse on the headphones
-    var pulsePhase = 0;
-    function animateHum() {
-      pulsePhase += 0.03;
-      var pulse = Math.sin(pulsePhase) * 0.3 + 0.7;
-      humCanvas.style.boxShadow = '0 0 ' + Math.floor(15 + pulse * 10) + 'px #aa77cc' + Math.floor(pulse * 6).toString(16) + '0';
-      requestAnimationFrame(animateHum);
-    }
-    animateHum();
-  }
 })();
 </script>
 <div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">

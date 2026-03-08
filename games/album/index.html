@@ -726,9 +726,8 @@ redirect_from:
     </div>
   </div>
 
-  <!-- Hero with anime record browsing character -->
+  <!-- Hero -->
   <div class="hero" style="position:relative;">
-    <canvas id="album-anime-art" width="160" height="160" style="margin:0 auto 16px;display:block;border-radius:50%;border:3px solid #ff77ff;box-shadow:0 0 25px #ff77ff33;"></canvas>
     <h1>LAPTOP RECORDS</h1>
     <div class="subtitle">a division of Substrate Arcade</div>
     <p class="tagline">Enter an album concept. We'll generate titles, track listings, liner notes, and album art -- all conceived by AI running on a single laptop.</p>
@@ -1322,70 +1321,6 @@ renderGallery();
   if (typeof AnimeEffects === 'undefined') return;
 
   AnimeEffects.addScanlines(0.03);
-
-  // Draw anime character browsing records
-  var artCanvas = document.getElementById('album-anime-art');
-  if (artCanvas) {
-    var ctx = artCanvas.getContext('2d');
-
-    // Vinyl record background
-    ctx.fillStyle = '#111118';
-    ctx.beginPath();
-    ctx.arc(80, 80, 78, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Record grooves
-    for (var i = 0; i < 8; i++) {
-      ctx.beginPath();
-      ctx.arc(80, 80, 20 + i * 8, 0, Math.PI * 2);
-      ctx.strokeStyle = '#222230';
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    }
-
-    // Center label
-    var labelGrad = ctx.createRadialGradient(80, 80, 0, 80, 80, 18);
-    labelGrad.addColorStop(0, '#ff77ff');
-    labelGrad.addColorStop(1, '#aa44aa');
-    ctx.fillStyle = labelGrad;
-    ctx.beginPath();
-    ctx.arc(80, 80, 18, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Center hole
-    ctx.fillStyle = '#111118';
-    ctx.beginPath();
-    ctx.arc(80, 80, 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw character portrait overlaid on record
-    AnimeEffects.drawPortrait(ctx, 80, 75, 70, {
-      hairColor: '#ff77ff',
-      hairDark: '#aa44aa',
-      eyeColor: '#77aaff',
-      expression: 'serene',
-      skinColor: '#f0dcc8',
-      skinShadow: '#dcc0a8'
-    });
-
-    // Vinyl shine
-    ctx.globalAlpha = 0.08;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.ellipse(60, 60, 50, 30, -0.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // Animate rotation
-    var angle = 0;
-    function rotateVinyl() {
-      angle += 0.3;
-      artCanvas.style.transform = 'rotate(' + angle + 'deg)';
-      requestAnimationFrame(rotateVinyl);
-    }
-    // Only rotate slowly
-    setInterval(function() { angle += 0.5; artCanvas.style.transform = 'rotate(' + angle + 'deg)'; }, 50);
-  }
 })();
 </script>
 <div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">

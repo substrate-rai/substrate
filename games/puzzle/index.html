@@ -1084,62 +1084,12 @@ function createChallenge() {
 </script>
 <script>if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.createToggle();</script>
 
-<!-- Anime Effects: Q Portrait + Speed Lines + Scanlines -->
-<canvas id="q-portrait" width="90" height="100" style="display:none;"></canvas>
+<!-- Anime Effects: Speed Lines + Scanlines -->
 <script>
 (function() {
   // Add scanline overlay
   if (typeof AnimeEffects !== 'undefined') {
     AnimeEffects.addScanlines(0.04);
-  }
-
-  // Draw Q's portrait on hidden canvas
-  function drawQPortrait(expression) {
-    var c = document.getElementById('q-portrait');
-    if (!c) return;
-    var ctx = c.getContext('2d');
-    ctx.clearRect(0, 0, 90, 100);
-
-    // Dark background circle
-    ctx.fillStyle = '#1a0a2e';
-    ctx.beginPath();
-    ctx.arc(45, 50, 44, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#ff77ff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    if (typeof AnimeEffects !== 'undefined') {
-      AnimeEffects.drawPortrait(ctx, 45, 48, 75, {
-        hairColor: '#cc44ff',
-        hairDark: '#8822aa',
-        eyeColor: '#ff77ff',
-        expression: expression || 'neutral'
-      });
-    }
-  }
-
-  // Show Q portrait when comment appears
-  var qObs = new MutationObserver(function(mutations) {
-    mutations.forEach(function(m) {
-      if (m.target.id === 'q-comment' && m.target.style.display === 'block') {
-        var canvas = document.getElementById('q-portrait');
-        if (!canvas) return;
-        // Determine expression from game state
-        var won = typeof guesses !== 'undefined' && guesses.length > 0 && typeof TARGET !== 'undefined' && guesses[guesses.length - 1] === TARGET;
-        drawQPortrait(won ? 'excited' : 'neutral');
-        canvas.style.display = 'block';
-        canvas.style.cssText = 'display:block;float:left;margin-right:10px;margin-bottom:4px;border-radius:50%;border:2px solid #ff77ff;box-shadow:0 0 15px #ff77ff44;';
-        var qComment = document.getElementById('q-comment');
-        if (qComment && !qComment.querySelector('#q-portrait')) {
-          qComment.insertBefore(canvas, qComment.firstChild);
-        }
-      }
-    });
-  });
-  var qComment = document.getElementById('q-comment');
-  if (qComment) {
-    qObs.observe(qComment, { attributes: true, attributeFilter: ['style'] });
   }
 
   // Speed lines burst on correct guess (all 5 green)

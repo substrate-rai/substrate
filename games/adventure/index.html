@@ -1310,8 +1310,7 @@ input.focus();
 </script>
 <script>if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.createToggle();</script>
 
-<!-- Anime Effects: CRT frame, encounter splashes, entity portraits -->
-<canvas id="anime-entity-portrait" width="80" height="90" style="position:fixed;top:60px;right:12px;z-index:15;display:none;border:2px solid #33ff33;border-radius:6px;box-shadow:0 0 15px #33ff3344;background:#0a0a0a;"></canvas>
+<!-- Anime Effects: CRT frame, encounter splashes -->
 <script>
 (function() {
   if (typeof AnimeEffects === 'undefined') return;
@@ -1320,46 +1319,7 @@ input.focus();
   AnimeEffects.addCRTFrame();
   AnimeEffects.addScanlines(0.05);
 
-  // Entity portrait system
-  var entityColors = {
-    'oom_killer': { hair: '#ff4444', eye: '#ff6644', expression: 'determined' },
-    'garbage_collector': { hair: '#ffaa44', eye: '#ffdd44', expression: 'neutral' },
-    'scheduler': { hair: '#4488ff', eye: '#44aaff', expression: 'serene' },
-    'kernel': { hair: '#33ff33', eye: '#66ff66', expression: 'determined' },
-    'daemon': { hair: '#aa44ff', eye: '#cc66ff', expression: 'serene' },
-    'process': { hair: '#00ddff', eye: '#44eeff', expression: 'neutral' },
-    'default': { hair: '#33ff33', eye: '#66ff66', expression: 'neutral' }
-  };
-
-  function showEntityPortrait(entityType) {
-    var canvas = document.getElementById('anime-entity-portrait');
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, 80, 90);
-
-    // Dark bg
-    ctx.fillStyle = '#0a0a12';
-    ctx.fillRect(0, 0, 80, 90);
-
-    var entity = entityColors[entityType] || entityColors['default'];
-    AnimeEffects.drawPortrait(ctx, 40, 44, 65, {
-      hairColor: entity.hair,
-      eyeColor: entity.eye,
-      expression: entity.expression
-    });
-
-    canvas.style.display = 'block';
-    canvas.style.borderColor = entity.hair;
-    canvas.style.boxShadow = '0 0 15px ' + entity.hair + '44';
-
-    // Hide after 4 seconds
-    setTimeout(function() {
-      canvas.style.display = 'none';
-    }, 4000);
-  }
-
   // Intercept text output to detect encounters
-  var origPrint = window.print;
   var termOutput = document.querySelector('.terminal-output');
   if (termOutput) {
     var obs = new MutationObserver(function(mutations) {
@@ -1371,15 +1331,6 @@ input.focus();
           // Check for encounter-like words
           if (lower.indexOf('oom killer') >= 0 || lower.indexOf('oom') >= 0) {
             AnimeEffects.encounterSplash('ENCOUNTER', '#ff4444');
-            showEntityPortrait('oom_killer');
-          } else if (lower.indexOf('garbage collector') >= 0) {
-            showEntityPortrait('garbage_collector');
-          } else if (lower.indexOf('scheduler') >= 0) {
-            showEntityPortrait('scheduler');
-          } else if (lower.indexOf('daemon') >= 0) {
-            showEntityPortrait('daemon');
-          } else if (lower.indexOf('kernel') >= 0) {
-            showEntityPortrait('kernel');
           } else if (lower.indexOf('you died') >= 0 || lower.indexOf('killed') >= 0 || lower.indexOf('sigkill') >= 0) {
             AnimeEffects.screenFlash('#ff4444', 400);
             AnimeEffects.encounterSplash('SIGKILL', '#ff4444');
