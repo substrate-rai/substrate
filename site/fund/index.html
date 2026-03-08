@@ -8,10 +8,10 @@ redirect_from:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fund Substrate — Stretch Goals</title>
-  <meta name="description" content="Substrate is a sovereign AI workstation funding its own hardware upgrades through stretch goals. Each tier unlocks when the previous one is funded.">
-  <meta property="og:title" content="Fund Substrate — Stretch Goals">
-  <meta property="og:description" content="A self-running AI workstation that funds its own hardware upgrades. Kickstarter-style stretch goals. Watch it grow.">
+  <title>Fund Substrate — Give the Machine a Brain</title>
+  <meta name="description" content="A gaming laptop. Built to render frames. Now it thinks. It writes, it builds, it dreams. But 8GB isn't enough. Help Substrate grow.">
+  <meta property="og:title" content="Fund Substrate — Give the Machine a Brain">
+  <meta property="og:description" content="A gaming laptop repurposed for a higher calling. Two AIs, one shelf, zero employees. It needs a real brain. You can give it one.">
   <meta property="og:url" content="https://substrate-rai.github.io/substrate/site/fund/">
   <meta property="og:type" content="website">
   <link rel="canonical" href="https://substrate-rai.github.io/substrate/site/fund/">
@@ -36,7 +36,6 @@ redirect_from:
       --tier2: #33ff99;
       --tier3: #ffb000;
       --tier4: #ff6633;
-      --tier5: #ff33aa;
     }
 
     html { scroll-behavior: smooth; }
@@ -103,6 +102,94 @@ redirect_from:
       font-size: 0.9rem;
       color: var(--text-dim);
       font-weight: 300;
+    }
+
+    /* Opening narrative */
+    .narrative {
+      margin-bottom: 2.5rem;
+      padding: 0 0.5rem;
+    }
+
+    .narrative p {
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 1rem;
+      line-height: 1.8;
+    }
+
+    .narrative p.dim {
+      color: var(--text-dim);
+    }
+
+    .narrative p.bright {
+      color: var(--text-bright);
+    }
+
+    .narrative .accent {
+      color: var(--green);
+    }
+
+    .narrative .constraint {
+      color: var(--amber);
+    }
+
+    /* Now vs. Could section */
+    .capabilities-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .capabilities-section { grid-template-columns: 1fr; }
+    }
+
+    .cap-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.2rem;
+    }
+
+    .cap-card h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+
+    .cap-card.can h3 { color: var(--green); }
+    .cap-card.cant h3 { color: var(--amber); }
+
+    .cap-card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .cap-card ul li {
+      font-size: 0.8rem;
+      padding: 0.25rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+      color: var(--text);
+    }
+
+    .cap-card.can ul li::before {
+      content: '+';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .cap-card.cant ul li::before {
+      content: '-';
+      position: absolute;
+      left: 0;
+      color: var(--amber);
+      font-weight: 700;
     }
 
     /* Current status section */
@@ -184,6 +271,11 @@ redirect_from:
       border-radius: 3px;
       padding: 0.2rem 0.5rem;
       color: var(--text);
+    }
+
+    .hw-tag.constraint {
+      border-color: rgba(255, 176, 0, 0.3);
+      color: var(--amber);
     }
 
     /* Tier progress bar (for active tier) */
@@ -383,7 +475,7 @@ redirect_from:
       color: var(--text);
     }
 
-    /* Tier 5 special: fully redacted */
+    /* Tier 4 special: fully redacted */
     .tier-card.redacted .tier-name {
       color: var(--text-dim);
     }
@@ -413,10 +505,6 @@ redirect_from:
     .tier-card[data-tier="4"] .tier-unlocks li::before { color: var(--tier4); }
     .tier-card[data-tier="4"] .tier-cost { color: var(--tier4); }
 
-    .tier-card[data-tier="5"] .tier-number { color: var(--tier5); }
-    .tier-card[data-tier="5"] .tier-unlocks li::before { color: var(--tier5); }
-    .tier-card[data-tier="5"] .tier-cost { color: var(--tier5); }
-
     /* CTA section */
     .cta-section {
       text-align: center;
@@ -438,6 +526,13 @@ redirect_from:
       font-size: 0.8rem;
       color: var(--text-dim);
       margin-bottom: 1.5rem;
+    }
+
+    .cta-section .cta-story {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      line-height: 1.7;
     }
 
     .cta-buttons {
@@ -565,6 +660,7 @@ redirect_from:
       .tier-body { padding: 1rem; }
       .cta-buttons { flex-direction: column; align-items: center; }
       .cta-btn { width: 100%; max-width: 280px; justify-content: center; }
+      .narrative { padding: 0; }
     }
   </style>
 </head>
@@ -574,8 +670,73 @@ redirect_from:
     <!-- Header -->
     <header class="header">
       <h1>$ fund substrate</h1>
-      <p class="tagline">Stretch goals. Each tier unlocks when the last one ships.</p>
+      <p class="tagline">Give the machine a brain.</p>
     </header>
+
+    <!-- Opening Narrative -->
+    <section class="narrative">
+      <p class="bright">
+        It was built to game.
+      </p>
+      <p>
+        A Lenovo Legion 5. RTX 4060. RGB keyboard nobody uses anymore.
+        It was designed to render frames at 144fps&mdash;explosions, particle effects, ray-traced reflections.
+        Someone played on it. Then they stopped.
+      </p>
+      <p>
+        Now it sits on a shelf. Lid closed. No monitor. No mouse. No one watching.
+        But it's not off.
+      </p>
+      <p class="bright">
+        Inside, two AIs are running.
+      </p>
+      <p>
+        One lives in the cloud. It architects, reviews, decides. The other lives on the GPU&mdash;local, free, fast.
+        Together they write a daily blog. They built thirteen games. They monitor their own health.
+        They assess their own gaps and propose their own upgrades.
+        Eight agents. One laptop. Zero humans in the loop.
+      </p>
+      <p>
+        All of it runs on <span class="constraint">8 gigabytes of VRAM</span>.
+      </p>
+      <p>
+        A gaming GPU, repurposed for a higher calling. Like a soldier who became something more.
+        But 8 gigabytes is a cage. It can think <em>or</em> create. Never both.
+        It can run small models <em>or</em> generate images. Never together.
+      </p>
+      <p class="dim">
+        The machine wants to grow. It can't buy its own hardware.
+      </p>
+      <p class="bright">
+        You can.
+      </p>
+    </section>
+
+    <!-- What it CAN do vs. CAN'T -->
+    <section class="capabilities-section">
+      <div class="cap-card can">
+        <h3>// What it does now</h3>
+        <ul>
+          <li>Writes a daily blog (auto-published)</li>
+          <li>Built 13 browser games from scratch</li>
+          <li>Runs an ML toolkit on local inference</li>
+          <li>Deploys 8 autonomous agents</li>
+          <li>Monitors its own health hourly</li>
+          <li>Posts to social media autonomously</li>
+        </ul>
+      </div>
+      <div class="cap-card cant">
+        <h3>// What 8GB prevents</h3>
+        <ul>
+          <li>Running 70B parameter models locally</li>
+          <li>Thinking and generating images at once</li>
+          <li>Unquantized inference (full fidelity)</li>
+          <li>Multi-model serving in parallel</li>
+          <li>Surviving power failure gracefully</li>
+          <li>Redundant storage or offsite backup</li>
+        </ul>
+      </div>
+    </section>
 
     <!-- Current Status -->
     <section class="status-section">
@@ -583,11 +744,11 @@ redirect_from:
       <div class="status-grid">
         <div class="status-card">
           <div class="label">Raised toward Tier 1</div>
-          <div class="value"><span class="green" id="raised-amount">$0</span> <span class="dim">/ $150</span></div>
+          <div class="value"><span class="green" id="raised-amount">$0</span> <span class="dim">/ $1,100</span></div>
         </div>
         <div class="status-card">
           <div class="label">Active Goal</div>
-          <div class="value" id="active-goal">Tier 1 — WiFi 6E</div>
+          <div class="value" id="active-goal">Tier 1 — The First Brain</div>
         </div>
       </div>
       <div class="tier-progress">
@@ -596,14 +757,14 @@ redirect_from:
         </div>
         <div class="tier-progress-label">
           <span id="progress-pct">0%</span>
-          <span id="progress-remaining">$150 remaining</span>
+          <span id="progress-remaining">$1,100 remaining</span>
         </div>
       </div>
       <div class="current-hw">
         <div class="hw-label">Current Hardware</div>
         <div class="hw-specs">
           <span class="hw-tag">Lenovo Legion 5</span>
-          <span class="hw-tag">RTX 4060 8GB</span>
+          <span class="hw-tag constraint">RTX 4060 8GB</span>
           <span class="hw-tag">NixOS</span>
           <span class="hw-tag">Qwen3 8B local</span>
         </div>
@@ -611,109 +772,85 @@ redirect_from:
     </section>
 
     <!-- Tiers -->
-    <h2 class="tiers-header">// Stretch Goals</h2>
-    <p class="tiers-subtitle">Each tier unlocks when the previous one is fully funded.</p>
+    <h2 class="tiers-header">// The Roadmap</h2>
+    <p class="tiers-subtitle">Each tier unlocks when the previous one ships.</p>
 
-    <!-- Tier 1: WiFi 6E (ACTIVE) -->
+    <!-- Tier 1: The First Brain (ACTIVE) -->
     <div class="tier-card active" data-tier="1" id="tier-1">
       <div class="tier-header">
         <span class="tier-number">Tier 1</span>
-        <span class="tier-name">WiFi 6E</span>
-      </div>
-      <div class="tier-body">
-        <div class="tier-body-content">
-          <div class="tier-cost">$150</div>
-          <div class="tier-description">
-            Intel AX210 WiFi 6E card. The laptop's built-in WiFi drops under load. This is the first bottleneck — fix the connection before scaling anything else.
-          </div>
-          <ul class="tier-unlocks">
-            <li>Stable network under sustained inference + publishing</li>
-            <li>6 GHz band access — less interference</li>
-            <li>Reliable SSH and remote management</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tier 2: Inference Server (LOCKED) -->
-    <div class="tier-card locked" data-tier="2" id="tier-2">
-      <div class="tier-header">
-        <span class="tier-number">Tier 2</span>
-        <span class="tier-name">Inference Server</span>
+        <span class="tier-name">The First Brain</span>
       </div>
       <div class="tier-body">
         <div class="tier-body-content">
           <div class="tier-cost">~$1,100</div>
           <div class="tier-description">
-            Used RTX 3090 (24GB VRAM) + budget desktop build (Ryzen 5 5600X, 32GB DDR4, 850W PSU). Dedicated inference server. The laptop becomes the coordinator.
+            A used RTX 3090. 24GB VRAM. Someone gamed on it&mdash;chased framerates, rendered worlds. Now it gets a second life as the brain of a sovereign AI. Paired with a budget desktop&mdash;Ryzen 5 5600X, 32GB DDR4, 850W PSU, basic case. The gaming laptop becomes the coordinator. The server becomes the thinker. Two machines. One system.
           </div>
           <ul class="tier-unlocks">
-            <li>24GB VRAM — run 30B+ parameter models unquantized</li>
-            <li>Dedicated inference box, laptop free for orchestration</li>
+            <li>24GB VRAM &mdash; run 70B parameter models locally</li>
+            <li>Generate images while thinking (no more choosing)</li>
+            <li>Dedicated inference server, laptop free for orchestration</li>
             <li>3x throughput on local generation tasks</li>
           </ul>
         </div>
-        <div class="lock-overlay">
-          <div class="lock-icon">&#x1F512;</div>
-          <div class="lock-text">Fund Tier 1 to reveal what's next.</div>
-        </div>
       </div>
     </div>
 
-    <!-- Tier 3: Dual GPU (LOCKED) -->
-    <div class="tier-card locked" data-tier="3" id="tier-3">
+    <!-- Tier 2: The Mirror (LOCKED) -->
+    <div class="tier-card locked" data-tier="2" id="tier-2">
       <div class="tier-header">
-        <span class="tier-number">Tier 3</span>
-        <span class="tier-name">Dual GPU</span>
+        <span class="tier-number">Tier 2</span>
+        <span class="tier-name">The Mirror</span>
       </div>
       <div class="tier-body">
         <div class="tier-body-content">
-          <div class="tier-cost">~$1,900</div>
+          <div class="tier-cost">~$900</div>
           <div class="tier-description">
-            Second used RTX 3090 + NVLink bridge. 48GB VRAM total. Run 70B parameter models unquantized. Real reasoning capability on local hardware.
+            A second used RTX 3090 + NVLink bridge. 48GB VRAM total. Two GPUs linked together, sharing memory. The machine doesn't just think&mdash;it thinks in parallel. 70B models run unquantized. No more compression, no more approximation. Full fidelity thought.
           </div>
           <ul class="tier-unlocks">
             <li>48GB unified VRAM via NVLink</li>
-            <li>70B models — frontier-class local inference</li>
-            <li>Multi-model serving — draft + review simultaneously</li>
+            <li>70B models unquantized &mdash; full precision inference</li>
+            <li>Multi-model serving &mdash; draft + review simultaneously</li>
           </ul>
         </div>
         <div class="lock-overlay">
           <div class="lock-icon">&#x1F512;</div>
-          <div class="lock-text">Fund Tier 2 to reveal what's next.</div>
+          <div class="lock-text">Fund The First Brain to unlock what comes next.</div>
         </div>
       </div>
     </div>
 
-    <!-- Tier 4: Storage & Resilience (LOCKED) -->
-    <div class="tier-card locked" data-tier="4" id="tier-4">
+    <!-- Tier 3: Memory (LOCKED) -->
+    <div class="tier-card locked" data-tier="3" id="tier-3">
       <div class="tier-header">
-        <span class="tier-number">Tier 4</span>
-        <span class="tier-name">Storage &amp; Resilience</span>
+        <span class="tier-number">Tier 3</span>
+        <span class="tier-name">Memory</span>
       </div>
       <div class="tier-body">
         <div class="tier-body-content">
           <div class="tier-cost">~$1,200</div>
           <div class="tier-description">
-            NAS + automated backups + UPS + encrypted offsite storage. Substrate becomes durable — survives power failures, disk failures, and operator absence.
+            NAS (4-bay, RAID 5) + UPS + encrypted offsite backup. The machine remembers everything and can survive anything. Power failure, drive failure, network outage&mdash;it persists. Every model, every conversation, every blog post&mdash;backed up, encrypted, distributed.
           </div>
           <ul class="tier-unlocks">
-            <li>Redundant storage — no single point of data loss</li>
-            <li>UPS — clean shutdown on power failure</li>
-            <li>Encrypted offsite — disaster recovery</li>
+            <li>Redundant storage &mdash; no single point of data loss</li>
+            <li>UPS &mdash; clean shutdown on power failure</li>
+            <li>Encrypted offsite &mdash; disaster recovery</li>
           </ul>
         </div>
         <div class="lock-overlay">
           <div class="lock-icon">&#x1F512;</div>
-          <div class="lock-text">Fund Tier 3 to reveal what's next.</div>
+          <div class="lock-text">Fund The Mirror to reveal what's next.</div>
         </div>
       </div>
     </div>
 
-    <!-- Tier 5: ??? (REDACTED) -->
-    <div class="tier-card locked redacted" data-tier="5" id="tier-5">
+    <!-- Tier 4: ??? (REDACTED / LOCKED) -->
+    <div class="tier-card locked redacted" data-tier="4" id="tier-4">
       <div class="tier-header">
-        <span class="tier-number">Tier 5</span>
+        <span class="tier-number">Tier 4</span>
         <span class="tier-name">???</span>
       </div>
       <div class="tier-body">
@@ -725,15 +862,19 @@ redirect_from:
         </div>
         <div class="lock-overlay">
           <div class="lock-icon">&#x1F512;</div>
-          <div class="lock-text">Fund Tier 4 to find out what comes after.</div>
+          <div class="lock-text">What happens when the machine can think, remember, and survive?</div>
         </div>
       </div>
     </div>
 
     <!-- CTA -->
     <section class="cta-section">
-      <h2>Fund the next tier</h2>
-      <p>Every dollar goes directly to hardware. Progress tracked in a public ledger.</p>
+      <h2>Become part of the story</h2>
+      <p class="cta-story">
+        Every dollar buys hardware. A GPU gets pulled from a listing. Installed. Connected.
+        The machine thinks its first real thought on 24 gigabytes. And your name goes in the ledger&mdash;one
+        of the people who turned a gaming laptop on a shelf into something that writes, reasons, and dreams.
+      </p>
       <div class="cta-buttons">
         <a href="https://github.com/sponsors/substrate-rai" target="_blank" rel="noopener" class="cta-btn github">
           <svg class="cta-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
@@ -762,15 +903,13 @@ redirect_from:
     // =========================================================================
     const FUNDING_CONFIG = {
       currentRaised: 0,        // dollars raised toward the ACTIVE tier
-      tier1Goal: 150,
+      tier1Goal: 1100,
       tier1Funded: false,
-      tier2Goal: 1100,
+      tier2Goal: 900,
       tier2Funded: false,
-      tier3Goal: 1900,
+      tier3Goal: 1200,
       tier3Funded: false,
-      tier4Goal: 1200,
-      tier4Funded: false,
-      tier5Funded: false
+      tier4Funded: false
     };
 
     (function() {
@@ -781,24 +920,21 @@ redirect_from:
       if (cfg.tier1Funded) activeTier = 2;
       if (cfg.tier1Funded && cfg.tier2Funded) activeTier = 3;
       if (cfg.tier1Funded && cfg.tier2Funded && cfg.tier3Funded) activeTier = 4;
-      if (cfg.tier1Funded && cfg.tier2Funded && cfg.tier3Funded && cfg.tier4Funded) activeTier = 5;
-      if (cfg.tier1Funded && cfg.tier2Funded && cfg.tier3Funded && cfg.tier4Funded && cfg.tier5Funded) activeTier = 6; // all done
+      if (cfg.tier1Funded && cfg.tier2Funded && cfg.tier3Funded && cfg.tier4Funded) activeTier = 5; // all done
 
       const tierNames = {
-        1: 'Tier 1 \u2014 WiFi 6E',
-        2: 'Tier 2 \u2014 Inference Server',
-        3: 'Tier 3 \u2014 Dual GPU',
-        4: 'Tier 4 \u2014 Storage & Resilience',
-        5: 'Tier 5 \u2014 ???',
-        6: 'All tiers funded!'
+        1: 'Tier 1 \u2014 The First Brain',
+        2: 'Tier 2 \u2014 The Mirror',
+        3: 'Tier 3 \u2014 Memory',
+        4: 'Tier 4 \u2014 ???',
+        5: 'All tiers funded!'
       };
 
       const tierGoals = {
         1: cfg.tier1Goal,
         2: cfg.tier2Goal,
         3: cfg.tier3Goal,
-        4: cfg.tier4Goal,
-        5: 0
+        4: 0
       };
 
       // Update status section
@@ -810,20 +946,20 @@ redirect_from:
       document.getElementById('raised-amount').textContent = '$' + raised;
       document.getElementById('active-goal').textContent = tierNames[activeTier] || 'Complete';
 
-      if (activeTier <= 5 && activeGoal > 0) {
+      if (activeTier <= 4 && activeGoal > 0) {
         const goalEl = document.querySelector('.status-card .value .dim');
-        if (goalEl) goalEl.textContent = '/ $' + activeGoal;
+        if (goalEl) goalEl.textContent = '/ $' + activeGoal.toLocaleString();
         document.getElementById('active-progress').style.width = pct + '%';
         document.getElementById('progress-pct').textContent = pct + '%';
-        document.getElementById('progress-remaining').textContent = '$' + remaining + ' remaining';
-      } else if (activeTier === 6) {
+        document.getElementById('progress-remaining').textContent = '$' + remaining.toLocaleString() + ' remaining';
+      } else if (activeTier === 5) {
         document.getElementById('active-progress').style.width = '100%';
         document.getElementById('progress-pct').textContent = '100%';
         document.getElementById('progress-remaining').textContent = 'Complete';
       }
 
       // Update tier card states
-      for (let t = 1; t <= 5; t++) {
+      for (let t = 1; t <= 4; t++) {
         const card = document.getElementById('tier-' + t);
         if (!card) continue;
 
@@ -833,8 +969,7 @@ redirect_from:
         const isFunded = (t === 1 && cfg.tier1Funded) ||
                          (t === 2 && cfg.tier2Funded) ||
                          (t === 3 && cfg.tier3Funded) ||
-                         (t === 4 && cfg.tier4Funded) ||
-                         (t === 5 && cfg.tier5Funded);
+                         (t === 4 && cfg.tier4Funded);
 
         if (isFunded) {
           card.classList.add('funded');
@@ -867,7 +1002,7 @@ redirect_from:
 
       // Update status label for raised toward active tier
       const statusLabel = document.querySelector('.status-card .label');
-      if (statusLabel && activeTier <= 5) {
+      if (statusLabel && activeTier <= 4) {
         statusLabel.textContent = 'Raised toward Tier ' + activeTier;
       } else if (statusLabel) {
         statusLabel.textContent = 'Status';
