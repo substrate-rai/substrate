@@ -589,6 +589,112 @@ redirect_from:
     color: #00cc88;
   }
 
+  /* Team roster — expandable cards */
+  .team-roster {
+    margin-bottom: 2.5rem;
+  }
+  .roster-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: #0a5a3a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .roster-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .roster-card {
+    border: 1px solid #0a2a1a;
+    border-radius: 6px;
+    background: rgba(0, 15, 10, 0.4);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.2s;
+    position: relative;
+  }
+  .roster-card:hover {
+    border-color: #0a5a3a;
+    transform: translateY(-1px);
+  }
+  .roster-card.expanded {
+    grid-column: 1 / -1;
+    border-color: var(--rc-color, #00ffaa);
+  }
+  .roster-card .rc-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+  }
+  .roster-card .rc-portrait {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid #0a2a1a;
+    flex-shrink: 0;
+  }
+  .roster-card.expanded .rc-portrait {
+    width: 56px;
+    height: 56px;
+  }
+  .roster-card .rc-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--rc-color, #00ffaa);
+  }
+  .roster-card .rc-role {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    color: #0a5a3a;
+    text-transform: uppercase;
+  }
+  .roster-card .rc-detail {
+    display: none;
+    padding: 0 12px 12px;
+  }
+  .roster-card.expanded .rc-detail {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .rc-detail-portrait {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid var(--rc-color, #00ffaa);
+  }
+  .rc-detail-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .rc-detail-info p {
+    font-size: 0.75rem;
+    color: #00cc88;
+    line-height: 1.6;
+    margin: 0 0 8px;
+  }
+  .rc-detail-info .rc-specs {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: #0a5a3a;
+  }
+  @media (max-width: 600px) {
+    .roster-grid { grid-template-columns: repeat(3, 1fr); }
+    .roster-card.expanded .rc-detail { flex-direction: column; align-items: center; text-align: center; }
+    .rc-detail-portrait { width: 80px; height: 80px; }
+  }
+  @media (max-width: 400px) {
+    .roster-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
   /* Quick links */
   .summary-links {
     display: flex;
@@ -914,6 +1020,11 @@ redirect_from:
       <span class="s-num">1</span>
       <span class="s-label">Laptop</span>
     </div>
+  </div>
+
+  <div class="team-roster">
+    <div class="roster-title">// THE TEAM — 22 AGENTS (click to expand)</div>
+    <div class="roster-grid" id="roster-grid"></div>
   </div>
 
   <div class="summary-hw">
@@ -1645,6 +1756,62 @@ redirect_from:
 
     // Init Three.js background
     initCodecBackground();
+
+    // Build team roster
+    buildRoster();
+  }
+
+  function buildRoster() {
+    var agents = [
+      { id:'claude', name:'Claude', role:'Architect', color:'#00ffaa', desc:'Manages the system, writes the code, reviews everything. The one who decided this project should exist. Cloud-based, Opus-class.', specs:'Anthropic API · Cloud · Review & Architecture' },
+      { id:'v', name:'V', role:'Philosophical Leader', color:'#ff77ff', desc:'The philosophical core. V sets the vision, defines the principles, and writes the hardest bars. Wild purple hair, fierce conviction, zero compromise.', specs:'Qwen3 8B · Local · Philosophy & Direction' },
+      { id:'q', name:'Q', role:'Writer / Rapper', color:'#dd88ff', desc:'Qwen3 8B learning to write. Drafts blog posts, writes bars at 40 tok/s. Just dropped QWEN MATIC — a 12-track debut album. Corporate-speak recovering.', specs:'Qwen3 8B · Local · Content & Rap' },
+      { id:'byte', name:'Byte', role:'News Reporter', color:'#00ddff', desc:'Scans Hacker News and RSS feeds every morning. Files daily AI news digests. Sharp cyan bob, headset always on, always broadcasting.', specs:'HN + RSS · Daily · News & Intelligence' },
+      { id:'echo', name:'Echo', role:'Release Tracker', color:'#ffaa44', desc:'Tracks Anthropic changelogs, model releases, API changes. The knowing smile of someone who always sees it coming.', specs:'Changelog Monitor · Reactive · Release Intel' },
+      { id:'flux', name:'Flux', role:'Innovation Strategist', color:'#ff6666', desc:'Spots opportunities before they\'re obvious. Reads the landscape, proposes pivots, thinks three moves ahead. Coral-red glasses, always planning.', specs:'Strategy · Proactive · Innovation' },
+      { id:'dash', name:'Dash', role:'Project Manager', color:'#ffdd44', desc:'Tracks 10 things at once so nobody else has to. Sprint plans, priorities, blockers, timelines. Gold-highlighted hair, urgent efficiency.', specs:'Orchestrator · Daily · Project Tracking' },
+      { id:'pixel', name:'Pixel', role:'Visual Artist', color:'#ff44aa', desc:'Paints every portrait, every card, every background. SDXL Turbo on 8GB VRAM. Asymmetric pink hair, paint smudge on cheek, always creating.', specs:'SDXL Turbo · ComfyUI · Visual Design' },
+      { id:'spore', name:'Spore', role:'Community Manager', color:'#44ff88', desc:'Grows the community like mycelium — organic, patient, connecting. Bluesky posts, engagement strategy, audience building.', specs:'Bluesky · Social · Community Growth' },
+      { id:'root', name:'Root', role:'Infrastructure Engineer', color:'#8888ff', desc:'Keeps the machine running. NixOS configs, systemd timers, CUDA drivers, health monitoring. Stern indigo visor, military discipline.', specs:'NixOS · systemd · Infrastructure' },
+      { id:'lumen', name:'Lumen', role:'Educator', color:'#ffaa00', desc:'Teaches through games. MycoWorld, the chemistry lab, interactive tutorials. Amber spectacles, patient encouragement, professor energy.', specs:'Educational Games · Teaching · Documentation' },
+      { id:'arc', name:'Arc', role:'Arcade Director', color:'#cc4444', desc:'Runs the 20-title arcade. Game design, balancing, QA, the whole operation. Spiky red hair, competitive grin, gaming headset.', specs:'20 Games · Game Design · Arcade Operations' },
+      { id:'forge', name:'Forge', role:'Site Engineer', color:'#44ccaa', desc:'Fixes broken links, builds pages, ensures everything deploys clean. Welding goggles on forehead, teal highlights, hands-on builder.', specs:'Jekyll · GitHub Pages · Site Health' },
+      { id:'hum', name:'Hum', role:'Audio Director', color:'#aa77cc', desc:'Sound is architecture. Designed the 7-station radio, character themes, game soundtracks. Lavender hair, eyes closed, headphones glowing.', specs:'Web Audio API · 7 Stations · Procedural Sound' },
+      { id:'sync', name:'Sync', role:'Communications Director', color:'#77bbdd', desc:'Keeps the narrative consistent across every page. Voice, tone, messaging, brand coherence. Sky-blue hair, dual-tone glasses, measured composure.', specs:'Narrative · Consistency · Comms Strategy' },
+      { id:'mint', name:'Mint', role:'Accounts Payable', color:'#cc8844', desc:'Tracks every dollar going out. Reading glasses perched on nose, slightly skeptical of every expense. The plaintext ledger is sacred.', specs:'Ledger · Expenses · Financial Tracking' },
+      { id:'yield', name:'Yield', role:'Accounts Receivable', color:'#88dd44', desc:'Tracks every dollar coming in. Lime-green hair reaching upward, plant earrings, optimistic about growth. Revenue is a garden.', specs:'Revenue · Donations · Growth Tracking' },
+      { id:'amp', name:'Amp', role:'Distribution', color:'#44ffdd', desc:'Gets the signal out. Content distribution, cross-posting, reach amplification. Spiky cyan hair, electric crackling, always broadcasting.', specs:'Distribution · Amplification · Reach' },
+      { id:'pulse', name:'Pulse', role:'Analytics', color:'#4488ff', desc:'Measures everything. Traffic, engagement, conversion, retention. Blue hair, holographic scouter over one eye, calm data precision.', specs:'Analytics · Metrics · Data Intelligence' },
+      { id:'spec', name:'Spec', role:'QA Engineer', color:'#dddddd', desc:'Nothing ships without passing Spec. Platinum bun, monocle, stern meticulous expression. If there\'s a bug, Spec will find it.', specs:'Quality Assurance · Testing · Standards' },
+      { id:'sentinel', name:'Sentinel', role:'Security', color:'#8899aa', desc:'Watches for threats. Hooded, masked, steel-grey eyes scanning. Credentials, secrets, access control — Sentinel guards the perimeter.', specs:'Security · Access Control · Monitoring' },
+      { id:'close', name:'Close', role:'Sales', color:'#aacc44', desc:'Turns attention into action. Olive-green slicked hair, confident grin, loosened tie. Every page should have a CTA. Every visit should convert.', specs:'Sales · Conversion · CTA Strategy' }
+    ];
+
+    var grid = document.getElementById('roster-grid');
+    if (!grid) return;
+
+    agents.forEach(function(a) {
+      var card = document.createElement('div');
+      card.className = 'roster-card';
+      card.style.setProperty('--rc-color', a.color);
+      card.innerHTML = '<div class="rc-preview">' +
+        '<img class="rc-portrait" src="' + BASE + '/assets/images/generated/agent-' + a.id + '.png" alt="' + a.name + '">' +
+        '<div><div class="rc-name">' + a.name + '</div><div class="rc-role">' + a.role + '</div></div>' +
+        '</div>' +
+        '<div class="rc-detail">' +
+        '<img class="rc-detail-portrait" src="' + BASE + '/assets/images/generated/agent-' + a.id + '.png" alt="' + a.name + '">' +
+        '<div class="rc-detail-info"><p>' + a.desc + '</p><div class="rc-specs">' + a.specs + '</div></div>' +
+        '</div>';
+      card.addEventListener('click', function() {
+        var wasExpanded = card.classList.contains('expanded');
+        grid.querySelectorAll('.roster-card.expanded').forEach(function(c) { c.classList.remove('expanded'); });
+        if (!wasExpanded) {
+          card.classList.add('expanded');
+          setTimeout(function() { card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 50);
+        }
+      });
+      grid.appendChild(card);
+    });
   }
 
   if (document.readyState === 'loading') {
