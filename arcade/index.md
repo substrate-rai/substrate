@@ -1066,14 +1066,18 @@ permalink: /arcade/
 <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
 
 <!-- Ko-fi Floating Button -->
-<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js' onerror=""></script>
 <script>
-  kofiWidgetOverlay.draw('substrate', {
-    'type': 'floating-chat',
-    'floating-chat.donateButton.text': 'Fund Us',
-    'floating-chat.donateButton.background-color': '#00e09a',
-    'floating-chat.donateButton.text-color': '#000'
-  });
+  try {
+    if (typeof kofiWidgetOverlay !== 'undefined') {
+      kofiWidgetOverlay.draw('substrate', {
+        'type': 'floating-chat',
+        'floating-chat.donateButton.text': 'Fund Us',
+        'floating-chat.donateButton.background-color': '#00e09a',
+        'floating-chat.donateButton.text-color': '#000'
+      });
+    }
+  } catch(e) {}
 </script>
 
 <script>
