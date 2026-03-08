@@ -9,7 +9,7 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Myco World — Claude Fluency for Everyone</title>
 <meta name="description" content="A visual novel-style path to learning Claude AI. Three characters guide you from zero to fluent — no experience required.">
 <meta property="og:title" content="Myco World — Claude Fluency for Everyone">
@@ -49,6 +49,8 @@ redirect_from:
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
+    overscroll-behavior: none;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* === VN CONTAINER === */
@@ -115,6 +117,7 @@ redirect_from:
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     padding: 24px 28px 32px;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom));
     z-index: 10;
     min-height: 200px;
     cursor: pointer;
@@ -272,7 +275,7 @@ redirect_from:
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
-    min-height: 44px;
+    min-height: 48px;
   }
   .vn-continue-btn:hover { border-color: rgba(255,255,255,0.2); color: #c8c8d0; }
   .vn-continue-btn.hidden { display: none; }
@@ -459,7 +462,7 @@ redirect_from:
     padding: 12px 24px;
     width: 100%;
     transition: all 0.2s;
-    min-height: 44px;
+    min-height: 48px;
   }
   .syllabus-back:hover { border-color: var(--green-dim); color: var(--green); }
 

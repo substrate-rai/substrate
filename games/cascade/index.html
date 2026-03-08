@@ -9,7 +9,7 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>CASCADE — Momentum Engine | Substrate Arcade</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
@@ -33,13 +33,14 @@ redirect_from:
     background: var(--bg);
     color: var(--text);
     font-family: 'IBM Plex Mono', monospace;
-    overflow-x: hidden;
-    width: 100vw;
-    min-height: 100vh;
-    min-height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   /* === LAYOUT === */
@@ -213,6 +214,7 @@ redirect_from:
   /* === CHOICES === */
   #choices-container {
     padding: 0 16px 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
 
   .choice-row {
@@ -431,7 +433,7 @@ redirect_from:
     cursor: pointer;
     transition: all 0.15s;
     text-align: left;
-    min-height: 44px;
+    min-height: 48px;
   }
   .mode-btn:hover, .mode-btn:active {
     border-color: var(--momentum);
@@ -537,7 +539,7 @@ redirect_from:
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    min-height: 44px;
+    min-height: 48px;
     transition: all 0.15s;
   }
   .end-btn:hover { background: var(--momentum); color: var(--bg); }
@@ -557,6 +559,7 @@ redirect_from:
     clip: rect(0,0,0,0); border: 0;
   }
 </style>
+<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
 
@@ -1233,6 +1236,91 @@ redirect_from:
     if (e.key === '2' && btns[1]) btns[1].click();
     if (e.key === '3' && btns[2]) btns[2].click();
   });
+
+  // === ANIME EFFECTS ===
+  if (typeof AnimeEffects !== 'undefined') {
+    AnimeEffects.addScanlines(0.03);
+
+    // Dynamic speed lines canvas behind game
+    var animeCanvas = document.createElement('canvas');
+    animeCanvas.id = 'anime-speed-bg';
+    animeCanvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;';
+    document.body.insertBefore(animeCanvas, document.body.firstChild);
+
+    var lastPhase = '';
+    var speedLineIntensity = 0;
+
+    // Redraw speed lines based on momentum
+    function updateAnimeBackground() {
+      var c = document.getElementById('anime-speed-bg');
+      if (!c || !G) return;
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+      var ctx = c.getContext('2d');
+      var cx = c.width / 2, cy = c.height / 2;
+      var momentum = G.momentum || 0;
+      var phase = G.phase || 'GROUND';
+
+      // Background gradient based on phase
+      var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(c.width, c.height));
+      if (momentum < 20) {
+        grad.addColorStop(0, '#08080f');
+        grad.addColorStop(1, '#040408');
+      } else if (momentum < 40) {
+        grad.addColorStop(0, '#0a100f');
+        grad.addColorStop(1, '#040808');
+      } else if (momentum < 70) {
+        grad.addColorStop(0, '#100a18');
+        grad.addColorStop(1, '#080410');
+      } else if (momentum < 90) {
+        grad.addColorStop(0, '#180a08');
+        grad.addColorStop(1, '#100404');
+      } else {
+        grad.addColorStop(0, '#0a1418');
+        grad.addColorStop(1, '#04080a');
+      }
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      // Speed lines — more and brighter with higher momentum
+      var lineCount = Math.floor(momentum / 5);
+      var colors = { GROUND: '#556677', SPARK: '#00cc88', SPIRAL: '#aa44ff', DRILL: '#ff6644', HEAVEN: '#44ddff' };
+      var color = colors[phase] || '#556677';
+
+      for (var i = 0; i < lineCount; i++) {
+        var angle = (Math.PI * 2 * i / Math.max(lineCount, 1)) + (Math.sin(Date.now() / 1000 + i) * 0.1);
+        var innerR = 80 + Math.random() * 60;
+        var outerR = 300 + Math.random() * (momentum * 5);
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(angle) * innerR, cy + Math.sin(angle) * innerR);
+        ctx.lineTo(cx + Math.cos(angle) * outerR, cy + Math.sin(angle) * outerR);
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.03 + (momentum / 100) * 0.08;
+        ctx.lineWidth = 0.5 + Math.random() * 2;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // Phase transition flash
+      if (phase !== lastPhase && lastPhase !== '') {
+        AnimeEffects.screenFlash(color, 250);
+        AnimeEffects.textSlam(phase, color, 1000);
+      }
+      lastPhase = phase;
+    }
+
+    // Poll momentum changes
+    setInterval(updateAnimeBackground, 500);
+
+    // Patch showCrest for dramatic anime effect
+    var origShowCrest = showCrest;
+    if (typeof showCrest === 'function') {
+      window.showCrest = function() {
+        origShowCrest();
+        AnimeEffects.impactFrame('#ffdd44');
+      };
+    }
+  }
 
 })();
 </script>

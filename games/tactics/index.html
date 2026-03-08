@@ -9,9 +9,10 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>TACTICS — Substrate Arcade</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap');
 
@@ -21,10 +22,11 @@ redirect_from:
     background: #0a0a1a;
     color: #c8d0e0;
     font-family: 'IBM Plex Mono', monospace;
-    overflow-x: hidden;
-    width: 100vw;
-    min-height: 100vh;
-    min-height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   #game-canvas {
@@ -212,7 +214,7 @@ redirect_from:
   .action-btn {
     display: block;
     width: 100%;
-    padding: 8px 14px;
+    padding: 12px 14px;
     background: transparent;
     border: 1px solid transparent;
     color: #c8d0e0;
@@ -222,6 +224,7 @@ redirect_from:
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.15s;
+    min-height: 48px;
   }
 
   .action-btn:hover {
@@ -447,7 +450,7 @@ redirect_from:
     .action-btn {
       padding: 12px 16px;
       font-size: 15px;
-      min-height: 44px;
+      min-height: 48px;
     }
 
     #message-log {
@@ -467,7 +470,7 @@ redirect_from:
     #restart-btn {
       padding: 12px 32px;
       font-size: 15px;
-      min-height: 44px;
+      min-height: 48px;
     }
 
     #controls-hint {
@@ -753,7 +756,6 @@ class TacticsGame {
     // Touch support
     this._touchState = { startTime: 0, startX: 0, startY: 0, moved: false, twoFinger: false };
     this._lastPinchDist = 0;
-    this._lastTwoFingerAngle = 0;
     this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
     this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
     this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e), { passive: false });
@@ -768,7 +770,7 @@ class TacticsGame {
     // Update controls hint for touch devices
     this._isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (this._isTouchDevice) {
-      document.getElementById('controls-hint').textContent = 'Tap to select | Drag to pan | Pinch to zoom';
+      document.getElementById('controls-hint').textContent = 'Tap to select/act | Two-finger drag to pan | Pinch to zoom';
     }
 
     // FFT-style camera rotate buttons
@@ -1976,13 +1978,17 @@ class TacticsGame {
       this._touchState.lastY = touches[0].clientY;
       this._touchState.moved = false;
       this._touchState.twoFinger = false;
+      delete this._touchState.lastMidX;
+      delete this._touchState.lastMidY;
     } else if (touches.length === 2) {
       this._touchState.twoFinger = true;
       this._touchState.moved = true; // prevent tap on release
       const dx = touches[1].clientX - touches[0].clientX;
       const dy = touches[1].clientY - touches[0].clientY;
       this._lastPinchDist = Math.sqrt(dx * dx + dy * dy);
-      this._lastTwoFingerAngle = Math.atan2(dy, dx);
+      // Initialize midpoint for two-finger pan
+      this._touchState.lastMidX = (touches[0].clientX + touches[1].clientX) / 2;
+      this._touchState.lastMidY = (touches[0].clientY + touches[1].clientY) / 2;
     }
   }
 
@@ -2005,38 +2011,27 @@ class TacticsGame {
       }
       this._lastPinchDist = dist;
 
-      // Two-finger drag to rotate
-      const angle = Math.atan2(dy, dx);
-      if (this._lastTwoFingerAngle !== 0) {
-        let angleDelta = angle - this._lastTwoFingerAngle;
-        // Normalize to prevent jumps
-        if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
-        if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
-        this.cameraAngle += angleDelta;
+      // Two-finger drag to pan camera
+      const midX = (touches[0].clientX + touches[1].clientX) / 2;
+      const midY = (touches[0].clientY + touches[1].clientY) / 2;
+      if (this._touchState.lastMidX !== undefined) {
+        const panDx = midX - this._touchState.lastMidX;
+        const panDy = midY - this._touchState.lastMidY;
+        const panSpeed = 0.03;
+        const cosA = Math.cos(this.cameraAngle);
+        const sinA = Math.sin(this.cameraAngle);
+        this.cameraTarget.x += (-panDx * sinA + panDy * cosA) * panSpeed;
+        this.cameraTarget.z += (panDx * cosA + panDy * sinA) * panSpeed;
         this.updateCamera();
       }
-      this._lastTwoFingerAngle = angle;
+      this._touchState.lastMidX = midX;
+      this._touchState.lastMidY = midY;
 
       this._touchState.twoFinger = true;
       this._touchState.moved = true;
     } else if (touches.length === 1 && !this._touchState.twoFinger) {
-      // Single finger drag = pan camera (FFT-style)
-      const moveX = touches[0].clientX - this._touchState.startX;
-      const moveY = touches[0].clientY - this._touchState.startY;
-      if (Math.abs(moveX) > 10 || Math.abs(moveY) > 10) {
-        this._touchState.moved = true;
-      }
-      if (this._touchState.moved) {
-        const dx = touches[0].clientX - (this._touchState.lastX || touches[0].clientX);
-        const dy = touches[0].clientY - (this._touchState.lastY || touches[0].clientY);
-        // Pan perpendicular to camera angle
-        const panSpeed = 0.03;
-        const cosA = Math.cos(this.cameraAngle);
-        const sinA = Math.sin(this.cameraAngle);
-        this.cameraTarget.x += (-dx * sinA + dy * cosA) * panSpeed;
-        this.cameraTarget.z += (dx * cosA + dy * sinA) * panSpeed;
-        this.updateCamera();
-      }
+      // Single finger: just track the end position for tap detection.
+      // Do NOT pan — single finger is always a game interaction (tap).
       this._touchState.lastX = touches[0].clientX;
       this._touchState.lastY = touches[0].clientY;
     }
@@ -2048,23 +2043,27 @@ class TacticsGame {
     // Reset two-finger state
     if (e.touches.length === 0) {
       this._lastPinchDist = 0;
-      this._lastTwoFingerAngle = 0;
+      delete this._touchState.lastMidX;
+      delete this._touchState.lastMidY;
     }
 
-    // Single tap: treat as click if finger didn't move much and was quick
-    if (!this._touchState.moved && !this._touchState.twoFinger && e.changedTouches.length > 0) {
-      const elapsed = Date.now() - this._touchState.startTime;
-      if (elapsed < 500) {
-        const touch = e.changedTouches[0];
-        // Synthesize a click via the raycaster
-        this.onClick({
-          clientX: touch.clientX,
-          clientY: touch.clientY
-        });
-      }
+    // Single-finger touch: ALWAYS synthesize a click (unless it was a two-finger gesture).
+    // In action states (SELECT_MOVE, SELECT_ATTACK, SELECT_ABILITY), the player is
+    // targeting a tile — always use the touch END position so dragging to aim works.
+    // In IDLE state, also synthesize a click so tapping to select units works.
+    if (!this._touchState.twoFinger && e.changedTouches.length > 0 && e.touches.length === 0) {
+      const touch = e.changedTouches[0];
+      // Use the touch end position for the raycaster
+      this.onClick({
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
     }
 
-    this._touchState.twoFinger = false;
+    // Only clear twoFinger flag when ALL fingers are lifted
+    if (e.touches.length === 0) {
+      this._touchState.twoFinger = false;
+    }
   }
 
   onResize() {
@@ -2320,8 +2319,127 @@ class TacticsGame {
   }
 }
 
+// Prevent overscroll/bounce on mobile
+document.body.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+}, { passive: false });
+
 // Start the game
 const game = new TacticsGame();
+
+// === ANIME EFFECTS ===
+(function() {
+  if (typeof AnimeEffects === 'undefined') return;
+
+  AnimeEffects.addScanlines(0.03);
+
+  // Anime title card on load
+  AnimeEffects.showTitleCard('TACTICS', 'STRATEGIC WARFARE', '#4488ff');
+
+  // Unit portrait canvas for selected units
+  var portraitCanvas = document.createElement('canvas');
+  portraitCanvas.width = 80;
+  portraitCanvas.height = 90;
+  portraitCanvas.id = 'unit-portrait';
+  portraitCanvas.style.cssText = 'position:absolute;z-index:10;display:none;border-radius:6px;border:2px solid #4488ff;box-shadow:0 0 12px #4488ff44;background:rgba(10,10,30,0.95);';
+  document.body.appendChild(portraitCanvas);
+
+  var unitPortraitStyles = {
+    // Knight: brave, armored
+    'Knight': { hairColor: '#4488ff', eyeColor: '#4488ff', expression: 'determined' },
+    'Archer': { hairColor: '#44cc88', eyeColor: '#88ddaa', expression: 'neutral' },
+    'Mage': { hairColor: '#aa66ff', eyeColor: '#cc88ff', expression: 'serene' },
+    // Enemy variants
+    'E.Knight': { hairColor: '#ff4444', eyeColor: '#ff6644', expression: 'determined' },
+    'E.Archer': { hairColor: '#ff8844', eyeColor: '#ffaa44', expression: 'neutral' },
+    'E.Mage': { hairColor: '#ff44aa', eyeColor: '#ff66cc', expression: 'serene' },
+  };
+
+  function drawUnitPortrait(unitClass, isEnemy) {
+    var key = isEnemy ? 'E.' + unitClass : unitClass;
+    var style = unitPortraitStyles[key] || unitPortraitStyles['Knight'];
+    var ctx = portraitCanvas.getContext('2d');
+    ctx.clearRect(0, 0, 80, 90);
+    ctx.fillStyle = isEnemy ? '#1a0a0a' : '#0a0a1a';
+    ctx.fillRect(0, 0, 80, 90);
+
+    AnimeEffects.drawPortrait(ctx, 40, 42, 60, {
+      hairColor: style.hairColor,
+      eyeColor: style.eyeColor,
+      expression: style.expression
+    });
+
+    // Class label
+    ctx.fillStyle = style.hairColor;
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(unitClass.toUpperCase(), 40, 84);
+    ctx.textAlign = 'left';
+  }
+
+  // Watch for unit info panel showing
+  var unitInfo = document.getElementById('unit-info');
+  if (unitInfo) {
+    var obs = new MutationObserver(function() {
+      if (unitInfo.classList.contains('show')) {
+        var nameEl = unitInfo.querySelector('.unit-name');
+        var classEl = unitInfo.querySelector('.unit-class');
+        if (nameEl && classEl) {
+          var isEnemy = nameEl.style.color && nameEl.style.color.indexOf('ff') === 1;
+          var className = classEl.textContent || 'Knight';
+          drawUnitPortrait(className, isEnemy || nameEl.textContent.indexOf('Enemy') >= 0);
+          portraitCanvas.style.display = 'block';
+          var infoRect = unitInfo.getBoundingClientRect();
+          portraitCanvas.style.left = (infoRect.left + infoRect.width + 8) + 'px';
+          portraitCanvas.style.bottom = '16px';
+          portraitCanvas.style.position = 'fixed';
+          portraitCanvas.style.borderColor = isEnemy ? '#ff4444' : '#4488ff';
+          portraitCanvas.style.boxShadow = '0 0 12px ' + (isEnemy ? '#ff444444' : '#4488ff44');
+        }
+      } else {
+        portraitCanvas.style.display = 'none';
+      }
+    });
+    obs.observe(unitInfo, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // Attack animation overlays
+  // Patch into the phase banner for dramatic effects
+  var phaseBanner = document.getElementById('phase-banner');
+  if (phaseBanner) {
+    var phaseObs = new MutationObserver(function() {
+      if (phaseBanner.classList.contains('show')) {
+        var text = phaseBanner.textContent.trim().toUpperCase();
+        if (text === 'PLAYER PHASE') {
+          AnimeEffects.screenFlash('#4488ff', 200);
+        } else if (text === 'ENEMY PHASE') {
+          AnimeEffects.screenFlash('#ff4444', 200);
+        }
+      }
+    });
+    phaseObs.observe(phaseBanner, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // End screen dramatic effects
+  var endScreen = document.getElementById('end-screen');
+  if (endScreen) {
+    var endObs = new MutationObserver(function() {
+      if (endScreen.classList.contains('show')) {
+        var h1 = endScreen.querySelector('h1');
+        if (h1) {
+          var won = h1.textContent.indexOf('VICTORY') >= 0;
+          if (won) {
+            AnimeEffects.screenFlash('#4488ff', 300);
+            setTimeout(function() { AnimeEffects.impactFrame('#4488ff'); }, 200);
+          } else {
+            AnimeEffects.screenFlash('#ff4444', 300);
+          }
+        }
+      }
+    });
+    endObs.observe(endScreen, { attributes: true, attributeFilter: ['class'] });
+  }
+})();
 </script>
 
 </body>

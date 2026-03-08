@@ -9,7 +9,7 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>CHEMISTRY — Substrate Arcade</title>
 <meta name="description" content="A systemic chemistry sandbox. Push, burn, explode, freeze — everything emerges from rules. By Substrate.">
 <meta property="og:title" content="CHEMISTRY — systemic sandbox">
@@ -23,11 +23,12 @@ redirect_from:
     font-family: 'IBM Plex Mono', monospace;
     background: #0a0a2e;
     color: #e0e0e0;
-    overflow-x: hidden;
-    width: 100vw;
-    min-height: 100vh;
-    min-height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
     cursor: crosshair;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   canvas { display: block; touch-action: none; }
@@ -74,9 +75,11 @@ redirect_from:
     gap: 8px;
     cursor: pointer;
     pointer-events: all;
-    padding: 1px 4px;
+    padding: 6px 8px;
     border-radius: 3px;
     transition: background 0.15s;
+    min-height: 36px;
+    -webkit-tap-highlight-color: transparent;
   }
 
   #legend .item:hover {
@@ -133,6 +136,7 @@ redirect_from:
     background: rgba(10, 10, 46, 0.9);
     border-top: 1px solid #222255;
     padding: 10px 20px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
     display: flex;
     justify-content: center;
     gap: 24px;
@@ -278,6 +282,7 @@ redirect_from:
     #minimap { width: 100px; height: 100px; }
   }
 </style>
+<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
 
@@ -1501,6 +1506,103 @@ updatePlayer = function(dt) {
 initScene();
 selectMaterial(0);
 requestAnimationFrame(gameLoop);
+
+// === ANIME EFFECTS ===
+(function() {
+  if (typeof AnimeEffects === 'undefined') return;
+
+  AnimeEffects.addScanlines(0.03);
+
+  // Scientist portrait in corner
+  var sciCanvas = document.createElement('canvas');
+  sciCanvas.width = 80;
+  sciCanvas.height = 90;
+  sciCanvas.id = 'scientist-portrait';
+  sciCanvas.style.cssText = 'position:fixed;bottom:calc(50px + env(safe-area-inset-bottom));right:calc(12px + env(safe-area-inset-right));z-index:15;border:2px solid #00ffaa;border-radius:6px;box-shadow:0 0 12px #00ffaa44;background:rgba(10,10,46,0.9);';
+  document.body.appendChild(sciCanvas);
+
+  var ctx2 = sciCanvas.getContext('2d');
+  ctx2.fillStyle = '#0a0a2e';
+  ctx2.fillRect(0, 0, 80, 90);
+
+  AnimeEffects.drawPortrait(ctx2, 40, 42, 60, {
+    hairColor: '#44ccff',
+    hairDark: '#2288aa',
+    eyeColor: '#00ffaa',
+    expression: 'excited',
+    skinColor: '#f0dcc8',
+    skinShadow: '#dcc0a8'
+  });
+
+  // Lab goggles pushed up on forehead
+  ctx2.strokeStyle = '#888899';
+  ctx2.lineWidth = 3;
+  ctx2.beginPath();
+  ctx2.ellipse(30, 24, 9, 6, -0.1, 0, Math.PI * 2);
+  ctx2.stroke();
+  ctx2.beginPath();
+  ctx2.ellipse(50, 24, 9, 6, 0.1, 0, Math.PI * 2);
+  ctx2.stroke();
+  // Goggle strap
+  ctx2.strokeStyle = '#666677';
+  ctx2.lineWidth = 2;
+  ctx2.beginPath();
+  ctx2.arc(40, 20, 28, Math.PI + 0.4, -0.4);
+  ctx2.stroke();
+  // Goggle lens tint
+  ctx2.fillStyle = '#44ccff33';
+  ctx2.beginPath();
+  ctx2.ellipse(30, 24, 7, 4, -0.1, 0, Math.PI * 2);
+  ctx2.fill();
+  ctx2.beginPath();
+  ctx2.ellipse(50, 24, 7, 4, 0.1, 0, Math.PI * 2);
+  ctx2.fill();
+
+  // Lab coat collar hint
+  ctx2.fillStyle = '#ddddee';
+  ctx2.beginPath();
+  ctx2.moveTo(20, 75);
+  ctx2.lineTo(30, 65);
+  ctx2.lineTo(40, 72);
+  ctx2.lineTo(50, 65);
+  ctx2.lineTo(60, 75);
+  ctx2.lineTo(60, 90);
+  ctx2.lineTo(20, 90);
+  ctx2.closePath();
+  ctx2.fill();
+  ctx2.strokeStyle = '#1a1a2e';
+  ctx2.lineWidth = 1.5;
+  ctx2.stroke();
+
+  // Label
+  ctx2.fillStyle = '#00ffaa';
+  ctx2.font = 'bold 7px monospace';
+  ctx2.textAlign = 'center';
+  ctx2.fillText('CHEMIST', 40, 88);
+  ctx2.textAlign = 'left';
+
+  // Anime lab background (faint beakers on main canvas)
+  // Handled by existing rendering — just add reaction effects
+
+  // Watch for toast messages (reactions) and add anime impact
+  var toast = document.getElementById('toast');
+  if (toast) {
+    var toastObs = new MutationObserver(function() {
+      if (toast.classList.contains('visible')) {
+        var text = toast.textContent.toLowerCase();
+        if (text.indexOf('explosion') >= 0 || text.indexOf('explod') >= 0) {
+          AnimeEffects.impactFrame('#ff4422');
+          AnimeEffects.screenFlash('#ff4422', 200);
+        } else if (text.indexOf('freeze') >= 0 || text.indexOf('ice') >= 0) {
+          AnimeEffects.screenFlash('#44ccff', 200);
+        } else if (text.indexOf('steam') >= 0) {
+          AnimeEffects.screenFlash('#aaaacc', 150);
+        }
+      }
+    });
+    toastObs.observe(toast, { attributes: true, attributeFilter: ['class'] });
+  }
+})();
 
 </script>
 </body>

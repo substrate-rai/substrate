@@ -8,7 +8,7 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>SIGTERM — daily AI word puzzle by Substrate</title>
 <meta name="description" content="A daily 5-letter word puzzle for AI and tech nerds. By Substrate.">
 <meta property="og:title" content="SIGTERM — daily AI word puzzle">
@@ -23,10 +23,16 @@ redirect_from:
     background: #0a0a2e;
     color: #e0e0e0;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
+    overscroll-behavior: none;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   header {
@@ -175,7 +181,7 @@ redirect_from:
 
   .key {
     min-width: 32px;
-    height: 46px;
+    height: 48px;
     border: none;
     border-radius: 4px;
     background: #222255;
@@ -423,6 +429,7 @@ redirect_from:
   }
 </style>
 <script src="{{ site.baseurl }}/assets/js/substrate-audio.js"></script>
+<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
 
@@ -1075,6 +1082,84 @@ function createChallenge() {
 }
 </script>
 <script>if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.createToggle();</script>
+
+<!-- Anime Effects: Q Portrait + Speed Lines + Scanlines -->
+<canvas id="q-portrait" width="90" height="100" style="display:none;"></canvas>
+<script>
+(function() {
+  // Add scanline overlay
+  if (typeof AnimeEffects !== 'undefined') {
+    AnimeEffects.addScanlines(0.04);
+  }
+
+  // Draw Q's portrait on hidden canvas
+  function drawQPortrait(expression) {
+    var c = document.getElementById('q-portrait');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, 90, 100);
+
+    // Dark background circle
+    ctx.fillStyle = '#1a0a2e';
+    ctx.beginPath();
+    ctx.arc(45, 50, 44, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ff77ff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (typeof AnimeEffects !== 'undefined') {
+      AnimeEffects.drawPortrait(ctx, 45, 48, 75, {
+        hairColor: '#cc44ff',
+        hairDark: '#8822aa',
+        eyeColor: '#ff77ff',
+        expression: expression || 'neutral'
+      });
+    }
+  }
+
+  // Show Q portrait when comment appears
+  var qObs = new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      if (m.target.id === 'q-comment' && m.target.style.display === 'block') {
+        var canvas = document.getElementById('q-portrait');
+        if (!canvas) return;
+        // Determine expression from game state
+        var won = typeof guesses !== 'undefined' && guesses.length > 0 && typeof TARGET !== 'undefined' && guesses[guesses.length - 1] === TARGET;
+        drawQPortrait(won ? 'excited' : 'neutral');
+        canvas.style.display = 'block';
+        canvas.style.cssText = 'display:block;float:left;margin-right:10px;margin-bottom:4px;border-radius:50%;border:2px solid #ff77ff;box-shadow:0 0 15px #ff77ff44;';
+        var qComment = document.getElementById('q-comment');
+        if (qComment && !qComment.querySelector('#q-portrait')) {
+          qComment.insertBefore(canvas, qComment.firstChild);
+        }
+      }
+    });
+  });
+  var qComment = document.getElementById('q-comment');
+  if (qComment) {
+    qObs.observe(qComment, { attributes: true, attributeFilter: ['style'] });
+  }
+
+  // Speed lines burst on correct guess (all 5 green)
+  var origSubmit = window.submitGuess;
+  if (typeof submitGuess === 'function') {
+    var _origEndGame = window.endGame;
+    window.endGame = function(won) {
+      if (won && typeof AnimeEffects !== 'undefined') {
+        // Get center of grid for speed lines
+        var grid = document.getElementById('grid');
+        if (grid) {
+          var rect = grid.getBoundingClientRect();
+          AnimeEffects.speedLinesBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, '#00ffaa', 32);
+          AnimeEffects.screenFlash('#00ffaa', 400);
+        }
+      }
+      _origEndGame(won);
+    };
+  }
+})();
+</script>
 
 </body>
 </html>

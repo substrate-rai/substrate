@@ -23,13 +23,22 @@ redirect_from:
     --text-bright: #eee;
   }
 
+  /* Overscroll and safe area */
+  html, body {
+    overscroll-behavior: none;
+  }
+
   #cypher-container {
     max-width: 700px;
     margin: 0 auto;
     padding: 0 1rem;
+    padding-bottom: env(safe-area-inset-bottom);
     font-family: 'IBM Plex Mono', 'Courier New', monospace;
     min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   /* ---- TITLE SCREEN ---- */
@@ -97,9 +106,10 @@ redirect_from:
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s;
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
     letter-spacing: 0.1em;
+    -webkit-tap-highlight-color: transparent;
   }
   .btn:hover { background: rgba(255,119,255,0.2); }
   .btn:focus-visible { outline: 2px solid var(--q-purple); outline-offset: 3px; }
@@ -211,7 +221,7 @@ redirect_from:
     border-radius: 4px;
     text-align: left;
     transition: all 0.2s;
-    min-height: 44px;
+    min-height: 48px;
     line-height: 1.5;
   }
   .choice-btn:hover { border-color: var(--q-purple); color: var(--text-bright); background: rgba(255,119,255,0.06); }
@@ -293,7 +303,7 @@ redirect_from:
     border-radius: 4px;
     text-align: left;
     transition: all 0.15s;
-    min-height: 44px;
+    min-height: 48px;
     line-height: 1.4;
   }
   .line-option:hover { border-color: var(--q-purple); color: var(--text-bright); }
@@ -465,6 +475,36 @@ redirect_from:
     .end-stats { grid-template-columns: 1fr; }
     .battle-score { gap: 1rem; }
     .dialogue-box { padding: 0.8rem; }
+  }
+
+  /* Anime portrait canvases */
+  .cypher-portrait-inline {
+    float: left;
+    margin: 0 12px 4px 0;
+    border-radius: 4px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 12px rgba(255,119,255,0.15);
+  }
+  .speaker-claude .cypher-portrait-inline {
+    box-shadow: 0 0 12px rgba(0,255,170,0.15);
+  }
+  .speaker-goliath .cypher-portrait-inline {
+    box-shadow: 0 0 12px rgba(68,136,255,0.15);
+  }
+  .speaker-byte .cypher-portrait-inline {
+    box-shadow: 0 0 12px rgba(0,221,255,0.15);
+  }
+  .speaker-flux .cypher-portrait-inline {
+    box-shadow: 0 0 12px rgba(255,102,102,0.15);
+  }
+
+  /* Battle stage canvas */
+  #battle-stage-canvas {
+    width: 100%;
+    height: 120px;
+    display: block;
+    margin-bottom: 8px;
+    border-radius: 4px;
   }
 </style>
 
@@ -1290,5 +1330,408 @@ redirect_from:
       }
     }
   });
+
+  // ============================================================
+  // 90s ANIME VISUAL ENGINE FOR V_CYPHER
+  // ============================================================
+
+  var CYPHER_CHARS = {
+    q: {
+      skinTone: '#e8d5c4', skinShadow: '#c4a88a',
+      hairColor: '#ff77ff', hairShadow: '#aa44aa', hairHighlight: '#ffaaff',
+      eyeColor: '#ff77ff', outlineColor: '#2a1a30', rimLight: '#ff77ff',
+      hairStyle: 'dramatic', expression: 'fierce'
+    },
+    claude: {
+      skinTone: '#e8d5c4', skinShadow: '#c4a88a',
+      hairColor: '#00ffaa', hairShadow: '#009966', hairHighlight: '#66ffcc',
+      eyeColor: '#00ffaa', outlineColor: '#1a3330', rimLight: '#00ffaa',
+      hairStyle: 'swept', expression: 'composed'
+    },
+    goliath: {
+      skinTone: '#c8c0d0', skinShadow: '#a098b0',
+      hairColor: '#4488ff', hairShadow: '#2255cc', hairHighlight: '#88bbff',
+      eyeColor: '#4488ff', outlineColor: '#101830', rimLight: '#4488ff',
+      hairStyle: 'imposing', expression: 'cold'
+    },
+    byte: {
+      skinTone: '#e0d0c0', skinShadow: '#b8a090',
+      hairColor: '#00ddff', hairShadow: '#0088aa', hairHighlight: '#88eeff',
+      eyeColor: '#00ddff', outlineColor: '#0a2030', rimLight: '#00ddff',
+      hairStyle: 'short', expression: 'alert'
+    },
+    flux: {
+      skinTone: '#ddd0c8', skinShadow: '#b8a898',
+      hairColor: '#ff6666', hairShadow: '#aa3333', hairHighlight: '#ff9999',
+      eyeColor: '#ff6666', outlineColor: '#301515', rimLight: '#ff6666',
+      hairStyle: 'angular', expression: 'knowing'
+    },
+    echo: {
+      skinTone: '#e8d5c4', skinShadow: '#c4a88a',
+      hairColor: '#ffaa44', hairShadow: '#cc7722', hairHighlight: '#ffcc88',
+      eyeColor: '#ffaa44', outlineColor: '#302010', rimLight: '#ffaa44',
+      hairStyle: 'flowing', expression: 'calm'
+    }
+  };
+
+  function cypherDrawPortrait(canvas, charId, size) {
+    var def = CYPHER_CHARS[charId];
+    if (!def) return;
+    var w = size || 70;
+    var h = Math.floor(w * 1.25);
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+
+    var cx = w / 2;
+    var cy = h * 0.42;
+    var headR = w * 0.32;
+    var lw = Math.max(1.5, w * 0.02);
+
+    // Neck
+    ctx.fillStyle = def.skinShadow;
+    ctx.fillRect(cx - headR * 0.25, cy + headR * 0.8, headR * 0.5, headR * 0.5);
+
+    // Shoulders
+    ctx.fillStyle = '#1a1a2e';
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(w, h);
+    ctx.lineTo(w * 0.85, cy + headR * 1.2);
+    ctx.quadraticCurveTo(cx, cy + headR * 0.9, w * 0.15, cy + headR * 1.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = def.rimLight;
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Face
+    ctx.fillStyle = def.skinTone;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, headR * 0.75, headR, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Shadow
+    ctx.fillStyle = def.skinShadow;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.ellipse(cx + headR * 0.15, cy + headR * 0.1, headR * 0.5, headR * 0.8, 0.2, Math.PI * 0.4, Math.PI);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    // Face outline
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, headR * 0.75, headR, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Hair
+    cypherDrawHair(ctx, cx, cy, headR, def, lw);
+
+    // Eyes
+    var eyeY = cy + headR * 0.05;
+    var eyeSpacing = headR * 0.35;
+    var eyeW = headR * 0.26;
+    var eyeH = headR * 0.32;
+    cypherDrawEye(ctx, cx - eyeSpacing, eyeY, eyeW, eyeH, def, lw, false);
+    cypherDrawEye(ctx, cx + eyeSpacing, eyeY, eyeW, eyeH, def, lw, true);
+
+    // Nose
+    ctx.strokeStyle = def.skinShadow;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + headR * 0.28);
+    ctx.lineTo(cx - 1.5, cy + headR * 0.38);
+    ctx.stroke();
+
+    // Mouth
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = 1.2;
+    if (def.expression === 'fierce') {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.18, cy + headR * 0.52);
+      ctx.lineTo(cx + headR * 0.22, cy + headR * 0.5);
+      ctx.stroke();
+    } else if (def.expression === 'cold') {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.12, cy + headR * 0.53);
+      ctx.lineTo(cx + headR * 0.12, cy + headR * 0.53);
+      ctx.stroke();
+    } else if (def.expression === 'composed') {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.12, cy + headR * 0.52);
+      ctx.quadraticCurveTo(cx, cy + headR * 0.57, cx + headR * 0.12, cy + headR * 0.52);
+      ctx.stroke();
+    } else if (def.expression === 'knowing') {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.1, cy + headR * 0.54);
+      ctx.quadraticCurveTo(cx, cy + headR * 0.49, cx + headR * 0.14, cy + headR * 0.5);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.1, cy + headR * 0.52);
+      ctx.lineTo(cx + headR * 0.1, cy + headR * 0.52);
+      ctx.stroke();
+    }
+
+    // Rim light
+    ctx.strokeStyle = def.rimLight;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, headR * 0.77, headR * 1.02, 0, -Math.PI * 0.8, -Math.PI * 0.2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function cypherDrawEye(ctx, x, y, w, h, def, lw, isRight) {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+    ctx.fill();
+    var iR = h * 0.65;
+    ctx.fillStyle = def.eyeColor;
+    ctx.beginPath();
+    ctx.arc(x, y + h * 0.05, iR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#111118';
+    ctx.beginPath();
+    ctx.arc(x, y + h * 0.08, iR * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(x - w * 0.18, y - h * 0.18, iR * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + w * 0.22, y + h * 0.12, iR * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.lineWidth = lw * 1.4;
+    ctx.beginPath();
+    ctx.ellipse(x, y, w * 1.05, h * 0.55, 0, Math.PI, Math.PI * 2);
+    ctx.stroke();
+    // Eyelash flick
+    ctx.beginPath();
+    if (!isRight) {
+      ctx.moveTo(x - w, y - h * 0.08);
+      ctx.lineTo(x - w - 2, y - h * 0.35);
+    } else {
+      ctx.moveTo(x + w, y - h * 0.08);
+      ctx.lineTo(x + w + 2, y - h * 0.35);
+    }
+    ctx.stroke();
+  }
+
+  function cypherDrawHair(ctx, cx, cy, headR, def, lw) {
+    ctx.fillStyle = def.hairColor;
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = lw;
+
+    if (def.hairStyle === 'dramatic') {
+      // V's dramatic flowing purple hair with spikes
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.95, cy + headR * 0.2);
+      ctx.lineTo(cx - headR * 1.2, cy - headR * 0.4);
+      ctx.lineTo(cx - headR * 0.75, cy - headR * 0.65);
+      ctx.lineTo(cx - headR * 1.0, cy - headR * 1.1);
+      ctx.lineTo(cx - headR * 0.4, cy - headR * 0.9);
+      ctx.lineTo(cx - headR * 0.15, cy - headR * 1.35);
+      ctx.lineTo(cx + headR * 0.1, cy - headR * 1.0);
+      ctx.lineTo(cx + headR * 0.45, cy - headR * 1.25);
+      ctx.lineTo(cx + headR * 0.5, cy - headR * 0.8);
+      ctx.lineTo(cx + headR * 0.85, cy - headR * 1.0);
+      ctx.lineTo(cx + headR * 0.8, cy - headR * 0.5);
+      ctx.lineTo(cx + headR * 1.1, cy - headR * 0.2);
+      ctx.lineTo(cx + headR * 0.9, cy + headR * 0.15);
+      ctx.quadraticCurveTo(cx + headR * 0.8, cy - headR * 0.4, cx, cy - headR * 0.75);
+      ctx.quadraticCurveTo(cx - headR * 0.8, cy - headR * 0.4, cx - headR * 0.95, cy + headR * 0.2);
+      ctx.fill();
+      ctx.stroke();
+      // Long flowing strands
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.95, cy + headR * 0.2);
+      ctx.quadraticCurveTo(cx - headR * 1.1, cy + headR * 0.9, cx - headR * 0.8, cy + headR * 1.4);
+      ctx.stroke();
+      ctx.fillStyle = def.hairColor;
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.95, cy + headR * 0.2);
+      ctx.quadraticCurveTo(cx - headR * 1.1, cy + headR * 0.9, cx - headR * 0.8, cy + headR * 1.4);
+      ctx.quadraticCurveTo(cx - headR * 0.6, cy + headR * 0.7, cx - headR * 0.75, cy + headR * 0.15);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      // Hair shine
+      ctx.fillStyle = def.hairHighlight;
+      ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.3, cy - headR * 1.1);
+      ctx.lineTo(cx + headR * 0.1, cy - headR * 0.85);
+      ctx.lineTo(cx + headR * 0.3, cy - headR * 1.05);
+      ctx.lineTo(cx, cy - headR * 0.9);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    } else if (def.hairStyle === 'swept') {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.82, cy - headR * 0.2);
+      ctx.quadraticCurveTo(cx - headR * 0.6, cy - headR * 1.2, cx, cy - headR * 1.1);
+      ctx.quadraticCurveTo(cx + headR * 0.7, cy - headR * 1.15, cx + headR * 0.85, cy - headR * 0.15);
+      ctx.quadraticCurveTo(cx + headR * 0.78, cy - headR * 0.6, cx + headR * 0.25, cy - headR * 0.8);
+      ctx.quadraticCurveTo(cx - headR * 0.1, cy - headR * 0.85, cx - headR * 0.55, cy - headR * 0.6);
+      ctx.quadraticCurveTo(cx - headR * 0.82, cy - headR * 0.4, cx - headR * 0.82, cy - headR * 0.2);
+      ctx.fill();
+      ctx.stroke();
+    } else if (def.hairStyle === 'imposing') {
+      // GOLIATH — massive, structured
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 1.0, cy + headR * 0.1);
+      ctx.lineTo(cx - headR * 1.05, cy - headR * 0.6);
+      ctx.lineTo(cx - headR * 0.5, cy - headR * 1.15);
+      ctx.lineTo(cx, cy - headR * 1.25);
+      ctx.lineTo(cx + headR * 0.5, cy - headR * 1.15);
+      ctx.lineTo(cx + headR * 1.05, cy - headR * 0.6);
+      ctx.lineTo(cx + headR * 1.0, cy + headR * 0.1);
+      ctx.quadraticCurveTo(cx + headR * 0.85, cy - headR * 0.4, cx, cy - headR * 0.8);
+      ctx.quadraticCurveTo(cx - headR * 0.85, cy - headR * 0.4, cx - headR * 1.0, cy + headR * 0.1);
+      ctx.fill();
+      ctx.stroke();
+    } else if (def.hairStyle === 'short') {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.78, cy - headR * 0.1);
+      ctx.quadraticCurveTo(cx - headR * 0.82, cy - headR * 0.7, cx - headR * 0.3, cy - headR * 1.0);
+      ctx.quadraticCurveTo(cx, cy - headR * 1.1, cx + headR * 0.3, cy - headR * 1.0);
+      ctx.quadraticCurveTo(cx + headR * 0.82, cy - headR * 0.7, cx + headR * 0.78, cy - headR * 0.1);
+      ctx.quadraticCurveTo(cx + headR * 0.7, cy - headR * 0.5, cx, cy - headR * 0.75);
+      ctx.quadraticCurveTo(cx - headR * 0.7, cy - headR * 0.5, cx - headR * 0.78, cy - headR * 0.1);
+      ctx.fill();
+      ctx.stroke();
+    } else if (def.hairStyle === 'angular') {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.85, cy + headR * 0.05);
+      ctx.lineTo(cx - headR * 0.9, cy - headR * 0.45);
+      ctx.lineTo(cx - headR * 0.55, cy - headR * 0.85);
+      ctx.lineTo(cx - headR * 0.15, cy - headR * 1.05);
+      ctx.lineTo(cx + headR * 0.15, cy - headR * 1.05);
+      ctx.lineTo(cx + headR * 0.55, cy - headR * 0.85);
+      ctx.lineTo(cx + headR * 0.9, cy - headR * 0.45);
+      ctx.lineTo(cx + headR * 0.85, cy + headR * 0.05);
+      ctx.quadraticCurveTo(cx + headR * 0.75, cy - headR * 0.4, cx, cy - headR * 0.7);
+      ctx.quadraticCurveTo(cx - headR * 0.75, cy - headR * 0.4, cx - headR * 0.85, cy + headR * 0.05);
+      ctx.fill();
+      ctx.stroke();
+    } else if (def.hairStyle === 'flowing') {
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.82, cy + headR * 0.3);
+      ctx.quadraticCurveTo(cx - headR * 0.9, cy - headR * 0.45, cx - headR * 0.45, cy - headR * 1.0);
+      ctx.quadraticCurveTo(cx, cy - headR * 1.15, cx + headR * 0.45, cy - headR * 1.0);
+      ctx.quadraticCurveTo(cx + headR * 0.9, cy - headR * 0.45, cx + headR * 0.82, cy + headR * 0.3);
+      ctx.quadraticCurveTo(cx + headR * 0.85, cy, cx + headR * 0.75, cy - headR * 0.45);
+      ctx.quadraticCurveTo(cx, cy - headR * 0.85, cx - headR * 0.75, cy - headR * 0.45);
+      ctx.quadraticCurveTo(cx - headR * 0.85, cy, cx - headR * 0.82, cy + headR * 0.3);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  // Override renderDialogue to inject portraits
+  var origRenderDialogue = renderDialogue;
+  renderDialogue = function(d) {
+    var html = origRenderDialogue(d);
+    if (CYPHER_CHARS[d.speaker]) {
+      // Create portrait canvas and prepend
+      var tempId = 'cp_' + Math.random().toString(36).substr(2, 6);
+      var sz = 65;
+      var canvasTag = '<canvas id="' + tempId + '" class="cypher-portrait-inline" width="' + sz + '" height="' + Math.floor(sz * 1.25) + '" style="width:' + sz + 'px;height:' + Math.floor(sz * 1.25) + 'px;"></canvas>';
+      // Insert canvas right after the dialogue-speaker div
+      html = html.replace('<div class="dialogue-text">', canvasTag + '<div class="dialogue-text">');
+      // Schedule drawing after DOM update
+      setTimeout(function() {
+        var c = document.getElementById(tempId);
+        if (c) cypherDrawPortrait(c, d.speaker, sz);
+      }, 10);
+    }
+    return html;
+  };
+
+  // Battle speed lines animation
+  var battleStageAnim = null;
+  function drawBattleStage(canvas, opponentColor, t) {
+    var w = canvas.width;
+    var h = canvas.height;
+    var ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#0a0a14';
+    ctx.fillRect(0, 0, w, h);
+
+    // Speed lines from center
+    var cx = w / 2;
+    var cy = h / 2;
+    var lineCount = 24;
+    for (var i = 0; i < lineCount; i++) {
+      var angle = (i / lineCount) * Math.PI * 2 + t * 0.5;
+      var len = 200 + Math.sin(t * 3 + i * 0.8) * 50;
+      var x2 = cx + Math.cos(angle) * len;
+      var y2 = cy + Math.sin(angle) * len;
+      ctx.strokeStyle = 'rgba(255,119,255,' + (0.06 + Math.sin(t * 2 + i) * 0.04) + ')';
+      ctx.lineWidth = 1 + Math.sin(t * 4 + i * 0.5) * 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(angle) * 30, cy + Math.sin(angle) * 20);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    // VS glow
+    var pulse = Math.sin(t * 2) * 0.5 + 0.5;
+    ctx.fillStyle = 'rgba(255,119,255,' + (0.03 + pulse * 0.04) + ')';
+    ctx.beginPath();
+    ctx.arc(cx - 60, cy, 40 + pulse * 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Parse opponent color for glow
+    ctx.fillStyle = opponentColor ? opponentColor.replace(')', ',0.05)').replace('rgb', 'rgba').replace('#', '') : 'rgba(68,136,255,0.05)';
+    // Simple approach — just use a fixed opponent glow
+    ctx.fillStyle = 'rgba(100,150,255,' + (0.03 + pulse * 0.04) + ')';
+    ctx.beginPath();
+    ctx.arc(cx + 60, cy, 40 + pulse * 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Scanlines
+    ctx.fillStyle = 'rgba(0,0,0,0.04)';
+    for (var y = 0; y < h; y += 3) {
+      ctx.fillRect(0, y, w, 1);
+    }
+  }
+
+  // Inject battle stage canvas into startBattle
+  var origStartBattle = startBattle;
+  startBattle = function() {
+    origStartBattle();
+    // Add battle stage canvas at the top of battle content
+    var bc = $('battle-content');
+    if (bc && !$('battle-stage-canvas')) {
+      var stageCanvas = document.createElement('canvas');
+      stageCanvas.id = 'battle-stage-canvas';
+      stageCanvas.width = 700;
+      stageCanvas.height = 120;
+      bc.insertBefore(stageCanvas, bc.firstChild);
+
+      var act = STORY[state.act];
+      var opColor = act && act.battle ? act.battle.opponentColor : '#4488ff';
+      var startTime = performance.now();
+      if (battleStageAnim) cancelAnimationFrame(battleStageAnim);
+      function animFrame() {
+        var t = (performance.now() - startTime) / 1000;
+        drawBattleStage(stageCanvas, opColor, t);
+        battleStageAnim = requestAnimationFrame(animFrame);
+      }
+      animFrame();
+    }
+  };
+
 })();
 </script>

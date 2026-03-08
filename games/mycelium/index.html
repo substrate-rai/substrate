@@ -9,9 +9,10 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>MYCELIUM — Substrate Arcade</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -19,10 +20,11 @@ body {
   background: #0a0a12;
   color: #c0c0d0;
   font-family: 'IBM Plex Mono', monospace;
-  overflow-x: hidden;
-  width: 100vw;
-  min-height: 100vh;
-  min-height: 100dvh;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 #game-canvas {
   position: fixed;
@@ -112,10 +114,12 @@ body {
   color: #00ffaa;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 8px 14px;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
+  min-height: 40px;
+  -webkit-tap-highlight-color: transparent;
 }
 .speed-btn:hover { background: rgba(0, 255, 170, 0.25); }
 .speed-btn.active {
@@ -127,8 +131,8 @@ body {
 /* Minimap */
 #minimap {
   position: fixed;
-  bottom: 16px;
-  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  right: calc(16px + env(safe-area-inset-right));
   width: 160px;
   height: 160px;
   background: rgba(10, 10, 24, 0.85);
@@ -1278,6 +1282,99 @@ gameLoop();
 if (!localStorage.getItem('mycelium-played')) {
   localStorage.setItem('mycelium-played', '1');
 }
+
+// === ANIME EFFECTS ===
+(function() {
+  if (typeof AnimeEffects === 'undefined') return;
+
+  AnimeEffects.addScanlines(0.03);
+
+  // Spore advisor portrait (canvas overlay)
+  var sporeCanvas = document.createElement('canvas');
+  sporeCanvas.width = 90;
+  sporeCanvas.height = 100;
+  sporeCanvas.id = 'spore-advisor';
+  sporeCanvas.style.cssText = 'position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:calc(16px + env(safe-area-inset-left));z-index:15;border:2px solid #44ff88;border-radius:8px;box-shadow:0 0 15px #44ff8844;background:rgba(10,10,24,0.9);display:none;';
+  document.body.appendChild(sporeCanvas);
+
+  // Speech bubble
+  var sporeBubble = document.createElement('div');
+  sporeBubble.id = 'spore-bubble';
+  sporeBubble.style.cssText = 'position:fixed;bottom:calc(130px + env(safe-area-inset-bottom));left:calc(16px + env(safe-area-inset-left));z-index:15;background:rgba(10,10,24,0.9);border:1px solid #44ff88;border-radius:6px;padding:8px 12px;font-family:"IBM Plex Mono",monospace;font-size:0.65rem;color:#88cc99;max-width:180px;display:none;';
+  document.body.appendChild(sporeBubble);
+
+  function drawSporePortrait() {
+    var ctx = sporeCanvas.getContext('2d');
+    ctx.clearRect(0, 0, 90, 100);
+    ctx.fillStyle = '#0a0a14';
+    ctx.fillRect(0, 0, 90, 100);
+    AnimeEffects.drawPortrait(ctx, 45, 48, 70, {
+      hairColor: '#44ff88',
+      hairDark: '#228844',
+      eyeColor: '#44ff88',
+      expression: 'serene',
+      skinColor: '#e8d5b8',
+      skinShadow: '#d0b89c'
+    });
+    // Label
+    ctx.fillStyle = '#44ff88';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('SPORE', 45, 95);
+    ctx.textAlign = 'left';
+  }
+
+  var sporeMessages = [
+    'Expand toward nutrients...',
+    'The enemy grows relentless.',
+    'Water patches boost growth!',
+    'Protect your connectivity.',
+    'The substrate hungers.',
+    'Spread wide, spread fast.',
+    'Every node strengthens you.'
+  ];
+
+  function showSporeAdvice() {
+    sporeCanvas.style.display = 'block';
+    drawSporePortrait();
+    sporeBubble.style.display = 'block';
+    sporeBubble.textContent = 'S% ' + sporeMessages[Math.floor(Math.random() * sporeMessages.length)];
+    setTimeout(function() {
+      sporeBubble.style.display = 'none';
+    }, 4000);
+  }
+
+  // Show Spore advisor periodically during gameplay
+  setInterval(function() {
+    if (gameRunning && !gameOver) {
+      showSporeAdvice();
+    } else {
+      sporeCanvas.style.display = 'none';
+      sporeBubble.style.display = 'none';
+    }
+  }, 15000);
+
+  // Show anime title card on game start
+  var origStartBtn = document.getElementById('start-btn');
+  if (origStartBtn) {
+    origStartBtn.addEventListener('click', function() {
+      setTimeout(function() {
+        AnimeEffects.showTitleCard('MYCELIUM', 'GROW BENEATH THE SURFACE', '#00ffaa');
+      }, 100);
+    });
+  }
+
+  // Speed lines on territory capture
+  var lastOwned = 0;
+  setInterval(function() {
+    if (!gameRunning || gameOver) return;
+    var owned = nutrients.filter(function(n) { return n.owner === 'player'; }).length;
+    if (owned > lastOwned && owned - lastOwned >= 2) {
+      AnimeEffects.speedLinesBurst(window.innerWidth / 2, window.innerHeight / 2, '#00ffaa', 16);
+    }
+    lastOwned = owned;
+  }, 2000);
+})();
 </script>
 </body>
 </html>

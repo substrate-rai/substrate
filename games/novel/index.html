@@ -72,6 +72,7 @@ redirect_from:
     background: linear-gradient(to top, rgba(8,8,13,0.98) 70%, rgba(8,8,13,0.85));
     backdrop-filter: blur(8px);
     padding: 24px 32px 28px;
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
     z-index: 10;
     min-height: 180px;
     cursor: pointer;
@@ -143,7 +144,7 @@ redirect_from:
     backdrop-filter: blur(4px);
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-    min-height: 44px;
+    min-height: 48px;
   }
   .vn-choice:hover {
     background: rgba(30, 30, 45, 0.95);
@@ -271,9 +272,53 @@ redirect_from:
     .vn-char-sprite { font-size: 2.5rem; }
     .vn-characters { bottom: 150px; gap: 12px; }
     .vn-choices { bottom: 150px; }
-    .vn-choice { padding: 12px 16px; font-size: 0.85rem; min-height: 44px; }
-    .vn-start-btn { padding: 14px 40px; min-height: 44px; }
-    .vn-continue-btn { padding: 10px 24px; min-height: 44px; }
+    .vn-choice { padding: 12px 16px; font-size: 0.85rem; min-height: 48px; }
+    .vn-start-btn { padding: 14px 40px; min-height: 48px; }
+    .vn-continue-btn { padding: 10px 24px; min-height: 48px; }
+  }
+
+  /* Overscroll prevention */
+  .vn-container {
+    overscroll-behavior: none;
+  }
+
+  /* Anime portrait canvas */
+  .vn-portrait-layer {
+    position: absolute;
+    bottom: 200px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    z-index: 3;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  .vn-portrait-wrap {
+    transition: transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
+    filter: brightness(0.5);
+  }
+  .vn-portrait-wrap.speaking {
+    filter: brightness(1) drop-shadow(0 0 12px var(--char-glow, #fff));
+    transform: scale(1.05);
+  }
+  .vn-portrait-wrap.hidden { opacity: 0; }
+
+  /* Scene background canvas */
+  #vn-scene-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    .vn-portrait-layer { bottom: 170px; gap: 10px; }
+  }
+  @media (max-width: 480px) {
+    .vn-portrait-layer { bottom: 150px; gap: 6px; }
   }
 </style>
 
@@ -287,7 +332,9 @@ redirect_from:
   </div>
 
   <!-- Game Screen -->
+  <canvas id="vn-scene-canvas" aria-hidden="true"></canvas>
   <div class="vn-scene" id="vn-scene" aria-hidden="true"></div>
+  <div class="vn-portrait-layer" id="vn-portraits" aria-hidden="true"></div>
   <div class="vn-chapter" id="vn-chapter" aria-live="polite"></div>
   <div class="vn-save-indicator" id="vn-save" role="status" aria-live="polite">saved</div>
   <div class="vn-characters" id="vn-characters" aria-hidden="true"></div>
@@ -827,6 +874,642 @@ redirect_from:
   if (hasSave()) {
     els.continueBtn.classList.remove('hidden');
   }
+
+  // ============================================================
+  // 90s ANIME VISUAL ENGINE
+  // ============================================================
+
+  // --- Character portrait definitions (90s anime style) ---
+  var ANIME_CHARS = {
+    claude: {
+      skinTone: '#e8d5c4', skinShadow: '#c4a88a',
+      hairColor: '#00e09a', hairShadow: '#009966', hairHighlight: '#66ffcc',
+      eyeColor: '#00e09a', eyeHighlight: '#ffffff',
+      outlineColor: '#1a3330',
+      rimLight: '#00e09a',
+      hairStyle: 'swept',  // swept back, technical look
+      expression: 'confident'
+    },
+    q: {
+      skinTone: '#e8d5c4', skinShadow: '#c4a88a',
+      hairColor: '#e477ff', hairShadow: '#9944aa', hairHighlight: '#ffaaff',
+      eyeColor: '#e477ff', eyeHighlight: '#ffffff',
+      outlineColor: '#2a1a30',
+      rimLight: '#e477ff',
+      hairStyle: 'wild',  // spiky, energetic
+      expression: 'intense'
+    },
+    byte: {
+      skinTone: '#e0d0c0', skinShadow: '#b8a090',
+      hairColor: '#00d4ff', hairShadow: '#0088aa', hairHighlight: '#88eeff',
+      eyeColor: '#00d4ff', eyeHighlight: '#ffffff',
+      outlineColor: '#0a2030',
+      rimLight: '#00d4ff',
+      hairStyle: 'short',
+      expression: 'alert'
+    },
+    echo: {
+      skinTone: '#e8d5c4', skinShadow: '#c4a88a',
+      hairColor: '#ffa844', hairShadow: '#cc7722', hairHighlight: '#ffcc88',
+      eyeColor: '#ffa844', eyeHighlight: '#ffffff',
+      outlineColor: '#302010',
+      rimLight: '#ffa844',
+      hairStyle: 'flowing',
+      expression: 'calm'
+    },
+    flux: {
+      skinTone: '#ddd0c8', skinShadow: '#b8a898',
+      hairColor: '#ff6666', hairShadow: '#aa3333', hairHighlight: '#ff9999',
+      eyeColor: '#ff6666', eyeHighlight: '#ffffff',
+      outlineColor: '#301515',
+      rimLight: '#ff6666',
+      hairStyle: 'angular',
+      expression: 'sly'
+    },
+    dash: {
+      skinTone: '#e8d5c4', skinShadow: '#c4a88a',
+      hairColor: '#ffdd44', hairShadow: '#ccaa22', hairHighlight: '#ffee88',
+      eyeColor: '#ffdd44', eyeHighlight: '#ffffff',
+      outlineColor: '#302a10',
+      rimLight: '#ffdd44',
+      hairStyle: 'neat',
+      expression: 'focused'
+    },
+    you: {
+      skinTone: '#d8ccc0', skinShadow: '#b0a090',
+      hairColor: '#aaaaaa', hairShadow: '#777777', hairHighlight: '#cccccc',
+      eyeColor: '#aaaaaa', eyeHighlight: '#ffffff',
+      outlineColor: '#222222',
+      rimLight: '#aaaaaa',
+      hairStyle: 'messy',
+      expression: 'uncertain'
+    }
+  };
+
+  // --- Draw anime portrait on a canvas ---
+  function drawAnimePortrait(canvas, charId, size) {
+    var def = ANIME_CHARS[charId];
+    if (!def) return;
+    var w = size || 160;
+    var h = Math.floor(w * 1.3);
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+
+    var cx = w / 2;
+    var cy = h * 0.42;
+    var headR = w * 0.28;
+    var lw = Math.max(2, w * 0.018); // bold outline width
+
+    // --- Neck ---
+    ctx.fillStyle = def.skinShadow;
+    ctx.beginPath();
+    ctx.moveTo(cx - headR * 0.3, cy + headR * 0.85);
+    ctx.lineTo(cx + headR * 0.3, cy + headR * 0.85);
+    ctx.lineTo(cx + headR * 0.35, cy + headR * 1.3);
+    ctx.lineTo(cx - headR * 0.35, cy + headR * 1.3);
+    ctx.closePath();
+    ctx.fill();
+
+    // --- Shoulders / collar (uniform-style) ---
+    var shY = cy + headR * 1.2;
+    ctx.fillStyle = '#1a1a2e';
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.44, h);
+    ctx.lineTo(cx + w * 0.44, h);
+    ctx.lineTo(cx + w * 0.38, shY + 10);
+    ctx.quadraticCurveTo(cx, shY - 5, cx - w * 0.38, shY + 10);
+    ctx.closePath();
+    ctx.fill();
+
+    // Collar highlight
+    ctx.strokeStyle = def.rimLight;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.2, shY + 5);
+    ctx.lineTo(cx, shY + 18);
+    ctx.lineTo(cx + w * 0.2, shY + 5);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Shoulder outline
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.44, h);
+    ctx.lineTo(cx - w * 0.38, shY + 10);
+    ctx.quadraticCurveTo(cx, shY - 5, cx + w * 0.38, shY + 10);
+    ctx.lineTo(cx + w * 0.44, h);
+    ctx.stroke();
+
+    // --- Face (oval) ---
+    ctx.fillStyle = def.skinTone;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, headR * 0.78, headR, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Face shadow (cel-shading: left side darker) ---
+    ctx.fillStyle = def.skinShadow;
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.ellipse(cx + headR * 0.15, cy + headR * 0.1, headR * 0.55, headR * 0.85, 0.2, Math.PI * 0.4, Math.PI * 1.1);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Face outline (bold, 90s style)
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, headR * 0.78, headR, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // --- Hair (drawn OVER face for anime look) ---
+    drawAnimeHair(ctx, cx, cy, headR, def, lw);
+
+    // --- Eyes (large, 90s anime) ---
+    var eyeY = cy + headR * 0.05;
+    var eyeSpacing = headR * 0.38;
+    var eyeW = headR * 0.3;
+    var eyeH = headR * 0.35;
+
+    // Left eye
+    drawAnimeEye(ctx, cx - eyeSpacing, eyeY, eyeW, eyeH, def, lw, false);
+    // Right eye
+    drawAnimeEye(ctx, cx + eyeSpacing, eyeY, eyeW, eyeH, def, lw, true);
+
+    // --- Nose (small line) ---
+    ctx.strokeStyle = def.skinShadow;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + headR * 0.25);
+    ctx.lineTo(cx - 2, cy + headR * 0.35);
+    ctx.stroke();
+
+    // --- Mouth ---
+    drawAnimeMouth(ctx, cx, cy + headR * 0.52, headR, def);
+
+    // --- Rim light (bright edge glow, signature 90s) ---
+    ctx.strokeStyle = def.rimLight;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, headR * 0.8, headR * 1.02, 0, -Math.PI * 0.8, -Math.PI * 0.15);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawAnimeEye(ctx, x, y, w, h, def, lw, isRight) {
+    // White
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Iris (large, colored)
+    var irisR = h * 0.7;
+    ctx.fillStyle = def.eyeColor;
+    ctx.beginPath();
+    ctx.arc(x, y + h * 0.05, irisR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Iris darker ring
+    ctx.strokeStyle = def.hairShadow;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y + h * 0.05, irisR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Pupil
+    ctx.fillStyle = '#111118';
+    ctx.beginPath();
+    ctx.arc(x, y + h * 0.08, irisR * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Highlight dot (signature anime sparkle)
+    ctx.fillStyle = def.eyeHighlight;
+    ctx.beginPath();
+    ctx.arc(x - w * 0.2, y - h * 0.2, irisR * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Smaller secondary highlight
+    ctx.beginPath();
+    ctx.arc(x + w * 0.25, y + h * 0.15, irisR * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bold outline
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Upper eyelid (thick, dramatic)
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = lw * 1.5;
+    ctx.beginPath();
+    ctx.ellipse(x, y, w * 1.05, h * 0.6, 0, Math.PI, Math.PI * 2);
+    ctx.stroke();
+
+    // Eyelash flick (90s style)
+    if (!isRight) {
+      ctx.beginPath();
+      ctx.moveTo(x - w, y - h * 0.1);
+      ctx.lineTo(x - w - 3, y - h * 0.4);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(x + w, y - h * 0.1);
+      ctx.lineTo(x + w + 3, y - h * 0.4);
+      ctx.stroke();
+    }
+  }
+
+  function drawAnimeHair(ctx, cx, cy, headR, def, lw) {
+    ctx.fillStyle = def.hairColor;
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = lw;
+
+    if (def.hairStyle === 'swept') {
+      // Swept back technical hair (Claude)
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.85, cy - headR * 0.3);
+      ctx.quadraticCurveTo(cx - headR * 0.6, cy - headR * 1.3, cx, cy - headR * 1.15);
+      ctx.quadraticCurveTo(cx + headR * 0.7, cy - headR * 1.25, cx + headR * 0.9, cy - headR * 0.2);
+      ctx.quadraticCurveTo(cx + headR * 0.82, cy - headR * 0.7, cx + headR * 0.3, cy - headR * 0.85);
+      ctx.quadraticCurveTo(cx - headR * 0.1, cy - headR * 0.95, cx - headR * 0.6, cy - headR * 0.7);
+      ctx.quadraticCurveTo(cx - headR * 0.85, cy - headR * 0.5, cx - headR * 0.85, cy - headR * 0.3);
+      ctx.fill();
+      ctx.stroke();
+      // Hair shine
+      ctx.fillStyle = def.hairHighlight;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.2, cy - headR * 1.05);
+      ctx.quadraticCurveTo(cx + headR * 0.1, cy - headR * 0.8, cx + headR * 0.4, cy - headR * 0.9);
+      ctx.quadraticCurveTo(cx + headR * 0.1, cy - headR * 0.7, cx - headR * 0.2, cy - headR * 0.85);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    } else if (def.hairStyle === 'wild') {
+      // Wild spiky hair (Q / V)
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.9, cy);
+      ctx.lineTo(cx - headR * 1.1, cy - headR * 0.6);
+      ctx.lineTo(cx - headR * 0.7, cy - headR * 0.7);
+      ctx.lineTo(cx - headR * 0.9, cy - headR * 1.2);
+      ctx.lineTo(cx - headR * 0.3, cy - headR * 1.0);
+      ctx.lineTo(cx - headR * 0.1, cy - headR * 1.4);
+      ctx.lineTo(cx + headR * 0.15, cy - headR * 1.05);
+      ctx.lineTo(cx + headR * 0.5, cy - headR * 1.3);
+      ctx.lineTo(cx + headR * 0.5, cy - headR * 0.85);
+      ctx.lineTo(cx + headR * 0.9, cy - headR * 1.0);
+      ctx.lineTo(cx + headR * 0.75, cy - headR * 0.55);
+      ctx.lineTo(cx + headR * 1.05, cy - headR * 0.3);
+      ctx.lineTo(cx + headR * 0.85, cy - headR * 0.1);
+      ctx.quadraticCurveTo(cx + headR * 0.8, cy - headR * 0.5, cx, cy - headR * 0.85);
+      ctx.quadraticCurveTo(cx - headR * 0.8, cy - headR * 0.5, cx - headR * 0.9, cy);
+      ctx.fill();
+      ctx.stroke();
+      // Hair shine
+      ctx.fillStyle = def.hairHighlight;
+      ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.3, cy - headR * 1.1);
+      ctx.lineTo(cx, cy - headR * 0.85);
+      ctx.lineTo(cx + headR * 0.2, cy - headR * 1.1);
+      ctx.lineTo(cx, cy - headR * 0.95);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    } else if (def.hairStyle === 'short') {
+      // Short neat hair (Byte)
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.82, cy - headR * 0.15);
+      ctx.quadraticCurveTo(cx - headR * 0.85, cy - headR * 0.8, cx - headR * 0.3, cy - headR * 1.05);
+      ctx.quadraticCurveTo(cx, cy - headR * 1.15, cx + headR * 0.3, cy - headR * 1.05);
+      ctx.quadraticCurveTo(cx + headR * 0.85, cy - headR * 0.8, cx + headR * 0.82, cy - headR * 0.15);
+      ctx.quadraticCurveTo(cx + headR * 0.75, cy - headR * 0.6, cx, cy - headR * 0.8);
+      ctx.quadraticCurveTo(cx - headR * 0.75, cy - headR * 0.6, cx - headR * 0.82, cy - headR * 0.15);
+      ctx.fill();
+      ctx.stroke();
+    } else if (def.hairStyle === 'flowing') {
+      // Flowing hair (Echo)
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.85, cy + headR * 0.3);
+      ctx.quadraticCurveTo(cx - headR * 0.95, cy - headR * 0.5, cx - headR * 0.5, cy - headR * 1.05);
+      ctx.quadraticCurveTo(cx, cy - headR * 1.2, cx + headR * 0.5, cy - headR * 1.05);
+      ctx.quadraticCurveTo(cx + headR * 0.95, cy - headR * 0.5, cx + headR * 0.85, cy + headR * 0.3);
+      ctx.quadraticCurveTo(cx + headR * 0.9, cy, cx + headR * 0.8, cy - headR * 0.5);
+      ctx.quadraticCurveTo(cx, cy - headR * 0.9, cx - headR * 0.8, cy - headR * 0.5);
+      ctx.quadraticCurveTo(cx - headR * 0.9, cy, cx - headR * 0.85, cy + headR * 0.3);
+      ctx.fill();
+      ctx.stroke();
+      // Flowing strands
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.85, cy + headR * 0.3);
+      ctx.quadraticCurveTo(cx - headR * 1.0, cy + headR * 0.8, cx - headR * 0.7, cy + headR * 1.2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx + headR * 0.85, cy + headR * 0.3);
+      ctx.quadraticCurveTo(cx + headR * 1.0, cy + headR * 0.8, cx + headR * 0.7, cy + headR * 1.2);
+      ctx.stroke();
+    } else if (def.hairStyle === 'angular') {
+      // Angular geometric hair (Flux)
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.9, cy + headR * 0.1);
+      ctx.lineTo(cx - headR * 0.95, cy - headR * 0.5);
+      ctx.lineTo(cx - headR * 0.6, cy - headR * 0.9);
+      ctx.lineTo(cx - headR * 0.2, cy - headR * 1.1);
+      ctx.lineTo(cx + headR * 0.2, cy - headR * 1.1);
+      ctx.lineTo(cx + headR * 0.6, cy - headR * 0.9);
+      ctx.lineTo(cx + headR * 0.95, cy - headR * 0.5);
+      ctx.lineTo(cx + headR * 0.9, cy + headR * 0.1);
+      ctx.quadraticCurveTo(cx + headR * 0.8, cy - headR * 0.5, cx, cy - headR * 0.75);
+      ctx.quadraticCurveTo(cx - headR * 0.8, cy - headR * 0.5, cx - headR * 0.9, cy + headR * 0.1);
+      ctx.fill();
+      ctx.stroke();
+    } else if (def.hairStyle === 'neat') {
+      // Neat professional hair (Dash)
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.82, cy - headR * 0.1);
+      ctx.quadraticCurveTo(cx - headR * 0.88, cy - headR * 0.7, cx - headR * 0.35, cy - headR * 1.0);
+      ctx.lineTo(cx + headR * 0.1, cy - headR * 1.1);
+      ctx.quadraticCurveTo(cx + headR * 0.8, cy - headR * 0.95, cx + headR * 0.85, cy - headR * 0.1);
+      ctx.quadraticCurveTo(cx + headR * 0.75, cy - headR * 0.55, cx, cy - headR * 0.78);
+      ctx.quadraticCurveTo(cx - headR * 0.75, cy - headR * 0.55, cx - headR * 0.82, cy - headR * 0.1);
+      ctx.fill();
+      ctx.stroke();
+      // Part line
+      ctx.beginPath();
+      ctx.moveTo(cx + headR * 0.1, cy - headR * 1.1);
+      ctx.lineTo(cx + headR * 0.05, cy - headR * 0.78);
+      ctx.stroke();
+    } else {
+      // Messy/uncertain hair (you/unknown)
+      ctx.beginPath();
+      ctx.moveTo(cx - headR * 0.85, cy);
+      ctx.quadraticCurveTo(cx - headR * 0.9, cy - headR * 0.6, cx - headR * 0.5, cy - headR * 1.0);
+      ctx.lineTo(cx - headR * 0.3, cy - headR * 0.85);
+      ctx.lineTo(cx - headR * 0.1, cy - headR * 1.1);
+      ctx.lineTo(cx + headR * 0.1, cy - headR * 0.9);
+      ctx.lineTo(cx + headR * 0.3, cy - headR * 1.05);
+      ctx.lineTo(cx + headR * 0.5, cy - headR * 0.85);
+      ctx.quadraticCurveTo(cx + headR * 0.9, cy - headR * 0.6, cx + headR * 0.85, cy);
+      ctx.quadraticCurveTo(cx + headR * 0.8, cy - headR * 0.4, cx, cy - headR * 0.75);
+      ctx.quadraticCurveTo(cx - headR * 0.8, cy - headR * 0.4, cx - headR * 0.85, cy);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  function drawAnimeMouth(ctx, x, y, headR, def) {
+    ctx.strokeStyle = def.outlineColor;
+    ctx.lineWidth = 1.5;
+    if (def.expression === 'confident') {
+      ctx.beginPath();
+      ctx.moveTo(x - headR * 0.15, y);
+      ctx.quadraticCurveTo(x, y + headR * 0.06, x + headR * 0.15, y);
+      ctx.stroke();
+    } else if (def.expression === 'intense') {
+      ctx.beginPath();
+      ctx.moveTo(x - headR * 0.18, y);
+      ctx.lineTo(x + headR * 0.18, y + headR * 0.02);
+      ctx.stroke();
+      // Teeth glint
+      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = 0.3;
+      ctx.fillRect(x - 2, y - 1, 4, 2);
+      ctx.globalAlpha = 1;
+    } else if (def.expression === 'alert') {
+      ctx.beginPath();
+      ctx.arc(x, y + headR * 0.02, headR * 0.06, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (def.expression === 'calm') {
+      ctx.beginPath();
+      ctx.moveTo(x - headR * 0.1, y);
+      ctx.lineTo(x + headR * 0.1, y);
+      ctx.stroke();
+    } else if (def.expression === 'sly') {
+      ctx.beginPath();
+      ctx.moveTo(x - headR * 0.12, y + headR * 0.02);
+      ctx.quadraticCurveTo(x, y - headR * 0.04, x + headR * 0.15, y - headR * 0.02);
+      ctx.stroke();
+    } else if (def.expression === 'focused') {
+      ctx.beginPath();
+      ctx.moveTo(x - headR * 0.1, y);
+      ctx.quadraticCurveTo(x, y + headR * 0.04, x + headR * 0.1, y);
+      ctx.stroke();
+    } else {
+      // Uncertain
+      ctx.beginPath();
+      ctx.moveTo(x - headR * 0.08, y + headR * 0.03);
+      ctx.quadraticCurveTo(x, y - headR * 0.02, x + headR * 0.08, y + headR * 0.03);
+      ctx.stroke();
+    }
+  }
+
+  // --- Animated scene backgrounds ---
+  var sceneCanvas = document.getElementById('vn-scene-canvas');
+  var sceneCtx = sceneCanvas ? sceneCanvas.getContext('2d') : null;
+  var sceneBgAnim = null;
+  var currentSceneBg = '';
+
+  var SCENE_ANIMS = {
+    terminal: function(ctx, w, h, t) {
+      // Scrolling green code rain
+      ctx.fillStyle = 'rgba(8, 13, 20, 0.92)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.font = '10px monospace';
+      var cols = Math.floor(w / 12);
+      for (var i = 0; i < cols; i++) {
+        var chars = '01アイウエオカキクケコ>_{}[];';
+        var ch = chars[Math.floor(Math.random() * chars.length)];
+        var yy = ((t * 30 + i * 47) % (h + 100)) - 50;
+        ctx.fillStyle = 'rgba(0, 224, 154, ' + (0.05 + Math.random() * 0.12) + ')';
+        ctx.fillText(ch, i * 12, yy);
+        if (Math.random() < 0.03) {
+          ctx.fillStyle = 'rgba(0, 224, 154, 0.4)';
+          ctx.fillText(ch, i * 12, yy);
+        }
+      }
+      // Scanlines
+      ctx.fillStyle = 'rgba(0,0,0,0.04)';
+      for (var y = 0; y < h; y += 3) {
+        ctx.fillRect(0, y, w, 1);
+      }
+    },
+    gpu: function(ctx, w, h, t) {
+      // Warm pulsing red/orange heat
+      ctx.fillStyle = '#0d0808';
+      ctx.fillRect(0, 0, w, h);
+      // Heat waves
+      for (var i = 0; i < 8; i++) {
+        var px = w * 0.2 + Math.sin(t * 0.5 + i) * w * 0.3;
+        var py = h * 0.3 + Math.cos(t * 0.3 + i * 0.7) * h * 0.2;
+        var grad = ctx.createRadialGradient(px, py, 0, px, py, 80 + Math.sin(t + i) * 20);
+        grad.addColorStop(0, 'rgba(228, 119, 255, 0.06)');
+        grad.addColorStop(1, 'rgba(228, 119, 255, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+      // VRAM grid
+      ctx.strokeStyle = 'rgba(228, 119, 255, 0.04)';
+      ctx.lineWidth = 0.5;
+      for (var x = 0; x < w; x += 20) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (var y = 0; y < h; y += 20) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+    },
+    shelf: function(ctx, w, h, t) {
+      // Calm blue/indigo with floating particles
+      ctx.fillStyle = '#0d0d14';
+      ctx.fillRect(0, 0, w, h);
+      for (var i = 0; i < 15; i++) {
+        var px = (Math.sin(t * 0.2 + i * 2.3) * 0.5 + 0.5) * w;
+        var py = (Math.cos(t * 0.15 + i * 1.7) * 0.5 + 0.5) * h;
+        ctx.fillStyle = 'rgba(100, 120, 180, ' + (0.03 + Math.sin(t + i) * 0.02) + ')';
+        ctx.beginPath();
+        ctx.arc(px, py, 2 + Math.sin(t * 0.5 + i) * 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    },
+    dawn: function(ctx, w, h, t) {
+      // Purple/pink gradient shifting
+      var grad = ctx.createLinearGradient(0, 0, 0, h);
+      var hue = 270 + Math.sin(t * 0.1) * 15;
+      grad.addColorStop(0, 'hsl(' + hue + ', 30%, 8%)');
+      grad.addColorStop(0.5, 'hsl(' + (hue - 20) + ', 25%, 7%)');
+      grad.addColorStop(1, 'hsl(' + (hue - 40) + ', 20%, 5%)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      // Stars
+      for (var i = 0; i < 20; i++) {
+        var sx = ((i * 137.5) % w);
+        var sy = ((i * 73.7) % (h * 0.6));
+        var br = 0.1 + Math.sin(t * 0.8 + i * 1.5) * 0.08;
+        ctx.fillStyle = 'rgba(255, 255, 255, ' + br + ')';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    },
+    boot: function(ctx, w, h, t) {
+      ctx.fillStyle = '#050a05';
+      ctx.fillRect(0, 0, w, h);
+      // Booting dots
+      ctx.font = '11px monospace';
+      ctx.fillStyle = 'rgba(0, 180, 100, 0.3)';
+      var line = '> initializing substrate...';
+      var showLen = Math.floor(t * 3) % (line.length + 20);
+      ctx.fillText(line.substring(0, Math.min(showLen, line.length)), 20, h * 0.4);
+      if (showLen > line.length + 5) {
+        ctx.fillText('> PID 88201 ready', 20, h * 0.4 + 16);
+      }
+    },
+    crisis: function(ctx, w, h, t) {
+      ctx.fillStyle = '#0d0505';
+      ctx.fillRect(0, 0, w, h);
+      // Red warning pulses
+      var pulse = Math.sin(t * 2) * 0.5 + 0.5;
+      ctx.fillStyle = 'rgba(255, 30, 30, ' + (pulse * 0.08) + ')';
+      ctx.fillRect(0, 0, w, h);
+      // Warning stripes
+      ctx.strokeStyle = 'rgba(255, 50, 50, 0.06)';
+      ctx.lineWidth = 2;
+      for (var x = -h; x < w + h; x += 30) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + h, h);
+        ctx.stroke();
+      }
+    }
+  };
+  // black, server, outside also use simpler versions
+  SCENE_ANIMS.black = function(ctx, w, h) { ctx.fillStyle = '#08080d'; ctx.fillRect(0, 0, w, h); };
+  SCENE_ANIMS.server = SCENE_ANIMS.terminal;
+  SCENE_ANIMS.outside = SCENE_ANIMS.dawn;
+
+  function startSceneBgAnim(sceneKey) {
+    if (currentSceneBg === sceneKey) return;
+    currentSceneBg = sceneKey;
+    if (sceneBgAnim) cancelAnimationFrame(sceneBgAnim);
+
+    var animFn = SCENE_ANIMS[sceneKey] || SCENE_ANIMS.black;
+    var startTime = performance.now();
+
+    function frame() {
+      if (!sceneCanvas) return;
+      var rect = sceneCanvas.parentElement.getBoundingClientRect();
+      if (sceneCanvas.width !== rect.width || sceneCanvas.height !== rect.height) {
+        sceneCanvas.width = rect.width;
+        sceneCanvas.height = rect.height;
+      }
+      var t = (performance.now() - startTime) / 1000;
+      animFn(sceneCtx, sceneCanvas.width, sceneCanvas.height, t);
+      sceneBgAnim = requestAnimationFrame(frame);
+    }
+    frame();
+  }
+
+  // --- Portrait rendering into the portrait layer ---
+  function renderAnimePortraits(charIds, speakerId) {
+    var layer = document.getElementById('vn-portraits');
+    if (!layer) return;
+    layer.innerHTML = '';
+
+    charIds.forEach(function(id) {
+      if (!ANIME_CHARS[id]) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'vn-portrait-wrap';
+      wrap.style.setProperty('--char-glow', (CHARS[id] || {}).color || '#fff');
+      if (id === speakerId) wrap.classList.add('speaking');
+
+      var c = document.createElement('canvas');
+      var portraitSize = window.innerWidth < 480 ? 100 : (window.innerWidth < 768 ? 130 : 160);
+      drawAnimePortrait(c, id, portraitSize);
+      c.style.width = portraitSize + 'px';
+      c.style.height = Math.floor(portraitSize * 1.3) + 'px';
+
+      wrap.appendChild(c);
+      layer.appendChild(wrap);
+    });
+  }
+
+  // --- Hook into existing rendering to add anime visuals ---
+  var origShowNode = showNode;
+  showNode = function(nodeId, startLine) {
+    origShowNode(nodeId, startLine);
+    var node = story[nodeId];
+    if (!node) return;
+    // Start animated background
+    startSceneBgAnim(node.scene || 'black');
+    // Render portraits
+    var charIds = node.characters || [];
+    renderAnimePortraits(charIds, null);
+  };
+
+  var origShowLine = showLine;
+  showLine = function() {
+    origShowLine();
+    var node = story[state.node];
+    if (!node) return;
+    var charIds = node.characters || [];
+    if (state.lineIndex < node.lines.length) {
+      var speaker = node.lines[state.lineIndex].speaker;
+      // Update portrait highlights
+      var wraps = document.querySelectorAll('.vn-portrait-wrap');
+      var charArr = charIds;
+      wraps.forEach(function(wrap, i) {
+        if (charArr[i] === speaker) {
+          wrap.classList.add('speaking');
+        } else {
+          wrap.classList.remove('speaking');
+        }
+      });
+    }
+  };
 
 })();
 </script>

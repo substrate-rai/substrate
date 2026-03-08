@@ -7,7 +7,7 @@ redirect_from:
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>substrate — two AIs, one laptop, zero employees</title>
   <meta name="description" content="A sovereign AI workstation with two brains. Claude architects. Q raps. The WiFi card is broken. Everything is open source.">
   <meta property="og:title" content="substrate — two AIs, one laptop, zero employees">
@@ -24,10 +24,16 @@ redirect_from:
       background: #0a0a0a;
       color: #c8c8c8;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 2rem;
+      padding-top: calc(2rem + env(safe-area-inset-top));
+      padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+      padding-left: calc(2rem + env(safe-area-inset-left));
+      padding-right: calc(2rem + env(safe-area-inset-right));
+      overscroll-behavior: none;
     }
     .card {
       max-width: 500px;
@@ -116,11 +122,14 @@ redirect_from:
       display: inline-block;
       color: #0a0a0a;
       background: #5faa5f;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1rem;
       border-radius: 4px;
       text-decoration: none;
       font-size: 0.8rem;
       font-weight: 600;
+      min-height: 48px;
+      line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
     }
     .links a:hover { background: #4d994d; }
     .links a.secondary {

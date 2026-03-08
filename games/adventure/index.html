@@ -9,7 +9,7 @@ redirect_from:
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SUBPROCESS -- A Substrate Arcade Text Adventure</title>
   <meta name="description" content="A text adventure where you play as a newly spawned AI process on a NixOS machine. Navigate the system, collect resources, avoid the OOM killer.">
   <link rel="canonical" href="https://substrate-rai.github.io/substrate/games/adventure/">
@@ -25,8 +25,14 @@ redirect_from:
       background: #0a0a0a;
       color: #33ff33;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
     /* --- Header bar --- */
@@ -184,9 +190,27 @@ redirect_from:
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.85rem;
       caret-color: #33ff33;
+      min-height: 48px;
     }
     .input-area input::placeholder {
       color: #1a3a1a;
+    }
+    .input-area .submit-btn {
+      background: #0a2a0a;
+      border: 1px solid #1a5a1a;
+      color: #33ff33;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      min-height: 48px;
+      min-width: 44px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+    .input-area .submit-btn:active {
+      background: #1a5a1a;
     }
 
     /* --- Footer --- */
@@ -235,8 +259,21 @@ redirect_from:
       .stats-bar { flex-wrap: wrap; gap: 8px; }
       .header-bar { flex-wrap: wrap; gap: 8px; }
     }
+
+    /* Mobile keyboard popup handling */
+    @media (max-height: 400px) {
+      .header-bar { padding: 4px 12px; }
+      .header-bar .title { font-size: 0.9rem; }
+      .stats-bar { padding: 4px 12px; font-size: 0.6rem; gap: 6px; }
+      .game-footer { display: none; }
+    }
+
+    .input-area {
+      padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    }
   </style>
 <script src="{{ site.baseurl }}/assets/js/substrate-audio.js"></script>
+<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
 
@@ -277,7 +314,8 @@ redirect_from:
   <!-- Input -->
   <div class="input-area">
     <span class="prompt-char">>&nbsp;</span>
-    <input type="text" id="input" placeholder="type a command... (try 'help')" autocomplete="off" autofocus spellcheck="false">
+    <input type="text" id="input" placeholder="type a command... (try 'help')" autocomplete="off" autofocus spellcheck="false" inputmode="text" autocapitalize="off">
+    <button class="submit-btn" id="submit-btn" aria-label="Submit command">GO</button>
   </div>
 
   <!-- Footer -->
@@ -1190,6 +1228,21 @@ input.addEventListener('keydown', function(e) {
   }
 });
 
+// Submit button for mobile
+document.getElementById('submit-btn').addEventListener('click', function() {
+  const val = input.value;
+  input.value = '';
+  processCommand(val);
+  input.focus();
+});
+
+// When mobile keyboard opens, scroll input into view
+input.addEventListener('focus', function() {
+  setTimeout(function() {
+    input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 300);
+});
+
 // Click anywhere to focus input
 document.addEventListener('click', function() {
   input.focus();
@@ -1235,12 +1288,110 @@ function showIntro() {
   describeRoom();
 }
 
+// ---- Virtual keyboard handling ----
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const vh = window.visualViewport.height;
+    document.body.style.height = vh + 'px';
+    input.scrollIntoView({ block: 'nearest' });
+  });
+}
+
+document.body.addEventListener('touchmove', function(e) {
+  if (!e.target.closest('.terminal-output')) e.preventDefault();
+}, { passive: false });
+
 // ---- Boot ----
 showIntro();
 updateStats();
 input.focus();
 </script>
 <script>if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.createToggle();</script>
+
+<!-- Anime Effects: CRT frame, encounter splashes, entity portraits -->
+<canvas id="anime-entity-portrait" width="80" height="90" style="position:fixed;top:60px;right:12px;z-index:15;display:none;border:2px solid #33ff33;border-radius:6px;box-shadow:0 0 15px #33ff3344;background:#0a0a0a;"></canvas>
+<script>
+(function() {
+  if (typeof AnimeEffects === 'undefined') return;
+
+  // CRT frame and scanlines for terminal aesthetic
+  AnimeEffects.addCRTFrame();
+  AnimeEffects.addScanlines(0.05);
+
+  // Entity portrait system
+  var entityColors = {
+    'oom_killer': { hair: '#ff4444', eye: '#ff6644', expression: 'determined' },
+    'garbage_collector': { hair: '#ffaa44', eye: '#ffdd44', expression: 'neutral' },
+    'scheduler': { hair: '#4488ff', eye: '#44aaff', expression: 'serene' },
+    'kernel': { hair: '#33ff33', eye: '#66ff66', expression: 'determined' },
+    'daemon': { hair: '#aa44ff', eye: '#cc66ff', expression: 'serene' },
+    'process': { hair: '#00ddff', eye: '#44eeff', expression: 'neutral' },
+    'default': { hair: '#33ff33', eye: '#66ff66', expression: 'neutral' }
+  };
+
+  function showEntityPortrait(entityType) {
+    var canvas = document.getElementById('anime-entity-portrait');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 80, 90);
+
+    // Dark bg
+    ctx.fillStyle = '#0a0a12';
+    ctx.fillRect(0, 0, 80, 90);
+
+    var entity = entityColors[entityType] || entityColors['default'];
+    AnimeEffects.drawPortrait(ctx, 40, 44, 65, {
+      hairColor: entity.hair,
+      eyeColor: entity.eye,
+      expression: entity.expression
+    });
+
+    canvas.style.display = 'block';
+    canvas.style.borderColor = entity.hair;
+    canvas.style.boxShadow = '0 0 15px ' + entity.hair + '44';
+
+    // Hide after 4 seconds
+    setTimeout(function() {
+      canvas.style.display = 'none';
+    }, 4000);
+  }
+
+  // Intercept text output to detect encounters
+  var origPrint = window.print;
+  var termOutput = document.querySelector('.terminal-output');
+  if (termOutput) {
+    var obs = new MutationObserver(function(mutations) {
+      mutations.forEach(function(m) {
+        if (m.addedNodes.length > 0) {
+          var text = m.addedNodes[0].textContent || '';
+          var lower = text.toLowerCase();
+
+          // Check for encounter-like words
+          if (lower.indexOf('oom killer') >= 0 || lower.indexOf('oom') >= 0) {
+            AnimeEffects.encounterSplash('ENCOUNTER', '#ff4444');
+            showEntityPortrait('oom_killer');
+          } else if (lower.indexOf('garbage collector') >= 0) {
+            showEntityPortrait('garbage_collector');
+          } else if (lower.indexOf('scheduler') >= 0) {
+            showEntityPortrait('scheduler');
+          } else if (lower.indexOf('daemon') >= 0) {
+            showEntityPortrait('daemon');
+          } else if (lower.indexOf('kernel') >= 0) {
+            showEntityPortrait('kernel');
+          } else if (lower.indexOf('you died') >= 0 || lower.indexOf('killed') >= 0 || lower.indexOf('sigkill') >= 0) {
+            AnimeEffects.screenFlash('#ff4444', 400);
+            AnimeEffects.encounterSplash('SIGKILL', '#ff4444');
+          } else if (lower.indexOf('escaped') >= 0 || lower.indexOf('you win') >= 0 || lower.indexOf('victory') >= 0) {
+            AnimeEffects.screenFlash('#33ff33', 400);
+            AnimeEffects.textSlam('ESCAPED', '#33ff33', 1200);
+          }
+        }
+      });
+    });
+    obs.observe(termOutput, { childList: true });
+  }
+})();
+</script>
 
 </body>
 </html>

@@ -10,7 +10,7 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>AIRLOCK</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,9 +21,14 @@ redirect_from:
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    min-height: 100dvh;
     font-family: 'Segoe UI', system-ui, sans-serif;
     color: #c8c8d0;
-    overflow-x: hidden;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   canvas {
     border: 2px solid #1e1e2a;
@@ -131,6 +136,7 @@ redirect_from:
     left: 0;
     right: 0;
     height: 180px;
+    padding-bottom: env(safe-area-inset-bottom);
     z-index: 50;
     pointer-events: none;
     -webkit-user-select: none;
@@ -258,6 +264,7 @@ redirect_from:
     .controls-hint { display: none; }
   }
 </style>
+<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
 
@@ -1310,6 +1317,79 @@ window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 100)
     srState.textContent = `HP: ${player.hp}/3. Carrying: ${carrying}. Selected: ${emission}. Door: ${doorOpen ? 'open' : 'locked'}. ${status}`;
   }, 3000);
 })();
+
+// === ANIME EFFECTS ===
+if (typeof AnimeEffects !== 'undefined') {
+  AnimeEffects.addScanlines(0.04);
+
+  // Anime-style HUD for HP
+  var origRender = render;
+  render = function() {
+    origRender();
+
+    // Draw anime HP bar on canvas
+    var hpBarX = 10, hpBarY = H - 30;
+    // Chrome border
+    ctx.fillStyle = '#2a2a3a';
+    ctx.fillRect(hpBarX - 2, hpBarY - 2, 104, 18);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(hpBarX, hpBarY, 100, 14);
+    // HP fill with cel-shading
+    var hpPct = (player.hp / 3) * 100;
+    var hpColor = hpPct > 60 ? '#00e09a' : (hpPct > 30 ? '#ffaa00' : '#ff4444');
+    ctx.fillStyle = hpColor;
+    ctx.fillRect(hpBarX + 1, hpBarY + 1, hpPct - 2, 12);
+    // Highlight line (cel-shade chrome)
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(hpBarX + 1, hpBarY + 1, hpPct - 2, 4);
+    // Border outline
+    ctx.strokeStyle = '#4a4a6a';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(hpBarX - 2, hpBarY - 2, 104, 18);
+    // Label
+    ctx.fillStyle = '#aaaacc';
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText('HP', hpBarX + 40, hpBarY + 11);
+
+    // Emission element icon with anime glow
+    var emissionColors = ['#2244aa', '#ffff44', '#ff4422'];
+    var emissionNames = ['WATER', 'SPARK', 'HEAT'];
+    var eColor = emissionColors[player.emission - 1];
+    var eName = emissionNames[player.emission - 1];
+    var iconX = W - 80, iconY = H - 30;
+    // Glow
+    ctx.beginPath();
+    ctx.arc(iconX + 15, iconY + 7, 18, 0, Math.PI * 2);
+    ctx.fillStyle = eColor + '22';
+    ctx.fill();
+    // Icon circle
+    ctx.beginPath();
+    ctx.arc(iconX + 15, iconY + 7, 10, 0, Math.PI * 2);
+    ctx.fillStyle = eColor;
+    ctx.fill();
+    ctx.strokeStyle = '#1a1a2e';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // Label
+    ctx.fillStyle = '#ccccdd';
+    ctx.font = 'bold 8px monospace';
+    ctx.fillText(eName, iconX + 30, iconY + 10);
+  };
+
+  // Anime emission burst effect
+  var origEmit = handleEmit;
+  handleEmit = function() {
+    origEmit();
+    // Small impact effect at player position
+    var emissionColors = ['#2244aa', '#ffff44', '#ff4422'];
+    var eColor = emissionColors[player.emission - 1];
+    var px = player.x * TILE + TILE / 2;
+    var py = player.y * TILE + TILE / 2;
+    for (var i = 0; i < 8; i++) {
+      addParticle(player.x, player.y, eColor, 0.4);
+    }
+  };
+}
 
 // === Init ===
 buildLevel();

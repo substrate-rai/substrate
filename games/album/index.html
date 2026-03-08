@@ -9,7 +9,7 @@ redirect_from:
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Laptop Records — AI Album Generator</title>
   <meta name="description" content="Generate complete AI music album concepts. A division of Substrate Arcade, powered by Qwen3 8B on an RTX 4060.">
   <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/games/album/">
@@ -17,6 +17,7 @@ redirect_from:
   <meta property="og:description" content="Generate complete AI music album concepts. Powered by Qwen3 8B.">
   <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}/games/album/">
   <meta property="og:type" content="website">
+  <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Comic+Neue:wght@400;700&display=swap');
 
@@ -48,6 +49,10 @@ redirect_from:
         radial-gradient(ellipse at 80% 100%, rgba(0,255,170,0.03) 0%, transparent 50%);
       color: var(--text-primary);
       min-height: 100vh;
+      min-height: 100dvh;
+      overscroll-behavior: none;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     /* === TOP BAR === */
@@ -533,12 +538,14 @@ redirect_from:
       background: var(--bg-elevated);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 10px 18px;
+      padding: 12px 18px;
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.75rem;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s;
+      min-height: 48px;
+      -webkit-tap-highlight-color: transparent;
     }
     .action-btn:hover {
       border-color: var(--accent-purple);
@@ -719,8 +726,9 @@ redirect_from:
     </div>
   </div>
 
-  <!-- Hero -->
-  <div class="hero">
+  <!-- Hero with anime record browsing character -->
+  <div class="hero" style="position:relative;">
+    <canvas id="album-anime-art" width="160" height="160" style="margin:0 auto 16px;display:block;border-radius:50%;border:3px solid #ff77ff;box-shadow:0 0 25px #ff77ff33;"></canvas>
     <h1>LAPTOP RECORDS</h1>
     <div class="subtitle">a division of Substrate Arcade</div>
     <p class="tagline">Enter an album concept. We'll generate titles, track listings, liner notes, and album art -- all conceived by AI running on a single laptop.</p>
@@ -1307,6 +1315,77 @@ document.getElementById('theme-input').addEventListener('keydown', function(e) {
 // Init
 // ============================================================
 renderGallery();
+
+// === ANIME EFFECTS ===
+(function() {
+  if (typeof AnimeEffects === 'undefined') return;
+
+  AnimeEffects.addScanlines(0.03);
+
+  // Draw anime character browsing records
+  var artCanvas = document.getElementById('album-anime-art');
+  if (artCanvas) {
+    var ctx = artCanvas.getContext('2d');
+
+    // Vinyl record background
+    ctx.fillStyle = '#111118';
+    ctx.beginPath();
+    ctx.arc(80, 80, 78, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Record grooves
+    for (var i = 0; i < 8; i++) {
+      ctx.beginPath();
+      ctx.arc(80, 80, 20 + i * 8, 0, Math.PI * 2);
+      ctx.strokeStyle = '#222230';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    // Center label
+    var labelGrad = ctx.createRadialGradient(80, 80, 0, 80, 80, 18);
+    labelGrad.addColorStop(0, '#ff77ff');
+    labelGrad.addColorStop(1, '#aa44aa');
+    ctx.fillStyle = labelGrad;
+    ctx.beginPath();
+    ctx.arc(80, 80, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Center hole
+    ctx.fillStyle = '#111118';
+    ctx.beginPath();
+    ctx.arc(80, 80, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw character portrait overlaid on record
+    AnimeEffects.drawPortrait(ctx, 80, 75, 70, {
+      hairColor: '#ff77ff',
+      hairDark: '#aa44aa',
+      eyeColor: '#77aaff',
+      expression: 'serene',
+      skinColor: '#f0dcc8',
+      skinShadow: '#dcc0a8'
+    });
+
+    // Vinyl shine
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(60, 60, 50, 30, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Animate rotation
+    var angle = 0;
+    function rotateVinyl() {
+      angle += 0.3;
+      artCanvas.style.transform = 'rotate(' + angle + 'deg)';
+      requestAnimationFrame(rotateVinyl);
+    }
+    // Only rotate slowly
+    setInterval(function() { angle += 0.5; artCanvas.style.transform = 'rotate(' + angle + 'deg)'; }, 50);
+  }
+})();
 </script>
 
 </body>
