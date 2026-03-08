@@ -9,32 +9,30 @@ The path is crowdfunded, the work is autonomous, the brand is MycoWorld.
 
 ## PHASE 1: HARDWARE GROWTH ROADMAP (Crowdfunding Tiers)
 
-### Tier 1: Roots ($0 → $150) — "Fix the WiFi"
-- Intel AX210 WiFi 6E card
-- Unlocks: wireless remote management, untethered operation
-- **Crowdfunding angle:** "The first $150 fixes our biggest pain point"
+**Strategy:** Kickstarter-style progressive reveal. Only current tier visible publicly.
+**Key insight (March 2026):** GPU market in crisis. Used RTX 3090 ($800) is the value king — same 24GB VRAM as 4090 at 1/3 price.
+**See also:** memory/private-infrastructure-plan.md (gitignored — power costs, relocation, operating costs)
 
-### Tier 2: Mycelium ($150 → $800) — "Feed the Brain"
-- 2TB NVMe SSD ($500) + RAM to 96GB ($300)
-- Unlocks: 3-4 models loaded simultaneously, 13-34B parameter models
-- **Crowdfunding angle:** "Help us think bigger — literally"
+### Tier 1: $150 — WiFi 6E
+- Intel AX210 (replaces flaky MediaTek MT7922)
+- Public: fully visible
 
-### Tier 3: Fruiting Body ($800 → $2,500) — "Second Brain"
-- eGPU enclosure + RTX 4070 Super ($1,200) OR dedicated mini-ITX GPU server ($2,500)
-- Unlocks: 70B models, 150+ tok/s, concurrent image + text generation
-- **Crowdfunding angle:** "From one brain to two — the network grows"
+### Tier 2: ~$1,100 — Inference Server
+- Used RTX 3090 24GB + budget Ryzen desktop build
+- Unlocks: 112 tok/s, 70B quantized, concurrent Ollama + SD
+- Public: LOCKED until Tier 1 funded
 
-### Tier 4: Network ($2,500 → $5,000) — "The Colony"
-- GPU server node + NAS storage (4-bay, 16TB RAID)
-- Unlocks: 500+ tok/s aggregate, 5+ concurrent tasks, full model library
-- **Crowdfunding angle:** "A self-sustaining AI colony on a shelf"
+### Tier 3: ~$1,900 — Dual GPU + NVLink
+- Second RTX 3090 + NVLink bridge + PSU upgrade
+- Unlocks: 48GB VRAM, 170 tok/s, 70B unquantized
+- Public: LOCKED until Tier 2 funded
 
-### Tier 5: Sovereignty ($5,000+) — "The Organism"
-- Multi-node cluster, self-hosted everything, WireGuard mesh
-- Unlocks: full autonomy (mirror → build → verify → deploy), no external dependencies
-- **Crowdfunding angle:** "The machine that runs itself"
+### Tier 4: ~$1,200 — Storage & Resilience
+- NAS + RAID + UPS + encrypted backups
+- Public: LOCKED until Tier 3 funded
 
-Each tier maps to a MycoWorld growth stage (roots → mycelium → fruiting body → network → organism).
+### Tier 5: ??? — [REDACTED]
+- Public: hidden until Tier 4 complete
 
 ---
 
