@@ -73,7 +73,7 @@ def scan_inventory():
             if p.name not in ("README.md", "CLAUDE.md", "Gemfile", "404.html"):
                 pages.append(p.relative_to(REPO_ROOT).as_posix())
     # Subdirectory pages
-    for subdir in ["myco", "arcade", "about", "staff", "press", "fund", "sponsor", "puzzle", "3d", "card"]:
+    for subdir in ["games", "site", "arcade"]:
         subpath = REPO_ROOT / subdir
         if subpath.exists():
             for p in subpath.rglob("*.html"):
@@ -85,7 +85,7 @@ def scan_inventory():
     # Myco curriculum modules
     myco_modules = []
     for track in ["foundation", "practitioner", "builder"]:
-        track_dir = REPO_ROOT / "myco" / track
+        track_dir = REPO_ROOT / "games" / "myco" / track
         if track_dir.exists():
             for p in sorted(track_dir.glob("*.html")):
                 myco_modules.append(p.relative_to(REPO_ROOT).as_posix())

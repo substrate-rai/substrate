@@ -36,8 +36,8 @@ Items are checked when operational and verified.
 - [ ] Script scaffolding from mirror proposals
 - [ ] Test harness for new capabilities (verify before commit)
 - [ ] Rollback on failed builds (revert commit + log incident)
-- [ ] Stable Diffusion operational (SDXL on CUDA, image generation)
-- [ ] Image pipeline integrated with blog posts
+- [x] Stable Diffusion operational (SDXL on CUDA, image generation)
+- [x] Image pipeline integrated with blog posts
 
 ## Tier 3: Revenue and Growth
 

@@ -10,6 +10,8 @@ Usage:
     nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py run transcribe audio.mp3
     nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py run speak "Hello world"
     nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py run music "lo-fi beat"
+    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py switch sd
+    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py switch ollama
 """
 
 import argparse
@@ -17,6 +19,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 import urllib.request
 from pathlib import Path
 
@@ -129,6 +132,42 @@ def status():
     print("  music     — MusicGen (text-to-music)")
 
 
+def wait_vram_free(threshold_mb=500, poll_interval=2):
+    """Poll nvidia-smi until VRAM usage drops below threshold."""
+    print(f"[scheduler] waiting for VRAM usage to drop below {threshold_mb}MB...")
+    while True:
+        gpu = get_gpu_status()
+        used_mb = int(gpu["used_gb"] * 1024)
+        if used_mb < threshold_mb:
+            print(f"[scheduler] VRAM used: {used_mb}MB — below threshold, GPU is free")
+            return
+        print(f"[scheduler] VRAM used: {used_mb}MB — waiting...")
+        time.sleep(poll_interval)
+
+
+def switch_mode(mode, model="qwen3:8b"):
+    """Cleanly swap between ollama and sd modes.
+
+    - 'sd' mode: unloads Ollama and waits for VRAM to free up, leaving
+      the GPU ready for Stable Diffusion.
+    - 'ollama' mode: reloads the default model back into Ollama.
+    """
+    if mode == "sd":
+        print("[scheduler] switching to Stable Diffusion mode...")
+        unload_ollama()
+        wait_vram_free()
+        gpu = get_gpu_status()
+        print(f"[scheduler] GPU ready for SD — VRAM free: {gpu['free_gb']}GB")
+    elif mode == "ollama":
+        print("[scheduler] switching to Ollama mode...")
+        reload_ollama(model)
+        gpu = get_gpu_status()
+        print(f"[scheduler] Ollama ready — VRAM used: {gpu['used_gb']}GB")
+    else:
+        print(f"error: unknown mode '{mode}'. Options: sd, ollama")
+        sys.exit(1)
+
+
 def run_tool(tool, args, no_reload=False):
     """Run an ML tool with automatic VRAM management."""
     scripts = {
@@ -173,12 +212,21 @@ def main():
     run_parser.add_argument("--no-reload", action="store_true",
                             help="Don't reload Ollama after task")
 
+    switch_parser = subparsers.add_parser("switch", help="Switch GPU between modes")
+    switch_parser.add_argument("mode", choices=["sd", "ollama"],
+                               help="Target mode: 'sd' frees VRAM for Stable Diffusion, "
+                                    "'ollama' reloads the default model")
+    switch_parser.add_argument("--model", default="qwen3:8b",
+                               help="Ollama model to reload (default: qwen3:8b)")
+
     args = parser.parse_args()
 
     if args.command == "status":
         status()
     elif args.command == "run":
         sys.exit(run_tool(args.tool, args.args, args.no_reload))
+    elif args.command == "switch":
+        switch_mode(args.mode, args.model)
     else:
         parser.print_help()
 

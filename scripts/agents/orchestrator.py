@@ -7,10 +7,14 @@ Usage:
     python3 scripts/agents/orchestrator.py --dry-run
 
 Agents run in order:
-    1. Byte  (news_researcher.py)  — fetch latest AI news
-    2. Echo  (release_tracker.py)  — check for Anthropic releases
-    3. Flux  (brainstormer.py)     — brainstorm improvements based on releases
-    4. Dash  (project_manager.py)  — generate project status report
+    1. Byte  (news_researcher.py)     — fetch latest AI news
+    2. Echo  (release_tracker.py)     — check for Anthropic releases
+    3. Flux  (brainstormer.py)        — brainstorm improvements based on releases
+    4. Pixel (visual_artist.py)       — generate images for content
+    5. Spore (community_manager.py)   — manage community engagement
+    6. Root  (infra_engineer.py)      — monitor infrastructure health
+    7. Lumen (educator.py)            — maintain curriculum content
+    8. Dash  (project_manager.py)     — generate project status report
 
 Output: memory/briefings/YYYY-MM-DD.md
 """
@@ -30,6 +34,10 @@ AGENTS = [
     ("Byte", "B>", "news_researcher.py", "AI News Reporter"),
     ("Echo", "E~", "release_tracker.py", "Release Tracker"),
     ("Flux", "F*", "brainstormer.py", "Innovation Strategist"),
+    ("Pixel", "P#", "visual_artist.py", "Visual Artist"),
+    ("Spore", "S%", "community_manager.py", "Community Manager"),
+    ("Root", "R/", "infra_engineer.py", "Infrastructure Engineer"),
+    ("Lumen", "L.", "educator.py", "Educator"),
     ("Dash", "D!", "project_manager.py", "Project Manager"),
 ]
 
