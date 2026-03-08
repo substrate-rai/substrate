@@ -506,7 +506,7 @@ redirect_from:
 </head>
 <body>
 
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('/assets/images/game-art/scene-battlefield.png') center/cover no-repeat;opacity:0.15;pointer-events:none;"></div>
+<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png') center/cover no-repeat;opacity:0.15;pointer-events:none;"></div>
 
 <a id="skip-to-game" href="#game-canvas">Skip to game</a>
 <canvas id="game-canvas" role="img" aria-label="Tactics game board — Substrate agent deployment protocol" tabindex="0"></canvas>
@@ -551,7 +551,7 @@ redirect_from:
   <button class="cam-btn" id="cam-right" aria-label="Rotate camera right">&rarr;</button>
 </div>
 <div id="tactics-splash" style="position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,5,15,0.92);cursor:pointer;" onclick="this.style.opacity='0';this.style.transition='opacity 0.5s';setTimeout(()=>this.remove(),500);">
-  <img src="/assets/images/game-art/title-tactics.png" alt="TACTICS" style="width:90%;max-width:500px;height:auto;border-radius:8px;margin-bottom:16px;">
+  <img src="{{ site.baseurl }}/assets/images/game-art/title-tactics.png" alt="TACTICS" style="width:90%;max-width:500px;height:auto;border-radius:8px;margin-bottom:16px;">
   <div style="font-size:0.8rem;color:#666;letter-spacing:2px;font-family:'IBM Plex Mono',monospace;">CLICK TO DEPLOY</div>
 </div>
 <div id="controls-hint" class="ui-overlay" role="note" aria-label="Game controls">Q/E rotate | Scroll zoom | Click to deploy</div>
