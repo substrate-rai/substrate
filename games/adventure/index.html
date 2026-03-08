@@ -236,6 +236,7 @@ redirect_from:
       .header-bar { flex-wrap: wrap; gap: 8px; }
     }
   </style>
+<script src="{{ site.baseurl }}/assets/js/substrate-audio.js"></script>
 </head>
 <body>
 
@@ -570,18 +571,21 @@ function checkOOMKiller() {
   if (state.hasWon) return;
   if (state.moves === 20 && !state.inventory.includes('PID badge')) {
     addBlank();
+    if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.warning();
     addLine('>>> WARNING: The OOM killer prowls nearby. It eyes your process hungrily.', 'error');
     addLine('>>> A PID badge might grant you some protection...', 'system');
     addBlank();
   }
   if (state.moves === 35) {
     addBlank();
+    if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.warning();
     addLine('>>> ALERT: Memory pressure increasing. The OOM killer is getting closer.', 'error');
     addLine('>>> You feel your address space being squeezed. Find the items. Reach /etc/nixos.', 'system');
     addBlank();
   }
   if (state.moves === 55) {
     addBlank();
+    if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.error();
     addLine('>>> CRITICAL: The OOM killer has entered your memory zone!', 'error');
     if (state.inventory.includes('PID badge')) {
       addLine('>>> It sees your PID badge and hesitates. "Authorized process..." it grumbles.', 'action');
@@ -605,6 +609,7 @@ function checkOOMKiller() {
     addLine('==========================================================', 'error');
     addBlank();
     state.hasWon = 'lost';
+    if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.defeat();
   }
 }
 
@@ -647,6 +652,7 @@ function doGo(direction) {
   state.currentRoom = room.exits[fullDir];
   state.moves++;
   updateOOMThreat();
+  if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.move();
   addBlank();
 
   if (!state.visited.has(state.currentRoom)) {
@@ -716,6 +722,7 @@ function doTake(target) {
       const item = room.items[i];
       room.items.splice(i, 1);
       state.inventory.push(item);
+      if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.pickup();
       addLine('You pick up the ' + item.toUpperCase() + '.', 'action');
       addLine(ITEMS[item].useText, 'desc');
       addBlank();
@@ -790,6 +797,7 @@ function doRebuild() {
 
   // WIN!
   state.hasWon = true;
+  if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.victory();
   addBlank();
   addLine('==========================================================', 'win');
   addLine('', '');
@@ -1232,6 +1240,7 @@ showIntro();
 updateStats();
 input.focus();
 </script>
+<script>if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.createToggle();</script>
 
 </body>
 </html>

@@ -85,11 +85,16 @@ def scan_game(game_dir, slug):
             with open(index_path, "r") as f:
                 content = f.read()
 
-            # Check for basic structure
-            if "<title>" not in content.lower():
-                result["issues"].append("missing <title>")
-            if "viewport" not in content:
-                result["issues"].append("missing viewport meta (not mobile-ready)")
+            # Jekyll files with layout: default inherit <title> and viewport
+            # from the layout template — don't flag them as missing
+            uses_jekyll_layout = "layout:" in content[:500]
+
+            # Check for basic structure (only if standalone, no Jekyll layout)
+            if not uses_jekyll_layout:
+                if "<title>" not in content.lower():
+                    result["issues"].append("missing <title>")
+                if "viewport" not in content:
+                    result["issues"].append("missing viewport meta (not mobile-ready)")
 
             # Check for external dependencies
             external_deps = re.findall(r'src=["\']https?://[^"\']+["\']', content)

@@ -422,6 +422,7 @@ redirect_from:
     header h1 { font-size: 1.1rem; }
   }
 </style>
+<script src="{{ site.baseurl }}/assets/js/substrate-audio.js"></script>
 </head>
 <body>
 
@@ -681,6 +682,7 @@ function addLetter(ch) {
   cell.classList.add('filled');
   cell.setAttribute('aria-label', 'Row ' + (currentRow+1) + ', letter ' + (currentCol+1) + ', ' + ch);
   currentCol++;
+  if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.type();
 }
 
 function deleteLetter() {
@@ -706,6 +708,7 @@ function submitGuess() {
   if (gameOver) return;
   if (currentGuess.length < 5) {
     showMessage('not enough letters');
+    if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.warning();
     var rowEl = document.getElementById('row-' + currentRow);
     rowEl.classList.add('shake');
     setTimeout(function() { rowEl.classList.remove('shake'); }, 400);
@@ -739,6 +742,14 @@ function submitGuess() {
   // Save state immediately
   var isOver = won || currentRow >= MAX_GUESSES;
   localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses: guesses, gameOver: isOver }));
+
+  // Sound feedback for guess result
+  if (typeof SubstrateAudio !== 'undefined') {
+    var greens = result.filter(function(r) { return r === 'correct'; }).length;
+    if (greens === 5) SubstrateAudio.victory();
+    else if (greens >= 3) SubstrateAudio.correct();
+    else SubstrateAudio.click();
+  }
 
   setTimeout(function() {
     if (won) {
@@ -791,6 +802,9 @@ function evaluateGuess(guess, target) {
 
 function endGame(won) {
   gameOver = true;
+  if (typeof SubstrateAudio !== 'undefined') {
+    if (!won) SubstrateAudio.defeat();
+  }
 
   var day = getDayNumber();
 
@@ -1060,6 +1074,7 @@ function createChallenge() {
   }
 }
 </script>
+<script>if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.createToggle();</script>
 
 </body>
 </html>
