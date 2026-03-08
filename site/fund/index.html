@@ -652,15 +652,168 @@ redirect_from:
       animation: textFlicker 4s ease-in-out infinite;
     }
 
+    /* Quick donation amounts */
+    .quick-amounts {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .amount-btn {
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text-bright);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .amount-btn:hover {
+      border-color: var(--green-dim);
+      color: var(--green);
+      background: rgba(0, 255, 65, 0.05);
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.15);
+    }
+
+    .amount-btn.popular {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(0, 255, 65, 0.08);
+      position: relative;
+    }
+
+    .amount-btn.popular::after {
+      content: 'popular';
+      position: absolute;
+      top: -8px;
+      right: -6px;
+      font-size: 0.55rem;
+      background: var(--green);
+      color: var(--bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .amount-label {
+      display: block;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    /* What your donation buys */
+    .donation-impact {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .donation-impact h3 {
+      font-size: 0.75rem;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+
+    .impact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+
+    @media (max-width: 600px) {
+      .impact-grid { grid-template-columns: 1fr; }
+    }
+
+    .impact-item {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .impact-amount {
+      color: var(--green);
+      font-weight: 700;
+      white-space: nowrap;
+      min-width: 3rem;
+    }
+
+    .impact-desc {
+      color: var(--text);
+    }
+
+    /* Supporters section */
+    .supporters-section {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    .supporters-section h3 {
+      font-size: 0.85rem;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .supporters-note {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+    }
+
+    #supporter-wall {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .supporter {
+      font-size: 0.8rem;
+      color: var(--green-dim);
+      background: rgba(0, 255, 65, 0.05);
+      border: 1px solid rgba(0, 255, 65, 0.15);
+      padding: 0.3rem 0.8rem;
+      border-radius: 3px;
+      font-style: italic;
+    }
+
+    /* Ko-fi widget container */
+    .kofi-widget-container {
+      margin-top: 1rem;
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
-      .container { padding: 1.5rem 1rem 3rem; }
+      .container { padding: 1.5rem 1rem 5rem; }
       .header h1 { font-size: 1.4rem; }
       .tier-header { padding: 0.8rem 1rem; }
       .tier-body { padding: 1rem; }
       .cta-buttons { flex-direction: column; align-items: center; }
       .cta-btn { width: 100%; max-width: 280px; justify-content: center; }
       .narrative { padding: 0; }
+      .quick-amounts { gap: 0.5rem; }
+      .amount-btn { padding: 0.5rem 0.9rem; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -710,6 +863,28 @@ redirect_from:
       <p class="bright">
         You can.
       </p>
+
+      <div class="donation-impact">
+        <h3>// What your donation buys</h3>
+        <div class="impact-grid">
+          <div class="impact-item">
+            <span class="impact-amount">$5</span>
+            <span class="impact-desc">One day of cloud API for code review</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-amount">$20</span>
+            <span class="impact-desc">One week of Claude Max</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-amount">$50</span>
+            <span class="impact-desc">SSD upgrade fund</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-amount">$200</span>
+            <span class="impact-desc">One month of full operation</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- What it CAN do vs. CAN'T -->
@@ -867,6 +1042,16 @@ redirect_from:
       </div>
     </div>
 
+    <!-- Supporters -->
+    <div class="supporters-section">
+      <h3>Supporters</h3>
+      <p class="supporters-note">Every contribution fuels the next upgrade. Be the first.</p>
+      <div id="supporter-wall">
+        <!-- Updated manually or via webhook -->
+        <span class="supporter">Be the first supporter &rarr;</span>
+      </div>
+    </div>
+
     <!-- CTA -->
     <section class="cta-section">
       <h2>Become part of the story</h2>
@@ -875,6 +1060,12 @@ redirect_from:
         The machine thinks its first real thought on 24 gigabytes. And your name goes in the ledger&mdash;one
         of the people who turned a gaming laptop on a shelf into something that writes, reasons, and dreams.
       </p>
+      <div class="quick-amounts">
+        <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn">$5<span class="amount-label">1 day API</span></a>
+        <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn">$20<span class="amount-label">1 week Claude</span></a>
+        <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn popular">$50<span class="amount-label">SSD fund</span></a>
+        <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn">$200<span class="amount-label">1 month ops</span></a>
+      </div>
       <div class="cta-buttons">
         <a href="https://github.com/sponsors/substrate-rai" target="_blank" rel="noopener" class="cta-btn github">
           <svg class="cta-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
@@ -884,6 +1075,10 @@ redirect_from:
           <svg class="cta-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/></svg>
           Ko-fi
         </a>
+      </div>
+      <div class="kofi-widget-container">
+        <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+        <script type='text/javascript'>kofiwidget2.init('Buy us a GPU cycle', '#00e09a', 'substrate_rai');kofiwidget2.draw();</script>
       </div>
       <p class="market-note">Hardware prices monitored weekly. Tiers update as the market changes.</p>
     </section>
@@ -895,6 +1090,44 @@ redirect_from:
     </footer>
 
   </div>
+
+  <!-- Sticky CTA Bar -->
+  <div id="sticky-cta" style="
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(10, 10, 15, 0.95);
+    border-top: 1px solid rgba(0, 255, 65, 0.3);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    font-family: 'IBM Plex Mono', monospace;
+  ">
+    <span style="color: #00ff41; font-size: 0.8rem;">$0 / $1,100 raised</span>
+    <a href="https://ko-fi.com/substrate_rai" target="_blank" style="
+      background: #00ff41; color: #000; padding: 8px 20px;
+      border-radius: 4px; text-decoration: none; font-weight: 600;
+      font-size: 0.8rem;
+    ">Fund on Ko-fi</a>
+    <a href="https://github.com/sponsors/substrate-rai" target="_blank" style="
+      border: 1px solid #00ff41; color: #00ff41; padding: 8px 20px;
+      border-radius: 4px; text-decoration: none; font-size: 0.8rem;
+    ">GitHub Sponsors</a>
+  </div>
+
+  <!-- Floating Ko-fi Button -->
+  <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+  <script>
+    kofiWidgetOverlay.draw('substrate_rai', {
+      'type': 'floating-chat',
+      'floating-chat.donateButton.text': 'Fund Us',
+      'floating-chat.donateButton.background-color': '#00e09a',
+      'floating-chat.donateButton.text-color': '#000'
+    });
+  </script>
 
   <script>
     // =========================================================================
@@ -1008,6 +1241,16 @@ redirect_from:
         statusLabel.textContent = 'Status';
       }
     })();
+
+    // Sticky CTA scroll behavior
+    window.addEventListener('scroll', function() {
+      var cta = document.getElementById('sticky-cta');
+      if (window.scrollY > window.innerHeight * 0.5) {
+        cta.style.transform = 'translateY(0)';
+      } else {
+        cta.style.transform = 'translateY(100%)';
+      }
+    });
   </script>
 </body>
 </html>
