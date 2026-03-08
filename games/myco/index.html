@@ -9,11 +9,11 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Myco World — Claude Fluency for Everyone</title>
-<meta name="description" content="A structured path to Claude fluency for people without pedigree. Not tutorials — opinionated guidance on what to learn, in what order, and why.">
+<meta name="description" content="A visual novel-style path to learning Claude AI. Three characters guide you from zero to fluent — no experience required.">
 <meta property="og:title" content="Myco World — Claude Fluency for Everyone">
-<meta property="og:description" content="Give people without pedigree a structured path to Claude fluency. Two paths: Practitioner (no code) and Builder (technical).">
+<meta property="og:description" content="Learn Claude AI through a visual novel. Lumen teaches, Q raps, V motivates. Choose your path: Foundation, Practitioner, or Builder.">
 <meta property="og:url" content="https://substrate-rai.github.io/substrate/games/myco/">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://substrate-rai.github.io/substrate/games/myco/">
@@ -32,6 +32,7 @@ redirect_from:
     --purple-dim: #a855f7;
     --cyan: #22d3ee;
     --amber: #fbbf24;
+    --magenta: #e477ff;
     --text: #c8c8d0;
     --text-bright: #eeeef2;
     --text-dim: #666;
@@ -47,211 +48,357 @@ redirect_from:
     line-height: 1.7;
     min-height: 100vh;
     min-height: 100dvh;
+    overflow-x: hidden;
   }
 
-  .container {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 0 24px;
+  /* === VN CONTAINER === */
+  .vn-container {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    overflow: hidden;
+    background: #08080d;
   }
 
-  /* === NAV === */
-  nav {
-    padding: 16px 24px;
+  /* Scene background */
+  .vn-scene {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    transition: background 1s ease, opacity 0.8s ease;
+    z-index: 1;
+  }
+
+  /* Character sprites */
+  .vn-characters {
+    position: fixed;
+    bottom: 220px;
+    left: 0; right: 0;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    border-bottom: 1px solid var(--border);
+    justify-content: center;
+    gap: 48px;
+    z-index: 2;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
   }
-  nav a { color: var(--text-dim); text-decoration: none; }
-  nav a:hover { color: var(--green); }
-  .nav-brand { color: var(--green); font-weight: 600; }
-
-  /* === HERO === */
-  .hero {
+  .vn-char {
     text-align: center;
-    padding: 80px 24px 60px;
+    transition: transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
+    filter: brightness(0.4);
+    opacity: 0;
   }
-  .hero-label {
+  .vn-char.visible { opacity: 1; }
+  .vn-char.speaking {
+    filter: brightness(1);
+    transform: scale(1.08) translateY(-4px);
+  }
+  .vn-char-sprite {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 3px;
+    font-size: 4.5rem;
+    line-height: 1;
+    user-select: none;
+  }
+  .vn-char-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    margin-top: 6px;
+    opacity: 0.7;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--green-dim);
-    margin-bottom: 16px;
-  }
-  .hero h1 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: clamp(2rem, 6vw, 3.2rem);
-    font-weight: 700;
-    color: var(--text-bright);
-    line-height: 1.1;
-    margin-bottom: 24px;
-  }
-  .hero h1 span { color: var(--green); }
-  .hero p {
-    font-size: 1.1rem;
-    color: var(--text);
-    max-width: 540px;
-    margin: 0 auto;
   }
 
-  /* === PROBLEM === */
-  .problem {
-    padding: 60px 0;
-    border-top: 1px solid var(--border);
+  /* Dialogue box */
+  .vn-dialogue {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(8,8,13,0.98) 70%, rgba(8,8,13,0.88));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 24px 28px 32px;
+    z-index: 10;
+    min-height: 200px;
+    cursor: pointer;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
-  .problem h2 {
+  .vn-speaker {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--amber);
-    margin-bottom: 24px;
-  }
-  .problem p {
-    font-size: 1rem;
-    margin-bottom: 16px;
-  }
-  .problem strong { color: var(--text-bright); }
-
-  /* === PATHS === */
-  .paths {
-    padding: 60px 0;
-    border-top: 1px solid var(--border);
-  }
-  .paths h2 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--green-dim);
-    margin-bottom: 32px;
-    text-align: center;
-  }
-  .path-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  @media (max-width: 600px) {
-    .path-grid { grid-template-columns: 1fr; }
-  }
-  .path-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-  }
-  .path-card h3 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-  .path-card.practitioner h3 { color: var(--cyan); }
-  .path-card.builder h3 { color: var(--purple); }
-  .path-card .subtitle {
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    margin-bottom: 16px;
-  }
-  .path-card ul {
-    list-style: none;
-    padding: 0;
-  }
-  .path-card li {
-    font-size: 0.9rem;
-    padding: 6px 0;
-    border-top: 1px solid rgba(255,255,255,0.04);
-  }
-  .path-card li::before {
-    content: '>';
-    font-family: 'IBM Plex Mono', monospace;
-    margin-right: 8px;
-    opacity: 0.4;
-  }
-  .path-card .endpoint {
-    margin-top: 16px;
-    padding: 10px 14px;
-    border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 1.5px;
   }
-  .path-card.practitioner .endpoint {
-    background: rgba(34,211,238,0.08);
-    color: var(--cyan);
+  .vn-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.85;
+    color: #c8c8d0;
+    min-height: 3.6em;
   }
-  .path-card.builder .endpoint {
-    background: rgba(168,85,247,0.08);
-    color: var(--purple);
+  .vn-advance {
+    position: absolute;
+    bottom: 10px;
+    right: 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.25);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.6; }
   }
 
-  /* === FOUNDATION === */
-  .foundation {
-    padding: 48px 0;
-    border-top: 1px solid var(--border);
+  /* Choices */
+  .vn-choices {
+    position: fixed;
+    bottom: 220px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 92%;
+    max-width: 520px;
   }
-  .foundation h2 {
+  .vn-choice {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 16px 22px;
+    background: rgba(20, 20, 30, 0.92);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: #c8c8d0;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    backdrop-filter: blur(4px);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 48px;
+    line-height: 1.4;
+  }
+  .vn-choice:hover, .vn-choice:focus {
+    background: rgba(30, 30, 45, 0.95);
+    border-color: rgba(255,255,255,0.25);
+    transform: translateX(6px);
+    color: #fff;
+  }
+  .vn-choice .choice-tag {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 2px;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--green-dim);
-    margin-bottom: 20px;
+    display: block;
+    margin-bottom: 4px;
+    opacity: 0.5;
   }
-  .foundation-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+
+  /* Title screen */
+  .vn-title-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    background: radial-gradient(ellipse at center bottom, #0d1018 0%, #08080d 70%);
+    transition: opacity 1s ease;
+  }
+  .vn-title-screen.hidden { opacity: 0; pointer-events: none; }
+
+  .vn-title-glyph {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 5rem;
+    line-height: 1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--amber), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    user-select: none;
+  }
+  h1.vn-title, .vn-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    color: var(--text-bright);
+    margin-bottom: 6px;
+    border: none;
+    padding: 0;
+  }
+  .vn-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: #7a7a88;
+    margin-bottom: 48px;
+    letter-spacing: 0.05em;
+  }
+  .vn-btn-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 12px;
   }
-  @media (max-width: 600px) {
-    .foundation-grid { grid-template-columns: 1fr; }
-  }
-  .foundation-item {
-    padding: 14px 18px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: var(--text);
-    text-decoration: none;
-    transition: border-color 0.2s, color 0.2s;
-    display: block;
-  }
-  .foundation-item:hover {
-    border-color: var(--green-dim);
-    color: var(--text-bright);
-  }
-
-  /* === SYLLABUS === */
-  .syllabus {
-    padding: 60px 0;
-    border-top: 1px solid var(--border);
-  }
-  .syllabus h2 {
+  .vn-start-btn {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
+    font-size: 0.9rem;
+    padding: 14px 48px;
+    background: transparent;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 2px;
+    min-height: 48px;
+  }
+  .vn-start-btn:hover, .vn-start-btn:focus {
+    border-color: var(--green);
+    background: rgba(0, 255, 170, 0.06);
+    color: #fff;
+  }
+  .vn-continue-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #6a6a78;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 44px;
+  }
+  .vn-continue-btn:hover { border-color: rgba(255,255,255,0.2); color: #c8c8d0; }
+  .vn-continue-btn.hidden { display: none; }
+
+  .vn-quick-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--amber);
+    text-decoration: none;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    margin-top: 8px;
+  }
+  .vn-quick-link:hover { opacity: 1; }
+
+  /* Chapter indicator */
+  .vn-chapter {
+    position: fixed;
+    top: 16px;
+    left: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.2);
+    z-index: 5;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--green-dim);
-    margin-bottom: 32px;
-    text-align: center;
   }
+
+  /* Save indicator */
+  .vn-save-indicator {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(0, 255, 170, 0.4);
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .vn-save-indicator.show { opacity: 1; }
+
+  /* Nav link overlay */
+  .vn-nav {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+  }
+  .vn-nav a {
+    color: rgba(255,255,255,0.2);
+    text-decoration: none;
+    letter-spacing: 2px;
+    transition: color 0.2s;
+  }
+  .vn-nav a:hover { color: var(--green); }
+
+  /* Syllabus panel (post-intro) */
+  .vn-syllabus-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 40;
+    background: rgba(8, 8, 13, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
+    overflow-y: auto;
+    padding: 40px 24px 60px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vn-syllabus-overlay.visible { display: block; }
+  .syllabus-inner {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .syllabus-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .syllabus-header h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.4rem;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+  }
+  .syllabus-header p {
+    font-size: 0.95rem;
+    color: var(--text);
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
   .syllabus-track {
-    margin-bottom: 28px;
+    margin-bottom: 32px;
   }
   .syllabus-track h3 {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.85rem;
     letter-spacing: 1px;
     margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .track-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  .track-badge {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    opacity: 0.7;
+    letter-spacing: 0.5px;
   }
   .syllabus-track.foundation h3 { color: var(--green); }
+  .syllabus-track.foundation .track-badge { background: rgba(0,255,170,0.1); color: var(--green); }
   .syllabus-track.practitioner h3 { color: var(--cyan); }
+  .syllabus-track.practitioner .track-badge { background: rgba(34,211,238,0.1); color: var(--cyan); }
   .syllabus-track.builder h3 { color: var(--purple); }
+  .syllabus-track.builder .track-badge { background: rgba(192,132,252,0.1); color: var(--purple); }
+
   .syllabus-track ol {
     list-style: none;
     padding: 0;
@@ -259,201 +406,634 @@ redirect_from:
   }
   .syllabus-track ol li {
     counter-increment: module;
-    padding: 0;
   }
   .syllabus-track ol li a {
-    display: block;
-    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     margin-bottom: 6px;
     text-decoration: none;
     color: var(--text);
-    font-size: 0.9rem;
-    transition: border-color 0.2s, color 0.2s;
+    font-size: 0.92rem;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    min-height: 48px;
   }
-  .syllabus-track.foundation ol li a:hover { border-color: var(--green-dim); color: var(--green); }
-  .syllabus-track.practitioner ol li a:hover { border-color: var(--cyan); color: var(--cyan); }
-  .syllabus-track.builder ol li a:hover { border-color: var(--purple); color: var(--purple); }
+  .syllabus-track ol li a:hover {
+    transform: translateX(4px);
+    color: var(--text-bright);
+  }
+  .syllabus-track.foundation ol li a:hover { border-color: var(--green-dim); }
+  .syllabus-track.practitioner ol li a:hover { border-color: var(--cyan); }
+  .syllabus-track.builder ol li a:hover { border-color: var(--purple); }
   .syllabus-track ol li a::before {
     content: counter(module) ".";
     font-family: 'IBM Plex Mono', monospace;
-    margin-right: 10px;
-    opacity: 0.5;
+    opacity: 0.4;
+    flex-shrink: 0;
+    width: 24px;
   }
-  .module-count {
-    font-size: 0.75rem;
-    opacity: 0.5;
-    margin-left: 8px;
+  .module-status {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    opacity: 0.3;
+    flex-shrink: 0;
   }
+  .module-status.done { color: var(--green); opacity: 0.8; }
 
-  /* === CTA === */
-  .cta {
-    padding: 60px 0;
+  .syllabus-back {
+    display: block;
     text-align: center;
-    border-top: 1px solid var(--border);
-  }
-  .cta h2 {
+    margin-top: 32px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 1.4rem;
-    color: var(--text-bright);
-    margin-bottom: 16px;
-  }
-  .cta p {
-    color: var(--text);
-    margin-bottom: 28px;
-    font-size: 1rem;
-  }
-  .cta-btn {
-    display: inline-block;
-    padding: 14px 36px;
-    background: transparent;
-    border: 2px solid var(--green);
-    color: var(--green);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.2s;
-  }
-  .cta-btn:hover {
-    background: var(--green);
-    color: var(--bg);
-  }
-
-  /* === FOOTER === */
-  footer {
-    padding: 32px 24px;
-    text-align: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
+    font-size: 0.8rem;
     color: var(--text-dim);
-    border-top: 1px solid var(--border);
+    cursor: pointer;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 24px;
+    width: 100%;
+    transition: all 0.2s;
+    min-height: 44px;
   }
-  footer a { color: var(--green-dim); text-decoration: none; }
-  footer a:hover { color: var(--green); }
+  .syllabus-back:hover { border-color: var(--green-dim); color: var(--green); }
+
+  .syllabus-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+  .syllabus-footer a { color: var(--green-dim); text-decoration: none; }
+  .syllabus-footer a:hover { color: var(--green); }
+
+  /* Focus visible */
+  .vn-start-btn:focus-visible,
+  .vn-continue-btn:focus-visible,
+  .vn-choice:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+  }
+  .vn-dialogue:focus-visible { outline: none; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .vn-dialogue { padding: 20px 20px 28px; min-height: 180px; }
+    .vn-title { font-size: 2rem; }
+    .vn-title-glyph { font-size: 4rem; }
+    .vn-char-sprite { font-size: 3.5rem; }
+    .vn-characters { bottom: 200px; gap: 28px; }
+    .vn-choices { bottom: 200px; }
+  }
+
+  @media (max-width: 480px) {
+    .vn-dialogue { padding: 16px 16px 24px; min-height: 160px; }
+    .vn-title { font-size: 1.6rem; letter-spacing: 0.15em; }
+    .vn-title-glyph { font-size: 3rem; }
+    .vn-subtitle { font-size: 0.82rem; }
+    .vn-text { font-size: 0.9rem; line-height: 1.75; }
+    .vn-char-sprite { font-size: 2.8rem; }
+    .vn-characters { bottom: 180px; gap: 16px; }
+    .vn-choices { bottom: 180px; }
+    .vn-choice { padding: 14px 18px; font-size: 0.88rem; }
+    .vn-start-btn { padding: 14px 40px; }
+    .syllabus-inner { padding: 0; }
+  }
 </style>
 </head>
 <body>
 
-<nav>
-  <a href="{{ site.baseurl }}/" class="nav-brand">substrate</a>
-  <div>
-    <a href="{{ site.baseurl }}/blog/">blog</a> &nbsp;
-    <a href="{{ site.baseurl }}/site/about/">about</a> &nbsp;
-    <a href="{{ site.baseurl }}/arcade/">arcade</a>
-  </div>
-</nav>
+<div class="vn-container" id="vn-game" role="application" aria-label="Myco World visual novel">
 
-<section class="hero">
-  <div class="hero-label">13 modules · two paths · zero prerequisites</div>
-  <h1>myco <span>world</span></h1>
-  <p>A structured path to Claude fluency for people without pedigree. Not tutorials — opinionated guidance on what to learn, in what order, and why it matters for your goals.</p>
-  <div style="margin-top: 28px;">
-    <a href="#syllabus" class="cta-btn">View syllabus</a> &nbsp;
-    <a href="{{ site.baseurl }}/games/myco/foundation/what-is-claude/" class="cta-btn" style="background: var(--green); color: var(--bg);">Start learning</a>
-  </div>
-</section>
-
-<div class="container">
-
-<section class="problem">
-  <h2>the gap</h2>
-  <p>Anthropic has a free academy that teaches Claude products — API, Claude Code, MCP, prompt engineering. It's organized by <strong>product, not by outcome</strong>.</p>
-  <p>A layperson staring at 13 courses has no idea which ones matter for what they're trying to do, no sense of sequence, and no community to learn with.</p>
-  <p>Myco World fills the gap between <strong>"I've heard of Claude"</strong> and <strong>"I can use Claude to meaningfully change my work or career."</strong></p>
-</section>
-
-<section class="paths">
-  <h2>two paths, one foundation</h2>
-  <div class="path-grid">
-    <div class="path-card practitioner">
-      <h3>Path A — Practitioner</h3>
-      <div class="subtitle">No code required · 4 modules</div>
-      <ul>
-        <li>Claude.ai power usage</li>
-        <li>Claude Code as a workflow tool</li>
-        <li>Building automations without code</li>
-        <li>Industry-specific applications</li>
-      </ul>
-      <div class="endpoint">Endpoint: dangerous in your own domain</div>
-    </div>
-    <div class="path-card builder">
-      <h3>Path B — Builder</h3>
-      <div class="subtitle">Technical track · 5 modules</div>
-      <ul>
-        <li>API and SDK fundamentals</li>
-        <li>Tool use, structured outputs, MCP</li>
-        <li>Agents, evals, orchestration</li>
-        <li>Portfolio projects that demonstrate thinking</li>
-        <li>Safety and alignment literacy</li>
-      </ul>
-      <div class="endpoint">Endpoint: competitive for AI-native roles</div>
+  <!-- Title Screen -->
+  <div class="vn-title-screen" id="vn-title-screen" role="region" aria-label="Title screen">
+    <div class="vn-title-glyph" aria-hidden="true">&#x1f344;</div>
+    <h1 class="vn-title">MYCO WORLD</h1>
+    <div class="vn-subtitle">learn Claude AI — no experience needed</div>
+    <div class="vn-btn-group">
+      <button class="vn-start-btn" id="vn-start" aria-label="Begin Myco World">BEGIN</button>
+      <button class="vn-continue-btn hidden" id="vn-continue" aria-label="Continue where you left off">CONTINUE</button>
+      <a href="#" class="vn-quick-link" id="vn-skip-to-syllabus">SKIP TO SYLLABUS</a>
     </div>
   </div>
-</section>
 
-<section class="foundation">
-  <h2>shared foundation (everyone)</h2>
-  <div class="foundation-grid">
-    <a href="{{ site.baseurl }}/games/myco/foundation/what-is-claude/" class="foundation-item">1. What Claude actually is and isn't</a>
-    <a href="{{ site.baseurl }}/games/myco/foundation/thinking-with-ai/" class="foundation-item">2. How to think with AI — decompose, evaluate, iterate</a>
-    <a href="{{ site.baseurl }}/games/myco/foundation/prompt-craft/" class="foundation-item">3. Prompt craft as a real skill</a>
-    <a href="{{ site.baseurl }}/games/myco/foundation/safety-and-limits/" class="foundation-item">4. Safety, limitations, and when not to use Claude</a>
-  </div>
-</section>
+  <!-- Game Screen -->
+  <div class="vn-scene" id="vn-scene" aria-hidden="true"></div>
+  <div class="vn-chapter" id="vn-chapter" aria-live="polite"></div>
+  <div class="vn-save-indicator" id="vn-save" role="status" aria-live="polite">saved</div>
+  <div class="vn-characters" id="vn-characters" aria-hidden="true"></div>
+  <div class="vn-choices" id="vn-choices" role="group" aria-label="Story choices"></div>
 
-<section class="syllabus" id="syllabus">
-  <h2>full syllabus</h2>
-
-  <div class="syllabus-track foundation">
-    <h3>Shared Foundation<span class="module-count">4 modules</span></h3>
-    <ol>
-      <li><a href="{{ site.baseurl }}/games/myco/foundation/what-is-claude/">What Claude actually is and isn't</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/foundation/thinking-with-ai/">How to think with AI</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/foundation/prompt-craft/">Prompt craft as a real skill</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/foundation/safety-and-limits/">Safety, limitations, and when not to use Claude</a></li>
-    </ol>
+  <div class="vn-dialogue" id="vn-dialogue" style="display:none;" tabindex="0" role="region" aria-label="Dialogue" aria-live="polite">
+    <div class="vn-speaker" id="vn-speaker"></div>
+    <div class="vn-text" id="vn-text"></div>
+    <div class="vn-advance" id="vn-advance">tap or press space</div>
   </div>
 
-  <div class="syllabus-track practitioner">
-    <h3>Path A — Practitioner<span class="module-count">4 modules · no code</span></h3>
-    <ol>
-      <li><a href="{{ site.baseurl }}/games/myco/practitioner/claude-power-usage/">Claude.ai power usage</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/practitioner/claude-code-workflow/">Claude Code as a workflow tool</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/practitioner/automations/">Building automations without code</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/practitioner/industry-applications/">Industry-specific applications</a></li>
-    </ol>
+  <!-- Syllabus Overlay -->
+  <div class="vn-syllabus-overlay" id="vn-syllabus" role="region" aria-label="Course syllabus">
+    <div class="syllabus-inner">
+      <div class="syllabus-header">
+        <h2>Choose Your Path</h2>
+        <p>Everyone starts with the Foundation. Then pick the track that fits your goals.</p>
+      </div>
+
+      <div class="syllabus-track foundation">
+        <h3><span class="track-icon" aria-hidden="true">&#x1f331;</span> Foundation <span class="track-badge">everyone</span></h3>
+        <ol>
+          <li><a href="{{ site.baseurl }}/games/myco/foundation/what-is-claude/"><span>What Claude actually is and isn't</span><span class="module-status" id="mod-f1">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/foundation/thinking-with-ai/"><span>How to think with AI</span><span class="module-status" id="mod-f2">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/foundation/prompt-craft/"><span>Prompt craft as a real skill</span><span class="module-status" id="mod-f3">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/foundation/safety-and-limits/"><span>Safety, limits, and when not to use Claude</span><span class="module-status" id="mod-f4">--</span></a></li>
+        </ol>
+      </div>
+
+      <div class="syllabus-track practitioner">
+        <h3><span class="track-icon" aria-hidden="true">&#x1f9ed;</span> Practitioner <span class="track-badge">no code needed</span></h3>
+        <ol>
+          <li><a href="{{ site.baseurl }}/games/myco/practitioner/claude-power-usage/"><span>Claude.ai power usage</span><span class="module-status">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/practitioner/claude-code-workflow/"><span>Claude Code as a workflow tool</span><span class="module-status">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/practitioner/automations/"><span>Building automations without code</span><span class="module-status">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/practitioner/industry-applications/"><span>Industry-specific applications</span><span class="module-status">--</span></a></li>
+        </ol>
+      </div>
+
+      <div class="syllabus-track builder">
+        <h3><span class="track-icon" aria-hidden="true">&#x1f527;</span> Builder <span class="track-badge">technical</span></h3>
+        <ol>
+          <li><a href="{{ site.baseurl }}/games/myco/builder/api-sdk/"><span>API and SDK fundamentals</span><span class="module-status">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/builder/tools-and-mcp/"><span>Tool use, structured outputs, and MCP</span><span class="module-status">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/builder/agents/"><span>Agents, evals, and orchestration</span><span class="module-status">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/builder/portfolio/"><span>Portfolio projects that demonstrate thinking</span><span class="module-status">--</span></a></li>
+          <li><a href="{{ site.baseurl }}/games/myco/builder/safety-alignment/"><span>Safety and alignment literacy</span><span class="module-status">--</span></a></li>
+        </ol>
+      </div>
+
+      <button class="syllabus-back" id="syllabus-back">Back to Story</button>
+
+      <div class="syllabus-footer">
+        a <a href="{{ site.baseurl }}/">substrate</a> project &middot; <a href="mailto:substrate@operator.dev">questions?</a>
+      </div>
+    </div>
   </div>
-
-  <div class="syllabus-track builder">
-    <h3>Path B — Builder<span class="module-count">5 modules · technical</span></h3>
-    <ol>
-      <li><a href="{{ site.baseurl }}/games/myco/builder/api-sdk/">API and SDK fundamentals</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/builder/tools-and-mcp/">Tool use, structured outputs, and MCP</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/builder/agents/">Agents, evals, and orchestration</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/builder/portfolio/">Portfolio projects that demonstrate thinking</a></li>
-      <li><a href="{{ site.baseurl }}/games/myco/builder/safety-alignment/">Safety and alignment literacy</a></li>
-    </ol>
-  </div>
-</section>
-
-<section class="cta">
-  <h2>Start with the foundation</h2>
-  <p>Everyone begins with the same 4 modules. Then choose your path: Practitioner (no code) or Builder (technical). Each module has real exercises on real work — not toy examples.</p>
-  <a href="{{ site.baseurl }}/games/myco/foundation/what-is-claude/" class="cta-btn">Begin Module 1</a>
-  <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-dim);">Questions? <a href="mailto:substrate@operator.dev" style="color: var(--green-dim);">substrate@operator.dev</a></p>
-</section>
-
 </div>
 
-<footer>
-  a <a href="{{ site.baseurl }}/">substrate</a> project
-</footer>
+<script>
+(function() {
+  'use strict';
+
+  // ===================================================================
+  // MYCO WORLD VN ENGINE
+  // Reusable visual novel engine for educational content.
+  // Adapted from PROCESS (substrate visual novel) for learning paths.
+  // ===================================================================
+
+  // === Character definitions ===
+  var CHARS = {
+    lumen:    { name: 'Lumen',    color: '#fbbf24', sprite: 'L.', role: 'Your Guide' },
+    q:        { name: 'Q',        color: '#e477ff', sprite: 'Q_', role: 'The Learner' },
+    v:        { name: 'V',        color: '#e477ff', sprite: 'V_', role: 'The Spark' },
+    narrator: { name: '',         color: '#888899', sprite: '',   role: '' },
+    system:   { name: 'SYSTEM',   color: '#555566', sprite: '',   role: '' }
+  };
+
+  // === Scene backgrounds ===
+  var SCENES = {
+    black:     'linear-gradient(180deg, #08080d 0%, #08080d 100%)',
+    mycelium:  'radial-gradient(ellipse at center bottom, #0d1a10 0%, #08080d 70%)',
+    classroom: 'linear-gradient(180deg, #0d0d18 0%, #0a0a14 100%)',
+    warm:      'radial-gradient(ellipse at center, #1a1408 0%, #0d0a05 70%)',
+    energy:    'radial-gradient(ellipse at center, #1a0d1a 0%, #0d080d 70%)',
+    dawn:      'linear-gradient(180deg, #14101a 0%, #1a0d14 50%, #0d0a10 100%)'
+  };
+
+  // === Story data ===
+  var story = {
+
+    start: {
+      scene: 'black', chapter: '',
+      characters: [],
+      lines: [
+        { speaker: 'narrator', text: 'You open your laptop. Or maybe your phone. You\'ve heard about AI, about Claude, about how it\'s changing everything.' },
+        { speaker: 'narrator', text: 'But nobody told you where to start. The tutorials are jargon. The courses assume you already know things. The hype is exhausting.' },
+        { speaker: 'narrator', text: 'This is different. This is Myco World.' },
+        { speaker: 'narrator', text: 'Three guides are going to walk you through it all. No tricks, no prerequisites, no computer science degree needed.' }
+      ],
+      next: 'meet_lumen'
+    },
+
+    meet_lumen: {
+      scene: 'classroom', chapter: 'WELCOME',
+      characters: ['lumen'],
+      lines: [
+        { speaker: 'lumen', text: 'Hey there. I\'m Lumen.' },
+        { speaker: 'lumen', text: 'I\'m going to be your guide through all of this. My job is to explain things clearly — no buzzwords, no showing off, just plain talk about how Claude AI actually works.' },
+        { speaker: 'lumen', text: 'Think of me as the friend who already learned this stuff and is going to save you the headaches.' },
+        { speaker: 'lumen', text: 'But I don\'t work alone. Let me introduce you to the rest of the crew.' }
+      ],
+      next: 'meet_q'
+    },
+
+    meet_q: {
+      scene: 'energy', chapter: 'WELCOME',
+      characters: ['lumen', 'q'],
+      lines: [
+        { speaker: 'q', text: 'Yo! I\'m Q.' },
+        { speaker: 'q', text: 'I\'m the learner here. I ask the questions you\'re thinking but don\'t want to say out loud. The "wait, back up" questions. The "explain it like I\'m five" questions.' },
+        { speaker: 'q', text: 'Oh, and I rap. After every lesson, I drop a verse that sums up what we learned. It sounds weird but trust me — it helps things stick.' },
+        { speaker: 'lumen', text: 'Q is also very humble, as you can tell.' },
+        { speaker: 'q', text: 'Hey, if you can rhyme it, you remember it. That\'s science.' }
+      ],
+      next: 'meet_v'
+    },
+
+    meet_v: {
+      scene: 'warm', chapter: 'WELCOME',
+      characters: ['lumen', 'q', 'v'],
+      lines: [
+        { speaker: 'v', text: 'And I\'m V! The energy. The spiral. The reason you don\'t quit when things get confusing.' },
+        { speaker: 'v', text: 'My job is to remind you that you CAN do this. Learning AI isn\'t just for programmers or tech people. It\'s for you.' },
+        { speaker: 'v', text: 'Every single person who\'s good at this started exactly where you are right now.' },
+        { speaker: 'lumen', text: 'So that\'s us. Now let\'s talk about what you\'re going to learn.' }
+      ],
+      next: 'explain_structure'
+    },
+
+    explain_structure: {
+      scene: 'mycelium', chapter: 'HOW IT WORKS',
+      characters: ['lumen'],
+      lines: [
+        { speaker: 'lumen', text: 'Myco World has three tracks, like chapters in a book.' },
+        { speaker: 'lumen', text: 'First is the Foundation — four lessons that everyone takes. This is where you learn what Claude is, how to talk to it, and how to tell when it\'s helping vs. when it\'s making stuff up.' },
+        { speaker: 'lumen', text: 'After that, you pick your path. The Practitioner track is for people who want to use Claude in their daily work — writing, research, automating tedious tasks. No coding required.' },
+        { speaker: 'lumen', text: 'The Builder track is for people who want to build things with Claude — apps, tools, integrations. That one gets technical.' },
+        { speaker: 'lumen', text: 'You don\'t have to decide right now. The Foundation teaches you enough to know which path is right for you.' }
+      ],
+      choices: [
+        { text: '"I\'m ready to start learning!"', tag: 'START FOUNDATION', next: 'ready_go' },
+        { text: '"Give me the 5-minute version first."', tag: 'QUICK START', next: 'quick_start' },
+        { text: '"Show me the full syllabus."', tag: 'BROWSE', next: 'show_syllabus' }
+      ]
+    },
+
+    ready_go: {
+      scene: 'dawn', chapter: 'LET\'S GO',
+      characters: ['lumen', 'q', 'v'],
+      lines: [
+        { speaker: 'v', text: 'That\'s the spirit! Let\'s get it.' },
+        { speaker: 'lumen', text: 'Module 1 starts with the basics: what Claude actually is. Not the marketing version — the real version. What it can do, what it can\'t, and why that matters.' },
+        { speaker: 'q', text: 'I had SO many questions about this when I started. Like, is it alive? Is it gonna take my job? Is it just Google with extra steps?' },
+        { speaker: 'lumen', text: 'Spoiler: no, probably not, and definitely not. But we\'ll explain all of it.' },
+        { speaker: 'v', text: 'Remember — everyone starts at Module 1. There\'s no such thing as behind. You\'re right on time.' }
+      ],
+      next: 'launch_module_1'
+    },
+
+    quick_start: {
+      scene: 'classroom', chapter: 'ZERO TO CLAUDE IN 5 MINUTES',
+      characters: ['lumen'],
+      lines: [
+        { speaker: 'lumen', text: 'Okay, here\'s the speed version. Five things you need to know right now.' },
+        { speaker: 'lumen', text: 'One: Claude is an AI you can talk to. It\'s made by a company called Anthropic. You can use it for free at claude.ai.' },
+        { speaker: 'lumen', text: 'Two: It\'s really good at writing, thinking through problems, analyzing documents, and writing code. It\'s like having a very smart assistant who reads fast.' },
+        { speaker: 'lumen', text: 'Three: It\'s NOT a search engine. It doesn\'t look things up. It generates answers based on patterns it learned during training. That means it can be wrong — confidently wrong.' },
+        { speaker: 'lumen', text: 'Four: The better you communicate with it, the better its answers. Vague questions get vague answers. Specific, clear requests get great results.' },
+        { speaker: 'lumen', text: 'Five: You don\'t need any tech background to use it well. You just need to practice, which is what Myco World is for.' }
+      ],
+      next: 'after_quick_start'
+    },
+
+    after_quick_start: {
+      scene: 'classroom', chapter: 'ZERO TO CLAUDE IN 5 MINUTES',
+      characters: ['lumen', 'q'],
+      lines: [
+        { speaker: 'q', text: 'Wait, that\'s it? That\'s the five-minute version?' },
+        { speaker: 'lumen', text: 'That\'s the core. Everything else is learning how to use those five facts in practice.' },
+        { speaker: 'q', text: 'Okay that\'s actually really helpful. I wish someone told me this when I started instead of hitting me with "transformer architecture" and "attention mechanisms."' },
+        { speaker: 'lumen', text: 'That\'s literally why we made this.' }
+      ],
+      choices: [
+        { text: '"Great, now I want the full course."', tag: 'START FOUNDATION', next: 'ready_go' },
+        { text: '"Let me see all the modules."', tag: 'BROWSE', next: 'show_syllabus' }
+      ]
+    },
+
+    show_syllabus: {
+      scene: 'mycelium', chapter: 'SYLLABUS',
+      characters: [],
+      lines: [],
+      action: 'open_syllabus'
+    },
+
+    launch_module_1: {
+      scene: 'dawn', chapter: '',
+      characters: [],
+      lines: [],
+      action: 'goto_module_1'
+    }
+  };
+
+  // === Engine State ===
+  var state = {
+    node: null,
+    lineIndex: 0,
+    charIndex: 0,
+    typing: false,
+    typingTimer: null,
+    started: false,
+    ended: false,
+    history: [],
+    currentText: ''
+  };
+
+  var SAVE_KEY = 'myco_world_vn_save';
+  var PROGRESS_KEY = 'myco_world_progress';
+  var TYPE_SPEED = 22;
+
+  var els = {
+    titleScreen: document.getElementById('vn-title-screen'),
+    startBtn: document.getElementById('vn-start'),
+    continueBtn: document.getElementById('vn-continue'),
+    skipLink: document.getElementById('vn-skip-to-syllabus'),
+    scene: document.getElementById('vn-scene'),
+    chapter: document.getElementById('vn-chapter'),
+    save: document.getElementById('vn-save'),
+    characters: document.getElementById('vn-characters'),
+    choices: document.getElementById('vn-choices'),
+    dialogue: document.getElementById('vn-dialogue'),
+    speaker: document.getElementById('vn-speaker'),
+    text: document.getElementById('vn-text'),
+    advance: document.getElementById('vn-advance'),
+    syllabus: document.getElementById('vn-syllabus'),
+    syllabusBack: document.getElementById('syllabus-back')
+  };
+
+  // --- Save/Load ---
+  function saveGame() {
+    var data = { node: state.node, lineIndex: state.lineIndex, history: state.history };
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
+    els.save.classList.add('show');
+    setTimeout(function() { els.save.classList.remove('show'); }, 1200);
+  }
+
+  function loadGame() {
+    try {
+      var data = JSON.parse(localStorage.getItem(SAVE_KEY));
+      if (data && data.node && story[data.node]) return data;
+    } catch(e) {}
+    return null;
+  }
+
+  function hasSave() { return !!loadGame(); }
+
+  // --- Progress tracking ---
+  function getProgress() {
+    try {
+      return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {};
+    } catch(e) { return {}; }
+  }
+
+  function updateProgressUI() {
+    var progress = getProgress();
+    var statuses = document.querySelectorAll('.module-status[id]');
+    statuses.forEach(function(el) {
+      var key = el.id;
+      if (progress[key]) {
+        el.textContent = 'done';
+        el.classList.add('done');
+      }
+    });
+  }
+
+  // --- Rendering ---
+  function showNode(nodeId, startLine) {
+    var node = story[nodeId];
+    if (!node) return;
+
+    state.node = nodeId;
+    state.lineIndex = startLine || 0;
+    state.charIndex = 0;
+
+    // Handle action nodes
+    if (node.action) {
+      handleAction(node.action);
+      return;
+    }
+
+    // Scene
+    els.scene.style.background = SCENES[node.scene] || SCENES.black;
+
+    // Chapter
+    els.chapter.textContent = node.chapter || '';
+
+    // Characters
+    renderCharacters(node.characters || []);
+
+    // Clear choices
+    els.choices.innerHTML = '';
+
+    // Show dialogue if there are lines
+    if (node.lines.length > 0) {
+      els.dialogue.style.display = 'block';
+      showLine();
+    } else if (node.choices) {
+      els.dialogue.style.display = 'none';
+      showChoices(node.choices);
+    }
+  }
+
+  function handleAction(action) {
+    if (action === 'open_syllabus') {
+      openSyllabus();
+    } else if (action === 'goto_module_1') {
+      window.location.href = '{{ site.baseurl }}/games/myco/foundation/what-is-claude/';
+    }
+  }
+
+  function renderCharacters(charIds) {
+    var html = '';
+    charIds.forEach(function(id) {
+      var c = CHARS[id];
+      if (!c || !c.sprite) return;
+      html += '<div class="vn-char visible" data-char="' + id + '">';
+      html += '<div class="vn-char-sprite" style="color:' + c.color + ';">' + c.sprite + '</div>';
+      html += '<div class="vn-char-label" style="color:' + c.color + ';">' + c.name + '</div>';
+      html += '</div>';
+    });
+    els.characters.innerHTML = html;
+  }
+
+  function showLine() {
+    var node = story[state.node];
+    if (!node) return;
+
+    if (state.lineIndex >= node.lines.length) {
+      if (node.choices) {
+        showChoices(node.choices);
+      } else if (node.next) {
+        saveGame();
+        showNode(node.next);
+      } else {
+        state.ended = true;
+        saveGame();
+      }
+      return;
+    }
+
+    var line = node.lines[state.lineIndex];
+    var char = CHARS[line.speaker] || CHARS.narrator;
+
+    if (char.name) {
+      els.speaker.textContent = char.name;
+      els.speaker.style.color = char.color;
+    } else {
+      els.speaker.textContent = '';
+    }
+
+    // Highlight speaking character
+    var charEls = els.characters.querySelectorAll('.vn-char');
+    charEls.forEach(function(el) {
+      if (el.getAttribute('data-char') === line.speaker) {
+        el.classList.add('speaking');
+      } else {
+        el.classList.remove('speaking');
+      }
+    });
+
+    typeText(line.text);
+  }
+
+  function typeText(text) {
+    state.typing = true;
+    state.charIndex = 0;
+    state.currentText = text;
+    els.text.textContent = '';
+    els.advance.textContent = '';
+
+    clearInterval(state.typingTimer);
+    state.typingTimer = setInterval(function() {
+      if (state.charIndex < text.length) {
+        els.text.textContent = text.substring(0, state.charIndex + 1);
+        state.charIndex++;
+      } else {
+        clearInterval(state.typingTimer);
+        state.typing = false;
+        els.advance.textContent = 'tap or press space';
+      }
+    }, TYPE_SPEED);
+  }
+
+  function skipType() {
+    if (state.typing) {
+      clearInterval(state.typingTimer);
+      els.text.textContent = state.currentText;
+      state.typing = false;
+      state.charIndex = state.currentText.length;
+      els.advance.textContent = 'tap or press space';
+    }
+  }
+
+  function showChoices(choices) {
+    els.dialogue.style.display = 'none';
+    var html = '';
+    choices.forEach(function(choice, i) {
+      var tagHtml = choice.tag ? '<span class="choice-tag">' + choice.tag + '</span>' : '';
+      html += '<button class="vn-choice" data-choice="' + i + '" aria-label="' + choice.text.replace(/"/g, '&quot;') + '">' + tagHtml + choice.text + '</button>';
+    });
+    els.choices.innerHTML = html;
+
+    els.choices.querySelectorAll('.vn-choice').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(btn.getAttribute('data-choice'));
+        var choice = choices[idx];
+        state.history.push({ node: state.node, choice: idx });
+        els.choices.innerHTML = '';
+        saveGame();
+        showNode(choice.next);
+      });
+    });
+  }
+
+  // --- Syllabus panel ---
+  function openSyllabus() {
+    updateProgressUI();
+    els.syllabus.classList.add('visible');
+    els.dialogue.style.display = 'none';
+    els.choices.innerHTML = '';
+    els.characters.innerHTML = '';
+    els.chapter.textContent = '';
+  }
+
+  function closeSyllabus() {
+    els.syllabus.classList.remove('visible');
+    // Go back to the choice that led here
+    showNode('explain_structure');
+  }
+
+  els.syllabusBack.addEventListener('click', closeSyllabus);
+
+  // --- Input handling ---
+  function handleAdvance() {
+    if (state.ended) {
+      openSyllabus();
+      return;
+    }
+    if (state.typing) {
+      skipType();
+      return;
+    }
+    state.lineIndex++;
+    showLine();
+  }
+
+  els.dialogue.addEventListener('click', handleAdvance);
+
+  document.addEventListener('keydown', function(e) {
+    if (!state.started) return;
+    if (els.syllabus.classList.contains('visible')) return;
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      if (els.choices.children.length > 0) return;
+      handleAdvance();
+    }
+  });
+
+  // --- Start / Continue ---
+  els.startBtn.addEventListener('click', function() {
+    state.started = true;
+    els.titleScreen.classList.add('hidden');
+    setTimeout(function() { showNode('start'); }, 500);
+  });
+
+  els.continueBtn.addEventListener('click', function() {
+    var save = loadGame();
+    if (!save) return;
+    state.started = true;
+    state.history = save.history || [];
+    els.titleScreen.classList.add('hidden');
+    setTimeout(function() { showNode(save.node, save.lineIndex); }, 500);
+  });
+
+  // Skip to syllabus link
+  els.skipLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    state.started = true;
+    els.titleScreen.classList.add('hidden');
+    setTimeout(function() { openSyllabus(); }, 300);
+  });
+
+  // Show continue button if save exists
+  if (hasSave()) {
+    els.continueBtn.classList.remove('hidden');
+  }
+
+})();
+</script>
 
 </body>
 </html>

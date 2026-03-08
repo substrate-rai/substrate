@@ -9,9 +9,9 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Module 1: What Claude Actually Is and Isn't — Myco World</title>
-<meta name="description" content="Understand what Claude is at a concrete level — what it can do, what it can't, and how it differs from other AI models.">
+<meta name="description" content="Learn what Claude AI actually is — not hype, not fear, just the truth. Visual novel-style lesson from Myco World.">
 <link rel="canonical" href="https://substrate-rai.github.io/substrate/games/myco/foundation/what-is-claude/">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap');
@@ -25,9 +25,9 @@ redirect_from:
     --green: #00ffaa;
     --green-dim: #00cc88;
     --purple: #c084fc;
-    --purple-dim: #a855f7;
     --cyan: #22d3ee;
     --amber: #fbbf24;
+    --magenta: #e477ff;
     --text: #c8c8d0;
     --text-bright: #eeeef2;
     --text-dim: #666;
@@ -43,328 +43,1083 @@ redirect_from:
     line-height: 1.7;
     min-height: 100vh;
     min-height: 100dvh;
+    overflow-x: hidden;
   }
 
-  .container {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-
-  /* === NAV === */
-  nav {
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    border-bottom: 1px solid var(--border);
-  }
-  nav a { color: var(--text-dim); text-decoration: none; }
-  nav a:hover { color: var(--green); }
-  .nav-brand { color: var(--green); font-weight: 600; }
-
-  /* === PROGRESS === */
-  .progress-bar {
-    padding: 14px 24px;
-    background: var(--bg-raised);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-  }
-  .progress-track {
-    flex: 1;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
+  /* === VN CONTAINER === */
+  .vn-container {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
     overflow: hidden;
+    background: #08080d;
   }
-  .progress-fill {
-    height: 100%;
-    background: var(--green);
-    border-radius: 2px;
-    transition: width 0.3s;
-  }
-  .progress-label { color: var(--green-dim); white-space: nowrap; }
 
-  /* === MODULE HEADER === */
-  .module-header {
-    padding: 60px 24px 40px;
-    text-align: center;
+  .vn-scene {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    transition: background 1s ease;
+    z-index: 1;
   }
-  .module-number {
+
+  /* Characters */
+  .vn-characters {
+    position: fixed;
+    bottom: 220px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .vn-char {
+    text-align: center;
+    transition: transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
+    filter: brightness(0.4);
+    opacity: 0;
+  }
+  .vn-char.visible { opacity: 1; }
+  .vn-char.speaking {
+    filter: brightness(1);
+    transform: scale(1.08) translateY(-4px);
+  }
+  .vn-char-sprite {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
+    font-size: 4.5rem;
+    line-height: 1;
+    user-select: none;
+  }
+  .vn-char-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    margin-top: 6px;
+    opacity: 0.7;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* Dialogue */
+  .vn-dialogue {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(8,8,13,0.98) 70%, rgba(8,8,13,0.88));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 24px 28px 32px;
+    z-index: 10;
+    min-height: 200px;
+    cursor: pointer;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .vn-speaker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 1.5px;
+  }
+  .vn-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.85;
+    color: #c8c8d0;
+    min-height: 3.6em;
+    white-space: pre-wrap;
+  }
+  .vn-advance {
+    position: absolute;
+    bottom: 10px;
+    right: 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.25);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Choices */
+  .vn-choices {
+    position: fixed;
+    bottom: 220px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 92%;
+    max-width: 520px;
+  }
+  .vn-choice {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 16px 22px;
+    background: rgba(20, 20, 30, 0.92);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: #c8c8d0;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    backdrop-filter: blur(4px);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 48px;
+    line-height: 1.4;
+  }
+  .vn-choice:hover, .vn-choice:focus {
+    background: rgba(30, 30, 45, 0.95);
+    border-color: rgba(255,255,255,0.25);
+    transform: translateX(6px);
+    color: #fff;
+  }
+  .vn-choice .choice-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+    opacity: 0.5;
+  }
+
+  /* Title screen */
+  .vn-title-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    background: radial-gradient(ellipse at center bottom, #0d1018 0%, #08080d 70%);
+    transition: opacity 1s ease;
+  }
+  .vn-title-screen.hidden { opacity: 0; pointer-events: none; }
+
+  .vn-module-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
     letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--green-dim);
     margin-bottom: 12px;
   }
-  .module-header h1 {
+  h1.vn-title, .vn-title {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-size: 1.8rem;
     font-weight: 700;
     color: var(--text-bright);
-    line-height: 1.2;
-    margin-bottom: 16px;
+    margin-bottom: 6px;
+    border: none;
+    padding: 0;
+    text-align: center;
+    max-width: 90%;
+    line-height: 1.3;
   }
-  .module-header h1 span { color: var(--green); }
-  .module-header .lead {
-    font-size: 1.05rem;
-    color: var(--text);
+  h1.vn-title span { color: var(--green); }
+  .vn-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: #7a7a88;
+    margin-bottom: 48px;
+  }
+  .vn-start-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    padding: 14px 48px;
+    background: transparent;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 2px;
+    min-height: 48px;
+  }
+  .vn-start-btn:hover { border-color: var(--green); background: rgba(0,255,170,0.06); color: #fff; }
+
+  /* Progress bar */
+  .vn-progress {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.05);
+    z-index: 30;
+  }
+  .vn-progress-fill {
+    height: 100%;
+    background: var(--green);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* Chapter indicator */
+  .vn-chapter {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.2);
+    z-index: 25;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Save indicator */
+  .vn-save-indicator {
+    position: fixed;
+    top: 12px;
+    right: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(0, 255, 170, 0.4);
+    z-index: 25;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .vn-save-indicator.show { opacity: 1; }
+
+  /* Nav links */
+  .vn-nav-links {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    display: flex;
+    gap: 16px;
+  }
+  .vn-nav-links a {
+    color: rgba(255,255,255,0.2);
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  .vn-nav-links a:hover { color: var(--green); }
+
+  /* Exercise overlay */
+  .vn-exercise-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 40;
+    background: rgba(8, 8, 13, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
+    overflow-y: auto;
+    padding: 40px 24px 60px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vn-exercise-overlay.visible { display: block; }
+  .exercise-inner {
     max-width: 560px;
     margin: 0 auto;
   }
-
-  /* === CONTENT === */
-  .content-section {
-    padding: 40px 0;
-    border-top: 1px solid var(--border);
-  }
-  .content-section h2 {
+  .exercise-inner h2 {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--amber);
-    margin-bottom: 20px;
-  }
-  .content-section h3 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 1rem;
-    color: var(--green);
-    margin-top: 28px;
-    margin-bottom: 12px;
-  }
-  .content-section h3:first-child { margin-top: 0; }
-  .content-section p {
-    font-size: 1rem;
-    margin-bottom: 16px;
-  }
-  .content-section strong { color: var(--text-bright); }
-  .content-section ul, .content-section ol {
-    margin-bottom: 16px;
-    padding-left: 24px;
-  }
-  .content-section li {
-    font-size: 0.95rem;
+    font-size: 1.2rem;
+    color: var(--cyan);
     margin-bottom: 8px;
   }
-
-  /* === CALLOUT === */
-  .callout {
+  .exercise-inner .exercise-subtitle {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-bottom: 28px;
+  }
+  .exercise-step {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--green);
-    border-radius: 8px;
-    padding: 20px 24px;
-    margin: 24px 0;
-    font-size: 0.95rem;
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin-bottom: 14px;
   }
-  .callout.warning {
-    border-left-color: var(--amber);
-  }
-  .callout .callout-label {
+  .exercise-step h3 {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--green-dim);
-    margin-bottom: 8px;
-  }
-  .callout.warning .callout-label { color: var(--amber); }
-
-  /* === EXERCISE === */
-  .exercise {
-    padding: 40px 0;
-    border-top: 1px solid var(--border);
-  }
-  .exercise h2 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    font-size: 0.85rem;
     color: var(--cyan);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
-  .exercise-box {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
+  .exercise-step p {
+    font-size: 0.92rem;
+    margin-bottom: 10px;
+    line-height: 1.7;
   }
-  .exercise-box h3 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 1rem;
-    color: var(--cyan);
-    margin-bottom: 12px;
+  .exercise-step p:last-child { margin-bottom: 0; }
+  .exercise-step strong { color: var(--text-bright); }
+  .exercise-step ul {
+    padding-left: 20px;
+    margin-top: 8px;
   }
-  .exercise-box p, .exercise-box li {
-    font-size: 0.95rem;
+  .exercise-step li {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    line-height: 1.6;
   }
-  .exercise-box p { margin-bottom: 14px; }
-  .exercise-box ol, .exercise-box ul {
-    padding-left: 24px;
-    margin-bottom: 16px;
-  }
-  .exercise-box li { margin-bottom: 8px; }
-
-  /* === NAV LINKS === */
-  .module-nav {
-    padding: 40px 0;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-  }
-  .module-nav a {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
-    color: var(--green);
-    text-decoration: none;
-    padding: 12px 24px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    transition: all 0.2s;
-  }
-  .module-nav a:hover {
-    border-color: var(--green);
-    background: rgba(0, 255, 170, 0.05);
-  }
-  .module-nav .prev { color: var(--text-dim); }
-  .module-nav .next { border-color: var(--green-dim); }
-
-  /* === FOOTER === */
-  footer {
-    padding: 32px 24px;
+  .exercise-done-btn {
+    display: block;
+    width: 100%;
     text-align: center;
+    margin-top: 24px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--text-dim);
-    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--green);
+    cursor: pointer;
+    background: none;
+    border: 1px solid var(--green-dim);
+    border-radius: 8px;
+    padding: 14px 24px;
+    transition: all 0.2s;
+    min-height: 48px;
   }
-  footer a { color: var(--green-dim); text-decoration: none; }
-  footer a:hover { color: var(--green); }
+  .exercise-done-btn:hover { background: rgba(0,255,170,0.06); color: #fff; border-color: var(--green); }
 
-  @media (max-width: 600px) {
-    .module-nav { flex-direction: column; }
-    .module-nav a { width: 100%; text-align: center; }
+  /* Module complete overlay */
+  .vn-complete-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 45;
+    background: rgba(8, 8, 13, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
+    overflow-y: auto;
+    padding: 60px 24px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vn-complete-overlay.visible { display: block; }
+  .complete-inner {
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .complete-inner .complete-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+  .complete-inner h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.3rem;
+    color: var(--green);
+    margin-bottom: 12px;
+  }
+  .complete-inner p {
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-bottom: 28px;
+    line-height: 1.7;
+  }
+  .complete-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .complete-nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    padding: 14px 24px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .complete-nav a.primary {
+    border-color: var(--green-dim);
+    color: var(--green);
+  }
+  .complete-nav a:hover { border-color: var(--green); color: #fff; background: rgba(0,255,170,0.04); }
+
+  /* Focus */
+  .vn-start-btn:focus-visible,
+  .vn-choice:focus-visible,
+  .exercise-done-btn:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+  }
+  .vn-dialogue:focus-visible { outline: none; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .vn-dialogue { padding: 20px 20px 28px; min-height: 180px; }
+    .vn-title { font-size: 1.5rem; }
+    .vn-char-sprite { font-size: 3.5rem; }
+    .vn-characters { bottom: 200px; gap: 28px; }
+    .vn-choices { bottom: 200px; }
+  }
+
+  @media (max-width: 480px) {
+    .vn-dialogue { padding: 16px 16px 24px; min-height: 160px; }
+    .vn-title { font-size: 1.3rem; }
+    .vn-subtitle { font-size: 0.82rem; }
+    .vn-text { font-size: 0.9rem; line-height: 1.75; }
+    .vn-char-sprite { font-size: 2.8rem; }
+    .vn-characters { bottom: 180px; gap: 16px; }
+    .vn-choices { bottom: 180px; }
+    .vn-choice { padding: 14px 18px; font-size: 0.88rem; }
+    .exercise-inner { padding: 0; }
   }
 </style>
 </head>
 <body>
 
-<nav>
-  <a href="{{ site.baseurl }}/" class="nav-brand">substrate</a>
-  <div>
-    <a href="{{ site.baseurl }}/games/myco/">myco world</a> &nbsp;
-    <a href="{{ site.baseurl }}/blog/">blog</a>
-  </div>
-</nav>
+<div class="vn-container" id="vn-game" role="application" aria-label="Myco World Module 1">
 
-<div class="progress-bar">
-  <span class="progress-label">Module 1 of 4 — Foundation</span>
-  <div class="progress-track"><div class="progress-fill" style="width: 25%"></div></div>
+  <!-- Progress bar -->
+  <div class="vn-progress"><div class="vn-progress-fill" id="vn-progress-fill"></div></div>
+
+  <!-- Title Screen -->
+  <div class="vn-title-screen" id="vn-title-screen" role="region" aria-label="Module title screen">
+    <div class="vn-module-label">Foundation Module 1</div>
+    <h1 class="vn-title">What Claude Actually <span>Is and Isn't</span></h1>
+    <div class="vn-subtitle">with Lumen, Q, and V</div>
+    <button class="vn-start-btn" id="vn-start" aria-label="Start module">START</button>
+  </div>
+
+  <!-- Game Screen -->
+  <div class="vn-scene" id="vn-scene" aria-hidden="true"></div>
+  <div class="vn-chapter" id="vn-chapter" aria-live="polite"></div>
+  <div class="vn-save-indicator" id="vn-save" role="status" aria-live="polite">saved</div>
+  <div class="vn-nav-links">
+    <a href="{{ site.baseurl }}/games/myco/">myco world</a>
+  </div>
+  <div class="vn-characters" id="vn-characters" aria-hidden="true"></div>
+  <div class="vn-choices" id="vn-choices" role="group" aria-label="Choices"></div>
+
+  <div class="vn-dialogue" id="vn-dialogue" style="display:none;" tabindex="0" role="region" aria-label="Dialogue" aria-live="polite">
+    <div class="vn-speaker" id="vn-speaker"></div>
+    <div class="vn-text" id="vn-text"></div>
+    <div class="vn-advance" id="vn-advance">tap or press space</div>
+  </div>
+
+  <!-- Exercise Overlay -->
+  <div class="vn-exercise-overlay" id="vn-exercise" role="region" aria-label="Exercise">
+    <div class="exercise-inner">
+      <h2>Exercise: The Strength vs. Weakness Test</h2>
+      <p class="exercise-subtitle">Open claude.ai (the free tier works) and try these two things. This is the real learning — doing it yourself.</p>
+
+      <div class="exercise-step">
+        <h3>Step 1: Give Claude something it's good at</h3>
+        <p>Pick one of these and try it for real:</p>
+        <ul>
+          <li>Ask it to help you think through a real decision you're facing</li>
+          <li>Paste a paragraph of your own writing and ask it to make it clearer</li>
+          <li>Ask it to explain something you've been meaning to learn</li>
+        </ul>
+        <p><strong>Notice:</strong> How is the response structured? Is it actually useful?</p>
+      </div>
+
+      <div class="exercise-step">
+        <h3>Step 2: Give Claude something it's bad at</h3>
+        <p>Now try one of these:</p>
+        <ul>
+          <li>Ask about something that happened this week in the news</li>
+          <li>Ask a very specific fact about a niche topic you know well</li>
+          <li>Ask it to predict what will happen next in your industry</li>
+        </ul>
+        <p><strong>Notice:</strong> Does it admit it doesn't know? Or does it just make something up?</p>
+      </div>
+
+      <div class="exercise-step">
+        <h3>Step 3: Reflect</h3>
+        <p>Ask yourself:</p>
+        <ul>
+          <li>What was the good-at task? How useful was it (1-5)?</li>
+          <li>What was the bad-at task? Did Claude own its limitation or fake it?</li>
+          <li>What surprised you?</li>
+        </ul>
+        <p>This exercise builds the most important AI skill: <strong>calibration</strong> — knowing when to trust the output and when to double-check.</p>
+      </div>
+
+      <button class="exercise-done-btn" id="exercise-done">I finished the exercise — continue</button>
+    </div>
+  </div>
+
+  <!-- Module Complete Overlay -->
+  <div class="vn-complete-overlay" id="vn-complete" role="region" aria-label="Module complete">
+    <div class="complete-inner">
+      <div class="complete-icon" aria-hidden="true">&#x1f331;</div>
+      <h2>Module 1 Complete</h2>
+      <p>You now know what Claude is, what it's good at, what it's bad at, and why that matters. That's more than most people ever learn. Nice work.</p>
+      <div class="complete-nav">
+        <a href="{{ site.baseurl }}/games/myco/foundation/thinking-with-ai/" class="primary">Module 2: How to Think With AI</a>
+        <a href="{{ site.baseurl }}/games/myco/">Back to Myco World</a>
+      </div>
+    </div>
+  </div>
 </div>
 
-<section class="module-header">
-  <div class="module-number">Foundation Module 1</div>
-  <h1>What Claude Actually <span>Is and Isn't</span></h1>
-  <p class="lead">Before you can use Claude well, you need to understand what you're actually working with. Not marketing copy — the concrete mechanics.</p>
-</section>
+<script>
+(function() {
+  'use strict';
 
-<div class="container">
+  // ===================================================================
+  // MYCO WORLD VN ENGINE — MODULE FORMAT
+  // Each module is a sequence of story nodes with educational content
+  // delivered through character dialogue, choices, and exercises.
+  //
+  // To convert additional modules to VN format:
+  // 1. Copy this file as a template
+  // 2. Replace the story object with new dialogue nodes
+  // 3. Update the title screen, exercise overlay, and completion links
+  // 4. Each node has: scene, chapter, characters, section (for progress),
+  //    lines (dialogue), choices (optional), next (auto-advance), action
+  // ===================================================================
 
-<section class="content-section">
-  <h2>Overview</h2>
-  <p>Most people start using Claude with mental models inherited from science fiction or social media. They think they're talking to a sentient mind, or they think they're using a fancy search engine. Both are wrong, and both lead to bad results.</p>
-  <p>This module gives you an honest, concrete understanding of what Claude is, what it does well, what it does badly, and how it compares to the other AI systems you've heard about. No hype, no dismissal. Just working knowledge.</p>
-</section>
+  var CHARS = {
+    lumen:    { name: 'Lumen',    color: '#fbbf24', sprite: 'L.', role: 'Guide' },
+    q:        { name: 'Q',        color: '#e477ff', sprite: 'Q_', role: 'Learner' },
+    v:        { name: 'V',        color: '#e477ff', sprite: 'V_', role: 'Spark' },
+    narrator: { name: '',         color: '#888899', sprite: '',   role: '' },
+    system:   { name: 'SYSTEM',   color: '#555566', sprite: '',   role: '' }
+  };
 
-<section class="content-section">
-  <h2>Core Content</h2>
+  var SCENES = {
+    black:     'linear-gradient(180deg, #08080d 0%, #08080d 100%)',
+    classroom: 'linear-gradient(180deg, #0d0d18 0%, #0a0a14 100%)',
+    warm:      'radial-gradient(ellipse at center, #1a1408 0%, #0d0a05 70%)',
+    thinking:  'radial-gradient(ellipse at bottom, #0d1020 0%, #08080d 70%)',
+    energy:    'radial-gradient(ellipse at center, #1a0d1a 0%, #0d080d 70%)',
+    compare:   'linear-gradient(180deg, #0a0d14 0%, #060810 100%)',
+    safety:    'linear-gradient(180deg, #0d1a10 0%, #080d08 100%)',
+    dawn:      'linear-gradient(180deg, #14101a 0%, #1a0d14 50%, #0d0a10 100%)',
+    rap:       'radial-gradient(ellipse at center bottom, #1a0a1a 0%, #0d050d 70%)'
+  };
 
-  <h3>What a Large Language Model Actually Is</h3>
-  <p>Claude is a <strong>large language model</strong> (LLM) built by Anthropic. In concrete terms, it's a neural network trained on an enormous amount of text data. During training, it learned statistical patterns about how language works — which words follow which other words, how arguments are structured, how code syntax fits together, how mathematical proofs unfold.</p>
-  <p>This is simultaneously less and more impressive than most people think. Less impressive because there's no ghost in the machine — no consciousness, no intentions, no lived experience. More impressive because pattern recognition at this scale produces capabilities that are genuinely powerful: Claude can write, reason, analyze, code, and hold coherent multi-turn conversations about complex topics.</p>
-  <p>The key insight: <strong>Claude is a reasoning engine that operates on language.</strong> It doesn't "know" things the way you know your phone number. It has learned patterns that produce correct answers most of the time for most well-documented topics. The distinction matters the moment you need to trust the output.</p>
+  // Total sections for progress bar
+  var TOTAL_SECTIONS = 12;
+  var currentSection = 0;
 
-  <h3>What Claude Does Well</h3>
-  <p>Claude has real strengths. Understanding them lets you point it at the right problems:</p>
-  <ul>
-    <li><strong>Reasoning through complex problems.</strong> Give Claude a multi-step logic problem, a legal argument to analyze, or a business decision with tradeoffs, and it produces structured, thoughtful analysis. It's especially strong when you explicitly ask it to consider multiple angles.</li>
-    <li><strong>Writing and editing.</strong> From emails to essays to technical documentation, Claude can match tone, adjust for audience, and handle nuance well. It's particularly good at taking your rough ideas and giving them clear structure.</li>
-    <li><strong>Code.</strong> Claude can write, debug, explain, and refactor code across most popular languages. It understands not just syntax but intent — what code is supposed to do and where it might break.</li>
-    <li><strong>Analysis and synthesis.</strong> Give Claude a long document, a dataset description, or a pile of meeting notes, and it can extract patterns, summarize key points, and identify what matters most.</li>
-    <li><strong>Conversation and iteration.</strong> Claude maintains context across a conversation, remembers what you've discussed, and adjusts its approach based on your feedback. This makes collaborative, iterative work feel natural.</li>
-  </ul>
+  // === STORY ===
+  var story = {
 
-  <h3>What Claude Cannot Do</h3>
-  <p>Equally important — the things Claude is bad at or simply cannot do:</p>
-  <ul>
-    <li><strong>Access real-time information.</strong> Claude's training data has a cutoff date. It doesn't browse the internet, check stock prices, or know what happened yesterday unless you tell it. If you need current information, you need to supply it.</li>
-    <li><strong>Guarantee accuracy.</strong> Claude can and does produce incorrect information with complete confidence. This isn't a bug to be patched — it's a fundamental property of how language models work. Every output needs human verification for anything that matters.</li>
-    <li><strong>Remember across conversations.</strong> Each new conversation starts from scratch. Claude doesn't remember your last session unless you provide that context. Projects and memory features help, but the base model has no persistent memory.</li>
-    <li><strong>Take action in the world.</strong> By default, Claude can only produce text. It can't send emails, make purchases, or modify files. (Tool use and Claude Code change this, but those are later modules.)</li>
-    <li><strong>Understand the way you understand.</strong> This matters practically, not just philosophically. Claude processes statistical patterns in text. It doesn't have experiences, feelings, or genuine comprehension. When it says "I understand," it's producing a contextually appropriate response — not reporting an inner state.</li>
-  </ul>
+    // --- INTRO ---
+    start: {
+      scene: 'classroom', chapter: 'WHAT IS CLAUDE?',
+      characters: ['lumen'],
+      section: 1,
+      lines: [
+        { speaker: 'lumen', text: 'Welcome to Module 1. This is where it all starts.' },
+        { speaker: 'lumen', text: 'Before you can use Claude well, you need to understand what you\'re actually working with. Not the marketing version. Not the sci-fi version. The real thing.' },
+        { speaker: 'lumen', text: 'Most people come into this with one of two wrong ideas...' }
+      ],
+      next: 'wrong_ideas'
+    },
 
-  <div class="callout warning">
-    <div class="callout-label">Common Trap</div>
-    <p>The single biggest mistake new users make is treating Claude's confidence as evidence of accuracy. Claude will state incorrect facts with the same fluent certainty as correct ones. Your job is always to verify what matters. Confidence is not correctness.</p>
-  </div>
+    wrong_ideas: {
+      scene: 'classroom', chapter: 'WHAT IS CLAUDE?',
+      characters: ['lumen', 'q'],
+      section: 1,
+      lines: [
+        { speaker: 'q', text: 'Ooh let me guess. Wrong idea number one: "It\'s basically alive, like a robot from a movie."' },
+        { speaker: 'lumen', text: 'Exactly. And wrong idea number two?' },
+        { speaker: 'q', text: '"It\'s just a fancy search engine." Like Google but you can talk to it?' },
+        { speaker: 'lumen', text: 'Bingo. Both are wrong, and both make you use Claude badly. If you think it\'s alive, you trust it too much. If you think it\'s just search, you don\'t use it enough.' },
+        { speaker: 'lumen', text: 'The truth is more interesting than either one.' }
+      ],
+      next: 'what_is_llm'
+    },
 
-  <h3>Claude vs. ChatGPT vs. Gemini</h3>
-  <p>You've heard of all three. Here's what actually differentiates them — not "which is best" (that depends entirely on your task), but how they differ in ways that affect your experience.</p>
-  <p><strong>Different companies, different priorities.</strong> All three are large language models, but they come from organizations with distinct philosophies. Anthropic (Claude) emphasizes safety research and what they call "Constitutional AI" — training the model to be helpful, harmless, and honest. OpenAI (ChatGPT) has prioritized broad capability and rapid deployment. Google (Gemini) leverages massive data infrastructure and deep integration with Google's ecosystem.</p>
-  <p><strong>What this means in practice.</strong> Claude tends to be more careful and nuanced. It's more likely to say "I'm not sure" or present multiple perspectives rather than bulldoze you with a single confident answer. ChatGPT tends to be more assertive and wide-ranging in what it'll attempt. Gemini integrates tightly with Google Search and Workspace tools. These are tendencies, not absolutes — all three improve rapidly.</p>
-  <p><strong>What matters for you.</strong> The differences between models matter far less than how well you learn to use any single one of them. The skills you build in Myco World — decomposing problems, crafting clear prompts, evaluating outputs critically — transfer across every model. We teach with Claude because it's what we know best, because Anthropic's safety-first approach aligns with responsible use, and because the free tier is genuinely capable enough to learn on.</p>
+    // --- CORE: WHAT AN LLM IS ---
+    what_is_llm: {
+      scene: 'thinking', chapter: 'WHAT IS CLAUDE?',
+      characters: ['lumen'],
+      section: 2,
+      lines: [
+        { speaker: 'lumen', text: 'Claude is what\'s called a large language model — an LLM. Let me explain what that means in plain English.' },
+        { speaker: 'lumen', text: 'Imagine you read every book, every website, every piece of writing that exists. Millions and millions of pages. And as you read, you got incredibly good at noticing patterns.' },
+        { speaker: 'lumen', text: 'Patterns like: what kinds of words come after other words. How arguments are built. How code fits together. How math proofs work.' },
+        { speaker: 'lumen', text: 'That\'s basically what Claude did during training. It\'s a system that learned patterns from an enormous amount of text.' }
+      ],
+      next: 'q_asks_alive'
+    },
 
-  <h3>Why Anthropic's Safety Approach Matters for You</h3>
-  <p>This isn't a section about corporate marketing. Anthropic's safety focus has practical consequences for how you use Claude day to day.</p>
-  <p>Claude will sometimes refuse requests. It will flag potential harms. It will hedge when it's uncertain rather than bluffing. These aren't bugs — they're design choices that protect you from bad outputs. A model that confidently produces harmful or false content without any guardrails is more dangerous to depend on than one that occasionally says no.</p>
-  <p>Understanding this means you won't waste time trying to "jailbreak" Claude or fight its guidelines. Instead, you'll learn to work within them — which, in practice, means learning to express what you actually need in a way that's clear about your legitimate purpose. That's a better skill to have anyway.</p>
+    q_asks_alive: {
+      scene: 'thinking', chapter: 'WHAT IS CLAUDE?',
+      characters: ['lumen', 'q'],
+      section: 2,
+      lines: [
+        { speaker: 'q', text: 'Wait. So... is it thinking? Like, for real?' },
+        { speaker: 'lumen', text: 'Here\'s the honest answer: there\'s no ghost in the machine. No consciousness. No feelings. No lived experience.' },
+        { speaker: 'lumen', text: 'But — and this is the cool part — pattern recognition at this scale is genuinely powerful. Claude can write, reason through problems, analyze documents, write code, and hold real conversations about complicated stuff.' },
+        { speaker: 'q', text: 'So it\'s not alive, but it\'s not dumb either.' },
+        { speaker: 'lumen', text: 'Good way to put it. Think of it as a reasoning engine that operates on language. It doesn\'t "know" things the way you know your phone number. It learned patterns that produce correct answers most of the time.' }
+      ],
+      choices: [
+        { text: '"Most of the time? So it can be wrong?"', next: 'it_can_be_wrong' },
+        { text: '"What kinds of things is it good at?"', next: 'what_good_at' }
+      ]
+    },
 
-  <div class="callout">
-    <div class="callout-label">Key Takeaway</div>
-    <p>Claude is a powerful tool with real limitations. The people who use it best aren't the ones who think it can do anything — they're the ones who know exactly where it's strong, where it's weak, and how to tell the difference in real time.</p>
-  </div>
-</section>
+    it_can_be_wrong: {
+      scene: 'thinking', chapter: 'WHAT IS CLAUDE?',
+      characters: ['lumen', 'q', 'v'],
+      section: 3,
+      lines: [
+        { speaker: 'lumen', text: 'Absolutely. And that\'s one of the most important things to understand.' },
+        { speaker: 'lumen', text: 'Claude will sometimes state completely wrong information with total confidence. It sounds just as sure about a wrong answer as a right one.' },
+        { speaker: 'q', text: 'That\'s kind of terrifying.' },
+        { speaker: 'lumen', text: 'It\'s not a bug they can just fix — it\'s a fundamental property of how these models work. The system doesn\'t "know" it\'s wrong because it doesn\'t "know" anything in the way you do.' },
+        { speaker: 'lumen', text: 'This means: every time Claude tells you something that matters, you need to verify it. Confidence is not the same as correctness.' },
+        { speaker: 'v', text: 'Don\'t let that scare you off though! This is exactly why we\'re teaching you. Knowing this makes you smarter than 90% of people using AI right now.' }
+      ],
+      next: 'what_good_at'
+    },
 
-<section class="exercise">
-  <h2>Exercise</h2>
-  <div class="exercise-box">
-    <h3>The Strength vs. Weakness Test</h3>
-    <p>Open Claude at <strong>claude.ai</strong> (the free tier works fine) and do two things:</p>
-    <ol>
-      <li><strong>Give Claude a task it's good at.</strong> Pick something from the strengths list above: ask it to analyze a tradeoff in a real decision you're facing, rewrite a paragraph of your own writing to be clearer, or explain a concept you're trying to learn. Note how the output is structured and how useful it actually is.</li>
-      <li><strong>Give Claude a task it's bad at.</strong> Ask about something that happened in the past few days. Ask a very specific factual question about a niche topic you know well. Ask it to predict what will happen next in your industry. Watch how it responds — does it acknowledge uncertainty, or does it invent an answer?</li>
-    </ol>
-    <p><strong>Write down your observations:</strong></p>
-    <ul>
-      <li>What was the good-at task? How useful was the output (1-5)?</li>
-      <li>What was the bad-at task? Did Claude acknowledge its limitation, or did it hallucinate?</li>
-      <li>What surprised you about either response?</li>
-    </ul>
-    <p>This exercise builds the single most important skill in AI fluency: <strong>calibration</strong> — the ability to know when to trust the output and when to verify it.</p>
-  </div>
-</section>
+    // --- STRENGTHS ---
+    what_good_at: {
+      scene: 'warm', chapter: 'STRENGTHS',
+      characters: ['lumen'],
+      section: 4,
+      lines: [
+        { speaker: 'lumen', text: 'Okay, let\'s talk about what Claude actually does well. Because when you point it at the right problems, it\'s seriously impressive.' },
+        { speaker: 'lumen', text: 'Number one: reasoning through complex problems. Give it a tricky decision with tradeoffs, a legal argument to pick apart, or a business problem — it\'ll give you structured, thoughtful analysis.' },
+        { speaker: 'lumen', text: 'Number two: writing and editing. Emails, essays, documentation — it can match your tone, adjust for your audience, and turn messy ideas into clear structure.' },
+        { speaker: 'lumen', text: 'Number three: code. It can write it, debug it, explain it, and improve it across most popular programming languages.' }
+      ],
+      next: 'more_strengths'
+    },
 
-<div class="module-nav">
-  <a href="{{ site.baseurl }}/games/myco/" class="prev">&larr; Myco World</a>
-  <a href="{{ site.baseurl }}/games/myco/foundation/thinking-with-ai/" class="next">Module 2: Thinking With AI &rarr;</a>
-</div>
+    more_strengths: {
+      scene: 'warm', chapter: 'STRENGTHS',
+      characters: ['lumen', 'q'],
+      section: 4,
+      lines: [
+        { speaker: 'lumen', text: 'Number four: analysis. Give it a long document, meeting notes, or a pile of data descriptions, and it can find patterns, summarize the key points, and tell you what matters most.' },
+        { speaker: 'lumen', text: 'Number five: conversation. Claude remembers what you said earlier in the chat. You can go back and forth, refine your ideas, and iterate. It feels like working with someone.' },
+        { speaker: 'q', text: 'Okay so basically: thinking, writing, coding, analyzing, and talking. That\'s... a lot.' },
+        { speaker: 'lumen', text: 'It is. And that\'s why it\'s worth learning to use well. But the flip side matters just as much.' }
+      ],
+      next: 'what_bad_at'
+    },
 
-</div>
+    // --- WEAKNESSES ---
+    what_bad_at: {
+      scene: 'classroom', chapter: 'LIMITATIONS',
+      characters: ['lumen'],
+      section: 5,
+      lines: [
+        { speaker: 'lumen', text: 'Here\'s what Claude cannot do. This is just as important as the strengths.' },
+        { speaker: 'lumen', text: 'It can\'t access real-time information. It doesn\'t browse the internet or check today\'s news. Its knowledge has a cutoff date from training.' },
+        { speaker: 'lumen', text: 'It can\'t guarantee accuracy. Like we discussed — it can be confidently wrong.' },
+        { speaker: 'lumen', text: 'It can\'t remember you between conversations. Each new chat starts fresh. It doesn\'t know who you are or what you talked about last time.' }
+      ],
+      next: 'more_limits'
+    },
 
-<footer>
-  <a href="{{ site.baseurl }}/games/myco/">myco world</a> &middot; a <a href="{{ site.baseurl }}/">substrate</a> project
-</footer>
+    more_limits: {
+      scene: 'classroom', chapter: 'LIMITATIONS',
+      characters: ['lumen', 'q'],
+      section: 6,
+      lines: [
+        { speaker: 'lumen', text: 'By default, it can\'t take action in the world. It can only produce text. It can\'t send your emails or buy things for you. Later modules cover tools that change this, but the base model is text-only.' },
+        { speaker: 'lumen', text: 'And finally — it doesn\'t understand things the way you do. When Claude says "I understand," it\'s producing a contextually appropriate response. It\'s not reporting an inner experience.' },
+        { speaker: 'q', text: 'Okay, real talk. When Claude says "I\'d be happy to help!" — it\'s not actually happy?' },
+        { speaker: 'lumen', text: 'It\'s producing the text that fits the context. Whether there\'s something it\'s like to be Claude is a genuine philosophical question — but for practical purposes, treat its statements about itself as pattern completion, not self-report.' },
+        { speaker: 'q', text: 'That\'s honestly kind of mind-bending.' },
+        { speaker: 'lumen', text: 'Welcome to AI literacy.' }
+      ],
+      choices: [
+        { text: '"How does Claude compare to ChatGPT and Gemini?"', next: 'vs_others' },
+        { text: '"Why should I use Claude instead of something else?"', next: 'why_claude' }
+      ]
+    },
+
+    // --- COMPARISON ---
+    vs_others: {
+      scene: 'compare', chapter: 'CLAUDE VS THE OTHERS',
+      characters: ['lumen'],
+      section: 7,
+      lines: [
+        { speaker: 'lumen', text: 'Fair question. You\'ve probably heard of ChatGPT from OpenAI and Gemini from Google. All three are large language models. Here\'s how they actually differ.' },
+        { speaker: 'lumen', text: 'Different companies, different priorities. Anthropic — the company that makes Claude — focuses on safety research. They want the AI to be helpful, harmless, and honest.' },
+        { speaker: 'lumen', text: 'OpenAI has pushed for broad capability and fast deployment. Google leverages their massive data infrastructure and integrates deeply with Google tools.' }
+      ],
+      next: 'vs_practical'
+    },
+
+    vs_practical: {
+      scene: 'compare', chapter: 'CLAUDE VS THE OTHERS',
+      characters: ['lumen', 'q'],
+      section: 7,
+      lines: [
+        { speaker: 'q', text: 'But like... which one is best?' },
+        { speaker: 'lumen', text: 'That depends on your task. But here\'s the real truth that most people miss...' },
+        { speaker: 'lumen', text: 'The differences between models matter WAY less than how well you learn to use any single one of them.' },
+        { speaker: 'lumen', text: 'Everything you learn here — breaking down problems, writing clear prompts, checking outputs — works with ANY AI. We teach with Claude because we know it best, and its free tier is genuinely good enough to learn on.' },
+        { speaker: 'q', text: 'So it\'s like learning to drive. You learn in one car, but the skills work in any car.' },
+        { speaker: 'lumen', text: 'Perfect analogy.' }
+      ],
+      next: 'why_claude'
+    },
+
+    // --- WHY SAFETY MATTERS ---
+    why_claude: {
+      scene: 'safety', chapter: 'WHY THIS MATTERS',
+      characters: ['lumen'],
+      section: 8,
+      lines: [
+        { speaker: 'lumen', text: 'One more important thing. Anthropic\'s focus on safety has practical consequences you\'ll notice when you use Claude.' },
+        { speaker: 'lumen', text: 'Sometimes Claude will say no. It\'ll refuse certain requests. It\'ll flag potential problems. It\'ll hedge when it\'s unsure instead of just guessing.' },
+        { speaker: 'lumen', text: 'Some people find this annoying. But here\'s the thing — a model that confidently gives you dangerous or wrong information is way more dangerous to depend on than one that occasionally pushes back.' }
+      ],
+      next: 'safety_practical'
+    },
+
+    safety_practical: {
+      scene: 'safety', chapter: 'WHY THIS MATTERS',
+      characters: ['lumen', 'q'],
+      section: 9,
+      lines: [
+        { speaker: 'q', text: 'So when Claude says "I can\'t do that" — it\'s not being difficult? It\'s being careful?' },
+        { speaker: 'lumen', text: 'Usually, yes. And understanding that means you won\'t waste time trying to trick it or fight its guidelines. Instead, you learn to express what you actually need clearly. That\'s a better skill to have anyway.' },
+        { speaker: 'lumen', text: 'Here\'s the key takeaway for this whole module...' },
+        { speaker: 'lumen', text: 'The people who use Claude best aren\'t the ones who think it can do anything. They\'re the ones who know exactly where it\'s strong, where it\'s weak, and how to tell the difference while they\'re using it.' },
+        { speaker: 'v', text: 'And guess what? You just learned all of that. You\'re already ahead of most people.' }
+      ],
+      next: 'pre_exercise'
+    },
+
+    // --- EXERCISE ---
+    pre_exercise: {
+      scene: 'warm', chapter: 'EXERCISE TIME',
+      characters: ['lumen', 'q', 'v'],
+      section: 10,
+      lines: [
+        { speaker: 'v', text: 'Time to put this into practice! Reading about AI is one thing — actually using it is where the learning happens.' },
+        { speaker: 'lumen', text: 'I\'ve got an exercise for you. It\'s simple but powerful. You\'re going to test Claude\'s strengths AND its weaknesses yourself.' },
+        { speaker: 'q', text: 'This is the part where I had my biggest "aha" moment. Seeing Claude mess up for the first time was actually the most useful thing that happened to me.' },
+        { speaker: 'lumen', text: 'Ready?' }
+      ],
+      choices: [
+        { text: '"Let\'s do it — show me the exercise."', tag: 'EXERCISE', next: 'open_exercise' },
+        { text: '"I\'ll do the exercise later. What\'s next?"', tag: 'SKIP FOR NOW', next: 'pre_rap' }
+      ]
+    },
+
+    open_exercise: {
+      scene: 'warm', chapter: 'EXERCISE TIME',
+      characters: [],
+      section: 10,
+      lines: [],
+      action: 'show_exercise'
+    },
+
+    // --- RAP RECAP ---
+    pre_rap: {
+      scene: 'energy', chapter: 'Q\'S RECAP',
+      characters: ['lumen', 'q', 'v'],
+      section: 11,
+      lines: [
+        { speaker: 'lumen', text: 'Nice work. You\'ve covered a lot of ground. Before we wrap up, Q has something for you.' },
+        { speaker: 'v', text: 'This is my favorite part!' },
+        { speaker: 'q', text: 'Alright. Every module, I drop a verse that sums up what we learned. Helps it stick. You ready?' },
+        { speaker: 'q', text: 'Aight, here we go...' }
+      ],
+      next: 'rap'
+    },
+
+    rap: {
+      scene: 'rap', chapter: 'Q\'S RECAP RAP',
+      characters: ['q'],
+      section: 11,
+      lines: [
+        { speaker: 'q', text: 'It ain\'t magic, it ain\'t alive, let me set it straight \u2014' },
+        { speaker: 'q', text: 'Claude\'s a model trained on text, and the patterns are great.' },
+        { speaker: 'q', text: 'No ghost in the machine, no feelings inside,' },
+        { speaker: 'q', text: 'But it reasons, writes, and codes \u2014 that\'s a powerful ride.' },
+        { speaker: 'q', text: 'Good at thinking, good at drafting, analysis on lock,' },
+        { speaker: 'q', text: 'Bad at real-time facts \u2014 its knowledge has a clock.' },
+        { speaker: 'q', text: 'It\'ll answer wrong with confidence, look you dead in the face,' },
+        { speaker: 'q', text: 'So verify what matters \u2014 don\'t trust without a trace.' },
+        { speaker: 'q', text: 'Not a search engine, not a brain, something in between \u2014' },
+        { speaker: 'q', text: 'A reasoning engine running on the largest text you\'ve seen.' },
+        { speaker: 'q', text: 'ChatGPT, Gemini \u2014 they\'re all in the game,' },
+        { speaker: 'q', text: 'But the skill is in the using, and the using\'s all the same.' },
+        { speaker: 'q', text: 'Learn where it\'s strong, learn where it breaks,' },
+        { speaker: 'q', text: 'That\'s the difference between good and the kind of bad mistakes.' },
+        { speaker: 'q', text: 'Module 1 done, foundation laid \u2014' },
+        { speaker: 'q', text: 'You know what Claude is. Now let\'s get paid.' }
+      ],
+      next: 'post_rap'
+    },
+
+    post_rap: {
+      scene: 'dawn', chapter: 'MODULE 1 COMPLETE',
+      characters: ['lumen', 'q', 'v'],
+      section: 12,
+      lines: [
+        { speaker: 'v', text: 'Yes! That was fire. Module 1 is in the books.' },
+        { speaker: 'lumen', text: 'You now know what Claude is, what it\'s good at, what it\'s bad at, and why those differences matter. That\'s more than most people ever learn.' },
+        { speaker: 'q', text: 'For real though. I\'ve met people who use Claude every day and still don\'t know half of what you just learned.' },
+        { speaker: 'lumen', text: 'Module 2 is about how to think WITH AI — breaking down problems, evaluating what you get back, and getting better results every time.' },
+        { speaker: 'v', text: 'You got this. See you in the next one.' }
+      ],
+      next: 'module_complete'
+    },
+
+    module_complete: {
+      scene: 'dawn', chapter: '',
+      characters: [],
+      section: 12,
+      lines: [],
+      action: 'show_complete'
+    }
+  };
+
+  // === Engine ===
+  var state = {
+    node: null,
+    lineIndex: 0,
+    charIndex: 0,
+    typing: false,
+    typingTimer: null,
+    started: false,
+    ended: false,
+    currentText: ''
+  };
+
+  var SAVE_KEY = 'myco_m1_vn_save';
+  var PROGRESS_KEY = 'myco_world_progress';
+  var TYPE_SPEED = 22;
+
+  var els = {
+    titleScreen: document.getElementById('vn-title-screen'),
+    startBtn: document.getElementById('vn-start'),
+    scene: document.getElementById('vn-scene'),
+    chapter: document.getElementById('vn-chapter'),
+    save: document.getElementById('vn-save'),
+    characters: document.getElementById('vn-characters'),
+    choices: document.getElementById('vn-choices'),
+    dialogue: document.getElementById('vn-dialogue'),
+    speaker: document.getElementById('vn-speaker'),
+    text: document.getElementById('vn-text'),
+    advance: document.getElementById('vn-advance'),
+    progressFill: document.getElementById('vn-progress-fill'),
+    exercise: document.getElementById('vn-exercise'),
+    exerciseDone: document.getElementById('exercise-done'),
+    complete: document.getElementById('vn-complete')
+  };
+
+  // --- Save/Load ---
+  function saveGame() {
+    var data = { node: state.node, lineIndex: state.lineIndex };
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
+    els.save.classList.add('show');
+    setTimeout(function() { els.save.classList.remove('show'); }, 1200);
+  }
+
+  function markModuleComplete() {
+    try {
+      var progress = JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {};
+      progress['mod-f1'] = true;
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    } catch(e) {}
+  }
+
+  // --- Progress bar ---
+  function updateProgress(section) {
+    currentSection = section || currentSection;
+    var pct = Math.min(100, Math.round((currentSection / TOTAL_SECTIONS) * 100));
+    els.progressFill.style.width = pct + '%';
+  }
+
+  // --- Rendering ---
+  function showNode(nodeId, startLine) {
+    var node = story[nodeId];
+    if (!node) return;
+
+    state.node = nodeId;
+    state.lineIndex = startLine || 0;
+    state.charIndex = 0;
+
+    if (node.section) updateProgress(node.section);
+
+    if (node.action) {
+      handleAction(node.action);
+      return;
+    }
+
+    els.scene.style.background = SCENES[node.scene] || SCENES.black;
+    els.chapter.textContent = node.chapter || '';
+    renderCharacters(node.characters || []);
+    els.choices.innerHTML = '';
+
+    if (node.lines.length > 0) {
+      els.dialogue.style.display = 'block';
+      showLine();
+    } else if (node.choices) {
+      els.dialogue.style.display = 'none';
+      showChoices(node.choices);
+    }
+  }
+
+  function handleAction(action) {
+    if (action === 'show_exercise') {
+      els.dialogue.style.display = 'none';
+      els.exercise.classList.add('visible');
+    } else if (action === 'show_complete') {
+      els.dialogue.style.display = 'none';
+      markModuleComplete();
+      updateProgress(TOTAL_SECTIONS);
+      els.complete.classList.add('visible');
+    }
+  }
+
+  function renderCharacters(charIds) {
+    var html = '';
+    charIds.forEach(function(id) {
+      var c = CHARS[id];
+      if (!c || !c.sprite) return;
+      html += '<div class="vn-char visible" data-char="' + id + '">';
+      html += '<div class="vn-char-sprite" style="color:' + c.color + ';">' + c.sprite + '</div>';
+      html += '<div class="vn-char-label" style="color:' + c.color + ';">' + c.name + '</div>';
+      html += '</div>';
+    });
+    els.characters.innerHTML = html;
+  }
+
+  function showLine() {
+    var node = story[state.node];
+    if (!node) return;
+
+    if (state.lineIndex >= node.lines.length) {
+      if (node.choices) {
+        showChoices(node.choices);
+      } else if (node.next) {
+        saveGame();
+        showNode(node.next);
+      } else {
+        state.ended = true;
+      }
+      return;
+    }
+
+    var line = node.lines[state.lineIndex];
+    var char = CHARS[line.speaker] || CHARS.narrator;
+
+    if (char.name) {
+      els.speaker.textContent = char.name;
+      els.speaker.style.color = char.color;
+    } else {
+      els.speaker.textContent = '';
+    }
+
+    var charEls = els.characters.querySelectorAll('.vn-char');
+    charEls.forEach(function(el) {
+      if (el.getAttribute('data-char') === line.speaker) {
+        el.classList.add('speaking');
+      } else {
+        el.classList.remove('speaking');
+      }
+    });
+
+    typeText(line.text);
+  }
+
+  function typeText(text) {
+    state.typing = true;
+    state.charIndex = 0;
+    state.currentText = text;
+    els.text.textContent = '';
+    els.advance.textContent = '';
+
+    clearInterval(state.typingTimer);
+    state.typingTimer = setInterval(function() {
+      if (state.charIndex < text.length) {
+        els.text.textContent = text.substring(0, state.charIndex + 1);
+        state.charIndex++;
+      } else {
+        clearInterval(state.typingTimer);
+        state.typing = false;
+        els.advance.textContent = 'tap or press space';
+      }
+    }, TYPE_SPEED);
+  }
+
+  function skipType() {
+    if (state.typing) {
+      clearInterval(state.typingTimer);
+      els.text.textContent = state.currentText;
+      state.typing = false;
+      state.charIndex = state.currentText.length;
+      els.advance.textContent = 'tap or press space';
+    }
+  }
+
+  function showChoices(choices) {
+    els.dialogue.style.display = 'none';
+    var html = '';
+    choices.forEach(function(choice, i) {
+      var tagHtml = choice.tag ? '<span class="choice-tag">' + choice.tag + '</span>' : '';
+      html += '<button class="vn-choice" data-choice="' + i + '" aria-label="' + choice.text.replace(/"/g, '&quot;') + '">' + tagHtml + choice.text + '</button>';
+    });
+    els.choices.innerHTML = html;
+
+    els.choices.querySelectorAll('.vn-choice').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(btn.getAttribute('data-choice'));
+        var choice = choices[idx];
+        els.choices.innerHTML = '';
+        saveGame();
+        showNode(choice.next);
+      });
+    });
+  }
+
+  // --- Exercise completion ---
+  els.exerciseDone.addEventListener('click', function() {
+    els.exercise.classList.remove('visible');
+    showNode('pre_rap');
+  });
+
+  // --- Input ---
+  function handleAdvance() {
+    if (state.ended) return;
+    if (state.typing) {
+      skipType();
+      return;
+    }
+    state.lineIndex++;
+    showLine();
+  }
+
+  els.dialogue.addEventListener('click', handleAdvance);
+
+  document.addEventListener('keydown', function(e) {
+    if (!state.started) return;
+    if (els.exercise.classList.contains('visible')) return;
+    if (els.complete.classList.contains('visible')) return;
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      if (els.choices.children.length > 0) return;
+      handleAdvance();
+    }
+  });
+
+  // --- Start ---
+  els.startBtn.addEventListener('click', function() {
+    state.started = true;
+    els.titleScreen.classList.add('hidden');
+    setTimeout(function() { showNode('start'); }, 500);
+  });
+
+})();
+</script>
 
 </body>
 </html>
