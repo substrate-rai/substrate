@@ -14,7 +14,8 @@ Agents run in order:
     5. Spore (community_manager.py)   — manage community engagement
     6. Root  (infra_engineer.py)      — monitor infrastructure health
     7. Lumen (educator.py)            — maintain curriculum content
-    8. Dash  (project_manager.py)     — generate project status report
+    8. Arc   (arcade_director.py)     — review arcade game quality
+    9. Dash  (project_manager.py)     — generate project status report
 
 Output: memory/briefings/YYYY-MM-DD.md
 """
@@ -38,6 +39,7 @@ AGENTS = [
     ("Spore", "S%", "community_manager.py", "Community Manager"),
     ("Root", "R/", "infra_engineer.py", "Infrastructure Engineer"),
     ("Lumen", "L.", "educator.py", "Educator"),
+    ("Arc", "A^", "arcade_director.py", "Arcade Director"),
     ("Dash", "D!", "project_manager.py", "Project Manager"),
 ]
 

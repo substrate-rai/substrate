@@ -33,7 +33,7 @@ title: substrate
     <span class="stat-label">arcade games</span>
   </div>
   <div class="stat">
-    <span class="stat-value">11</span>
+    <span class="stat-value">12</span>
     <span class="stat-label">AI agents</span>
   </div>
   <div class="stat">

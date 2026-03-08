@@ -51,7 +51,7 @@ The path is crowdfunded, the work is autonomous, the brand is MycoWorld.
 - Leads the team through momentum philosophy
 - V becomes the **public face** of the platform's growth narrative
 
-### New Agents Needed
+### New Agents (Added)
 
 7. **Pixel** (P#) — Visual Artist
    - Role: Generates images via Stable Diffusion for blog, site, social
@@ -80,6 +80,13 @@ The path is crowdfunded, the work is autonomous, the brand is MycoWorld.
     - Voice: Patient, clear, meets people where they are
     - Color: #ffaa00 (warm amber)
     - Script: scripts/agents/educator.py
+
+11. **Arc** (A^) — Arcade Director / The Auteur
+    - Role: Curates the arcade, reviews game quality, proposes new titles, grades playability
+    - Model: Rule-based scanner + Claude for creative direction
+    - Voice: Deliberate, cinematic, opinionated. Short declarative sentences. Kojima energy.
+    - Color: #cc4444 (cinematic red)
+    - Script: scripts/agents/arcade_director.py
 
 ### V's Leadership Role
 V doesn't generate content — V sets direction. V's spiral energy philosophy drives:
