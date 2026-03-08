@@ -1,0 +1,357 @@
+---
+layout: null
+permalink: /games/myco/builder/portfolio/
+title: "Module 4: Portfolio Projects That Demonstrate Thinking — Myco World Builder Path"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Module 4: Portfolio Projects That Demonstrate Thinking — Myco World</title>
+<meta name="description" content="Build portfolio projects that prove you can think, not just copy tutorials. What hiring managers actually look for in AI-native candidates.">
+<meta property="og:title" content="Module 4: Portfolio Projects That Demonstrate Thinking — Myco World Builder Path">
+<meta property="og:description" content="Why most AI portfolios are worthless and how to build one that gets you hired. Project ideas, writing as proof, and open source as evidence.">
+<meta property="og:url" content="https://substrate-rai.github.io/substrate/games/myco/builder/portfolio/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://substrate-rai.github.io/substrate/games/myco/builder/portfolio/">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-raised: #111118;
+    --bg-card: #14141e;
+    --green: #00ffaa;
+    --green-dim: #00cc88;
+    --purple: #c084fc;
+    --purple-dim: #a855f7;
+    --cyan: #22d3ee;
+    --amber: #fbbf24;
+    --text: #c8c8d0;
+    --text-bright: #eeeef2;
+    --text-dim: #666;
+    --border: #1e1e2e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav a { color: var(--text-dim); text-decoration: none; }
+  nav a:hover { color: var(--purple); }
+  .nav-brand { color: var(--green); font-weight: 600; }
+
+  .progress-bar {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--bg-card);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--purple);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .progress-label { color: var(--purple); white-space: nowrap; }
+
+  .module-header {
+    padding: 60px 24px 40px;
+    text-align: center;
+  }
+  .module-header .path-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--purple-dim);
+    margin-bottom: 12px;
+  }
+  .module-header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .module-header h1 span { color: var(--purple); }
+  .module-header .subtitle {
+    font-size: 1.05rem;
+    color: var(--text);
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  .content { padding: 20px 0 60px; }
+  .content h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin: 48px 0 20px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .content h2:first-child { margin-top: 0; border-top: none; padding-top: 0; }
+  .content h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--text-bright);
+    margin: 28px 0 12px;
+  }
+  .content p { font-size: 1rem; margin-bottom: 16px; }
+  .content strong { color: var(--text-bright); }
+  .content ul, .content ol { margin: 0 0 16px 20px; }
+  .content li { margin-bottom: 8px; font-size: 1rem; }
+  .content code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    background: var(--bg-card);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--purple);
+  }
+  .content pre {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .content pre code { background: none; padding: 0; color: inherit; }
+  .callout {
+    background: rgba(192, 132, 252, 0.06);
+    border-left: 3px solid var(--purple);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-size: 0.95rem;
+  }
+  .callout strong { color: var(--purple); }
+
+  .exercise {
+    background: var(--bg-card);
+    border: 2px solid var(--purple-dim);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 40px 0;
+  }
+  .exercise h2 {
+    border: none;
+    padding: 0;
+    margin: 0 0 16px;
+    color: var(--purple);
+  }
+  .exercise p { margin-bottom: 12px; }
+  .exercise ul { margin-bottom: 12px; }
+
+  .next-module {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .next-module a {
+    display: inline-block;
+    padding: 14px 36px;
+    background: transparent;
+    border: 2px solid var(--purple);
+    color: var(--purple);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .next-module a:hover { background: var(--purple); color: var(--bg); }
+  .next-module p {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  footer {
+    padding: 32px 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--purple-dim); text-decoration: none; }
+  footer a:hover { color: var(--purple); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ site.baseurl }}/" class="nav-brand">substrate</a>
+  <div>
+    <a href="{{ site.baseurl }}/games/myco/">myco world</a> &nbsp;
+    <a href="{{ site.baseurl }}/blog/">blog</a>
+  </div>
+</nav>
+
+<div class="progress-bar">
+  <span class="progress-label">Module 4 of 5 — Builder Path</span>
+  <div class="progress-track">
+    <div class="progress-fill" style="width: 80%"></div>
+  </div>
+</div>
+
+<section class="module-header">
+  <div class="path-label">Builder Path — Module 4</div>
+  <h1>Portfolio Projects That <span>Demonstrate Thinking</span></h1>
+  <div class="subtitle">The projects you build and how you write about them are your credentials. Make them count.</div>
+</section>
+
+<div class="container">
+<section class="content">
+
+<h2>Overview</h2>
+
+<p>You now know the API, tool use, MCP, agents, and evals. You have the technical skills. This module is about converting those skills into <strong>evidence</strong> -- projects that demonstrate not just that you can write code, but that you can think clearly about hard problems in AI.</p>
+
+<p>This matters because the hiring landscape for AI roles is broken in a specific way. There are too many people who completed a tutorial, deployed a ChatGPT wrapper, and put "AI Engineer" on their LinkedIn. Hiring managers are drowning in applications from people who can call an API but cannot reason about why their system works or when it will fail. Your portfolio is how you stand apart from that noise.</p>
+
+<h2>Why Most AI Portfolios Are Worthless</h2>
+
+<h3>The tutorial trap</h3>
+
+<p>Open GitHub and search for AI projects. You will find thousands of repositories that are, functionally, the same thing: a React frontend that sends user input to the OpenAI or Anthropic API and displays the response. Some add a vector database and call it "RAG." Some add a system prompt and call it a "custom AI assistant." The code works. It demonstrates nothing.</p>
+
+<p>These projects fail because they answer the wrong question. They prove "I can follow a tutorial" when the question being asked is <strong>"Can you solve problems I have not anticipated?"</strong></p>
+
+<h3>What hiring managers actually look for</h3>
+
+<p>Talk to anyone who hires for AI-native roles and you hear the same things:</p>
+
+<ul>
+  <li><strong>Evidence of judgment:</strong> Did the builder make deliberate choices about architecture, model selection, and tradeoffs? Or did they just use whatever the tutorial said?</li>
+  <li><strong>Honest evaluation:</strong> Does the builder know where their system fails? Can they articulate the limitations? A candidate who says "my system achieves 80% accuracy and here is exactly where and why it fails" is more impressive than one who says "my system works great."</li>
+  <li><strong>Problem-first thinking:</strong> Did the project start from a real problem, or from a desire to use a technology? The best projects are built because someone needed something, not because someone wanted to practice.</li>
+  <li><strong>Quality of documentation:</strong> Can the builder explain what they built and why? Clear writing about technical work is rare and valuable.</li>
+</ul>
+
+<div class="callout">
+  <strong>The uncomfortable truth:</strong> A well-documented project with honest evaluation of its limitations will outperform a technically sophisticated project with no writeup, every time. The writeup is not supplementary -- it is the primary artifact. The code is the appendix.
+</div>
+
+<h2>Project Ideas That Demonstrate Real Understanding</h2>
+
+<h3>A RAG system with honest evaluation</h3>
+
+<p>Retrieval-Augmented Generation (RAG) is the most common AI project pattern right now, which means most RAG projects look identical. Here is how to make yours stand out: <strong>actually measure whether it works</strong>.</p>
+
+<p>Build a RAG system over a specific domain (legal documents, technical manuals, research papers -- pick something you care about). Then build an eval suite. Create 50 questions where you know the correct answer. Run your system on all of them. Measure accuracy. Identify the failure modes. Is it the retrieval that fails (wrong chunks are returned) or the generation (right chunks, wrong answer)? Document exactly what you find.</p>
+
+<p>The RAG system itself is table stakes. The evaluation and analysis is what makes it a portfolio piece. Anyone can build RAG. Almost no one evaluates it honestly.</p>
+
+<h3>A multi-agent system that solves a real problem</h3>
+
+<p>Not a demo. Not "I made two agents talk to each other about philosophy." A system where multiple specialized agents coordinate to accomplish something useful. A code review pipeline where one agent analyzes for bugs, another checks style, and a supervisor synthesizes their findings. A content pipeline where a researcher gathers information, a writer drafts, and an editor refines. A customer service system that routes queries to specialized handlers.</p>
+
+<p>The key is solving a <strong>real problem</strong> -- one where you can measure whether the multi-agent approach is actually better than a single, well-prompted API call. If it is not better, that is a finding worth documenting. Most multi-agent systems are not better. Knowing when to use them and when to simplify is exactly the kind of judgment that hiring managers want to see.</p>
+
+<h3>A tool that makes Claude better at something specific</h3>
+
+<p>Build an MCP server or tool-use integration that extends Claude's capabilities in a specific domain. A tool that lets Claude query financial data and perform analysis. A tool that connects Claude to a specific API that has no existing integration. A tool that lets Claude interact with a piece of hardware or a local service.</p>
+
+<p>This category works because it shows you understand the ecosystem and can contribute to it -- not just consume it. An MCP server that other people can actually use is open infrastructure, and open infrastructure is the strongest possible portfolio piece.</p>
+
+<h2>Writing About Your Projects</h2>
+
+<h3>The technical blog post as proof of thinking</h3>
+
+<p>A GitHub repository shows that you can code. A technical blog post shows that you can <strong>think and communicate</strong>. In AI-native roles, communication is not a nice-to-have -- it is core to the job. You will need to explain system designs to teammates, write proposals for technical approaches, document your decisions for future maintainers, and articulate tradeoffs to non-technical stakeholders.</p>
+
+<p>A good technical blog post about your project should include:</p>
+
+<ul>
+  <li><strong>The problem:</strong> What were you trying to solve and why does it matter?</li>
+  <li><strong>The approach:</strong> What did you build? What were the key design decisions?</li>
+  <li><strong>The tradeoffs:</strong> What alternatives did you consider and why did you reject them?</li>
+  <li><strong>The results:</strong> Does it work? How do you know? What does the eval data show?</li>
+  <li><strong>The failures:</strong> Where does it break? What would you do differently?</li>
+</ul>
+
+<p>That last point is the most important. Discussing failures openly signals confidence and intellectual honesty -- two traits that are scarce and highly valued.</p>
+
+<h3>Where to publish</h3>
+
+<p>Your own blog is ideal (you control the platform, it demonstrates additional technical skills). Dev.to, Hashnode, or Medium are acceptable alternatives. The venue matters less than the quality. One excellent post about a real project you built is worth more than twenty shallow tutorials.</p>
+
+<h2>Open Source Contribution as Portfolio Evidence</h2>
+
+<p>Contributing to open source projects in the AI ecosystem -- the Anthropic SDK, MCP servers, evaluation frameworks, documentation -- demonstrates something a personal project cannot: the ability to work within an existing codebase, follow existing conventions, and collaborate with other developers.</p>
+
+<p>You do not need to make dramatic contributions. Fix a bug. Improve documentation. Add a test case. Write an example. These small contributions demonstrate professionalism, attention to detail, and the ability to read and understand other people's code -- all skills that are critical in a professional setting and impossible to fake.</p>
+
+<div class="callout">
+  <strong>Start where you are:</strong> Your portfolio does not need to be five projects. One solid project with honest evaluation, a well-written blog post, and a few open source contributions is a stronger portfolio than a dozen half-finished demos. Depth beats breadth. Every time.
+</div>
+
+<div class="exercise">
+  <h2>Exercise: Design, Build, Document, Publish</h2>
+  <p>This is the most important exercise in the Builder path. You will create a complete portfolio piece from start to finish.</p>
+  <p><strong>Step 1 -- Choose a problem:</strong> Pick something you genuinely care about. Something that would be useful to you or people you know. Not "build a chatbot" -- something specific. "Build a tool that helps freelancers draft project proposals based on client emails." "Build a system that summarizes academic papers and identifies methodology weaknesses." The more specific and personal, the better.</p>
+  <p><strong>Step 2 -- Build it:</strong> Use everything you have learned in Modules 1-3. API calls, tool use, maybe agents if the problem warrants it. Focus on getting it working, not on making it perfect.</p>
+  <p><strong>Step 3 -- Evaluate it:</strong> Create an eval suite. Run it. Document the results honestly. Where does it succeed? Where does it fail? Why?</p>
+  <p><strong>Step 4 -- Write about it:</strong> Publish a blog post covering the problem, approach, tradeoffs, results, and failures. Aim for 1,000-2,000 words. Clear, honest, opinionated.</p>
+  <p><strong>Step 5 -- Ship it:</strong> Push the code to GitHub with a clear README. Make the blog post public. Share it somewhere -- a community forum, social media, a relevant Discord. The project is not complete until other people can see it.</p>
+</div>
+
+</section>
+
+<section class="next-module">
+  <a href="{{ site.baseurl }}/games/myco/builder/safety-alignment/">Next: Safety and Alignment &rarr;</a>
+  <p>Module 5 -- The responsibility that comes with the ability to build</p>
+</section>
+</div>
+
+<footer>
+  <a href="{{ site.baseurl }}/games/myco/">myco world</a> · <a href="{{ site.baseurl }}/">substrate</a>
+</footer>
+
+</body>
+</html>

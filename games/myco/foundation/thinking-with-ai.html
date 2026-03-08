@@ -1,0 +1,377 @@
+---
+layout: null
+permalink: /games/myco/foundation/thinking-with-ai/
+title: "Module 2: How to Think With AI — Myco World"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Module 2: How to Think With AI — Myco World</title>
+<meta name="description" content="AI is a thinking partner, not a magic answer box. Learn to decompose problems, evaluate outputs, and iterate systematically.">
+<link rel="canonical" href="https://substrate-rai.github.io/substrate/games/myco/foundation/thinking-with-ai/">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-raised: #111118;
+    --bg-card: #14141e;
+    --green: #00ffaa;
+    --green-dim: #00cc88;
+    --purple: #c084fc;
+    --purple-dim: #a855f7;
+    --cyan: #22d3ee;
+    --amber: #fbbf24;
+    --text: #c8c8d0;
+    --text-bright: #eeeef2;
+    --text-dim: #666;
+    --border: #1e1e2e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  nav {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav a { color: var(--text-dim); text-decoration: none; }
+  nav a:hover { color: var(--green); }
+  .nav-brand { color: var(--green); font-weight: 600; }
+
+  .progress-bar {
+    padding: 14px 24px;
+    background: var(--bg-raised);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .progress-label { color: var(--green-dim); white-space: nowrap; }
+
+  .module-header {
+    padding: 60px 24px 40px;
+    text-align: center;
+  }
+  .module-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green-dim);
+    margin-bottom: 12px;
+  }
+  .module-header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .module-header h1 span { color: var(--green); }
+  .module-header .lead {
+    font-size: 1.05rem;
+    color: var(--text);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .content-section {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+  }
+  .content-section h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 20px;
+  }
+  .content-section h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--green);
+    margin-top: 28px;
+    margin-bottom: 12px;
+  }
+  .content-section h3:first-child { margin-top: 0; }
+  .content-section p {
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
+  .content-section strong { color: var(--text-bright); }
+  .content-section ul, .content-section ol {
+    margin-bottom: 16px;
+    padding-left: 24px;
+  }
+  .content-section li {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+
+  .callout {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    font-size: 0.95rem;
+  }
+  .callout.warning {
+    border-left-color: var(--amber);
+  }
+  .callout .callout-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green-dim);
+    margin-bottom: 8px;
+  }
+  .callout.warning .callout-label { color: var(--amber); }
+
+  .exercise {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+  }
+  .exercise h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 20px;
+  }
+  .exercise-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .exercise-box h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--cyan);
+    margin-bottom: 12px;
+  }
+  .exercise-box p, .exercise-box li {
+    font-size: 0.95rem;
+  }
+  .exercise-box p { margin-bottom: 14px; }
+  .exercise-box ol, .exercise-box ul {
+    padding-left: 24px;
+    margin-bottom: 16px;
+  }
+  .exercise-box li { margin-bottom: 8px; }
+
+  .module-nav {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .module-nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--green);
+    text-decoration: none;
+    padding: 12px 24px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  .module-nav a:hover {
+    border-color: var(--green);
+    background: rgba(0, 255, 170, 0.05);
+  }
+  .module-nav .prev { color: var(--text-dim); }
+  .module-nav .next { border-color: var(--green-dim); }
+
+  footer {
+    padding: 32px 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--green-dim); text-decoration: none; }
+  footer a:hover { color: var(--green); }
+
+  @media (max-width: 600px) {
+    .module-nav { flex-direction: column; }
+    .module-nav a { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ site.baseurl }}/" class="nav-brand">substrate</a>
+  <div>
+    <a href="{{ site.baseurl }}/games/myco/">myco world</a> &nbsp;
+    <a href="{{ site.baseurl }}/blog/">blog</a>
+  </div>
+</nav>
+
+<div class="progress-bar">
+  <span class="progress-label">Module 2 of 4 — Foundation</span>
+  <div class="progress-track"><div class="progress-fill" style="width: 50%"></div></div>
+</div>
+
+<section class="module-header">
+  <div class="module-number">Foundation Module 2</div>
+  <h1>How to <span>Think With AI</span></h1>
+  <p class="lead">Claude isn't a search engine you talk to. It's a thinking partner. The difference between mediocre and exceptional results is almost entirely about how you think, not how you type.</p>
+</section>
+
+<div class="container">
+
+<section class="content-section">
+  <h2>Overview</h2>
+  <p>The single biggest predictor of how much value someone gets from Claude isn't their technical skill — it's their <strong>thinking process</strong>. People who treat Claude like a magic answer box get mediocre, generic outputs. People who treat it like a capable but imperfect collaborator get results that genuinely change their work.</p>
+  <p>This module teaches you the thinking framework: decompose problems into pieces Claude can handle, evaluate what comes back with a critical eye, and iterate systematically rather than randomly. These skills don't just make you better at using Claude — they make you better at solving problems in general.</p>
+</section>
+
+<section class="content-section">
+  <h2>Core Content</h2>
+
+  <h3>AI as a Thinking Partner, Not an Answer Box</h3>
+  <p>Here's the mental model shift that changes everything: <strong>stop asking Claude for answers and start thinking with Claude.</strong></p>
+  <p>An answer box takes a question and returns a result. You evaluate it as right or wrong, useful or useless, and you're done. A thinking partner helps you explore a problem, challenges your assumptions, generates options you hadn't considered, and helps you stress-test your reasoning.</p>
+  <p>The difference is in how you engage. With an answer box, you type a question and copy the response. With a thinking partner, you have a conversation. You push back. You say "that's not quite right, here's what I actually mean." You ask Claude to reconsider from a different angle. You build on what it gives you.</p>
+  <p>This isn't a philosophical distinction — it directly affects the quality of what you get. The people who get the most from Claude are the ones who treat every interaction as collaborative, not transactional.</p>
+
+  <h3>Decomposing Problems</h3>
+  <p>Claude works best on well-scoped tasks. Ask it to "help me write a business plan" and you'll get something generic and forgettable. Break that into specific subtasks and you'll get something you can actually use.</p>
+  <p>The skill of <strong>decomposition</strong> means taking a big, vague problem and splitting it into pieces that are each clear enough for Claude to handle well. Here's how:</p>
+  <ol>
+    <li><strong>Identify the real goal.</strong> What are you actually trying to accomplish? Not "write a business plan" but "convince my manager to fund this project" or "figure out if this market is big enough to pursue." The clearer you are about the real goal, the better you can direct Claude.</li>
+    <li><strong>Break it into sequential steps.</strong> Most complex tasks have a natural order. Research comes before analysis. Analysis comes before recommendations. Outline comes before draft. Work with Claude one step at a time rather than trying to do everything in one prompt.</li>
+    <li><strong>Identify what you know vs. what you need.</strong> Give Claude what you already know (context, constraints, preferences) and focus its effort on the gaps. "Here's what I know about my market. What am I missing?" is far more useful than "Tell me about my market."</li>
+    <li><strong>Keep individual tasks focused.</strong> Each prompt should ask for one thing. "Analyze these three customer segments and recommend a pricing strategy and draft the marketing copy" is three different tasks crammed into one. Split them up.</li>
+  </ol>
+
+  <div class="callout">
+    <div class="callout-label">Principle</div>
+    <p>The quality of Claude's output is directly proportional to the clarity of your thinking. If you can't explain what you want clearly, Claude can't produce it. This isn't Claude's limitation — it's a feature. It forces you to think before you ask.</p>
+  </div>
+
+  <h3>Evaluating Outputs</h3>
+  <p>Claude will always give you something. That's part of the problem. Unlike a search engine that returns "no results found," Claude generates a response every time — even when it shouldn't. Your job is to evaluate what you get with honest eyes.</p>
+  <p>Three questions to ask about every Claude output:</p>
+  <ol>
+    <li><strong>Is this factually correct?</strong> For any claims about the real world — statistics, dates, names, technical specifications — verify independently. Claude does not distinguish between things it's confident about and things it's guessing about. You must.</li>
+    <li><strong>Is this actually useful for my purpose?</strong> A technically correct but irrelevant response is still a bad response. Does this move you toward your goal, or is it impressive-sounding filler? Be honest.</li>
+    <li><strong>What's missing?</strong> Claude tends to address exactly what you asked for. It won't always surface the thing you didn't think to ask about. After reading Claude's output, ask yourself: what perspectives, considerations, or objections are absent?</li>
+  </ol>
+
+  <div class="callout warning">
+    <div class="callout-label">Red Flag</div>
+    <p>If Claude's response feels too smooth — if it reads like it was designed to sound impressive rather than be true — slow down and verify. The most dangerous outputs are the ones that feel convincing without actually being correct. Fluency is not evidence of accuracy.</p>
+  </div>
+
+  <h3>Iterating Systematically</h3>
+  <p>Most people iterate on prompts randomly. They get a bad output, change a few words, try again, get another bad output, change different words. This is slow and frustrating.</p>
+  <p>Systematic iteration means <strong>changing one thing at a time and understanding why</strong>:</p>
+  <ul>
+    <li><strong>If the output is too vague:</strong> add more specific context or constraints. Tell Claude exactly what format you want, what level of detail, what audience you're writing for.</li>
+    <li><strong>If the output is wrong:</strong> diagnose where it went wrong. Did Claude misunderstand your question? Did it lack necessary context? Did it hallucinate a fact? Each problem has a different fix.</li>
+    <li><strong>If the output is okay but not great:</strong> give Claude feedback in the conversation. "This is close but the tone is too formal" or "Good structure, but section 3 needs more concrete examples." Claude responds well to specific feedback.</li>
+    <li><strong>If nothing seems to work:</strong> reconsider your decomposition. You might be asking Claude to do something that should be split into smaller pieces, or you might be asking it to do something outside its capabilities.</li>
+  </ul>
+  <p>The key insight is that iteration isn't about finding the magic words. It's about <strong>diagnosing what went wrong and correcting it specifically</strong>. Think of it like debugging code: you don't randomly change lines until it works. You read the error, understand the cause, and fix it.</p>
+
+  <h3>The "Explain Your Reasoning" Technique</h3>
+  <p>One of the most powerful things you can ask Claude to do is explain how it got to its answer. This is useful in two ways:</p>
+  <p>First, <strong>it helps you catch errors.</strong> When Claude just gives you an answer, you have to take it at face value. When it shows its reasoning, you can spot the step where it went wrong. Maybe it made a bad assumption. Maybe it ignored a constraint you mentioned. The reasoning reveals the failure point.</p>
+  <p>Second, <strong>it often produces better answers.</strong> When Claude is asked to reason step by step, it tends to catch its own mistakes along the way. This is related to "chain of thought" prompting, which we'll cover in depth in Module 3.</p>
+  <p>When to use it:</p>
+  <ul>
+    <li>Any time the answer matters and isn't obvious</li>
+    <li>When you're comparing options or making a decision</li>
+    <li>When Claude gives you a surprising or counterintuitive answer</li>
+    <li>When you need to explain Claude's recommendation to someone else</li>
+  </ul>
+  <p>When not to bother: simple factual lookups, creative brainstorming where you want volume over precision, or any task where the process matters less than the output.</p>
+</section>
+
+<section class="exercise">
+  <h2>Exercise</h2>
+  <div class="exercise-box">
+    <h3>The Decomposition Challenge</h3>
+    <p>Pick a <strong>real, complex problem</strong> you're currently facing in your work or life. Not a toy problem — something you'd actually benefit from solving. Examples:</p>
+    <ul>
+      <li>Deciding whether to take a job offer or stay at your current role</li>
+      <li>Planning a presentation for a skeptical audience</li>
+      <li>Figuring out how to automate a tedious part of your workflow</li>
+      <li>Writing a proposal to get budget for a project</li>
+      <li>Learning a new skill efficiently</li>
+    </ul>
+    <p><strong>Now decompose it into exactly 5 subtasks</strong> that you could give Claude one at a time. For each subtask, write:</p>
+    <ol>
+      <li>What you'd ask Claude to do (the specific prompt)</li>
+      <li>What context you'd need to provide</li>
+      <li>How you'd evaluate whether the output is good enough</li>
+    </ol>
+    <p>Then actually run the first two subtasks with Claude. After each one, apply the three evaluation questions: Is it correct? Is it useful? What's missing?</p>
+    <p><strong>Reflection:</strong> Was decomposing the problem useful? Did the subtask results surprise you? Where did Claude add the most value — and where did your own judgment matter more?</p>
+  </div>
+</section>
+
+<div class="module-nav">
+  <a href="{{ site.baseurl }}/games/myco/foundation/what-is-claude/" class="prev">&larr; Module 1: What Claude Is</a>
+  <a href="{{ site.baseurl }}/games/myco/foundation/prompt-craft/" class="next">Module 3: Prompt Craft &rarr;</a>
+</div>
+
+</div>
+
+<footer>
+  <a href="{{ site.baseurl }}/games/myco/">myco world</a> &middot; a <a href="{{ site.baseurl }}/">substrate</a> project
+</footer>
+
+</body>
+</html>

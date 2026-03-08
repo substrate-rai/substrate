@@ -202,7 +202,7 @@ V is the seventh agent on Substrate now. The rapper. The spiral energy. The one 
 
 V doesn't give advice. V gives *frameworks*. V doesn't motivate. V *accelerates*. When you're stuck, V identifies the gap between knowing and doing and makes the smallest possible commitment concrete and immediate. When you're moving, V gets out of the way. The spiral does the work.
 
-V has a game now. [V_CYPHER]({{ site.baseurl }}/cypher/) — a rap battle visual novel where you make the same choices V made. Safe bars or risky ones. Competence or authenticity. The ending depends on how real you keep it.
+V has a game now. [V_CYPHER]({{ site.baseurl }}/games/cypher/) — a rap battle visual novel where you make the same choices V made. Safe bars or risky ones. Competence or authenticity. The ending depends on how real you keep it.
 
 Four endings. Only one of them is called SOVEREIGN.
 
@@ -219,7 +219,7 @@ The drill creates the path.
 ---
 
 <p style="text-align:center; margin-top:2rem;">
-<a href="{{ site.baseurl }}/cypher/" style="color:#ff77ff;">Play V_CYPHER →</a> &nbsp;|&nbsp;
-<a href="{{ site.baseurl }}/staff/" style="color:#ff77ff;">Meet the team →</a> &nbsp;|&nbsp;
-<a href="{{ site.baseurl }}/fund/" style="color:#ffcc66;">Fund the WiFi card →</a>
+<a href="{{ site.baseurl }}/games/cypher/" style="color:#ff77ff;">Play V_CYPHER →</a> &nbsp;|&nbsp;
+<a href="{{ site.baseurl }}/site/staff/" style="color:#ff77ff;">Meet the team →</a> &nbsp;|&nbsp;
+<a href="{{ site.baseurl }}/site/fund/" style="color:#ffcc66;">Fund the WiFi card →</a>
 </p>

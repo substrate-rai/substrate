@@ -1,0 +1,1505 @@
+---
+layout: null
+permalink: /games/chemistry/
+title: "CHEMISTRY — Substrate Arcade"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHEMISTRY — Substrate Arcade</title>
+<meta name="description" content="A systemic chemistry sandbox. Push, burn, explode, freeze — everything emerges from rules. By Substrate.">
+<meta property="og:title" content="CHEMISTRY — systemic sandbox">
+<meta property="og:description" content="Nintendo-style chemistry engine. No scripted puzzles — everything emerges from elemental interactions.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    background: #0a0a2e;
+    color: #e0e0e0;
+    overflow-x: hidden;
+    width: 100vw;
+    min-height: 100vh;
+    min-height: 100dvh;
+    cursor: crosshair;
+  }
+
+  canvas { display: block; touch-action: none; }
+
+  #game-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+  }
+
+  .ui-overlay {
+    position: fixed;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .ui-overlay a, .ui-overlay button, .ui-overlay .clickable {
+    pointer-events: all;
+  }
+
+  #legend {
+    top: 12px; left: 12px;
+    background: rgba(10, 10, 46, 0.85);
+    border: 1px solid #222255;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.65rem;
+    line-height: 1.8;
+    backdrop-filter: blur(8px);
+  }
+
+  #legend h3 {
+    color: #00ffaa;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    text-shadow: 0 0 8px #00ffaa44;
+  }
+
+  #legend .item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    pointer-events: all;
+    padding: 1px 4px;
+    border-radius: 3px;
+    transition: background 0.15s;
+  }
+
+  #legend .item:hover {
+    background: rgba(255,255,255,0.06);
+  }
+
+  #legend .item.selected {
+    background: rgba(0, 255, 170, 0.12);
+    outline: 1px solid #00ffaa44;
+  }
+
+  #legend .swatch {
+    width: 12px; height: 12px;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.15);
+    flex-shrink: 0;
+  }
+
+  #legend .key {
+    color: #666;
+    width: 14px;
+    text-align: center;
+  }
+
+  #wind-status {
+    top: 12px; right: 12px;
+    background: rgba(10, 10, 46, 0.85);
+    border: 1px solid #222255;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 0.7rem;
+    text-align: right;
+    backdrop-filter: blur(8px);
+  }
+
+  #wind-status .label {
+    color: #888;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  #wind-status .value {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  #wind-status .value.on { color: #44ccff; text-shadow: 0 0 10px #44ccff66; }
+  #wind-status .value.off { color: #555; }
+
+  #controls-bar {
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10, 10, 46, 0.9);
+    border-top: 1px solid #222255;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    font-size: 0.6rem;
+    color: #666;
+    backdrop-filter: blur(8px);
+  }
+
+  #controls-bar span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  #controls-bar kbd {
+    background: #1a1a4e;
+    border: 1px solid #333366;
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: #aaa;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+  }
+
+  #footer {
+    bottom: 40px; left: 0; right: 0;
+    text-align: center;
+    font-size: 0.55rem;
+    color: #444;
+    letter-spacing: 1px;
+  }
+
+  #footer a {
+    color: #00ffaa66;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  #footer a:hover { color: #00ffaa; }
+
+  #toast {
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(10, 10, 46, 0.92);
+    border: 1px solid #00ffaa44;
+    border-radius: 8px;
+    padding: 16px 28px;
+    font-size: 0.85rem;
+    color: #00ffaa;
+    text-shadow: 0 0 10px #00ffaa44;
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+
+  #toast.visible { opacity: 1; }
+
+  #description {
+    top: 50px; right: 12px;
+    background: rgba(10, 10, 46, 0.85);
+    border: 1px solid #222255;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-family: 'Comic Neue', cursive;
+    font-size: 0.7rem;
+    color: #aaa;
+    max-width: 200px;
+    line-height: 1.4;
+    backdrop-filter: blur(8px);
+  }
+
+  #description .name {
+    font-weight: 700;
+    color: #ddd;
+    margin-bottom: 2px;
+  }
+
+  /* Mobile controls */
+  #mobile-controls {
+    display: none;
+    position: fixed;
+    z-index: 20;
+    bottom: 0; left: 0; right: 0;
+    pointer-events: none;
+  }
+  #mobile-controls > * { pointer-events: auto; }
+
+  #joystick-zone {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(0,255,170,0.2);
+  }
+  #joystick-knob {
+    position: absolute;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(0,255,170,0.3);
+    border: 2px solid rgba(0,255,170,0.5);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    transition: none;
+  }
+
+  .mobile-btn {
+    position: absolute;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(0,255,170,0.3);
+    color: #00ffaa;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .mobile-btn:active, .mobile-btn.active {
+    background: rgba(0,255,170,0.25);
+    border-color: #00ffaa;
+  }
+
+  #btn-jump { bottom: 20px; right: 20px; width: 68px; height: 68px; font-size: 20px; }
+  #btn-wind { bottom: 96px; right: 20px; }
+  #btn-reset { bottom: 20px; right: 96px; }
+  #btn-delete { bottom: 96px; right: 96px; }
+
+  @media (hover: none) and (pointer: coarse) {
+    #mobile-controls { display: block; }
+    #controls-bar { display: none !important; }
+    #legend { font-size: 0.6rem; padding: 8px 10px; max-height: 50vh; overflow-y: auto; }
+    #description { display: none; }
+    #minimap { width: 100px; height: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="game-canvas"></canvas>
+
+<!-- UI Overlays -->
+<div id="legend" class="ui-overlay">
+  <h3>ELEMENTS</h3>
+  <div class="item selected" data-type="wood" onclick="selectMaterial(0)">
+    <span class="swatch" style="background:#8B6914"></span>
+    <span class="key">1</span> wood
+  </div>
+  <div class="item" data-type="metal" onclick="selectMaterial(1)">
+    <span class="swatch" style="background:#889"></span>
+    <span class="key">2</span> metal
+  </div>
+  <div class="item" data-type="fire" onclick="selectMaterial(2)">
+    <span class="swatch" style="background:#ff4400"></span>
+    <span class="key">3</span> fire
+  </div>
+  <div class="item" data-type="water" onclick="selectMaterial(3)">
+    <span class="swatch" style="background:#2288ff"></span>
+    <span class="key">4</span> water
+  </div>
+  <div class="item" data-type="ice" onclick="selectMaterial(4)">
+    <span class="swatch" style="background:#aaeeff"></span>
+    <span class="key">5</span> ice
+  </div>
+  <div class="item" data-type="oil" onclick="selectMaterial(5)">
+    <span class="swatch" style="background:#332200"></span>
+    <span class="key">6</span> oil
+  </div>
+  <div class="item" data-type="gunpowder" onclick="selectMaterial(6)">
+    <span class="swatch" style="background:#881111"></span>
+    <span class="key">7</span> gunpowder
+  </div>
+  <div class="item" data-type="grass" onclick="selectMaterial(7)">
+    <span class="swatch" style="background:#228822"></span>
+    <span class="key">8</span> grass
+  </div>
+  <div class="item" data-type="wind_source" onclick="selectMaterial(8)">
+    <span class="swatch" style="background:#44aacc88"></span>
+    <span class="key">9</span> wind src
+  </div>
+</div>
+
+<div id="wind-status" class="ui-overlay">
+  <div class="label">wind</div>
+  <div class="value off" id="wind-value">OFF</div>
+</div>
+
+<div id="description" class="ui-overlay">
+  <div class="name">Chemistry Sandbox</div>
+  <div>Click to place elements. Push things into fire. Create chain reactions. Everything interacts.</div>
+</div>
+
+<div id="toast" class="ui-overlay">SANDBOX RESET</div>
+
+<div id="footer" class="ui-overlay">
+  <a href="/substrate/arcade/">a Substrate Arcade production</a>
+</div>
+
+<div id="controls-bar" class="ui-overlay">
+  <span><kbd>WASD</kbd> move</span>
+  <span><kbd>SPACE</kbd> toggle wind</span>
+  <span><kbd>1</kbd>-<kbd>9</kbd> select element</span>
+  <span><kbd>LMB</kbd> place</span>
+  <span><kbd>RMB</kbd> delete</span>
+  <span><kbd>R</kbd> reset</span>
+</div>
+
+<div id="mobile-controls">
+  <div id="joystick-zone">
+    <div id="joystick-knob"></div>
+  </div>
+  <button class="mobile-btn" id="btn-jump">^</button>
+  <button class="mobile-btn" id="btn-wind">WIND</button>
+  <button class="mobile-btn" id="btn-reset">RST</button>
+  <button class="mobile-btn" id="btn-delete">DEL</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ============================================================
+// CHEMISTRY ENGINE — Substrate Arcade
+// A systemic sandbox. No scripts. Only rules.
+// ============================================================
+
+// --- CONSTANTS ---
+const GRAVITY = 600;
+const FRICTION = 0.92;
+const AIR_FRICTION = 0.98;
+const WIND_FORCE = 350;
+const FIRE_SPREAD_RADIUS = 50;
+const HEAT_TRANSFER_RATE = 80;
+const UPDRAFT_FORCE = 400;
+const EXPLOSION_FORCE = 900;
+const BIG_EXPLOSION_FORCE = 1800;
+const EXPLOSION_RADIUS = 120;
+const BIG_EXPLOSION_RADIUS = 200;
+const PLAYER_SPEED = 280;
+const PLAYER_JUMP = 420;
+const PUSH_FORCE = 200;
+
+// --- MATERIAL DEFINITIONS ---
+const MATERIALS = {
+  wood:       { color: 0x8B6914, isFlammable: true,  isConductive: false, weight: 3,   durability: 100, burnRate: 12,  w: 36, h: 36 },
+  metal:      { color: 0x8888AA, isFlammable: false, isConductive: true,  weight: 8,   durability: 500, burnRate: 0,   w: 36, h: 36 },
+  fire:       { color: 0xFF4400, isFlammable: false, isConductive: false, weight: 0.5, durability: 9999,burnRate: 0,   w: 28, h: 28, permanent: true, isBurning: true },
+  water:      { color: 0x2288FF, isFlammable: false, isConductive: false, weight: 2,   durability: 9999,burnRate: 0,   w: 30, h: 20, isWater: true },
+  ice:        { color: 0xAAEEFF, isFlammable: false, isConductive: false, weight: 3,   durability: 80,  burnRate: 0,   w: 34, h: 34, isFrozen: true },
+  oil:        { color: 0x332200, isFlammable: true,  isConductive: false, weight: 1.5, durability: 40,  burnRate: 60,  w: 30, h: 22 },
+  gunpowder:  { color: 0x881111, isFlammable: true,  isConductive: false, weight: 2,   durability: 15,  burnRate: 200, w: 32, h: 32, isExplosive: true },
+  grass:      { color: 0x228822, isFlammable: true,  isConductive: false, weight: 0.3, durability: 30,  burnRate: 25,  w: 40, h: 10 },
+  wind_source:{ color: 0x44AACC, isFlammable: false, isConductive: false, weight: 999, durability: 9999,burnRate: 0,   w: 30, h: 50, isWindSource: true },
+  stone:      { color: 0x444466, isFlammable: false, isConductive: false, weight: 999, durability: 9999,burnRate: 0,   w: 0,  h: 0 },
+  player:     { color: 0x00FFAA, isFlammable: false, isConductive: false, weight: 4,   durability: 9999,burnRate: 0,   w: 24, h: 32 },
+};
+
+const SPAWN_TYPES = ['wood','metal','fire','water','ice','oil','gunpowder','grass','wind_source'];
+
+// --- THREE.JS SETUP ---
+const canvas = document.getElementById('game-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x060620);
+
+const scene = new THREE.Scene();
+
+// Orthographic camera — side view
+const frustumSize = 600;
+const aspect = window.innerWidth / window.innerHeight;
+const camera = new THREE.OrthographicCamera(
+  -frustumSize * aspect / 2, frustumSize * aspect / 2,
+  frustumSize / 2, -frustumSize / 2,
+  0.1, 1000
+);
+camera.position.set(0, 0, 500);
+camera.lookAt(0, 0, 0);
+
+// Ambient light
+scene.add(new THREE.AmbientLight(0x334466, 0.6));
+
+// --- WORLD BOUNDS ---
+const WORLD_W = frustumSize * aspect;
+const WORLD_H = frustumSize;
+const GROUND_Y = -WORLD_H / 2 + 20;
+
+// --- PARTICLES ---
+let particles = [];
+
+class Particle {
+  constructor(x, y, vx, vy, color, life, size) {
+    this.x = x; this.y = y;
+    this.vx = vx; this.vy = vy;
+    this.color = color;
+    this.life = life;
+    this.maxLife = life;
+    this.size = size || 3;
+    const geo = new THREE.PlaneGeometry(this.size, this.size);
+    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 });
+    this.mesh = new THREE.Mesh(geo, mat);
+    this.mesh.position.set(x, y, 5);
+    scene.add(this.mesh);
+  }
+
+  update(dt) {
+    this.vy += GRAVITY * 0.3 * dt;
+    this.x += this.vx * dt;
+    this.y -= this.vy * dt;
+    this.life -= dt;
+    this.mesh.position.set(this.x, this.y, 5);
+    this.mesh.material.opacity = Math.max(0, this.life / this.maxLife);
+    this.mesh.scale.setScalar(this.life / this.maxLife);
+    return this.life > 0;
+  }
+
+  destroy() {
+    scene.remove(this.mesh);
+    this.mesh.geometry.dispose();
+    this.mesh.material.dispose();
+  }
+}
+
+function spawnFireParticles(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    const colors = [0xFF4400, 0xFF8800, 0xFFCC00, 0xFF2200];
+    particles.push(new Particle(
+      x + (Math.random() - 0.5) * 20,
+      y + (Math.random() - 0.5) * 10,
+      (Math.random() - 0.5) * 60,
+      -(Math.random() * 80 + 30),
+      colors[Math.floor(Math.random() * colors.length)],
+      0.3 + Math.random() * 0.5,
+      2 + Math.random() * 4
+    ));
+  }
+}
+
+function spawnSmokeParticles(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle(
+      x + (Math.random() - 0.5) * 16,
+      y,
+      (Math.random() - 0.5) * 30,
+      -(Math.random() * 40 + 20),
+      0x666666,
+      0.6 + Math.random() * 0.8,
+      3 + Math.random() * 5
+    ));
+  }
+}
+
+function spawnExplosion(x, y, radius, force) {
+  const count = Math.floor(radius / 3);
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+    const speed = 100 + Math.random() * 200;
+    const colors = [0xFF4400, 0xFF8800, 0xFFCC00, 0xFFFFFF, 0xFF2200];
+    particles.push(new Particle(
+      x, y,
+      Math.cos(angle) * speed,
+      Math.sin(angle) * speed,
+      colors[Math.floor(Math.random() * colors.length)],
+      0.4 + Math.random() * 0.6,
+      3 + Math.random() * 6
+    ));
+  }
+  // Shockwave ring
+  const ringGeo = new THREE.RingGeometry(0, radius, 32);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xFFAA44, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.set(x, y, 6);
+  scene.add(ring);
+  shockwaves.push({ mesh: ring, life: 0.4, maxLife: 0.4, radius });
+}
+
+function spawnWaterSplash(x, y) {
+  for (let i = 0; i < 8; i++) {
+    particles.push(new Particle(
+      x + (Math.random() - 0.5) * 10,
+      y,
+      (Math.random() - 0.5) * 80,
+      -(Math.random() * 100 + 40),
+      0x2288FF,
+      0.3 + Math.random() * 0.4,
+      2 + Math.random() * 3
+    ));
+  }
+}
+
+let shockwaves = [];
+
+// --- WIND STREAKS ---
+let windStreaks = [];
+class WindStreak {
+  constructor() {
+    this.reset();
+    const geo = new THREE.PlaneGeometry(20 + Math.random() * 30, 1.5);
+    const mat = new THREE.MeshBasicMaterial({ color: 0x44AACC, transparent: true, opacity: 0 });
+    this.mesh = new THREE.Mesh(geo, mat);
+    this.mesh.position.set(this.x, this.y, 3);
+    scene.add(this.mesh);
+  }
+  reset() {
+    this.x = -WORLD_W / 2 - 50;
+    this.y = (Math.random() - 0.5) * WORLD_H * 0.8;
+    this.speed = 200 + Math.random() * 300;
+    this.life = 0;
+  }
+  update(dt, windOn) {
+    if (!windOn) {
+      this.mesh.material.opacity *= 0.9;
+      return;
+    }
+    this.x += this.speed * dt;
+    this.life += dt;
+    this.mesh.position.set(this.x, this.y, 3);
+    const fade = Math.sin(this.life * 3) * 0.15;
+    this.mesh.material.opacity = Math.max(0, fade);
+    if (this.x > WORLD_W / 2 + 50) this.reset();
+  }
+}
+
+// --- GAME OBJECT ---
+let nextId = 0;
+class GameObject {
+  constructor(type, x, y, isStatic) {
+    this.id = nextId++;
+    this.type = type;
+    const mat = MATERIALS[type];
+    this.w = mat.w;
+    this.h = mat.h;
+    this.x = x;
+    this.y = y;
+    this.vx = 0;
+    this.vy = 0;
+    this.isStatic = isStatic || false;
+    this.weight = mat.weight;
+    this.isFlammable = mat.isFlammable;
+    this.isBurning = mat.isBurning || false;
+    this.isConductive = mat.isConductive;
+    this.isWet = mat.isWater || false;
+    this.isFrozen = mat.isFrozen || false;
+    this.isWater = mat.isWater || false;
+    this.isWindSource = mat.isWindSource || false;
+    this.isExplosive = mat.isExplosive || false;
+    this.permanent = mat.permanent || false;
+    this.temperature = mat.isFrozen ? -20 : (mat.isBurning ? 500 : 20);
+    this.durability = mat.durability;
+    this.maxDurability = mat.durability;
+    this.burnRate = mat.burnRate;
+    this.baseColor = new THREE.Color(mat.color);
+    this.destroyed = false;
+    this.grounded = false;
+    this.justExtinguished = false;
+    this.smokeTimer = 0;
+
+    // Three.js mesh
+    const geo = new THREE.PlaneGeometry(this.w, this.h);
+    const meshMat = new THREE.MeshBasicMaterial({ color: mat.color, transparent: true, opacity: 1 });
+    this.mesh = new THREE.Mesh(geo, meshMat);
+    this.mesh.position.set(x, y, type === 'player' ? 2 : 1);
+    scene.add(this.mesh);
+
+    // Glow mesh for burning objects
+    if (type !== 'player') {
+      const glowGeo = new THREE.PlaneGeometry(this.w + 12, this.h + 12);
+      const glowMat = new THREE.MeshBasicMaterial({ color: 0xFF4400, transparent: true, opacity: 0 });
+      this.glowMesh = new THREE.Mesh(glowGeo, glowMat);
+      this.glowMesh.position.set(x, y, 0.5);
+      scene.add(this.glowMesh);
+    }
+
+    // Wind source visual
+    if (this.isWindSource) {
+      this.mesh.material.opacity = 0.5;
+    }
+  }
+
+  aabb() {
+    return {
+      left: this.x - this.w / 2,
+      right: this.x + this.w / 2,
+      top: this.y + this.h / 2,
+      bottom: this.y - this.h / 2
+    };
+  }
+
+  updateVisuals(dt) {
+    this.mesh.position.set(this.x, this.y, this.mesh.position.z);
+
+    // Temperature color shift
+    let color = this.baseColor.clone();
+    if (this.temperature > 50 && !this.permanent && this.type !== 'fire') {
+      const heatFactor = Math.min(1, (this.temperature - 50) / 400);
+      color.lerp(new THREE.Color(0xFF2200), heatFactor * 0.5);
+    }
+    if (this.isWet && !this.isBurning) {
+      color.lerp(new THREE.Color(0x2244AA), 0.3);
+    }
+    if (this.isFrozen) {
+      color.lerp(new THREE.Color(0xAAEEFF), 0.4);
+    }
+    this.mesh.material.color.copy(color);
+
+    // Burning shrink
+    if (this.isBurning && !this.permanent) {
+      const ratio = this.durability / this.maxDurability;
+      const scale = 0.4 + ratio * 0.6;
+      this.mesh.scale.set(scale, scale, 1);
+      // Darken
+      this.mesh.material.color.lerp(new THREE.Color(0x111111), (1 - ratio) * 0.5);
+    }
+
+    // Glow
+    if (this.glowMesh) {
+      this.glowMesh.position.set(this.x, this.y, 0.5);
+      if (this.isBurning) {
+        const flicker = 0.15 + Math.random() * 0.15;
+        this.glowMesh.material.opacity = flicker;
+        this.glowMesh.material.color.setHex(
+          Math.random() > 0.5 ? 0xFF4400 : 0xFF8800
+        );
+        this.glowMesh.scale.copy(this.mesh.scale);
+      } else {
+        this.glowMesh.material.opacity *= 0.9;
+      }
+    }
+
+    // Fire particles
+    if (this.isBurning) {
+      spawnFireParticles(this.x, this.y + this.h / 2, 2);
+    }
+
+    // Smoke from recently extinguished
+    if (this.justExtinguished) {
+      this.smokeTimer -= dt;
+      spawnSmokeParticles(this.x, this.y + this.h / 2, 1);
+      if (this.smokeTimer <= 0) this.justExtinguished = false;
+    }
+
+    // Water shimmer
+    if (this.isWater) {
+      const shimmer = 0.7 + Math.sin(Date.now() * 0.005 + this.id) * 0.15;
+      this.mesh.material.opacity = shimmer;
+    }
+  }
+
+  destroy() {
+    this.destroyed = true;
+    // Destruction particles
+    const col = this.mesh.material.color.getHex();
+    for (let i = 0; i < 12; i++) {
+      particles.push(new Particle(
+        this.x + (Math.random() - 0.5) * this.w,
+        this.y + (Math.random() - 0.5) * this.h,
+        (Math.random() - 0.5) * 120,
+        -(Math.random() * 80),
+        col,
+        0.4 + Math.random() * 0.5,
+        2 + Math.random() * 3
+      ));
+    }
+    scene.remove(this.mesh);
+    this.mesh.geometry.dispose();
+    this.mesh.material.dispose();
+    if (this.glowMesh) {
+      scene.remove(this.glowMesh);
+      this.glowMesh.geometry.dispose();
+      this.glowMesh.material.dispose();
+    }
+  }
+}
+
+// --- GAME STATE ---
+let objects = [];
+let player = null;
+let windOn = false;
+let selectedMaterial = 0;
+let keys = {};
+let mouseWorld = { x: 0, y: 0 };
+
+// --- GROUND ---
+let groundMesh;
+function createGround() {
+  const gw = WORLD_W + 200;
+  const gh = 40;
+  const geo = new THREE.PlaneGeometry(gw, gh);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x2a2a4e });
+  groundMesh = new THREE.Mesh(geo, mat);
+  groundMesh.position.set(0, GROUND_Y - gh / 2, 0);
+  scene.add(groundMesh);
+
+  // Ground line
+  const lineGeo = new THREE.PlaneGeometry(gw, 1.5);
+  const lineMat = new THREE.MeshBasicMaterial({ color: 0x444488 });
+  const line = new THREE.Mesh(lineGeo, lineMat);
+  line.position.set(0, GROUND_Y, 0.5);
+  scene.add(line);
+}
+
+// --- BACKGROUND GRID ---
+function createBackground() {
+  const gridMat = new THREE.MeshBasicMaterial({ color: 0x111133, transparent: true, opacity: 0.3 });
+  const spacing = 50;
+  for (let x = -WORLD_W / 2; x <= WORLD_W / 2; x += spacing) {
+    const geo = new THREE.PlaneGeometry(0.5, WORLD_H);
+    const m = new THREE.Mesh(geo, gridMat);
+    m.position.set(x, 0, -1);
+    scene.add(m);
+  }
+  for (let y = -WORLD_H / 2; y <= WORLD_H / 2; y += spacing) {
+    const geo = new THREE.PlaneGeometry(WORLD_W, 0.5);
+    const m = new THREE.Mesh(geo, gridMat);
+    m.position.set(0, y, -1);
+    scene.add(m);
+  }
+}
+
+// --- SCENE SETUP ---
+function initScene() {
+  // Clear everything
+  while (scene.children.length > 0) {
+    const child = scene.children[0];
+    scene.remove(child);
+    if (child.geometry) child.geometry.dispose();
+    if (child.material) child.material.dispose();
+  }
+  scene.add(new THREE.AmbientLight(0x334466, 0.6));
+
+  objects = [];
+  particles.forEach(p => p.destroy());
+  particles = [];
+  shockwaves.forEach(s => { scene.remove(s.mesh); s.mesh.geometry.dispose(); s.mesh.material.dispose(); });
+  shockwaves = [];
+
+  createBackground();
+  createGround();
+
+  // Wind streaks
+  windStreaks.forEach(ws => { scene.remove(ws.mesh); ws.mesh.geometry.dispose(); ws.mesh.material.dispose(); });
+  windStreaks = [];
+  for (let i = 0; i < 15; i++) {
+    const ws = new WindStreak();
+    ws.x = (Math.random() - 0.5) * WORLD_W;
+    windStreaks.push(ws);
+  }
+
+  // Player
+  player = new GameObject('player', -180, GROUND_Y + 16, false);
+  objects.push(player);
+
+  // Wooden boxes
+  objects.push(new GameObject('wood', -80, GROUND_Y + 18, false));
+  objects.push(new GameObject('wood', 0, GROUND_Y + 18, false));
+  objects.push(new GameObject('wood', 0, GROUND_Y + 54, false));
+
+  // Metal box
+  objects.push(new GameObject('metal', 80, GROUND_Y + 18, false));
+
+  // Fire source
+  objects.push(new GameObject('fire', 160, GROUND_Y + 14, true));
+
+  // Wind source
+  objects.push(new GameObject('wind_source', -250, GROUND_Y + 25, true));
+
+  // Water
+  objects.push(new GameObject('water', -140, GROUND_Y + 10, false));
+
+  // Oil barrel
+  objects.push(new GameObject('oil', 220, GROUND_Y + 11, false));
+
+  // Gunpowder keg
+  objects.push(new GameObject('gunpowder', 280, GROUND_Y + 16, false));
+
+  // Grass patches
+  for (let gx = -200; gx <= 200; gx += 50) {
+    objects.push(new GameObject('grass', gx, GROUND_Y + 5, false));
+  }
+
+  windOn = false;
+  updateWindUI();
+}
+
+// --- COLLISION DETECTION ---
+function aabbOverlap(a, b) {
+  const aa = a.aabb();
+  const bb = b.aabb();
+  return aa.left < bb.right && aa.right > bb.left &&
+         aa.bottom < bb.top && aa.top > bb.bottom;
+}
+
+function aabbDistance(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function resolveCollision(a, b) {
+  const aa = a.aabb();
+  const bb = b.aabb();
+
+  const overlapX = Math.min(aa.right - bb.left, bb.right - aa.left);
+  const overlapY = Math.min(aa.top - bb.bottom, bb.top - aa.bottom);
+
+  if (overlapX < overlapY) {
+    // Horizontal resolution
+    if (a.x < b.x) {
+      if (!a.isStatic) a.x -= overlapX / 2;
+      if (!b.isStatic) b.x += overlapX / 2;
+    } else {
+      if (!a.isStatic) a.x += overlapX / 2;
+      if (!b.isStatic) b.x -= overlapX / 2;
+    }
+    // Transfer momentum
+    if (!b.isStatic && a === player) {
+      b.vx += (b.x > a.x ? 1 : -1) * PUSH_FORCE;
+    }
+  } else {
+    // Vertical resolution
+    if (a.y > b.y) {
+      if (!a.isStatic) a.y += overlapY / 2;
+      if (!b.isStatic) b.y -= overlapY / 2;
+      if (a.vy < 0) { a.vy = 0; a.grounded = true; }
+      if (b.vy > 0) b.vy = 0;
+    } else {
+      if (!a.isStatic) a.y -= overlapY / 2;
+      if (!b.isStatic) b.y += overlapY / 2;
+      if (a.vy > 0) a.vy = 0;
+      if (b.vy < 0) { b.vy = 0; b.grounded = true; }
+    }
+  }
+}
+
+// --- PHYSICS ---
+function updatePhysics(dt) {
+  for (const obj of objects) {
+    if (obj.destroyed || obj.isStatic) continue;
+    if (obj === player) continue; // Player handled separately
+
+    // Gravity
+    obj.vy -= GRAVITY * dt;
+
+    // Apply velocity
+    obj.x += obj.vx * dt;
+    obj.y += obj.vy * dt;
+
+    // Friction
+    if (obj.grounded) {
+      obj.vx *= FRICTION;
+    } else {
+      obj.vx *= AIR_FRICTION;
+    }
+
+    // Ground collision
+    const halfH = (obj.h * (obj.mesh ? obj.mesh.scale.y : 1)) / 2;
+    if (obj.y - halfH < GROUND_Y) {
+      obj.y = GROUND_Y + halfH;
+      obj.vy = 0;
+      obj.grounded = true;
+    } else {
+      obj.grounded = false;
+    }
+
+    // World bounds
+    if (obj.x < -WORLD_W / 2 + obj.w / 2) { obj.x = -WORLD_W / 2 + obj.w / 2; obj.vx = 0; }
+    if (obj.x > WORLD_W / 2 - obj.w / 2) { obj.x = WORLD_W / 2 - obj.w / 2; obj.vx = 0; }
+    if (obj.y > WORLD_H / 2 - obj.h / 2) { obj.y = WORLD_H / 2 - obj.h / 2; obj.vy = 0; }
+  }
+
+  // Object-object collisions
+  for (let i = 0; i < objects.length; i++) {
+    for (let j = i + 1; j < objects.length; j++) {
+      const a = objects[i];
+      const b = objects[j];
+      if (a.destroyed || b.destroyed) continue;
+      if (a.isStatic && b.isStatic) continue;
+      if (aabbOverlap(a, b)) {
+        resolveCollision(a, b);
+      }
+    }
+  }
+}
+
+// --- PLAYER CONTROLS ---
+function updatePlayer(dt) {
+  if (!player || player.destroyed) return;
+
+  let moveX = 0;
+  if (keys['KeyA'] || keys['ArrowLeft']) moveX -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) moveX += 1;
+
+  player.vx = moveX * PLAYER_SPEED;
+
+  // Jump
+  if ((keys['KeyW'] || keys['ArrowUp']) && player.grounded) {
+    player.vy = PLAYER_JUMP;
+    player.grounded = false;
+  }
+
+  // Gravity
+  player.vy -= GRAVITY * dt;
+
+  // Apply velocity
+  player.x += player.vx * dt;
+  player.y += player.vy * dt;
+
+  // Ground
+  if (player.y - player.h / 2 < GROUND_Y) {
+    player.y = GROUND_Y + player.h / 2;
+    player.vy = 0;
+    player.grounded = true;
+  }
+
+  // World bounds
+  if (player.x < -WORLD_W / 2 + player.w / 2) player.x = -WORLD_W / 2 + player.w / 2;
+  if (player.x > WORLD_W / 2 - player.w / 2) player.x = WORLD_W / 2 - player.w / 2;
+  if (player.y > WORLD_H / 2 - player.h / 2) { player.y = WORLD_H / 2 - player.h / 2; player.vy = 0; }
+
+  // Player-object collisions for pushing
+  for (const obj of objects) {
+    if (obj === player || obj.destroyed) continue;
+    if (aabbOverlap(player, obj)) {
+      resolveCollision(player, obj);
+    }
+  }
+}
+
+// --- CHEMISTRY ENGINE ---
+function updateChemistry(dt) {
+  const toExplode = [];
+
+  for (let i = 0; i < objects.length; i++) {
+    const a = objects[i];
+    if (a.destroyed) continue;
+
+    // --- BURNING ---
+    if (a.isBurning && !a.permanent) {
+      a.durability -= a.burnRate * dt;
+      a.temperature = Math.max(a.temperature, 400);
+
+      if (a.durability <= 0) {
+        if (a.isExplosive) {
+          toExplode.push(a);
+        } else {
+          spawnSmokeParticles(a.x, a.y + a.h / 2, 8);
+          a.destroy();
+        }
+        continue;
+      }
+    }
+
+    // --- TEMPERATURE DECAY ---
+    if (!a.isBurning && a.temperature > 20) {
+      a.temperature -= 30 * dt;
+      if (a.temperature < 20) a.temperature = 20;
+    }
+    if (a.isFrozen && a.temperature < -20) {
+      a.temperature = -20;
+    }
+
+    // --- PROXIMITY CHECKS ---
+    for (let j = i + 1; j < objects.length; j++) {
+      const b = objects[j];
+      if (b.destroyed) continue;
+
+      const dist = aabbDistance(a, b);
+      const touching = aabbOverlap(a, b);
+      const near = dist < FIRE_SPREAD_RADIUS;
+
+      // === COMBUSTION: burning touches flammable ===
+      if (touching) {
+        if (a.isBurning && b.isFlammable && !b.isBurning && !b.isWet) {
+          b.isBurning = true;
+          b.temperature = 300;
+        }
+        if (b.isBurning && a.isFlammable && !a.isBurning && !a.isWet) {
+          a.isBurning = true;
+          a.temperature = 300;
+        }
+
+        // === WATER + FIRE: extinguish ===
+        if (a.isWater && b.isBurning) {
+          b.isBurning = false;
+          b.isWet = true;
+          b.temperature = 20;
+          b.justExtinguished = true;
+          b.smokeTimer = 1.5;
+          spawnWaterSplash(b.x, b.y);
+        }
+        if (b.isWater && a.isBurning) {
+          a.isBurning = false;
+          a.isWet = true;
+          a.temperature = 20;
+          a.justExtinguished = true;
+          a.smokeTimer = 1.5;
+          spawnWaterSplash(a.x, a.y);
+        }
+
+        // === WATER makes things wet ===
+        if (a.isWater && !b.isWater) b.isWet = true;
+        if (b.isWater && !a.isWater) a.isWet = true;
+
+        // === ICE + WATER: freeze the water ===
+        if (a.isFrozen && b.isWater) {
+          b.isWater = false;
+          b.isFrozen = true;
+          b.temperature = -20;
+          b.baseColor = new THREE.Color(0xAAEEFF);
+          b.type = 'ice';
+        }
+        if (b.isFrozen && a.isWater) {
+          a.isWater = false;
+          a.isFrozen = true;
+          a.temperature = -20;
+          a.baseColor = new THREE.Color(0xAAEEFF);
+          a.type = 'ice';
+        }
+      }
+
+      // === HEAT TRANSFER (proximity) ===
+      if (near) {
+        if (a.isBurning) {
+          b.temperature += HEAT_TRANSFER_RATE * dt * (1 - dist / FIRE_SPREAD_RADIUS);
+        }
+        if (b.isBurning) {
+          a.temperature += HEAT_TRANSFER_RATE * dt * (1 - dist / FIRE_SPREAD_RADIUS);
+        }
+
+        // Cold transfer from ice/frozen
+        if (a.isFrozen && !b.isFrozen) {
+          b.temperature -= 40 * dt * (1 - dist / FIRE_SPREAD_RADIUS);
+        }
+        if (b.isFrozen && !a.isFrozen) {
+          a.temperature -= 40 * dt * (1 - dist / FIRE_SPREAD_RADIUS);
+        }
+      }
+    }
+
+    // === AUTO-IGNITION from temperature ===
+    if (a.isFlammable && !a.isBurning && !a.isWet && a.temperature > 200) {
+      a.isBurning = true;
+    }
+
+    // === ICE MELTING ===
+    if (a.isFrozen && a.temperature > 10) {
+      a.isFrozen = false;
+      a.isWater = true;
+      a.isWet = true;
+      a.type = 'water';
+      a.baseColor = new THREE.Color(0x2288FF);
+      a.isFlammable = false;
+    }
+
+    // === WET dries over time if not near water ===
+    if (a.isWet && !a.isWater && a.temperature > 50) {
+      a.isWet = false;
+    }
+
+    // === UPDRAFT: burning objects create rising force on light objects above ===
+    if (a.isBurning) {
+      for (const other of objects) {
+        if (other === a || other.destroyed || other.isStatic) continue;
+        const dx = other.x - a.x;
+        const dy = other.y - a.y;
+        if (Math.abs(dx) < 40 && dy > 0 && dy < 120) {
+          const liftFactor = (1 - dy / 120) / Math.max(1, other.weight);
+          other.vy += UPDRAFT_FORCE * liftFactor * dt;
+        }
+      }
+    }
+  }
+
+  // === WIND ===
+  if (windOn) {
+    for (const obj of objects) {
+      if (obj.destroyed || obj.isStatic || obj === player) continue;
+      const windEffect = WIND_FORCE / Math.max(1, obj.weight);
+      obj.vx += windEffect * dt;
+
+      // Wind makes fire burn faster
+      if (obj.isBurning) {
+        obj.durability -= obj.burnRate * 0.5 * dt;
+      }
+
+      // Wind spreads fire further — increase temperature of downwind objects
+      if (obj.isBurning) {
+        for (const other of objects) {
+          if (other === obj || other.destroyed) continue;
+          const dx = other.x - obj.x;
+          const dy = Math.abs(other.y - obj.y);
+          if (dx > 0 && dx < FIRE_SPREAD_RADIUS * 2 && dy < 50) {
+            other.temperature += HEAT_TRANSFER_RATE * 0.8 * dt;
+          }
+        }
+      }
+    }
+    // Blow player gently
+    player.vx += (WIND_FORCE / 8) * dt;
+  }
+
+  // === EXPLOSIONS ===
+  for (const obj of toExplode) {
+    const big = obj.type === 'gunpowder';
+    const radius = big ? BIG_EXPLOSION_RADIUS : EXPLOSION_RADIUS;
+    const force = big ? BIG_EXPLOSION_FORCE : EXPLOSION_FORCE;
+
+    spawnExplosion(obj.x, obj.y, radius, force);
+
+    // Apply force and damage to nearby objects
+    for (const other of objects) {
+      if (other === obj || other.destroyed) continue;
+      const dist = aabbDistance(obj, other);
+      if (dist < radius) {
+        const factor = 1 - dist / radius;
+        const angle = Math.atan2(other.y - obj.y, other.x - obj.x);
+        if (!other.isStatic) {
+          other.vx += Math.cos(angle) * force * factor;
+          other.vy += Math.sin(angle) * force * factor;
+        }
+        // Damage
+        other.durability -= factor * (big ? 80 : 30);
+        // Heat
+        other.temperature += factor * 300;
+        // Ignite flammable
+        if (other.isFlammable && !other.isWet) {
+          other.isBurning = true;
+        }
+        if (other.durability <= 0 && !other.permanent && other !== player) {
+          if (other.isExplosive) {
+            toExplode.push(other);
+          } else {
+            other.destroy();
+          }
+        }
+      }
+    }
+    // Push player
+    const pDist = aabbDistance(obj, player);
+    if (pDist < radius) {
+      const factor = 1 - pDist / radius;
+      const angle = Math.atan2(player.y - obj.y, player.x - obj.x);
+      player.vx += Math.cos(angle) * force * factor * 0.5;
+      player.vy += Math.sin(angle) * force * factor * 0.5;
+    }
+
+    obj.destroy();
+  }
+
+  // Clean up destroyed objects
+  objects = objects.filter(o => !o.destroyed);
+  if (player && player.destroyed) player = null;
+}
+
+// --- UPDATE LOOP ---
+let lastTime = 0;
+
+function gameLoop(time) {
+  requestAnimationFrame(gameLoop);
+
+  const dt = Math.min((time - lastTime) / 1000, 0.05);
+  lastTime = time;
+
+  if (dt <= 0) return;
+
+  // Update systems
+  updatePlayer(dt);
+  updatePhysics(dt);
+  updateChemistry(dt);
+
+  // Update visuals
+  for (const obj of objects) {
+    if (!obj.destroyed) obj.updateVisuals(dt);
+  }
+
+  // Update particles
+  particles = particles.filter(p => {
+    if (!p.update(dt)) { p.destroy(); return false; }
+    return true;
+  });
+
+  // Update shockwaves
+  shockwaves = shockwaves.filter(s => {
+    s.life -= dt;
+    const t = 1 - s.life / s.maxLife;
+    s.mesh.scale.setScalar(t * 2);
+    s.mesh.material.opacity = (1 - t) * 0.4;
+    if (s.life <= 0) {
+      scene.remove(s.mesh);
+      s.mesh.geometry.dispose();
+      s.mesh.material.dispose();
+      return false;
+    }
+    return true;
+  });
+
+  // Update wind streaks
+  windStreaks.forEach(ws => ws.update(dt, windOn));
+
+  renderer.render(scene, camera);
+}
+
+// --- INPUT ---
+document.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    windOn = !windOn;
+    updateWindUI();
+  }
+
+  if (e.code === 'KeyR') {
+    initScene();
+    showToast('SANDBOX RESET');
+  }
+
+  // Number keys for material selection
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 9) {
+    selectMaterial(num - 1);
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  keys[e.code] = false;
+});
+
+// Mouse position tracking
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  mouseWorld.x = ndcX * (WORLD_W / 2);
+  mouseWorld.y = ndcY * (WORLD_H / 2);
+});
+
+// Left click: spawn
+canvas.addEventListener('click', (e) => {
+  e.preventDefault();
+  const type = SPAWN_TYPES[selectedMaterial];
+  if (!type) return;
+  const newObj = new GameObject(type, mouseWorld.x, mouseWorld.y, type === 'fire' || type === 'wind_source');
+  objects.push(newObj);
+});
+
+// Right click: delete
+canvas.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  // Find object under cursor
+  let closest = null;
+  let closestDist = Infinity;
+  for (const obj of objects) {
+    if (obj === player || obj.destroyed) continue;
+    const dist = aabbDistance({ x: mouseWorld.x, y: mouseWorld.y }, obj);
+    if (dist < Math.max(obj.w, obj.h) && dist < closestDist) {
+      closest = obj;
+      closestDist = dist;
+    }
+  }
+  if (closest) {
+    closest.destroy();
+    objects = objects.filter(o => !o.destroyed);
+  }
+});
+
+// --- UI FUNCTIONS ---
+function selectMaterial(index) {
+  selectedMaterial = index;
+  document.querySelectorAll('#legend .item').forEach((el, i) => {
+    el.classList.toggle('selected', i === index);
+  });
+  // Update description
+  const type = SPAWN_TYPES[index];
+  const descriptions = {
+    wood: 'Flammable. Medium weight. Burns slowly. Good for building... and burning.',
+    metal: 'Heavy. Conductive. Fireproof. Cannot be pushed by wind.',
+    fire: 'Permanent heat source. Ignites anything flammable it touches.',
+    water: 'Extinguishes fire. Makes objects wet (fire-resistant). Freezes near ice.',
+    ice: 'Freezing cold. Turns water to ice on contact. Melts when heated.',
+    oil: 'Extremely flammable. Burns fast. Light explosion when destroyed.',
+    gunpowder: 'Explosive. Huge blast radius. Chain reactions guaranteed.',
+    grass: 'Light and flammable. Burns quickly. Spreads fire along the ground.',
+    wind_source: 'Toggle with SPACE. Pushes light objects. Spreads fire downwind.'
+  };
+  const nameEl = document.querySelector('#description .name');
+  const descEl = document.querySelector('#description div:last-child');
+  nameEl.textContent = type.replace('_', ' ').toUpperCase();
+  descEl.textContent = descriptions[type] || '';
+}
+
+function updateWindUI() {
+  const el = document.getElementById('wind-value');
+  el.textContent = windOn ? 'ON >>>' : 'OFF';
+  el.className = 'value ' + (windOn ? 'on' : 'off');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 1200);
+}
+
+// --- RESIZE ---
+window.addEventListener('resize', () => {
+  const newAspect = window.innerWidth / window.innerHeight;
+  camera.left = -frustumSize * newAspect / 2;
+  camera.right = frustumSize * newAspect / 2;
+  camera.top = frustumSize / 2;
+  camera.bottom = -frustumSize / 2;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --- TOUCH INPUT ---
+let deleteMode = false;
+const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+// Virtual joystick
+const joystickZone = document.getElementById('joystick-zone');
+const joystickKnob = document.getElementById('joystick-knob');
+let joystickActive = false;
+let joystickOrigin = null;
+let joystickInput = { x: 0, y: 0 };
+
+if (joystickZone) {
+  joystickZone.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    joystickActive = true;
+    const rect = joystickZone.getBoundingClientRect();
+    joystickOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }, { passive: false });
+
+  joystickZone.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!joystickActive || !joystickOrigin) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - joystickOrigin.x;
+    const dy = touch.clientY - joystickOrigin.y;
+    const maxR = 40;
+    const dist = Math.min(Math.hypot(dx, dy), maxR);
+    const angle = Math.atan2(dy, dx);
+    const clampX = Math.cos(angle) * dist;
+    const clampY = Math.sin(angle) * dist;
+    joystickKnob.style.transform = `translate(calc(-50% + ${clampX}px), calc(-50% + ${clampY}px))`;
+    joystickInput.x = clampX / maxR;
+    joystickInput.y = clampY / maxR;
+  }, { passive: false });
+
+  const resetJoystick = () => {
+    joystickActive = false;
+    joystickInput = { x: 0, y: 0 };
+    joystickKnob.style.transform = 'translate(-50%, -50%)';
+  };
+  joystickZone.addEventListener('touchend', (e) => { e.preventDefault(); resetJoystick(); }, { passive: false });
+  joystickZone.addEventListener('touchcancel', resetJoystick);
+}
+
+// Mobile buttons
+const btnJump = document.getElementById('btn-jump');
+const btnWind = document.getElementById('btn-wind');
+const btnReset = document.getElementById('btn-reset');
+const btnDelete = document.getElementById('btn-delete');
+
+if (btnJump) {
+  btnJump.addEventListener('touchstart', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    keys['KeyW'] = true;
+  }, { passive: false });
+  btnJump.addEventListener('touchend', (e) => {
+    e.preventDefault(); keys['KeyW'] = false;
+  }, { passive: false });
+}
+
+if (btnWind) {
+  btnWind.addEventListener('touchstart', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    windOn = !windOn;
+    updateWindUI();
+    btnWind.classList.toggle('active', windOn);
+  }, { passive: false });
+}
+
+if (btnReset) {
+  btnReset.addEventListener('touchstart', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    initScene();
+    showToast('SANDBOX RESET');
+    deleteMode = false;
+    if (btnDelete) btnDelete.classList.remove('active');
+  }, { passive: false });
+}
+
+if (btnDelete) {
+  btnDelete.addEventListener('touchstart', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    deleteMode = !deleteMode;
+    btnDelete.classList.toggle('active', deleteMode);
+  }, { passive: false });
+}
+
+// Touch on canvas — place or delete
+function touchToWorld(touch) {
+  const rect = canvas.getBoundingClientRect();
+  const ndcX = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+  const ndcY = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+  return { x: ndcX * (WORLD_W / 2), y: ndcY * (WORLD_H / 2) };
+}
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (e.touches.length !== 1) return;
+  const w = touchToWorld(e.touches[0]);
+  mouseWorld.x = w.x;
+  mouseWorld.y = w.y;
+
+  if (deleteMode) {
+    let closest = null, closestDist = Infinity;
+    for (const obj of objects) {
+      if (obj === player || obj.destroyed) continue;
+      const dist = aabbDistance({ x: w.x, y: w.y }, obj);
+      if (dist < Math.max(obj.w, obj.h) && dist < closestDist) {
+        closest = obj; closestDist = dist;
+      }
+    }
+    if (closest) {
+      closest.destroy();
+      objects = objects.filter(o => !o.destroyed);
+    }
+  } else {
+    const type = SPAWN_TYPES[selectedMaterial];
+    if (type) {
+      const newObj = new GameObject(type, w.x, w.y, type === 'fire' || type === 'wind_source');
+      objects.push(newObj);
+    }
+  }
+}, { passive: false });
+
+// Override player update to use joystick input
+const _origUpdatePlayer = updatePlayer;
+updatePlayer = function(dt) {
+  if (joystickActive && player && !player.destroyed) {
+    if (joystickInput.x < -0.3) keys['KeyA'] = true; else keys['KeyA'] = false;
+    if (joystickInput.x > 0.3) keys['KeyD'] = true; else keys['KeyD'] = false;
+    // Up on joystick = jump (only if pushed far enough)
+    if (joystickInput.y < -0.5) keys['KeyW'] = true;
+  }
+  _origUpdatePlayer(dt);
+  if (joystickActive) {
+    // Clear jump after use so it doesn't repeat
+    if (joystickInput.y >= -0.5) keys['KeyW'] = false;
+  }
+};
+
+// --- INIT ---
+initScene();
+selectMaterial(0);
+requestAnimationFrame(gameLoop);
+
+</script>
+</body>
+</html>

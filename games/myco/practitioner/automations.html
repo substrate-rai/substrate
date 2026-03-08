@@ -1,0 +1,381 @@
+---
+layout: null
+permalink: /games/myco/practitioner/automations/
+title: "Building Automations Without Code — Myco World Practitioner Path"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building Automations Without Code — Myco World</title>
+<meta name="description" content="Module 3 of the Practitioner Path. Build automations that save you real time every week, using Claude to create scripts and connecting tools you already use.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-raised: #111118;
+    --bg-card: #14141e;
+    --green: #00ffaa;
+    --green-dim: #00cc88;
+    --cyan: #22d3ee;
+    --cyan-dim: #19a8b8;
+    --amber: #fbbf24;
+    --text: #c8c8d0;
+    --text-bright: #eeeef2;
+    --text-dim: #666;
+    --border: #1e1e2e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* === NAV === */
+  nav {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav a { color: var(--text-dim); text-decoration: none; }
+  nav a:hover { color: var(--cyan); }
+  .nav-brand { color: var(--green); font-weight: 600; }
+
+  /* === PROGRESS === */
+  .progress-bar {
+    padding: 14px 24px;
+    background: var(--bg-raised);
+    border-bottom: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan-dim);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .progress-dots {
+    display: flex;
+    gap: 8px;
+  }
+  .progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan-dim);
+    background: transparent;
+  }
+  .progress-dot.active {
+    background: var(--cyan);
+    border-color: var(--cyan);
+  }
+  .progress-dot.complete {
+    background: var(--cyan-dim);
+    border-color: var(--cyan-dim);
+  }
+
+  /* === HEADER === */
+  .module-header {
+    padding: 60px 24px 40px;
+    text-align: center;
+  }
+  .module-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cyan-dim);
+    margin-bottom: 12px;
+  }
+  .module-header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .module-header h1 span { color: var(--cyan); }
+  .module-header p {
+    font-size: 1rem;
+    color: var(--text);
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  /* === CONTENT === */
+  .content {
+    padding: 40px 0 60px;
+  }
+  .content h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin: 48px 0 20px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+  .content h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .content h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--text-bright);
+    margin: 28px 0 12px;
+  }
+  .content p {
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .content strong { color: var(--text-bright); }
+  .content ul, .content ol {
+    margin: 12px 0 20px 20px;
+    font-size: 0.95rem;
+  }
+  .content li {
+    margin-bottom: 8px;
+  }
+
+  /* === CALLOUT === */
+  .callout {
+    background: rgba(34,211,238,0.06);
+    border-left: 3px solid var(--cyan);
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+  }
+  .callout strong { color: var(--cyan); }
+
+  /* === EXERCISE === */
+  .exercise {
+    background: var(--bg-card);
+    border: 1px solid var(--cyan-dim);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 40px 0;
+  }
+  .exercise h2 {
+    border: none;
+    padding-top: 0;
+    margin-top: 0;
+    color: var(--cyan);
+    margin-bottom: 16px;
+  }
+  .exercise p {
+    font-size: 0.95rem;
+  }
+  .exercise ol {
+    margin: 12px 0 0 20px;
+  }
+  .exercise li {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+
+  /* === NAV FOOTER === */
+  .module-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  .module-nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 1px solid var(--cyan-dim);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .module-nav a:hover {
+    background: rgba(34,211,238,0.1);
+    border-color: var(--cyan);
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: 32px 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--green-dim); text-decoration: none; }
+  footer a:hover { color: var(--green); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ site.baseurl }}/" class="nav-brand">substrate</a>
+  <div>
+    <a href="{{ site.baseurl }}/games/myco/">myco world</a> &nbsp;
+    <a href="{{ site.baseurl }}/site/about/">about</a>
+  </div>
+</nav>
+
+<div class="progress-bar">
+  <span>Module 3 of 4 — Practitioner Path</span>
+  <div class="progress-dots">
+    <div class="progress-dot complete"></div>
+    <div class="progress-dot complete"></div>
+    <div class="progress-dot active"></div>
+    <div class="progress-dot"></div>
+  </div>
+</div>
+
+<section class="module-header">
+  <div class="module-label">Practitioner Module 3</div>
+  <h1>Building <span>Automations</span> Without Code</h1>
+  <p>You do not need to understand code to build automations. You need to understand your own workflows well enough to describe what should happen, in what order, and when.</p>
+</section>
+
+<div class="container">
+<section class="content">
+
+  <h2>Overview</h2>
+  <p>Automation is not about robots or science fiction. It is about the report you build every Monday morning. The 14 emails you send after every client meeting with slightly different details. The data you copy from one spreadsheet to another every week because nobody ever built a better system.</p>
+  <p>This module teaches you to identify the workflows that eat your time and to build automations for them using Claude as your builder. You will not learn to code. You will learn to describe what you need precisely enough that Claude can build it for you, and you will learn to connect the tools you already use so they talk to each other without your manual intervention.</p>
+  <p>By the end, you will have at least one working automation that saves you 30 or more minutes per week. That is 26 hours a year. From one automation.</p>
+
+  <h2>What Automation Actually Means</h2>
+  <p>Forget the word's baggage. In practice, automation means: <strong>something that used to require your manual effort now happens without it, or with significantly less of it.</strong></p>
+  <p>There are three levels:</p>
+  <ol>
+    <li><strong>Scripts:</strong> A file that runs a sequence of steps when you tell it to. "Process this week's data" — you click run, it executes, done. You built it once with Claude's help and now you just trigger it.</li>
+    <li><strong>Scheduled automations:</strong> Scripts that run on a timer. Every Monday at 7am, the weekly report generates itself. Every evening, new files get sorted into the right folders. You do not click anything.</li>
+    <li><strong>Triggered automations:</strong> Workflows that fire when something happens. A new email arrives and gets automatically categorized. A file lands in a folder and gets processed. A form submission generates a personalized response.</li>
+  </ol>
+  <p>Most practitioners should start at level 1 and work up. A script you run manually is simpler to build, easier to trust, and still saves massive time compared to doing the work by hand.</p>
+
+  <h2>Using Claude to Create Scripts</h2>
+  <p>Here is the core practitioner automation workflow:</p>
+  <ol>
+    <li><strong>Describe the task</strong> to Claude in plain language, with enough detail that a new employee could follow the instructions.</li>
+    <li><strong>Ask Claude to build it.</strong> In Claude.ai, ask for a script. In Claude Code, ask it to create and save the script directly to your machine.</li>
+    <li><strong>Test it</strong> on a small sample of real data. Not the full batch — a subset.</li>
+    <li><strong>Refine it</strong> by telling Claude what went wrong or what needs to change.</li>
+    <li><strong>Save it</strong> and run it whenever you need it.</li>
+  </ol>
+  <p>You do not need to understand every line of the script. You need to understand what it does, what it expects as input, and what it produces as output. This is the same standard you apply to any tool. You do not understand how your dishwasher works at the engineering level, but you know what goes in, what comes out, and what to check if something seems off.</p>
+
+  <div class="callout">
+    <strong>The description is the hard part.</strong> Most automation failures happen because the human described the task too vaguely. "Process my invoices" fails. "Read every PDF in the invoices/ folder, extract the invoice number, date, vendor name, and total amount, and create a CSV file with one row per invoice sorted by date" succeeds. The precision of your description determines the quality of the automation.
+  </div>
+
+  <h3>What makes a good automation candidate?</h3>
+  <p>Not every task should be automated. The best candidates share these traits:</p>
+  <ul>
+    <li><strong>Repetitive.</strong> You do it at least weekly, ideally daily.</li>
+    <li><strong>Rule-based.</strong> The steps are consistent even if the data changes. "If X, do Y" — not "use your best judgment."</li>
+    <li><strong>Time-consuming.</strong> It takes more than 10 minutes each time. Automating a 2-minute task is not worth the setup effort.</li>
+    <li><strong>Low-stakes for errors.</strong> Start with tasks where a mistake is easy to catch and fix, not tasks where an error costs $50K.</li>
+  </ul>
+  <p>Common high-value candidates: weekly report generation, data entry from one format to another, file organization, email template population, invoice processing, meeting notes formatting, client data updates.</p>
+
+  <h2>Connecting Claude to Your Existing Tools</h2>
+  <p>Scripts that run on your machine are powerful. But the real leverage comes from connecting Claude's intelligence to the tools you already use — your email, your CRM, your project management system, your spreadsheets.</p>
+
+  <h3>Zapier and Make</h3>
+  <p>These are visual automation platforms. You build workflows by connecting triggers and actions from different apps. No code required — you click and configure.</p>
+  <p><strong>How Claude fits in:</strong> Both Zapier and Make have Claude/Anthropic integrations. This means you can build workflows like:</p>
+  <ul>
+    <li>New email arrives with attachment -> Claude analyzes the attachment -> Routes to correct team member based on content</li>
+    <li>Form submission received -> Claude generates a personalized response -> Email sent automatically</li>
+    <li>New row added in Google Sheet -> Claude generates a summary -> Posts to Slack channel</li>
+    <li>Calendar event ends -> Claude drafts follow-up email based on meeting title and attendees -> Draft saved for your review</li>
+  </ul>
+  <p>The pattern is always the same: something happens (trigger), Claude processes it (intelligence), and something else happens as a result (action). You are inserting Claude's language understanding into the middle of workflows that already exist.</p>
+
+  <h3>n8n: The self-hosted option</h3>
+  <p>n8n is like Zapier but you can run it on your own machine, and the free tier is more generous. If you are comfortable with what you learned in Module 2 about terminals and Claude Code, n8n is worth exploring. Claude Code can help you set it up. The key advantage: no per-task pricing. You build as many automations as you want without incremental cost.</p>
+
+  <div class="callout">
+    <strong>Start with Zapier.</strong> It has the most integrations, the simplest interface, and a free tier that handles basic automations. Once you outgrow it — and you will if you take this seriously — migrate to Make or n8n for more power and lower cost. Do not over-optimize your tool choice before you have built your first automation.
+  </div>
+
+  <h2>Practical Automation Patterns</h2>
+
+  <h3>Email templates that think</h3>
+  <p>Most email templates are static — fill in the blanks, send. With Claude in the loop, your templates become dynamic. Instead of "Dear [NAME], Thank you for your [THING]," you feed Claude the context and get a genuinely tailored response every time.</p>
+  <p>Build this in Zapier: when you add a row to a specific Google Sheet (client name, context, purpose), Claude generates a complete email draft in your preferred tone, and it appears as a Gmail draft ready for your review and send.</p>
+
+  <h3>Report generation</h3>
+  <p>If you produce any recurring report — weekly status updates, monthly analytics summaries, quarterly reviews — you can automate the draft. Feed Claude the raw data from a spreadsheet, a database export, or a dashboard screenshot and get a formatted narrative report. You review, edit where needed, and send. The 90-minute report becomes a 15-minute review.</p>
+
+  <h3>Data transformation pipelines</h3>
+  <p>Data almost never arrives in the format you need. Clients send spreadsheets with different column names. Vendors use different date formats. Systems export data that needs to be cleaned before it is useful. Build a Claude Code script that accepts messy input and produces clean output. Run it every time you get new data. The hour of reformatting becomes a 10-second script execution.</p>
+
+  <h3>Content repurposing</h3>
+  <p>You wrote a blog post and now you need a LinkedIn version, three tweets, an email newsletter paragraph, and a slide deck summary. Or your company published a case study and you need a client-facing one-pager. Claude can transform one piece of content into multiple formats with consistent messaging. Build the prompt template once, reuse it every time you publish.</p>
+
+  <h2>Building Your Personal Automation Stack</h2>
+  <p>Think of your automation stack as three layers:</p>
+  <ol>
+    <li><strong>Layer 1 — Claude Code scripts.</strong> Local scripts for file processing, data transformation, and batch operations. These run when you tell them to. You built them in Module 2 and now you are expanding the collection.</li>
+    <li><strong>Layer 2 — Cloud workflows.</strong> Zapier/Make automations connecting your SaaS tools with Claude intelligence in the middle. These run on triggers or schedules automatically.</li>
+    <li><strong>Layer 3 — Claude.ai Projects.</strong> Your thinking environment from Module 1, used for the tasks that still need human judgment but benefit from structured AI assistance.</li>
+  </ol>
+  <p>Each layer handles a different kind of work. Scripts handle bulk operations. Cloud workflows handle recurring triggers. Projects handle judgment calls. Together, they form a system that handles a significant portion of your routine work with minimal ongoing effort from you.</p>
+  <p>Start small. One script, one cloud workflow, one well-configured Project. Prove the value. Then expand.</p>
+
+</section>
+
+<div class="exercise">
+  <h2>Exercise</h2>
+  <p><strong>Create an automation that saves you 30+ minutes per week on a real recurring task.</strong></p>
+  <p>This is the most important exercise in the Practitioner path. It is where the theory becomes a permanent change in how you work.</p>
+  <ol>
+    <li><strong>Audit your week.</strong> List every task you did this week that was repetitive, rule-based, and took more than 10 minutes. Be specific — not "email" but "draft follow-up emails after client meetings using notes from the meeting."</li>
+    <li><strong>Pick one task</strong> that you can describe precisely enough for someone else to do it. If you cannot describe it precisely, it is not ready to automate.</li>
+    <li><strong>Choose your tool.</strong> If the task involves local files, use Claude Code to build a script. If the task involves connecting cloud services, use Zapier or Make. If you are unsure, ask Claude which approach fits better.</li>
+    <li><strong>Build the automation.</strong> Describe the task to Claude in detail. Test on real data. Refine until the output is correct and reliable.</li>
+    <li><strong>Run it for real</strong> at least twice on actual work tasks. Measure the time savings.</li>
+    <li><strong>Document it.</strong> Write a one-paragraph description of what the automation does, what it needs as input, and where the output goes. Future you will thank present you.</li>
+  </ol>
+  <p>The bar for success: next week, when this task comes up again, you use your automation instead of doing it manually. If you built something you will not actually use, go back and build something you will.</p>
+</div>
+
+<div class="module-nav">
+  <a href="{{ site.baseurl }}/games/myco/practitioner/claude-code-workflow/">&larr; Prev: Claude Code Workflow</a>
+  <a href="{{ site.baseurl }}/games/myco/practitioner/industry-applications/">Next: Industry Applications &rarr;</a>
+</div>
+</div>
+
+<footer>
+  <a href="{{ site.baseurl }}/games/myco/">myco world</a> · a <a href="{{ site.baseurl }}/">substrate</a> project
+</footer>
+
+</body>
+</html>

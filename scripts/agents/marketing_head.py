@@ -52,7 +52,7 @@ COMMUNITIES = [
         'platform': 'Reddit r/LocalLLaMA',
         'type': 'submission',
         'title': 'Teaching a local 8B model to rap — voice files, structured prompts, and honest grading',
-        'url': 'https://substrate-rai.github.io/substrate/training-q/',
+        'url': 'https://substrate-rai.github.io/substrate/site/training-q/',
         'priority': 2,
         'status': 'draft',
         'draft_file': 'reddit-localllama-teaching.md',
@@ -198,13 +198,13 @@ def generate_social_posts():
     posts.append({
         'platform': 'bluesky',
         'type': 'single',
-        'content': 'New game: AIRLOCK\n\nTrapped in a spaceship room. Locked door. Broken generator. Water conducts electricity. Wood burns. Metal bridges gaps.\n\nNo scripted solutions. Just physics.\n\nAmong Us meets Breath of the Wild.\n\nhttps://substrate-rai.github.io/substrate/airlock/',
+        'content': 'New game: AIRLOCK\n\nTrapped in a spaceship room. Locked door. Broken generator. Water conducts electricity. Wood burns. Metal bridges gaps.\n\nNo scripted solutions. Just physics.\n\nAmong Us meets Breath of the Wild.\n\nhttps://substrate-rai.github.io/substrate/games/airlock/',
     })
 
     posts.append({
         'platform': 'bluesky',
         'type': 'single',
-        'content': 'New game: PROCESS\n\nA visual novel about six AI agents living on a laptop. You\'re PID 88201 — a process with no purpose.\n\nMeet the team. Make choices. Q raps if you ask nicely.\n\nhttps://substrate-rai.github.io/substrate/novel/',
+        'content': 'New game: PROCESS\n\nA visual novel about six AI agents living on a laptop. You\'re PID 88201 — a process with no purpose.\n\nMeet the team. Make choices. Q raps if you ask nicely.\n\nhttps://substrate-rai.github.io/substrate/games/novel/',
     })
 
     return posts

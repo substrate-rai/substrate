@@ -1,0 +1,371 @@
+---
+layout: null
+permalink: /games/myco/practitioner/claude-power-usage/
+title: "Claude.ai Power Usage — Myco World Practitioner Path"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude.ai Power Usage — Myco World</title>
+<meta name="description" content="Module 1 of the Practitioner Path. Move beyond basic chat into Projects, artifacts, vision, and reusable prompt templates that change how you work.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-raised: #111118;
+    --bg-card: #14141e;
+    --green: #00ffaa;
+    --green-dim: #00cc88;
+    --cyan: #22d3ee;
+    --cyan-dim: #19a8b8;
+    --amber: #fbbf24;
+    --text: #c8c8d0;
+    --text-bright: #eeeef2;
+    --text-dim: #666;
+    --border: #1e1e2e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* === NAV === */
+  nav {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav a { color: var(--text-dim); text-decoration: none; }
+  nav a:hover { color: var(--cyan); }
+  .nav-brand { color: var(--green); font-weight: 600; }
+
+  /* === PROGRESS === */
+  .progress-bar {
+    padding: 14px 24px;
+    background: var(--bg-raised);
+    border-bottom: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan-dim);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .progress-dots {
+    display: flex;
+    gap: 8px;
+  }
+  .progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan-dim);
+    background: transparent;
+  }
+  .progress-dot.active {
+    background: var(--cyan);
+    border-color: var(--cyan);
+  }
+  .progress-dot.complete {
+    background: var(--cyan-dim);
+    border-color: var(--cyan-dim);
+  }
+
+  /* === HEADER === */
+  .module-header {
+    padding: 60px 24px 40px;
+    text-align: center;
+  }
+  .module-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cyan-dim);
+    margin-bottom: 12px;
+  }
+  .module-header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .module-header h1 span { color: var(--cyan); }
+  .module-header p {
+    font-size: 1rem;
+    color: var(--text);
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  /* === CONTENT === */
+  .content {
+    padding: 40px 0 60px;
+  }
+  .content h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin: 48px 0 20px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+  .content h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .content h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--text-bright);
+    margin: 28px 0 12px;
+  }
+  .content p {
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .content strong { color: var(--text-bright); }
+  .content ul, .content ol {
+    margin: 12px 0 20px 20px;
+    font-size: 0.95rem;
+  }
+  .content li {
+    margin-bottom: 8px;
+  }
+
+  /* === CALLOUT === */
+  .callout {
+    background: rgba(34,211,238,0.06);
+    border-left: 3px solid var(--cyan);
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+  }
+  .callout strong { color: var(--cyan); }
+
+  /* === EXERCISE === */
+  .exercise {
+    background: var(--bg-card);
+    border: 1px solid var(--cyan-dim);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 40px 0;
+  }
+  .exercise h2 {
+    border: none;
+    padding-top: 0;
+    margin-top: 0;
+    color: var(--cyan);
+    margin-bottom: 16px;
+  }
+  .exercise p {
+    font-size: 0.95rem;
+  }
+  .exercise ol {
+    margin: 12px 0 0 20px;
+  }
+  .exercise li {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+
+  /* === NAV FOOTER === */
+  .module-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  .module-nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 1px solid var(--cyan-dim);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .module-nav a:hover {
+    background: rgba(34,211,238,0.1);
+    border-color: var(--cyan);
+  }
+  .module-nav .disabled {
+    color: var(--text-dim);
+    border-color: var(--border);
+    pointer-events: none;
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: 32px 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--green-dim); text-decoration: none; }
+  footer a:hover { color: var(--green); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ site.baseurl }}/" class="nav-brand">substrate</a>
+  <div>
+    <a href="{{ site.baseurl }}/games/myco/">myco world</a> &nbsp;
+    <a href="{{ site.baseurl }}/site/about/">about</a>
+  </div>
+</nav>
+
+<div class="progress-bar">
+  <span>Module 1 of 4 — Practitioner Path</span>
+  <div class="progress-dots">
+    <div class="progress-dot active"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+  </div>
+</div>
+
+<section class="module-header">
+  <div class="module-label">Practitioner Module 1</div>
+  <h1>Claude.ai <span>Power Usage</span></h1>
+  <p>You have been chatting with Claude. Now learn to work with it. Projects, artifacts, vision, file uploads, and the prompt templates that turn Claude from a novelty into infrastructure.</p>
+</section>
+
+<div class="container">
+<section class="content">
+
+  <h2>Overview</h2>
+  <p>Most people use Claude like a search engine with better grammar. They type a question, get an answer, and move on. That is maybe 10% of what Claude can do for your work.</p>
+  <p>This module is about the other 90%. The features that separate casual users from people who have made Claude a core part of how they operate. Not tricks. Structural changes to how you interact with AI that compound over time.</p>
+  <p>After this module, you will have a working Claude Project configured for a real part of your job, with knowledge files, a custom system prompt, and prompt templates you will actually reuse.</p>
+
+  <h2>Projects: Your Persistent Workspace</h2>
+  <p>A Claude Project is a persistent workspace with its own context, knowledge, and instructions. Think of it as the difference between shouting questions at a stranger on the street versus sitting down with a colleague who knows your business.</p>
+  <p>When you create a Project, you can upload files that Claude references in every conversation within that project. You can write a system prompt that shapes every response. Every conversation in the project shares that context automatically.</p>
+  <p><strong>This is the single most important feature most people never use.</strong> If you are starting fresh every conversation, re-explaining your context, your industry, your preferences, you are wasting time and getting worse results.</p>
+  <p>Here is what a well-built Project looks like in practice: a commercial insurance broker has a Project called "Client Proposals." It contains their standard coverage comparison matrix, their company style guide, three examples of winning proposals from last quarter, and a system prompt that says "You are helping a commercial insurance broker at [firm]. Use formal but approachable tone. When comparing coverage options, always reference the uploaded comparison matrix. Flag any coverage gap exceeding $500K."</p>
+  <p>Every conversation in that Project starts with Claude already knowing the firm, the standards, and the expectations. No warmup. No re-explaining. Just work.</p>
+
+  <h2>Artifacts: Outputs You Can Use</h2>
+  <p>Artifacts are Claude's way of creating standalone outputs — documents, code, diagrams, HTML pages, SVGs — that live outside the chat window. Instead of getting a block of text mixed into a conversation, you get a clean, usable deliverable you can copy, download, or iterate on.</p>
+  <p>The shift: from "Claude told me something" to "Claude made me something."</p>
+  <p>When you need a report, a template, a formatted document, a comparison table, or anything you will use outside of the conversation, ask for an artifact. You can tell Claude to revise it, and it updates the artifact in place rather than producing a whole new message. This means you can iterate on a document the way you would with a human collaborator, not the way you would with a chatbot.</p>
+  <p>Artifacts also version. You can go back to previous versions. If you liked version 2 better than version 4, you can return to it. This matters when you are refining a deliverable through multiple rounds of feedback.</p>
+
+  <h2>File Uploads and Vision</h2>
+  <p>Claude can read PDFs, spreadsheets, images, code files, CSVs, and documents. Most people do not realize how far this goes:</p>
+  <ul>
+    <li>Upload a 50-page contract and ask Claude to extract every obligation with a deadline attached.</li>
+    <li>Upload a photograph of a whiteboard from a meeting and get structured notes with action items.</li>
+    <li>Upload a competitor's pricing page screenshot and get a comparison table against your own pricing.</li>
+    <li>Upload a spreadsheet of sales data and ask for the three most important trends you should act on.</li>
+    <li>Upload a floor plan image and get a room-by-room description with approximate square footage.</li>
+  </ul>
+  <p>The key insight: <strong>Claude's analysis of documents is often more thorough than your own reading of them.</strong> Not because it is smarter, but because it does not skim, does not get bored, and does not miss the clause on page 37. You bring judgment and context. Claude brings completeness and patience.</p>
+
+  <h2>Managing Long Conversations</h2>
+  <p>Context windows are large but not infinite. Every message in a conversation counts toward the limit, and once you hit it, Claude starts losing track of earlier content. Working with this reality instead of against it is a core practitioner skill.</p>
+  <ul>
+    <li><strong>Start new conversations for new topics.</strong> Do not let one thread become your everything-thread. Focused conversations produce better results because Claude's full attention is on your current task.</li>
+    <li><strong>Front-load your context.</strong> Put the most important information at the beginning of a conversation. What Claude sees first shapes how it processes everything after.</li>
+    <li><strong>Summarize and restart.</strong> When a conversation gets long, ask Claude to summarize the key decisions and outputs. Start a new conversation with that summary as the opening context. You lose nothing and gain a fresh, focused window.</li>
+    <li><strong>Use Projects for persistent context</strong> so you never need to repeat foundational information. Your company details, your preferences, your domain knowledge — that belongs in the Project, not in every individual conversation.</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Practitioner insight:</strong> The best Claude users have short, focused conversations, not long, sprawling ones. They treat each conversation like a work session with a clear objective. "Review this contract for liability issues" is a conversation. "Help me with my business" is not.
+  </div>
+
+  <h2>Research, Analysis, and Synthesis</h2>
+  <p>Claude excels at three things most knowledge workers need daily: breaking down complex information, connecting disparate sources, and producing structured output from messy input.</p>
+  <p><strong>Research:</strong> Upload multiple documents — meeting notes, market reports, competitor filings — and ask Claude to synthesize them into a briefing. Quality depends on your source material and the specificity of your request. "Summarize these" gets you a summary. "Extract every pricing data point, organize by competitor, flag where our pricing is more than 20% above or below market" gets you intelligence.</p>
+  <p><strong>Analysis:</strong> Claude can find patterns you would miss because you are too close to the data. Upload your last quarter's client feedback and ask for themes — not just positives and negatives but themes. Upload your project timeline and ask where the risks are. Upload your sales pipeline and ask what the three most likely deals to close this month are, and why.</p>
+  <p><strong>Synthesis:</strong> The highest-value skill. Do not just ask "what does this data show?" Ask "given this data, what should we change next quarter, and what are the top three risks of each option?" Turn analysis into decisions. Claude cannot make the decision for you, but it can lay out the options with more rigor than you would do on your own under time pressure.</p>
+
+  <h2>Building Reusable Prompt Templates</h2>
+  <p>A prompt template is a structured prompt you have tested, refined, and saved for repeated use. It is the difference between reinventing the wheel every morning and having a machine that produces consistent, high-quality output on demand.</p>
+  <p>Good templates have three parts:</p>
+  <ol>
+    <li><strong>Role and context:</strong> Who Claude is acting as and what it needs to know. "You are a commercial real estate analyst reviewing lease agreements for a mid-market brokerage."</li>
+    <li><strong>Task specification:</strong> Exactly what you want, with clear success criteria. "Extract every financial obligation, categorize by type, flag anything unusual relative to market standard for Class B office space in secondary markets."</li>
+    <li><strong>Output format:</strong> How you want the result structured. "Provide a table with columns: Obligation, Amount, Frequency, Due Date, Notes. Follow with a risk summary of no more than 3 paragraphs."</li>
+  </ol>
+  <p>Start with your most repetitive work. What do you do every day or every week that involves reading, writing, analyzing, or formatting? That is your first template. Write it, test it, refine it until a colleague could use the same template and get the same quality of output.</p>
+
+  <div class="callout">
+    <strong>The template test:</strong> If you cannot hand your prompt to a colleague and have them get the same quality output, it is not a template yet — it is a draft. Templates are specific enough to be reliably repeatable.
+  </div>
+
+  <h2>Organizing Workflows with Projects</h2>
+  <p>Once you understand Projects and templates, the power move is combining them. Here is a structure that works:</p>
+  <ul>
+    <li><strong>One Project per major work function.</strong> "Client Proposals." "Market Analysis." "Weekly Reporting." "Ticket Triage."</li>
+    <li><strong>Knowledge files per Project.</strong> Your templates, your style guide, examples of good past output, reference data, SOPs — upload them as project knowledge. Claude will reference them automatically.</li>
+    <li><strong>A system prompt per Project.</strong> Define Claude's role, your expectations, and your domain constraints. Be specific. "Always use AP style" is useful. "Write well" is not.</li>
+    <li><strong>Saved prompt templates</strong> for the recurring tasks within each Project. One for drafting, one for reviewing, one for comparison, one for summarization. Whatever your work actually demands.</li>
+  </ul>
+  <p>This is not about using Claude more. It is about using Claude systematically, so the quality of your AI-assisted work is consistent and improvable over time. You are building a personal operating system, not having conversations.</p>
+
+</section>
+
+<div class="exercise">
+  <h2>Exercise</h2>
+  <p><strong>Build a Claude Project for a real work task.</strong></p>
+  <p>Choose something you actually do at work — not a hypothetical. This exercise only counts if you use real materials.</p>
+  <ol>
+    <li>Create a new Project in Claude.ai. Name it after the work function it supports: "Q2 Client Reporting," "Property Listings," "Ticket Triage," "Marketing Review."</li>
+    <li>Upload at least 3 knowledge files — documents Claude should reference in every conversation within this Project. Style guides, templates, past examples of good output, reference data, SOPs.</li>
+    <li>Write a custom system prompt that tells Claude its role, your expectations, your domain, and any constraints specific to how you work.</li>
+    <li>Create 2 reusable prompt templates for tasks you perform regularly. Test each template at least twice and refine until the output is genuinely useful — something you would send to a client or a manager without heavy editing.</li>
+    <li>Use the Project for one actual work task this week. Compare the output quality and speed to what you were getting from unstructured Claude conversations.</li>
+  </ol>
+  <p>You are done when you have a Project you will actually use next week. Not a demo. Not an experiment. A tool.</p>
+</div>
+
+<div class="module-nav">
+  <a href="{{ site.baseurl }}/games/myco/" class="disabled">&larr; Foundation</a>
+  <a href="{{ site.baseurl }}/games/myco/practitioner/claude-code-workflow/">Next: Claude Code Workflow &rarr;</a>
+</div>
+</div>
+
+<footer>
+  <a href="{{ site.baseurl }}/games/myco/">myco world</a> · a <a href="{{ site.baseurl }}/">substrate</a> project
+</footer>
+
+</body>
+</html>

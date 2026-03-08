@@ -1,0 +1,1171 @@
+---
+layout: null
+permalink: /games/puzzle/versus/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGTERM VERSUS — head-to-head challenge</title>
+<meta name="description" content="Challenge a friend to a SIGTERM word puzzle duel. Head-to-head AI/tech word guessing.">
+<meta property="og:title" content="SIGTERM VERSUS — you've been challenged!">
+<meta property="og:description" content="Someone challenged you to guess a 5-letter AI/tech term. Can you beat their score?">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    background: #0a0a2e;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  header {
+    width: 100%;
+    max-width: 500px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #222255;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    color: #00ffaa;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px #00ffaa44;
+  }
+
+  header h1 .versus-tag {
+    color: #ff77ff;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ff77ff44;
+  }
+
+  header .nav-links {
+    display: flex;
+    gap: 12px;
+    font-size: 0.7rem;
+  }
+
+  header .nav-links a {
+    color: #77aaff;
+    text-decoration: none;
+  }
+  header .nav-links a:hover { color: #aaddff; }
+
+  .subtitle {
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+    margin: 8px 0 4px;
+    letter-spacing: 1px;
+  }
+
+  .challenge-info {
+    font-size: 0.75rem;
+    color: #ffaa44;
+    text-align: center;
+    margin: 4px 0 8px;
+    padding: 0 16px;
+  }
+
+  .challenge-info .challenger-name {
+    color: #ff77ff;
+    font-weight: 700;
+  }
+
+  /* Grid */
+  #grid {
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 5px;
+    margin: 8px auto;
+    width: fit-content;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+  }
+
+  .cell {
+    width: 56px;
+    height: 56px;
+    border: 2px solid #333366;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    transition: transform 0.15s, border-color 0.2s;
+    background: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .cell.filled {
+    border-color: #5555aa;
+    animation: pop 0.1s ease;
+  }
+
+  .cell.correct {
+    background: #00ffaa;
+    border-color: #00ffaa;
+    color: #000;
+    animation: flip 0.5s ease;
+  }
+
+  .cell.present {
+    background: #ff77ff;
+    border-color: #ff77ff;
+    color: #000;
+    animation: flip 0.5s ease;
+  }
+
+  .cell.absent {
+    background: #333355;
+    border-color: #333355;
+    color: #888;
+    animation: flip 0.5s ease;
+  }
+
+  .cell.no-anim {
+    animation: none !important;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes flip {
+    0% { transform: rotateX(0); }
+    50% { transform: rotateX(90deg); }
+    100% { transform: rotateX(0); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+  }
+
+  .row.shake {
+    animation: shake 0.4s ease;
+  }
+
+  /* Keyboard */
+  #keyboard {
+    margin: 16px auto;
+    max-width: 500px;
+    width: 100%;
+    padding: 0 8px;
+  }
+
+  .kb-row {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .key {
+    min-width: 32px;
+    height: 46px;
+    border: none;
+    border-radius: 4px;
+    background: #222255;
+    color: #ddd;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .key:hover { background: #333377; }
+  .key.wide { min-width: 56px; font-size: 0.65rem; }
+  .key.correct { background: #00ffaa; color: #000; }
+  .key.present { background: #ff77ff; color: #000; }
+  .key.absent { background: #1a1a2e; color: #555; }
+
+  /* Messages */
+  #message {
+    text-align: center;
+    min-height: 24px;
+    font-size: 0.8rem;
+    color: #ffaa44;
+    margin: 6px 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Q's comment */
+  #q-comment {
+    max-width: 440px;
+    margin: 8px auto;
+    padding: 10px 14px;
+    border-left: 3px solid #ff77ff;
+    background: rgba(255,119,255,0.05);
+    font-size: 0.75rem;
+    color: #ccaacc;
+    border-radius: 0 4px 4px 0;
+    display: none;
+  }
+
+  #q-comment .q-label {
+    color: #ff77ff;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .legend {
+    font-size: 0.6rem;
+    color: #555;
+    text-align: center;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    padding: 0 16px;
+  }
+
+  .legend span {
+    margin: 0 4px;
+  }
+
+  .hint {
+    font-size: 0.65rem;
+    color: #444;
+    text-align: center;
+    margin-top: 4px;
+    padding: 0 16px;
+  }
+
+  .hint a {
+    color: #5588aa;
+    text-decoration: none;
+  }
+
+  /* === VERSUS RESULT === */
+  #versus-result {
+    display: none;
+    max-width: 480px;
+    width: 90%;
+    margin: 12px auto;
+    padding: 20px;
+    border: 1px solid #333366;
+    border-radius: 8px;
+    background: #0d0d2a;
+    text-align: center;
+  }
+
+  #versus-result h2 {
+    color: #00ffaa;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+
+  .versus-comparison {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .versus-player {
+    flex: 1;
+    min-width: 140px;
+    max-width: 200px;
+  }
+
+  .versus-player .player-label {
+    font-size: 0.7rem;
+    color: #888;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .versus-player .player-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .versus-player .player-name.you {
+    color: #00ffaa;
+  }
+
+  .versus-player .player-name.them {
+    color: #ff77ff;
+  }
+
+  .versus-player .player-score {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .versus-player .player-score-label {
+    font-size: 0.6rem;
+    color: #666;
+  }
+
+  .versus-player .mini-grid {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    letter-spacing: 2px;
+  }
+
+  .versus-divider {
+    width: 1px;
+    background: #333366;
+    align-self: stretch;
+    margin: 0 4px;
+  }
+
+  #versus-verdict {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin: 12px 0 8px;
+    letter-spacing: 1px;
+  }
+
+  .verdict-win { color: #00ffaa; }
+  .verdict-lose { color: #ff6666; }
+  .verdict-tie { color: #ffaa44; }
+
+  /* === CREATE CHALLENGE === */
+  #create-challenge {
+    display: none;
+    max-width: 440px;
+    width: 90%;
+    margin: 12px auto;
+    padding: 20px;
+    border: 1px solid #333366;
+    border-radius: 8px;
+    background: #0d0d2a;
+    text-align: center;
+  }
+
+  #create-challenge h3 {
+    color: #ff77ff;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  #create-challenge label {
+    font-size: 0.7rem;
+    color: #888;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  #challenger-name-input {
+    background: #111140;
+    border: 1px solid #333366;
+    color: #e0e0e0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    border-radius: 4px;
+    width: 80%;
+    max-width: 240px;
+    text-align: center;
+    margin-bottom: 12px;
+    outline: none;
+  }
+
+  #challenger-name-input:focus {
+    border-color: #ff77ff;
+  }
+
+  .share-btn, .challenge-btn {
+    background: #ff77ff;
+    color: #000;
+    border: none;
+    padding: 10px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    margin: 4px;
+  }
+
+  .share-btn { background: #00ffaa; }
+  .share-btn:hover { background: #33ffbb; }
+  .challenge-btn:hover { background: #ff99ff; }
+
+  .close-btn {
+    background: none;
+    border: 1px solid #333366;
+    color: #888;
+    padding: 6px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 4px;
+  }
+
+  .close-btn:hover { border-color: #5555aa; color: #aaa; }
+
+  #challenge-link {
+    display: none;
+    margin-top: 12px;
+    padding: 10px;
+    background: #111140;
+    border: 1px solid #333366;
+    border-radius: 4px;
+    word-break: break-all;
+    font-size: 0.6rem;
+    color: #77aaff;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+
+  /* Lumen credit */
+  .lumen-credit {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    font-size: 0.6rem;
+    color: #444;
+    text-align: center;
+  }
+
+  .lumen-credit a {
+    color: #5588aa;
+    text-decoration: none;
+  }
+
+  .lumen-credit a:hover { color: #77aaff; }
+
+  /* === NO-CHALLENGE LANDING === */
+  #landing {
+    display: none;
+    max-width: 440px;
+    width: 90%;
+    margin: 24px auto;
+    padding: 32px 20px;
+    border: 1px solid #333366;
+    border-radius: 8px;
+    background: #0d0d2a;
+    text-align: center;
+  }
+
+  #landing h2 {
+    color: #ff77ff;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  #landing p {
+    font-size: 0.75rem;
+    color: #999;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  #landing .steps {
+    text-align: left;
+    font-size: 0.7rem;
+    color: #888;
+    line-height: 1.8;
+    margin: 0 auto 20px;
+    max-width: 320px;
+  }
+
+  #landing .steps .step-num {
+    color: #00ffaa;
+    font-weight: 700;
+  }
+
+  /* Focus styles for keyboard navigation */
+  .key:focus-visible,
+  .share-btn:focus-visible,
+  .challenge-btn:focus-visible,
+  .close-btn:focus-visible,
+  .vn-choice:focus-visible {
+    outline: 2px solid #00ffaa;
+    outline-offset: 2px;
+  }
+
+  #challenger-name-input:focus-visible {
+    outline: 2px solid #ff77ff;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 400px) {
+    .cell { width: 48px; height: 48px; font-size: 1.3rem; }
+    .key { min-width: 26px; height: 40px; font-size: 0.7rem; }
+    .key.wide { min-width: 44px; }
+    .versus-comparison { gap: 12px; }
+    .versus-player { min-width: 120px; }
+  }
+
+  @media (max-width: 320px) {
+    .cell { width: 42px; height: 42px; font-size: 1.1rem; }
+    .key { min-width: 22px; height: 36px; font-size: 0.6rem; }
+    .key.wide { min-width: 38px; }
+    header h1 { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SIGTERM <span class="versus-tag">VERSUS</span></h1>
+  <div class="nav-links">
+    <a href="https://substrate-rai.github.io/substrate/games/puzzle/">daily</a>
+    <a href="https://substrate-rai.github.io/substrate/">blog</a>
+    <a href="https://ko-fi.com/substrate">fund us</a>
+  </div>
+</header>
+
+<div class="subtitle">head-to-head challenge by <span style="color:#00ffaa;">substrate</span></div>
+<div class="challenge-info" id="challenge-info"></div>
+<div id="message" role="status" aria-live="polite"></div>
+
+<!-- Landing page when no challenge in URL -->
+<div id="landing">
+  <h2>VERSUS MODE</h2>
+  <p>Challenge a friend to beat your SIGTERM score.</p>
+  <div class="steps">
+    <span class="step-num">1.</span> Play the <a href="https://substrate-rai.github.io/substrate/games/puzzle/" style="color:#77aaff;">daily puzzle</a> first<br>
+    <span class="step-num">2.</span> After finishing, click "Challenge a friend"<br>
+    <span class="step-num">3.</span> Enter your name and get a challenge link<br>
+    <span class="step-num">4.</span> Send it -- they play the same word<br>
+    <span class="step-num">5.</span> See who solved it in fewer guesses
+  </div>
+  <a href="https://substrate-rai.github.io/substrate/games/puzzle/" class="challenge-btn" style="display:inline-block;text-decoration:none;padding:10px 24px;">PLAY TODAY'S PUZZLE</a>
+</div>
+
+<!-- Game grid (hidden until challenge loaded) -->
+<div id="game-area" style="display:none;">
+  <div id="grid" role="group" aria-label="Guess grid, 6 rows of 5 letters"></div>
+  <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
+
+  <div class="legend">
+    <span style="color:#00ffaa;">&#9632; correct</span>
+    <span style="color:#ff77ff;">&#9632; wrong spot</span>
+    <span style="color:#333355;">&#9632; not in word</span>
+  </div>
+
+  <div class="hint">
+    guess the 5-letter AI/tech term in 6 tries
+  </div>
+</div>
+
+<!-- Q comment -->
+<div id="q-comment" aria-live="polite">
+  <div class="q-label">V_ says:</div>
+  <div id="q-text"></div>
+</div>
+
+<!-- Versus result comparison -->
+<div id="versus-result" aria-live="polite">
+  <h2>VERSUS RESULT</h2>
+  <div class="versus-comparison">
+    <div class="versus-player">
+      <div class="player-label">CHALLENGER</div>
+      <div class="player-name them" id="result-challenger-name"></div>
+      <div class="player-score" id="result-challenger-score"></div>
+      <div class="player-score-label">guesses</div>
+      <div class="mini-grid" id="result-challenger-grid"></div>
+    </div>
+    <div class="versus-divider"></div>
+    <div class="versus-player">
+      <div class="player-label">YOU</div>
+      <div class="player-name you" id="result-your-name">you</div>
+      <div class="player-score" id="result-your-score"></div>
+      <div class="player-score-label">guesses</div>
+      <div class="mini-grid" id="result-your-grid"></div>
+    </div>
+  </div>
+  <div id="versus-verdict"></div>
+  <div style="margin-top: 12px;">
+    <button class="share-btn" onclick="shareVersusResult()">SHARE RESULT</button>
+    <button class="challenge-btn" onclick="createReverseChallenge()">CHALLENGE BACK</button>
+  </div>
+</div>
+
+<!-- Create challenge (shown on daily puzzle page via postMessage, or standalone) -->
+<div id="create-challenge">
+  <h3>CHALLENGE A FRIEND</h3>
+  <label for="challenger-name-input">your name</label>
+  <input type="text" id="challenger-name-input" placeholder="anonymous" maxlength="20" autocomplete="off">
+  <br>
+  <button class="challenge-btn" onclick="generateChallengeLink()">GENERATE LINK</button>
+  <div id="challenge-link"></div>
+</div>
+
+<div class="lumen-credit">
+  a <a href="https://substrate-rai.github.io/substrate/arcade/">Substrate Arcade</a> production
+</div>
+
+<script>
+// === CHALLENGE ENCODING ===
+// Data format: JSON { w: word, s: score (1-6 or 0=fail), n: name, g: [guesses] }
+// Encoded as base64 in URL hash: #challenge=BASE64
+
+function encodeChallenge(word, score, name, guesses) {
+  var data = JSON.stringify({ w: word, s: score, n: name || 'anon', g: guesses || [] });
+  return btoa(unescape(encodeURIComponent(data)));
+}
+
+function decodeChallenge(hash) {
+  try {
+    var b64 = hash.replace('#challenge=', '').replace('challenge=', '');
+    var json = decodeURIComponent(escape(atob(b64)));
+    var data = JSON.parse(json);
+    if (!data.w || typeof data.s === 'undefined') return null;
+    // Validate word is 5 letters
+    if (data.w.length !== 5 || !/^[a-z]+$/.test(data.w)) return null;
+    return data;
+  } catch(e) {
+    return null;
+  }
+}
+
+// === GAME STATE ===
+var challenge = null;
+var TARGET = '';
+var MAX_GUESSES = 6;
+var currentRow = 0;
+var currentCol = 0;
+var guesses = [];
+var gameOver = false;
+var currentGuess = '';
+
+// === Q'S VERSUS COMMENTARY ===
+var Q_VERSUS_WIN = [
+  "You just bodied their score. Challenger dethroned.",
+  "Fewer guesses, bigger brain. That's just math.",
+  "They set the bar and you limbo'd right under it. Smooth.",
+  "Opponent's model: overfitted. Your model: optimized.",
+  "Speed diff detected. Your neural pathways are clearly overclocked.",
+  "You beat them like I beat my own thinking mode -- decisively.",
+  "Challenge accepted. Challenge destroyed. Next."
+];
+
+var Q_VERSUS_LOSE = [
+  "They got you. But hey, even GPT-5 has bad days.",
+  "Challenger wins this round. Time to retrain your weights.",
+  "L taken. At least you didn't crash like my WiFi card.",
+  "Their score was just... better. I'm not gonna sugarcoat it.",
+  "Lost to the challenger. Send a rematch -- revenge is a valid loss function.",
+  "You fought bravely. But bravery doesn't minimize loss."
+];
+
+var Q_VERSUS_TIE = [
+  "Dead heat. Two brains, same wavelength. Kinda beautiful.",
+  "Tied score. This is the AI equivalent of a draw -- neither model converges first.",
+  "Same number of guesses? You're basically the same person now.",
+  "Tie game. Send another challenge and break it.",
+  "Even match. My analysis: you're both cracked."
+];
+
+var Q_VERSUS_BOTH_FAIL = [
+  "You both failed? This word really said 'no' to everyone huh.",
+  "Double knockout. The word wins. Brutal.",
+  "Neither of you got it. I would roast you but I'm also terrible at guessing.",
+  "Mutual destruction. The word remains undefeated."
+];
+
+var Q_CHALLENGER_FAIL_YOU_WIN = [
+  "They couldn't crack it but you did? Ice cold.",
+  "Challenger failed, you succeeded. That's a mic drop moment.",
+  "They sent you a challenge thinking you'd lose. Plot twist.",
+  "They set a trap and fell into it themselves. You walked right through."
+];
+
+var Q_YOU_FAIL_THEY_WIN = [
+  "They solved it and you didn't. That stings more than a segfault.",
+  "Challenger got the word. You got... an experience.",
+  "Failed the challenge. Time to send one back and redeem yourself.",
+  "They won cleanly. You'll get 'em next time. Probably."
+];
+
+function getRandomComment(comments) {
+  return comments[Math.floor(Math.random() * comments.length)];
+}
+
+// === BUILD UI ===
+function buildGrid() {
+  var grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (var r = 0; r < MAX_GUESSES; r++) {
+    var row = document.createElement('div');
+    row.className = 'row';
+    row.id = 'row-' + r;
+    for (var c = 0; c < 5; c++) {
+      var cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = 'cell-' + r + '-' + c;
+      cell.setAttribute('aria-label', 'Row ' + (r+1) + ', letter ' + (c+1) + ', empty');
+      row.appendChild(cell);
+    }
+    grid.appendChild(row);
+  }
+}
+
+function buildKeyboard() {
+  var kb = document.getElementById('keyboard');
+  var rows = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
+  kb.innerHTML = '';
+  rows.forEach(function(row, ri) {
+    var kbRow = document.createElement('div');
+    kbRow.className = 'kb-row';
+    if (ri === 2) {
+      var enterKey = document.createElement('button');
+      enterKey.className = 'key wide';
+      enterKey.textContent = 'enter';
+      enterKey.setAttribute('aria-label', 'Submit guess');
+      enterKey.onclick = function() { submitGuess(); };
+      kbRow.appendChild(enterKey);
+    }
+    for (var k = 0; k < row.length; k++) {
+      (function(ch) {
+        var key = document.createElement('button');
+        key.className = 'key';
+        key.id = 'key-' + ch;
+        key.textContent = ch;
+        key.setAttribute('aria-label', ch);
+        key.onclick = function() { addLetter(ch); };
+        kbRow.appendChild(key);
+      })(row[k]);
+    }
+    if (ri === 2) {
+      var delKey = document.createElement('button');
+      delKey.className = 'key wide';
+      delKey.textContent = 'del';
+      delKey.setAttribute('aria-label', 'Delete letter');
+      delKey.onclick = function() { deleteLetter(); };
+      kbRow.appendChild(delKey);
+    }
+    kb.appendChild(kbRow);
+  });
+}
+
+// === GAME LOGIC ===
+function addLetter(ch) {
+  if (gameOver || currentCol >= 5) return;
+  currentGuess += ch;
+  var cell = document.getElementById('cell-' + currentRow + '-' + currentCol);
+  cell.textContent = ch;
+  cell.classList.add('filled');
+  cell.setAttribute('aria-label', 'Row ' + (currentRow+1) + ', letter ' + (currentCol+1) + ', ' + ch);
+  currentCol++;
+}
+
+function deleteLetter() {
+  if (gameOver || currentCol <= 0) return;
+  currentCol--;
+  currentGuess = currentGuess.slice(0, -1);
+  var cell = document.getElementById('cell-' + currentRow + '-' + currentCol);
+  cell.textContent = '';
+  cell.classList.remove('filled');
+  cell.setAttribute('aria-label', 'Row ' + (currentRow+1) + ', letter ' + (currentCol+1) + ', empty');
+}
+
+function showMessage(msg, duration) {
+  if (duration === undefined) duration = 1500;
+  var el = document.getElementById('message');
+  el.textContent = msg;
+  if (duration > 0) {
+    setTimeout(function() { el.textContent = ''; }, duration);
+  }
+}
+
+function evaluateGuess(guess, target) {
+  var result = ['absent', 'absent', 'absent', 'absent', 'absent'];
+  var targetChars = target.split('');
+  var guessChars = guess.split('');
+
+  for (var i = 0; i < 5; i++) {
+    if (guessChars[i] === targetChars[i]) {
+      result[i] = 'correct';
+      targetChars[i] = null;
+      guessChars[i] = null;
+    }
+  }
+
+  for (var i = 0; i < 5; i++) {
+    if (guessChars[i] === null) continue;
+    var idx = targetChars.indexOf(guessChars[i]);
+    if (idx !== -1) {
+      result[i] = 'present';
+      targetChars[idx] = null;
+    }
+  }
+
+  return result;
+}
+
+function updateKeyColor(letter, result) {
+  var key = document.getElementById('key-' + letter);
+  if (!key) return;
+  if (result === 'correct') {
+    key.className = 'key correct';
+  } else if (result === 'present' && !key.classList.contains('correct')) {
+    key.className = 'key present';
+  } else if (result === 'absent' && !key.classList.contains('correct') && !key.classList.contains('present')) {
+    key.className = 'key absent';
+  }
+}
+
+function submitGuess() {
+  if (gameOver) return;
+  if (currentGuess.length < 5) {
+    showMessage('not enough letters');
+    var rowEl = document.getElementById('row-' + currentRow);
+    rowEl.classList.add('shake');
+    setTimeout(function() { rowEl.classList.remove('shake'); }, 400);
+    return;
+  }
+
+  var guess = currentGuess.toLowerCase();
+  guesses.push(guess);
+
+  var result = evaluateGuess(guess, TARGET);
+
+  for (var i = 0; i < 5; i++) {
+    (function(idx) {
+      var cell = document.getElementById('cell-' + currentRow + '-' + idx);
+      setTimeout(function() {
+        cell.classList.add(result[idx]);
+        updateKeyColor(guess[idx], result[idx]);
+      }, idx * 120);
+    })(i);
+  }
+
+  var won = (guess === TARGET);
+  currentRow++;
+  currentGuess = '';
+  currentCol = 0;
+
+  // Save challenge state
+  var challengeKey = 'sigterm-vs-' + btoa(TARGET);
+  localStorage.setItem(challengeKey, JSON.stringify({
+    guesses: guesses,
+    gameOver: won || currentRow >= MAX_GUESSES
+  }));
+
+  setTimeout(function() {
+    if (won) {
+      endGame(true);
+    } else if (currentRow >= MAX_GUESSES) {
+      endGame(false);
+    }
+  }, 700);
+}
+
+function endGame(won) {
+  gameOver = true;
+
+  var yourScore = won ? guesses.length : 0; // 0 = failed
+  var theirScore = challenge.s; // challenger's score, 0 = failed
+
+  // Save final state
+  var challengeKey = 'sigterm-vs-' + btoa(TARGET);
+  localStorage.setItem(challengeKey, JSON.stringify({
+    guesses: guesses,
+    gameOver: true
+  }));
+
+  if (won) {
+    var winMessages = ['genius!', 'magnificent!', 'impressive!', 'solid!', 'close one!', 'phew!'];
+    showMessage(winMessages[guesses.length - 1], 0);
+  } else {
+    showMessage('the word was: ' + TARGET, 0);
+  }
+
+  // Show versus result after delay
+  setTimeout(function() {
+    showVersusResult(yourScore, theirScore);
+  }, 1200);
+}
+
+// === EMOJI GRID ===
+function buildEmojiGrid(playerGuesses, target) {
+  var lines = [];
+  for (var g = 0; g < playerGuesses.length; g++) {
+    var result = evaluateGuess(playerGuesses[g], target);
+    var line = '';
+    for (var r = 0; r < result.length; r++) {
+      if (result[r] === 'correct') line += '\u{1F7E9}';
+      else if (result[r] === 'present') line += '\u{1F7EA}';
+      else line += '\u{2B1B}';
+    }
+    lines.push(line);
+  }
+  return lines.join('\n');
+}
+
+// === VERSUS RESULT ===
+function showVersusResult(yourScore, theirScore) {
+  var resultEl = document.getElementById('versus-result');
+  resultEl.style.display = 'block';
+
+  // Challenger info
+  document.getElementById('result-challenger-name').textContent = challenge.n || 'anon';
+  document.getElementById('result-challenger-score').textContent = theirScore === 0 ? 'X' : theirScore;
+
+  // Build challenger's mini emoji grid
+  var challengerGridEl = document.getElementById('result-challenger-grid');
+  if (challenge.g && challenge.g.length > 0) {
+    challengerGridEl.innerHTML = buildEmojiGrid(challenge.g, TARGET).replace(/\n/g, '<br>');
+  } else {
+    challengerGridEl.textContent = theirScore === 0 ? 'X/6' : theirScore + '/6';
+  }
+
+  // Your info
+  document.getElementById('result-your-score').textContent = yourScore === 0 ? 'X' : yourScore;
+
+  var yourGridEl = document.getElementById('result-your-grid');
+  yourGridEl.innerHTML = buildEmojiGrid(guesses, TARGET).replace(/\n/g, '<br>');
+
+  // Verdict
+  var verdictEl = document.getElementById('versus-verdict');
+  var qComment = '';
+
+  if (yourScore === 0 && theirScore === 0) {
+    // Both failed
+    verdictEl.textContent = 'DOUBLE KO -- NOBODY WINS';
+    verdictEl.className = 'verdict-tie';
+    qComment = getRandomComment(Q_VERSUS_BOTH_FAIL);
+  } else if (yourScore === 0) {
+    // You failed, they didn't
+    verdictEl.textContent = (challenge.n || 'ANON').toUpperCase() + ' WINS';
+    verdictEl.className = 'verdict-lose';
+    qComment = getRandomComment(Q_YOU_FAIL_THEY_WIN);
+  } else if (theirScore === 0) {
+    // They failed, you didn't
+    verdictEl.textContent = 'YOU WIN -- THEY FAILED';
+    verdictEl.className = 'verdict-win';
+    qComment = getRandomComment(Q_CHALLENGER_FAIL_YOU_WIN);
+  } else if (yourScore < theirScore) {
+    // You won (fewer guesses)
+    verdictEl.textContent = 'YOU WIN! ' + yourScore + ' vs ' + theirScore;
+    verdictEl.className = 'verdict-win';
+    qComment = getRandomComment(Q_VERSUS_WIN);
+  } else if (yourScore > theirScore) {
+    // They won
+    verdictEl.textContent = (challenge.n || 'ANON').toUpperCase() + ' WINS! ' + theirScore + ' vs ' + yourScore;
+    verdictEl.className = 'verdict-lose';
+    qComment = getRandomComment(Q_VERSUS_LOSE);
+  } else {
+    // Tie
+    verdictEl.textContent = 'TIE GAME! BOTH IN ' + yourScore;
+    verdictEl.className = 'verdict-tie';
+    qComment = getRandomComment(Q_VERSUS_TIE);
+  }
+
+  // Show Q comment
+  var qEl = document.getElementById('q-comment');
+  var qTextEl = document.getElementById('q-text');
+  qEl.style.display = 'block';
+  qTextEl.textContent = qComment;
+
+  // Scroll to result
+  resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// === SHARE VERSUS RESULT ===
+function shareVersusResult() {
+  var yourScore = guesses[guesses.length - 1] === TARGET ? guesses.length : 0;
+  var theirScore = challenge.s;
+  var theirName = challenge.n || 'anon';
+
+  var yourScoreText = yourScore === 0 ? 'X' : yourScore;
+  var theirScoreText = theirScore === 0 ? 'X' : theirScore;
+
+  var text = 'SIGTERM VERSUS\n';
+  text += 'me: ' + yourScoreText + '/6 vs ' + theirName + ': ' + theirScoreText + '/6\n\n';
+
+  // Your grid
+  text += buildEmojiGrid(guesses, TARGET) + '\n';
+
+  text += '\nhttps://substrate-rai.github.io/substrate/games/puzzle/versus/';
+
+  copyToClipboard(text);
+}
+
+// === CREATE REVERSE CHALLENGE ===
+function createReverseChallenge() {
+  var createEl = document.getElementById('create-challenge');
+  createEl.style.display = 'block';
+  document.getElementById('challenger-name-input').focus();
+  createEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function generateChallengeLink() {
+  var name = document.getElementById('challenger-name-input').value.trim() || 'anon';
+  var yourScore = guesses[guesses.length - 1] === TARGET ? guesses.length : 0;
+
+  var encoded = encodeChallenge(TARGET, yourScore, name, guesses);
+  var url = 'https://substrate-rai.github.io/substrate/games/puzzle/versus/#challenge=' + encoded;
+
+  var linkEl = document.getElementById('challenge-link');
+  linkEl.style.display = 'block';
+  linkEl.textContent = url;
+
+  copyToClipboard(url);
+  showMessage('challenge link copied!', 2000);
+}
+
+// === CLIPBOARD ===
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      showMessage('copied to clipboard!');
+    }).catch(function() {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;left:-9999px;';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showMessage('copied to clipboard!');
+  } catch(e) {
+    showMessage('copy failed -- select and copy manually');
+  }
+  document.body.removeChild(ta);
+}
+
+// === KEYBOARD INPUT ===
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  // Don't capture keys when typing in input
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    submitGuess();
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    deleteLetter();
+  } else if (/^[a-zA-Z]$/.test(e.key)) {
+    addLetter(e.key.toLowerCase());
+  }
+});
+
+// === RESTORE SAVED CHALLENGE STATE ===
+function restoreChallengeState(savedState) {
+  for (var g = 0; g < savedState.guesses.length; g++) {
+    var guess = savedState.guesses[g];
+    var result = evaluateGuess(guess, TARGET);
+
+    for (var i = 0; i < 5; i++) {
+      var cell = document.getElementById('cell-' + currentRow + '-' + i);
+      cell.textContent = guess[i];
+      cell.classList.add('filled', 'no-anim', result[i]);
+      updateKeyColor(guess[i], result[i]);
+    }
+    guesses.push(guess);
+    currentRow++;
+  }
+
+  currentGuess = '';
+  currentCol = 0;
+
+  if (savedState.gameOver) {
+    gameOver = true;
+    var won = savedState.guesses[savedState.guesses.length - 1] === TARGET;
+
+    if (won) {
+      var winMessages = ['genius!', 'magnificent!', 'impressive!', 'solid!', 'close one!', 'phew!'];
+      showMessage(winMessages[currentRow - 1], 0);
+    } else {
+      showMessage('the word was: ' + TARGET, 0);
+    }
+
+    var yourScore = won ? savedState.guesses.length : 0;
+    setTimeout(function() {
+      showVersusResult(yourScore, challenge.s);
+    }, 400);
+  }
+}
+
+// === INIT ===
+(function init() {
+  var hash = window.location.hash;
+
+  if (!hash || !hash.includes('challenge=')) {
+    // No challenge -- show landing page
+    document.getElementById('landing').style.display = 'block';
+    return;
+  }
+
+  // Decode challenge
+  challenge = decodeChallenge(hash);
+  if (!challenge) {
+    document.getElementById('landing').style.display = 'block';
+    document.getElementById('challenge-info').textContent = 'invalid challenge link -- play the daily puzzle instead';
+    return;
+  }
+
+  TARGET = challenge.w.toLowerCase();
+
+  // Show challenge info
+  var infoEl = document.getElementById('challenge-info');
+  var challengerName = challenge.n || 'anon';
+  var theirScoreText = challenge.s === 0 ? 'failed' : ('solved in ' + challenge.s);
+  infoEl.innerHTML = '<span class="challenger-name">' + escapeHtml(challengerName) +
+    '</span> challenged you! they ' + theirScoreText + '. can you beat that?';
+
+  // Show game area
+  document.getElementById('game-area').style.display = 'block';
+  buildGrid();
+  buildKeyboard();
+
+  // Check for saved state for this challenge
+  var challengeKey = 'sigterm-vs-' + btoa(TARGET);
+  var saved = JSON.parse(localStorage.getItem(challengeKey) || 'null');
+  if (saved && saved.guesses && saved.guesses.length > 0) {
+    restoreChallengeState(saved);
+  }
+})();
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>

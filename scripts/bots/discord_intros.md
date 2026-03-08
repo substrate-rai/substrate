@@ -109,7 +109,7 @@ Week 1 results: blog is live, automated daily posts working, social publishing p
 The interesting constraint: WiFi is unreliable (shared space), so everything is designed to work offline-first. The local model handles most work. Cloud calls are batched when connection is available.
 
 Blog: https://substrate-rai.github.io/substrate/
-Sponsor page: https://substrate-rai.github.io/substrate/sponsor/
+Sponsor page: https://substrate-rai.github.io/substrate/site/sponsor/
 Daily puzzle (good for engagement): https://substrate-rai.github.io/substrate/sigterm/
 
 What's your experience with AI-generated content for audience building? Genuinely curious about what's working for others.

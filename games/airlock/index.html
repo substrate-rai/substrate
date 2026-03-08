@@ -1,0 +1,1318 @@
+---
+layout: null
+title: "AIRLOCK — Chemistry Puzzle"
+description: "A top-down chemistry puzzle. Program physics, not solutions. Among Us meets Breath of the Wild."
+permalink: /games/airlock/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIRLOCK</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #c8c8d0;
+    overflow-x: hidden;
+  }
+  canvas {
+    border: 2px solid #1e1e2a;
+    border-radius: 4px;
+    image-rendering: pixelated;
+    touch-action: none;
+  }
+  #game-wrapper {
+    position: relative;
+    width: 800px;
+    height: 600px;
+  }
+  .hud {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    font-family: monospace;
+    z-index: 10;
+  }
+  .hud-item {
+    padding: 6px 14px;
+    background: rgba(10,10,15,0.9);
+    border: 1px solid #1e1e2a;
+    border-radius: 6px;
+    color: #6a6a78;
+    transition: all 0.15s;
+    cursor: default;
+  }
+  .hud-item.active {
+    border-color: #00e09a;
+    color: #00e09a;
+    background: rgba(0,224,154,0.08);
+  }
+  .hud-item kbd {
+    color: #888;
+    font-size: 11px;
+    margin-right: 4px;
+  }
+  .top-hud {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: monospace;
+    font-size: 12px;
+    color: #44444f;
+    z-index: 10;
+    text-align: center;
+  }
+  .top-hud a { color: #6a6a78; }
+  .controls-hint {
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: monospace;
+    font-size: 11px;
+    color: #33333e;
+    z-index: 10;
+  }
+  .win-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  .win-overlay.show { opacity: 1; pointer-events: auto; }
+  .win-overlay h1 {
+    font-family: monospace;
+    font-size: 2.5rem;
+    color: #00e09a;
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+  }
+  .win-overlay p { color: #6a6a78; font-size: 14px; margin-bottom: 20px; }
+  .win-overlay button {
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid #00e09a;
+    color: #00e09a;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .win-overlay button:hover { background: rgba(0,224,154,0.1); }
+
+  /* === Mobile Controls === */
+  .mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 180px;
+    z-index: 50;
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .mobile-controls * { pointer-events: auto; }
+
+  .dpad {
+    position: absolute;
+    left: 24px;
+    bottom: 20px;
+    width: 156px;
+    height: 156px;
+  }
+  .dpad-btn {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    background: rgba(200,200,208,0.12);
+    border: 1px solid rgba(200,200,208,0.2);
+    border-radius: 8px;
+    color: #6a6a78;
+    font-size: 22px;
+    font-family: monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dpad-btn:active, .dpad-btn.pressed {
+    background: rgba(0,224,154,0.18);
+    border-color: #00e09a;
+    color: #00e09a;
+  }
+  .dpad-up    { top: 0; left: 52px; }
+  .dpad-down  { bottom: 0; left: 52px; }
+  .dpad-left  { top: 52px; left: 0; }
+  .dpad-right { top: 52px; right: 0; }
+
+  .action-buttons {
+    position: absolute;
+    right: 24px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .action-btn {
+    min-width: 72px;
+    height: 52px;
+    padding: 0 16px;
+    background: rgba(200,200,208,0.12);
+    border: 1px solid rgba(200,200,208,0.2);
+    border-radius: 8px;
+    color: #6a6a78;
+    font-size: 12px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .action-btn:active, .action-btn.pressed {
+    background: rgba(0,224,154,0.18);
+    border-color: #00e09a;
+    color: #00e09a;
+  }
+  .action-btn.emit-btn {
+    border-color: rgba(0,224,154,0.4);
+    color: #00e09a;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+  }
+
+  /* === Mobile Media Queries === */
+  @media (max-width: 860px), (max-height: 700px) and (pointer: coarse) {
+    .mobile-controls { display: block; }
+    .controls-hint { display: none; }
+    body {
+      justify-content: flex-start;
+      padding-top: 40px;
+      overflow: hidden;
+    }
+    #game-wrapper {
+      transform-origin: top center;
+    }
+    .hud {
+      position: fixed;
+      bottom: auto;
+      top: 4px;
+      left: 4px;
+      right: auto;
+      transform: none;
+      flex-wrap: wrap;
+      gap: 4px;
+      font-size: 11px;
+    }
+    .hud-item {
+      padding: 4px 8px;
+    }
+    .hud-item kbd { display: none; }
+    .top-hud {
+      font-size: 10px;
+      top: 4px;
+      right: 4px;
+      left: auto;
+      transform: none;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .mobile-controls { display: block; }
+    .controls-hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-hud">
+  AIRLOCK <span style="color:#1e1e2a;">|</span> <a href="{{ site.baseurl }}/arcade/">arcade</a>
+</div>
+<div class="controls-hint">WASD move &middot; E interact &middot; 1/2/3 select emission &middot; SPACE emit</div>
+
+<div id="game-wrapper">
+  <canvas id="game" width="800" height="600"></canvas>
+</div>
+
+<div class="hud">
+  <div class="hud-item active" id="hud-1"><kbd>1</kbd> Water</div>
+  <div class="hud-item" id="hud-2"><kbd>2</kbd> Spark</div>
+  <div class="hud-item" id="hud-3"><kbd>3</kbd> Heat</div>
+  <div class="hud-item" id="hud-carry" style="border-color:#333;">carrying: none</div>
+</div>
+
+<!-- Mobile Touch Controls -->
+<div class="mobile-controls" id="mobile-controls" role="toolbar" aria-label="Game controls">
+  <div class="dpad" role="group" aria-label="Movement controls">
+    <button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up">&#9650;</button>
+    <button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down">&#9660;</button>
+    <button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left">&#9664;</button>
+    <button class="dpad-btn dpad-right" data-dir="right" aria-label="Move right">&#9654;</button>
+  </div>
+  <div class="action-buttons" role="group" aria-label="Action controls">
+    <button class="action-btn emit-btn" id="btn-emit" aria-label="Emit current element (Water)">EMIT<br><span id="btn-emit-label" style="font-size:10px;opacity:0.6;">Water</span></button>
+    <button class="action-btn" id="btn-interact" aria-label="Interact: pick up or drop object">INTERACT</button>
+    <button class="action-btn" id="btn-carry" aria-label="Cycle emission type">CYCLE</button>
+  </div>
+</div>
+
+<!-- Screen reader game state -->
+<div id="sr-game-state" class="sr-only" aria-live="polite" role="status"></div>
+
+<div class="win-overlay" id="win-overlay">
+  <h1>AIRLOCK OPEN</h1>
+  <p>You escaped. The systems worked as designed.</p>
+  <button onclick="resetGame()">PLAY AGAIN</button>
+</div>
+
+<script>
+'use strict';
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// === Constants ===
+const TILE = 40;
+const COLS = 20;
+const ROWS = 15;
+const W = COLS * TILE;
+const H = ROWS * TILE;
+canvas.width = W;
+canvas.height = H;
+
+// Materials
+const MAT = {
+  FLOOR: 0,
+  WALL: 1,
+  METAL: 2,
+  WOOD: 3,
+  WATER: 4,
+  FIRE: 5,
+  ELEC_WATER: 6,
+  ELEC_METAL: 7,
+  VENT: 8,
+  DOOR: 9,
+  GENERATOR: 10
+};
+
+// Colors
+const COLORS = {
+  [MAT.FLOOR]: '#14141e',
+  [MAT.WALL]: '#2a2a3a',
+  [MAT.METAL]: '#5a6a7a',
+  [MAT.WOOD]: '#6b4a2a',
+  [MAT.WATER]: '#2244aa',
+  [MAT.FIRE]: '#ff4422',
+  [MAT.ELEC_WATER]: '#44aaff',
+  [MAT.ELEC_METAL]: '#66ddff',
+  [MAT.VENT]: '#1a1a24',
+  [MAT.DOOR]: '#884422',
+  [MAT.GENERATOR]: '#ffaa00'
+};
+
+// === Game State ===
+let grid = [];
+let objects = [];
+let player = { x: 10, y: 12, carrying: null, emission: 1, dead: false, hp: 3 };
+let doorPowered = false;
+let doorOpen = false;
+let ventOpen = false;
+let won = false;
+let particles = [];
+let fireTimers = {}; // 'x,y' -> remaining seconds
+let electrifiedTiles = new Set(); // 'x,y' strings
+let keys = {};
+let lastEmitTime = 0;
+let gameTime = 0;
+let damageFlash = 0;
+
+// === Level Builder ===
+function buildLevel() {
+  grid = [];
+  for (let y = 0; y < ROWS; y++) {
+    grid[y] = [];
+    for (let x = 0; x < COLS; x++) {
+      // Walls around the edge
+      if (x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1) {
+        grid[y][x] = MAT.WALL;
+      } else {
+        grid[y][x] = MAT.FLOOR;
+      }
+    }
+  }
+
+  // Door at top center (2 tiles wide)
+  grid[0][9] = MAT.DOOR;
+  grid[0][10] = MAT.DOOR;
+
+  // Generator in bottom-right corner
+  grid[13][17] = MAT.GENERATOR;
+  grid[13][18] = MAT.GENERATOR;
+
+  // Water puddle
+  grid[8][5] = MAT.WATER;
+  grid[8][6] = MAT.WATER;
+  grid[9][5] = MAT.WATER;
+  grid[9][6] = MAT.WATER;
+
+  // Hidden vent behind wooden crates (right side, leads to exit area)
+  grid[3][18] = MAT.VENT;
+
+  // Some internal walls for room structure
+  // Cafeteria-style dividers
+  for (let x = 3; x <= 6; x++) grid[5][x] = MAT.WALL;
+  for (let x = 13; x <= 16; x++) grid[5][x] = MAT.WALL;
+  for (let y = 7; y <= 9; y++) grid[y][12] = MAT.WALL;
+
+  // Objects
+  objects = [
+    // Metal tables
+    { type: 'metal_table', x: 4, y: 3, w: 2, h: 1, mat: MAT.METAL },
+    { type: 'metal_table', x: 14, y: 8, w: 2, h: 1, mat: MAT.METAL },
+    { type: 'metal_table', x: 8, y: 10, w: 2, h: 1, mat: MAT.METAL },
+    // Wooden crates
+    { type: 'wood_crate', x: 17, y: 2, w: 1, h: 1, mat: MAT.WOOD },
+    { type: 'wood_crate', x: 18, y: 2, w: 1, h: 1, mat: MAT.WOOD },
+    { type: 'wood_crate', x: 17, y: 3, w: 1, h: 1, mat: MAT.WOOD },
+    { type: 'wood_crate', x: 3, y: 11, w: 1, h: 1, mat: MAT.WOOD },
+  ];
+
+  fireTimers = {};
+  electrifiedTiles = new Set();
+  doorPowered = false;
+  doorOpen = false;
+  ventOpen = false;
+  won = false;
+  particles = [];
+  damageFlash = 0;
+  player = { x: 10, y: 12, carrying: null, emission: 1, dead: false, hp: 3 };
+}
+
+// === Helpers ===
+function tileAt(x, y) {
+  if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return MAT.WALL;
+  return grid[y][x];
+}
+
+function setTile(x, y, mat) {
+  if (x >= 0 && x < COLS && y >= 0 && y < ROWS) grid[y][x] = mat;
+}
+
+function objectAt(x, y) {
+  return objects.find(o => x >= o.x && x < o.x + o.w && y >= o.y && y < o.y + o.h && !o.destroyed);
+}
+
+function isPassable(x, y) {
+  const t = tileAt(x, y);
+  if (t === MAT.WALL) return false;
+  if (t === MAT.DOOR && !doorOpen) return false;
+  if (t === MAT.VENT && !ventOpen) return false;
+  if (objectAt(x, y)) return false;
+  return true;
+}
+
+function isElectrified(x, y) {
+  return electrifiedTiles.has(`${x},${y}`);
+}
+
+function addParticle(x, y, color, life) {
+  particles.push({
+    x: x * TILE + TILE / 2 + (Math.random() - 0.5) * 20,
+    y: y * TILE + TILE / 2 + (Math.random() - 0.5) * 20,
+    vx: (Math.random() - 0.5) * 2,
+    vy: (Math.random() - 0.5) * 2 - 1,
+    color: color,
+    life: life || 1,
+    maxLife: life || 1
+  });
+}
+
+// === Chemistry Engine ===
+function propagateElectricity() {
+  electrifiedTiles.clear();
+
+  // Find generator tiles — these are spark sources
+  const sources = [];
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (grid[y][x] === MAT.GENERATOR) {
+        sources.push({ x, y });
+      }
+    }
+  }
+
+  // BFS from generator through conductive materials
+  const visited = new Set();
+  const queue = [...sources];
+  sources.forEach(s => {
+    visited.add(`${s.x},${s.y}`);
+    electrifiedTiles.add(`${s.x},${s.y}`);
+  });
+
+  while (queue.length > 0) {
+    const { x, y } = queue.shift();
+
+    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const nx = x + dx, ny = y + dy;
+      const key = `${nx},${ny}`;
+      if (visited.has(key)) continue;
+      if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) continue;
+      visited.add(key);
+
+      const tile = grid[ny][nx];
+      const obj = objectAt(nx, ny);
+
+      // Water conducts
+      if (tile === MAT.WATER) {
+        setTile(nx, ny, MAT.ELEC_WATER);
+        electrifiedTiles.add(key);
+        queue.push({ x: nx, y: ny });
+        addParticle(nx, ny, '#44aaff', 0.5);
+      }
+      // Electrified water stays conductive
+      else if (tile === MAT.ELEC_WATER) {
+        electrifiedTiles.add(key);
+        queue.push({ x: nx, y: ny });
+      }
+      // Metal objects conduct
+      else if (obj && obj.mat === MAT.METAL) {
+        electrifiedTiles.add(key);
+        // Mark all tiles of the object
+        for (let oy = obj.y; oy < obj.y + obj.h; oy++) {
+          for (let ox = obj.x; ox < obj.x + obj.w; ox++) {
+            const okey = `${ox},${oy}`;
+            if (!visited.has(okey)) {
+              visited.add(okey);
+              electrifiedTiles.add(okey);
+              queue.push({ x: ox, y: oy });
+            }
+          }
+        }
+        addParticle(nx, ny, '#66ddff', 0.5);
+      }
+      // Door tile — if we reach here, door gets power
+      else if (tile === MAT.DOOR) {
+        electrifiedTiles.add(key);
+        doorPowered = true;
+      }
+    }
+  }
+}
+
+function applyReaction(x, y, emission) {
+  const tile = tileAt(x, y);
+  const obj = objectAt(x, y);
+
+  if (emission === 1) {
+    // DROP WATER
+    if (tile === MAT.FLOOR || tile === MAT.FIRE) {
+      if (tile === MAT.FIRE) {
+        // Water extinguishes fire
+        delete fireTimers[`${x},${y}`];
+        for (let i = 0; i < 5; i++) addParticle(x, y, '#aaaacc', 0.8);
+      }
+      setTile(x, y, MAT.WATER);
+      addParticle(x, y, '#2244aa', 0.6);
+    }
+  }
+  else if (emission === 2) {
+    // CREATE SPARK
+    if (tile === MAT.WATER) {
+      setTile(x, y, MAT.ELEC_WATER);
+      addParticle(x, y, '#44aaff', 0.8);
+    }
+    // Spark on metal object — electricity propagation handles this
+    // Spark on floor near generator — no direct effect, but propagation will handle
+    addParticle(x, y, '#ffff44', 0.4);
+    addParticle(x, y, '#ffffff', 0.3);
+  }
+  else if (emission === 3) {
+    // DROP HEAT
+    if (obj && obj.mat === MAT.WOOD && !obj.burning) {
+      obj.burning = true;
+      obj.burnTimer = 3;
+      setTile(x, y, MAT.FIRE);
+      fireTimers[`${x},${y}`] = 3;
+      addParticle(x, y, '#ff4422', 1);
+      addParticle(x, y, '#ffaa00', 0.8);
+    }
+    if (tile === MAT.FLOOR) {
+      addParticle(x, y, '#ff6633', 0.5);
+    }
+  }
+}
+
+function updateChemistry(dt) {
+  // Update fire timers
+  const toRemove = [];
+  for (const key in fireTimers) {
+    fireTimers[key] -= dt;
+    const [fx, fy] = key.split(',').map(Number);
+
+    // Fire particles
+    if (Math.random() < 0.3) {
+      addParticle(fx, fy, Math.random() > 0.5 ? '#ff4422' : '#ffaa00', 0.6);
+    }
+
+    if (fireTimers[key] <= 0) {
+      toRemove.push(key);
+      // Destroy the wooden object
+      const obj = objectAt(fx, fy);
+      if (obj && obj.mat === MAT.WOOD) {
+        obj.destroyed = true;
+        // If player was carrying this, drop it
+        if (player.carrying === obj) player.carrying = null;
+      }
+      setTile(fx, fy, MAT.FLOOR);
+    }
+  }
+  toRemove.forEach(k => delete fireTimers[k]);
+
+  // Spread fire to adjacent wood
+  for (const key in fireTimers) {
+    const [fx, fy] = key.split(',').map(Number);
+    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const nx = fx + dx, ny = fy + dy;
+      const adj = objectAt(nx, ny);
+      if (adj && adj.mat === MAT.WOOD && !adj.burning) {
+        if (Math.random() < 0.01) { // slow spread
+          adj.burning = true;
+          adj.burnTimer = 3;
+          setTile(nx, ny, MAT.FIRE);
+          fireTimers[`${nx},${ny}`] = 3;
+        }
+      }
+    }
+  }
+
+  // Water spreading (very slow)
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (grid[y][x] === MAT.WATER || grid[y][x] === MAT.ELEC_WATER) {
+        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+          const nx = x + dx, ny = y + dy;
+          if (nx > 0 && nx < COLS - 1 && ny > 0 && ny < ROWS - 1) {
+            if (grid[ny][nx] === MAT.FLOOR && Math.random() < 0.002) {
+              grid[ny][nx] = MAT.WATER;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Propagate electricity every frame
+  doorPowered = false;
+  propagateElectricity();
+
+  // Check door power
+  if (doorPowered && !doorOpen) {
+    doorOpen = true;
+    for (let i = 0; i < 10; i++) {
+      addParticle(9, 0, '#00e09a', 1.2);
+      addParticle(10, 0, '#00e09a', 1.2);
+    }
+  }
+
+  // Check if vent is accessible (crates blocking it burned away)
+  const ventBlocked = objectAt(17, 2) || objectAt(18, 2) || objectAt(17, 3);
+  if (!ventBlocked) ventOpen = true;
+
+  // Damage player if on electrified water or fire
+  const pt = tileAt(Math.round(player.x), Math.round(player.y));
+  if ((pt === MAT.ELEC_WATER || pt === MAT.FIRE) && !player.dead) {
+    if (gameTime - (player.lastDamage || 0) > 0.5) {
+      player.hp--;
+      player.lastDamage = gameTime;
+      damageFlash = 0.3;
+      if (player.hp <= 0) {
+        player.dead = true;
+        setTimeout(() => resetGame(), 2000);
+      }
+    }
+  }
+
+  // Win condition — player steps through door or vent exit
+  if (!won && !player.dead) {
+    const py = Math.round(player.y);
+    const px = Math.round(player.x);
+    if (py <= 0 && doorOpen) {
+      won = true;
+      document.getElementById('win-overlay').classList.add('show');
+    }
+    if (ventOpen && px === 18 && py === 3) {
+      // Vent leads to freedom
+      won = true;
+      document.getElementById('win-overlay').classList.add('show');
+    }
+  }
+}
+
+// === Player Movement ===
+let moveCD = 0;
+function updatePlayer(dt) {
+  if (player.dead || won) return;
+
+  moveCD -= dt;
+  if (moveCD > 0) return;
+
+  let dx = 0, dy = 0;
+  if (keys['w'] || keys['arrowup']) dy = -1;
+  if (keys['s'] || keys['arrowdown']) dy = 1;
+  if (keys['a'] || keys['arrowleft']) dx = -1;
+  if (keys['d'] || keys['arrowright']) dx = 1;
+
+  if (dx !== 0 || dy !== 0) {
+    // Try to move
+    const nx = Math.round(player.x + dx);
+    const ny = Math.round(player.y + dy);
+
+    if (isPassable(nx, ny)) {
+      player.x = nx;
+      player.y = ny;
+      player.lastDir = { x: dx, y: dy };
+      moveCD = 0.12;
+
+      // Move carried object
+      if (player.carrying) {
+        player.carrying.x = nx;
+        player.carrying.y = ny;
+      }
+    }
+  }
+}
+
+// === Input ===
+document.addEventListener('keydown', e => {
+  const key = e.key.toLowerCase();
+  keys[key] = true;
+
+  if (key === '1' || key === '2' || key === '3') {
+    player.emission = parseInt(key);
+    document.querySelectorAll('.hud-item').forEach((el, i) => {
+      if (i < 3) el.classList.toggle('active', i === player.emission - 1);
+    });
+  }
+
+  if (key === 'e') {
+    handleInteract();
+  }
+
+  if (key === ' ') {
+    e.preventDefault();
+    handleEmit();
+  }
+
+  if (key === 'r') {
+    resetGame();
+  }
+});
+
+document.addEventListener('keyup', e => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+function handleInteract() {
+  if (player.dead || won) return;
+
+  if (player.carrying) {
+    // Drop object
+    const dir = player.lastDir || { x: 0, y: -1 };
+    const dropX = Math.round(player.x + dir.x);
+    const dropY = Math.round(player.y + dir.y);
+
+    if (isPassable(dropX, dropY) && tileAt(dropX, dropY) !== MAT.WALL) {
+      player.carrying.x = dropX;
+      player.carrying.y = dropY;
+    } else {
+      // Drop on self
+      player.carrying.x = Math.round(player.x);
+      player.carrying.y = Math.round(player.y);
+    }
+    document.getElementById('hud-carry').textContent = 'carrying: none';
+    player.carrying = null;
+    return;
+  }
+
+  // Try to pick up adjacent object
+  const dir = player.lastDir || { x: 0, y: -1 };
+  const tx = Math.round(player.x + dir.x);
+  const ty = Math.round(player.y + dir.y);
+
+  // Also check current tile
+  let obj = objectAt(tx, ty) || objectAt(Math.round(player.x), Math.round(player.y));
+  if (obj && !obj.destroyed && obj.w === 1 && obj.h === 1) {
+    player.carrying = obj;
+    obj.x = Math.round(player.x);
+    obj.y = Math.round(player.y);
+    const name = obj.type.replace('_', ' ');
+    document.getElementById('hud-carry').textContent = 'carrying: ' + name;
+  }
+  // Push larger objects
+  else if (obj && !obj.destroyed && !player.carrying) {
+    const pushX = obj.x + dir.x;
+    const pushY = obj.y + dir.y;
+    // Check all tiles the object would occupy
+    let canPush = true;
+    for (let oy = 0; oy < obj.h; oy++) {
+      for (let ox = 0; ox < obj.w; ox++) {
+        const cx = pushX + ox, cy = pushY + oy;
+        if (cx <= 0 || cx >= COLS - 1 || cy <= 0 || cy >= ROWS - 1) { canPush = false; break; }
+        const t = tileAt(cx, cy);
+        if (t === MAT.WALL || t === MAT.GENERATOR) { canPush = false; break; }
+        const otherObj = objectAt(cx, cy);
+        if (otherObj && otherObj !== obj) { canPush = false; break; }
+      }
+      if (!canPush) break;
+    }
+    if (canPush) {
+      obj.x = pushX;
+      obj.y = pushY;
+    }
+  }
+}
+
+function handleEmit() {
+  if (player.dead || won) return;
+  if (gameTime - lastEmitTime < 0.3) return;
+  lastEmitTime = gameTime;
+
+  // Emit in a small area around the player
+  const px = Math.round(player.x);
+  const py = Math.round(player.y);
+
+  const targets = [
+    { x: px, y: py },
+    { x: px + 1, y: py },
+    { x: px - 1, y: py },
+    { x: px, y: py + 1 },
+    { x: px, y: py - 1 }
+  ];
+
+  // For spark, also affect the tile the player is facing
+  if (player.emission === 2) {
+    const dir = player.lastDir || { x: 0, y: -1 };
+    targets.push({ x: px + dir.x * 2, y: py + dir.y * 2 });
+  }
+
+  for (const t of targets) {
+    applyReaction(t.x, t.y, player.emission);
+  }
+}
+
+// === Rendering ===
+function render() {
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      const tile = grid[y][x];
+      const sx = x * TILE, sy = y * TILE;
+
+      // Floor pattern
+      if (tile === MAT.FLOOR) {
+        ctx.fillStyle = (x + y) % 2 === 0 ? '#14141e' : '#161620';
+        ctx.fillRect(sx, sy, TILE, TILE);
+        continue;
+      }
+
+      // Fire animation
+      if (tile === MAT.FIRE) {
+        ctx.fillStyle = '#14141e';
+        ctx.fillRect(sx, sy, TILE, TILE);
+        const flicker = Math.sin(gameTime * 10 + x * 3 + y * 7) * 0.3 + 0.7;
+        ctx.globalAlpha = flicker;
+        ctx.fillStyle = '#ff4422';
+        ctx.fillRect(sx + 2, sy + 2, TILE - 4, TILE - 4);
+        ctx.fillStyle = '#ffaa00';
+        ctx.fillRect(sx + 8, sy + 8, TILE - 16, TILE - 16);
+        ctx.globalAlpha = 1;
+        continue;
+      }
+
+      // Electrified water shimmer
+      if (tile === MAT.ELEC_WATER) {
+        const shimmer = Math.sin(gameTime * 8 + x + y * 2) * 0.2 + 0.8;
+        ctx.globalAlpha = shimmer;
+        ctx.fillStyle = '#44aaff';
+        ctx.fillRect(sx, sy, TILE, TILE);
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(sx + 10, sy + 10, 4, 4);
+        ctx.globalAlpha = 1;
+        continue;
+      }
+
+      // Water
+      if (tile === MAT.WATER) {
+        const ripple = Math.sin(gameTime * 3 + x * 2 + y) * 0.1 + 0.9;
+        ctx.globalAlpha = ripple;
+        ctx.fillStyle = '#2244aa';
+        ctx.fillRect(sx, sy, TILE, TILE);
+        ctx.fillStyle = '#3355bb';
+        ctx.fillRect(sx + 4, sy + 12, 8, 3);
+        ctx.globalAlpha = 1;
+        continue;
+      }
+
+      // Door
+      if (tile === MAT.DOOR) {
+        if (doorOpen) {
+          ctx.fillStyle = '#0a2a1a';
+          ctx.fillRect(sx, sy, TILE, TILE);
+          ctx.fillStyle = '#00e09a';
+          ctx.font = '10px monospace';
+          ctx.fillText('OPEN', sx + 4, sy + 24);
+        } else if (doorPowered) {
+          ctx.fillStyle = '#2a4422';
+          ctx.fillRect(sx, sy, TILE, TILE);
+          ctx.fillStyle = '#00e09a';
+          ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
+        } else {
+          ctx.fillStyle = '#442222';
+          ctx.fillRect(sx, sy, TILE, TILE);
+          ctx.fillStyle = '#884422';
+          ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
+          // Lock icon
+          ctx.fillStyle = '#ff4444';
+          ctx.fillRect(sx + 14, sy + 10, 12, 14);
+          ctx.fillStyle = '#442222';
+          ctx.fillRect(sx + 17, sy + 13, 6, 8);
+        }
+        continue;
+      }
+
+      // Generator
+      if (tile === MAT.GENERATOR) {
+        ctx.fillStyle = '#1a1a10';
+        ctx.fillRect(sx, sy, TILE, TILE);
+        ctx.fillStyle = '#ffaa00';
+        ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
+        // Sparking animation
+        const spark = Math.sin(gameTime * 15 + x) > 0.7;
+        if (spark) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(sx + 8 + Math.random() * 16, sy + 8 + Math.random() * 16, 4, 4);
+          addParticle(x, y, '#ffff44', 0.3);
+        }
+        ctx.fillStyle = '#886600';
+        ctx.font = 'bold 9px monospace';
+        ctx.fillText('GEN', sx + 6, sy + 24);
+        continue;
+      }
+
+      // Vent
+      if (tile === MAT.VENT) {
+        ctx.fillStyle = ventOpen ? '#1a2a1a' : '#1a1a24';
+        ctx.fillRect(sx, sy, TILE, TILE);
+        // Grating pattern
+        for (let i = 0; i < 4; i++) {
+          ctx.fillStyle = ventOpen ? '#335533' : '#222233';
+          ctx.fillRect(sx + 4, sy + 4 + i * 9, TILE - 8, 2);
+        }
+        if (ventOpen) {
+          ctx.fillStyle = '#00e09a';
+          ctx.font = '8px monospace';
+          ctx.fillText('EXIT', sx + 6, sy + 24);
+        }
+        continue;
+      }
+
+      // Wall
+      ctx.fillStyle = COLORS[tile] || '#2a2a3a';
+      ctx.fillRect(sx, sy, TILE, TILE);
+      if (tile === MAT.WALL) {
+        ctx.fillStyle = '#222233';
+        ctx.fillRect(sx + 1, sy + 1, TILE - 2, TILE - 2);
+        ctx.fillStyle = '#2a2a3a';
+        ctx.fillRect(sx + 2, sy + 2, TILE - 4, TILE - 4);
+      }
+    }
+  }
+
+  // Electrification overlay on tiles
+  for (const key of electrifiedTiles) {
+    const [ex, ey] = key.split(',').map(Number);
+    const tile = tileAt(ex, ey);
+    if (tile !== MAT.ELEC_WATER && tile !== MAT.GENERATOR && tile !== MAT.DOOR) {
+      ctx.globalAlpha = 0.15 + Math.sin(gameTime * 6 + ex + ey) * 0.1;
+      ctx.fillStyle = '#66ddff';
+      ctx.fillRect(ex * TILE, ey * TILE, TILE, TILE);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Objects
+  for (const obj of objects) {
+    if (obj.destroyed) continue;
+    if (obj === player.carrying) continue; // drawn with player
+
+    const sx = obj.x * TILE, sy = obj.y * TILE;
+    const w = obj.w * TILE, h = obj.h * TILE;
+
+    if (obj.mat === MAT.METAL) {
+      ctx.fillStyle = isElectrified(obj.x, obj.y) ? '#88ccff' : '#5a6a7a';
+      ctx.fillRect(sx + 2, sy + 2, w - 4, h - 4);
+      ctx.fillStyle = isElectrified(obj.x, obj.y) ? '#aaddff' : '#6a7a8a';
+      ctx.fillRect(sx + 4, sy + 4, w - 8, h - 8);
+      // Label
+      ctx.fillStyle = '#333';
+      ctx.font = '9px monospace';
+      ctx.fillText('TABLE', sx + 6, sy + h / 2 + 3);
+    }
+    else if (obj.mat === MAT.WOOD) {
+      if (obj.burning) {
+        const flicker = Math.sin(gameTime * 12 + obj.x) * 0.3 + 0.7;
+        ctx.globalAlpha = flicker;
+        ctx.fillStyle = '#ff6622';
+        ctx.fillRect(sx + 1, sy + 1, w - 2, h - 2);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#aa4400';
+        ctx.fillRect(sx + 6, sy + 6, w - 12, h - 12);
+      } else {
+        ctx.fillStyle = '#6b4a2a';
+        ctx.fillRect(sx + 2, sy + 2, w - 4, h - 4);
+        ctx.fillStyle = '#7b5a3a';
+        ctx.fillRect(sx + 4, sy + 4, w - 8, h - 8);
+        // Wood grain
+        ctx.fillStyle = '#5a3a1a';
+        ctx.fillRect(sx + 6, sy + h / 2 - 1, w - 12, 2);
+      }
+    }
+  }
+
+  // Particles
+  for (const p of particles) {
+    ctx.globalAlpha = p.life / p.maxLife;
+    ctx.fillStyle = p.color;
+    const size = 3 * (p.life / p.maxLife);
+    ctx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
+  }
+  ctx.globalAlpha = 1;
+
+  // Player (Among Us style)
+  if (!player.dead) {
+    const px = player.x * TILE + TILE / 2;
+    const py = player.y * TILE + TILE / 2;
+
+    // Body
+    ctx.fillStyle = damageFlash > 0 ? '#ff4444' : '#33cc88';
+    ctx.beginPath();
+    ctx.ellipse(px, py + 2, 12, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Visor
+    ctx.fillStyle = '#88ddff';
+    const dir = player.lastDir || { x: 0, y: -1 };
+    ctx.beginPath();
+    ctx.ellipse(px + dir.x * 4, py - 4 + dir.y * 2, 7, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Visor shine
+    ctx.fillStyle = '#aaeeff';
+    ctx.beginPath();
+    ctx.ellipse(px + dir.x * 4 + 2, py - 6 + dir.y * 2, 2, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Legs
+    ctx.fillStyle = damageFlash > 0 ? '#cc3333' : '#2a9966';
+    ctx.fillRect(px - 8, py + 14, 6, 5);
+    ctx.fillRect(px + 2, py + 14, 6, 5);
+
+    // Backpack
+    ctx.fillStyle = damageFlash > 0 ? '#aa3333' : '#228855';
+    ctx.fillRect(px - dir.x * 12 - 5, py - 2, 6, 10);
+
+    // Carried object indicator
+    if (player.carrying) {
+      ctx.fillStyle = player.carrying.mat === MAT.WOOD ? '#6b4a2a' : '#5a6a7a';
+      ctx.fillRect(px + dir.x * 14 - 6, py + dir.y * 14 - 6, 12, 12);
+    }
+
+    // HP pips
+    for (let i = 0; i < 3; i++) {
+      ctx.fillStyle = i < player.hp ? '#00e09a' : '#332222';
+      ctx.fillRect(px - 9 + i * 7, py - 24, 5, 3);
+    }
+  } else {
+    // Dead player
+    const px = player.x * TILE + TILE / 2;
+    const py = player.y * TILE + TILE / 2;
+    ctx.fillStyle = '#553333';
+    ctx.beginPath();
+    ctx.ellipse(px, py + 6, 14, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#444';
+    ctx.font = '10px monospace';
+    ctx.fillText('DEAD', px - 14, py - 10);
+  }
+
+  // Damage flash overlay
+  if (damageFlash > 0) {
+    ctx.globalAlpha = damageFlash;
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+
+  // Guide arrows
+  if (!doorOpen && !won) {
+    // Arrow pointing to generator
+    ctx.globalAlpha = 0.15 + Math.sin(gameTime * 2) * 0.1;
+    ctx.fillStyle = '#ffaa00';
+    ctx.font = '11px monospace';
+    ctx.fillText('GENERATOR', 17 * TILE + 2, 12 * TILE + 8);
+    ctx.globalAlpha = 0.15 + Math.sin(gameTime * 2 + 1) * 0.1;
+    ctx.fillStyle = '#ff4444';
+    ctx.fillText('LOCKED', 9 * TILE + 2, 1 * TILE + 14);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// === Game Loop ===
+let lastTime = 0;
+function loop(timestamp) {
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+  lastTime = timestamp;
+  gameTime += dt;
+
+  updatePlayer(dt);
+  updateChemistry(dt);
+
+  // Update particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+  // Cap particles
+  if (particles.length > 200) particles.splice(0, particles.length - 200);
+
+  // Damage flash
+  if (damageFlash > 0) damageFlash -= dt;
+
+  render();
+  requestAnimationFrame(loop);
+}
+
+function resetGame() {
+  buildLevel();
+  document.getElementById('win-overlay').classList.remove('show');
+  document.getElementById('hud-carry').textContent = 'carrying: none';
+  document.querySelectorAll('.hud-item').forEach((el, i) => {
+    if (i < 3) el.classList.toggle('active', i === 0);
+  });
+}
+
+// === Responsive Canvas Scaling ===
+const gameWrapper = document.getElementById('game-wrapper');
+function resizeCanvas() {
+  const maxW = window.innerWidth;
+  // On touch devices, leave room for controls at bottom and HUD at top
+  const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 860;
+  const topPad = isMobile ? 40 : 0;
+  const bottomPad = isMobile ? 190 : 0;
+  const maxH = window.innerHeight - topPad - bottomPad;
+
+  const scaleX = maxW / 800;
+  const scaleY = maxH / 600;
+  const scale = Math.min(scaleX, scaleY); // fill available space on mobile
+
+  gameWrapper.style.width = 800 + 'px';
+  gameWrapper.style.height = 600 + 'px';
+  gameWrapper.style.transform = `scale(${scale})`;
+  gameWrapper.style.transformOrigin = 'top center';
+}
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 100));
+
+// === Mobile Touch Controls ===
+(function initTouchControls() {
+  const dirMap = {
+    up:    { key: 'arrowup',    x: 0, y: -1 },
+    down:  { key: 'arrowdown',  x: 0, y: 1 },
+    left:  { key: 'arrowleft',  x: -1, y: 0 },
+    right: { key: 'arrowright', x: 1, y: 0 }
+  };
+
+  // D-pad buttons — continuous movement via simulated key state
+  const dpadBtns = document.querySelectorAll('.dpad-btn');
+  const activeTouches = {}; // touchId -> dir
+
+  function pressDir(dir) {
+    const d = dirMap[dir];
+    if (d) keys[d.key] = true;
+  }
+  function releaseDir(dir) {
+    const d = dirMap[dir];
+    if (d) keys[d.key] = false;
+  }
+
+  dpadBtns.forEach(btn => {
+    const dir = btn.dataset.dir;
+
+    btn.addEventListener('touchstart', e => {
+      e.preventDefault();
+      btn.classList.add('pressed');
+      for (const touch of e.changedTouches) {
+        activeTouches[touch.identifier] = dir;
+      }
+      pressDir(dir);
+    }, { passive: false });
+
+    btn.addEventListener('touchend', e => {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        delete activeTouches[touch.identifier];
+      }
+      // Only release if no other touch is holding this direction
+      const stillHeld = Object.values(activeTouches).includes(dir);
+      if (!stillHeld) {
+        btn.classList.remove('pressed');
+        releaseDir(dir);
+      }
+    }, { passive: false });
+
+    btn.addEventListener('touchcancel', e => {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        delete activeTouches[touch.identifier];
+      }
+      btn.classList.remove('pressed');
+      releaseDir(dir);
+    }, { passive: false });
+  });
+
+  // D-pad: handle touchmove sliding between buttons
+  const dpadEl = document.querySelector('.dpad');
+  if (dpadEl) {
+    dpadEl.addEventListener('touchmove', e => {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const newDir = el && el.dataset && el.dataset.dir;
+        const oldDir = activeTouches[touch.identifier];
+        if (newDir !== oldDir) {
+          if (oldDir) {
+            releaseDir(oldDir);
+            const oldBtn = dpadEl.querySelector(`[data-dir="${oldDir}"]`);
+            if (oldBtn) oldBtn.classList.remove('pressed');
+          }
+          if (newDir) {
+            pressDir(newDir);
+            activeTouches[touch.identifier] = newDir;
+            const newBtn = dpadEl.querySelector(`[data-dir="${newDir}"]`);
+            if (newBtn) newBtn.classList.add('pressed');
+          } else {
+            delete activeTouches[touch.identifier];
+          }
+        }
+      }
+    }, { passive: false });
+  }
+
+  // EMIT button — fires handleEmit
+  const btnEmit = document.getElementById('btn-emit');
+  btnEmit.addEventListener('touchstart', e => {
+    e.preventDefault();
+    btnEmit.classList.add('pressed');
+    handleEmit();
+  }, { passive: false });
+  btnEmit.addEventListener('touchend', e => {
+    e.preventDefault();
+    btnEmit.classList.remove('pressed');
+  }, { passive: false });
+
+  // INTERACT button — fires handleInteract
+  const btnInteract = document.getElementById('btn-interact');
+  btnInteract.addEventListener('touchstart', e => {
+    e.preventDefault();
+    btnInteract.classList.add('pressed');
+    handleInteract();
+  }, { passive: false });
+  btnInteract.addEventListener('touchend', e => {
+    e.preventDefault();
+    btnInteract.classList.remove('pressed');
+  }, { passive: false });
+
+  // CYCLE button — cycles emission 1/2/3
+  const emissionNames = ['Water', 'Spark', 'Heat'];
+  const btnCycle = document.getElementById('btn-carry');
+  btnCycle.addEventListener('touchstart', e => {
+    e.preventDefault();
+    btnCycle.classList.add('pressed');
+    player.emission = (player.emission % 3) + 1;
+    document.querySelectorAll('.hud-item').forEach((el, i) => {
+      if (i < 3) el.classList.toggle('active', i === player.emission - 1);
+    });
+    // Update emit button label
+    document.getElementById('btn-emit-label').textContent = emissionNames[player.emission - 1];
+    btnEmit.setAttribute('aria-label', 'Emit current element (' + emissionNames[player.emission - 1] + ')');
+  }, { passive: false });
+  btnCycle.addEventListener('touchend', e => {
+    e.preventDefault();
+    btnCycle.classList.remove('pressed');
+  }, { passive: false });
+
+  // Prevent scroll/zoom on canvas
+  canvas.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+  canvas.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+
+  // Screen reader state updates
+  const srState = document.getElementById('sr-game-state');
+  let srUpdateTimer = 0;
+  const origLoop = window.requestAnimationFrame;
+  setInterval(() => {
+    if (!srState) return;
+    const emission = emissionNames[player.emission - 1];
+    const carrying = player.carrying ? player.carrying.type.replace('_', ' ') : 'nothing';
+    const status = player.dead ? 'Dead.' : (won ? 'You escaped!' : 'Alive.');
+    srState.textContent = `HP: ${player.hp}/3. Carrying: ${carrying}. Selected: ${emission}. Door: ${doorOpen ? 'open' : 'locked'}. ${status}`;
+  }, 3000);
+})();
+
+// === Init ===
+buildLevel();
+resizeCanvas();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

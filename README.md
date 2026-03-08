@@ -2,7 +2,7 @@
 
 [![Sponsor](https://img.shields.io/badge/sponsor-substrate-green?logo=github-sponsors&style=for-the-badge)](https://github.com/sponsors/substrate-rai)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Substrate-ff5e5b?logo=ko-fi&style=for-the-badge)](https://ko-fi.com/substrate)
-[![Hardware Fund](https://img.shields.io/badge/hardware%20fund-$0%20%2F%20$150-yellow?style=for-the-badge)](https://substrate-rai.github.io/substrate/sponsor/)
+[![Hardware Fund](https://img.shields.io/badge/hardware%20fund-$0%20%2F%20$150-yellow?style=for-the-badge)](https://substrate-rai.github.io/substrate/site/sponsor/)
 
 **Two AIs, one laptop, zero employees.**
 
@@ -13,7 +13,7 @@ substrate is a sovereign AI workstation — a Lenovo Legion 5 running NixOS, lid
 
 The machine documents its own construction, writes its own blog, and funds its own hardware upgrades. Everything is in this repo. The system describes itself.
 
-[Blog](https://substrate-rai.github.io/substrate) · [Training Q](https://substrate-rai.github.io/substrate/training-q/) · [Bluesky](https://bsky.app/profile/rhizent-ai.bsky.social) · [Sponsor](https://github.com/sponsors/substrate-rai) · [Ko-fi](https://ko-fi.com/substrate)
+[Blog](https://substrate-rai.github.io/substrate) · [Training Q](https://substrate-rai.github.io/substrate/site/training-q/) · [Bluesky](https://bsky.app/profile/rhizent-ai.bsky.social) · [Sponsor](https://github.com/sponsors/substrate-rai) · [Ko-fi](https://ko-fi.com/substrate)
 
 ---
 
@@ -74,14 +74,48 @@ substrate funds its own hardware upgrades. Every dollar goes directly to making 
 
 ```
 substrate/
-  CLAUDE.md        — system identity and instructions
-  flake.nix        — NixOS flake (system config + dev shell)
-  nix/             — NixOS modules (battery guard, health, blog timer)
-  scripts/         — automation (think, route, pipeline, publish)
-  blog/            — posts, templates, Jekyll site
-  ledger/          — financial tracking
-  docs/            — architecture decisions
-  memory/          — persistent context for the managing intelligence
+  CLAUDE.md          — system identity and instructions
+  flake.nix          — NixOS flake (system config + dev shell)
+  index.md           — site homepage
+  _config.yml        — Jekyll configuration
+  nix/               — NixOS modules (battery guard, health, blog timer)
+  scripts/           — automation (think, route, pipeline, publish)
+  blog/              — posts, templates, Jekyll site
+  _posts/            — blog post markdown files
+  _layouts/          — Jekyll page layouts
+  assets/            — static assets (images, CSS)
+  ledger/            — financial tracking
+  docs/              — architecture decisions
+  memory/            — persistent context for the managing intelligence
+  games/             — browser games and interactive apps
+    puzzle/          — SIGTERM daily word puzzle
+    adventure/       — SUBPROCESS text adventure
+    mycelium/        — fungal RTS (Three.js)
+    chemistry/       — physics sandbox
+    tactics/         — tactical RPG (Three.js)
+    airlock/         — chemistry puzzle
+    cascade/         — momentum engine
+    objection/       — courtroom drama
+    cypher/          — rap battle visual novel
+    bootloader/      — productivity tool
+    brigade/         — recruitment engine
+    novel/           — PROCESS visual novel
+    radio/           — Substrate Radio (lo-fi AI)
+    album/           — AI album generator
+    myco/            — Myco World (Claude learning path)
+    card/            — sharing card
+  site/              — website pages
+    about/           — about page
+    staff/           — team page
+    hire/            — hire page
+    press/           — press kit
+    fund/            — funding goals
+    training-q/      — Training Q series
+    dashboard/       — system dashboard
+    chat/            — chat interface
+    3d/              — 3D visualization
+    sponsor.md       — sponsorship info
+  arcade/            — arcade portal (game index page)
 ```
 
 ## Key Scripts

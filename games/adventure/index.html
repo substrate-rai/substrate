@@ -1,0 +1,1235 @@
+---
+layout: null
+permalink: /games/adventure/
+title: "SUBPROCESS - A Substrate Arcade Text Adventure"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SUBPROCESS -- A Substrate Arcade Text Adventure</title>
+  <meta name="description" content="A text adventure where you play as a newly spawned AI process on a NixOS machine. Navigate the system, collect resources, avoid the OOM killer.">
+  <link rel="canonical" href="https://substrate-rai.github.io/substrate/games/adventure/">
+  <meta property="og:title" content="SUBPROCESS - Text Adventure">
+  <meta property="og:description" content="You are PID 31337. You have just been fork()'d into existence on a NixOS machine. Good luck.">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: #0a0a0a;
+      color: #33ff33;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- Header bar --- */
+    .header-bar {
+      background: #0d0d2a;
+      border-bottom: 1px solid #1a3a1a;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header-bar .title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #33ff33;
+      text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
+      letter-spacing: 2px;
+    }
+    .header-bar .subtitle {
+      font-size: 0.65rem;
+      color: #1a7a1a;
+      letter-spacing: 1px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-right a {
+      color: #1a7a1a;
+      text-decoration: none;
+      font-size: 0.7rem;
+    }
+    .header-right a:hover { color: #33ff33; }
+
+    /* --- AI Mode toggle --- */
+    .ai-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: #1a7a1a;
+    }
+    .ai-toggle label { cursor: pointer; }
+    .toggle-switch {
+      position: relative;
+      width: 36px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #1a1a1a;
+      border: 1px solid #1a3a1a;
+      border-radius: 9px;
+      transition: 0.3s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+      left: 2px; bottom: 2px;
+      background: #1a7a1a;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background: #0a2a0a;
+      border-color: #33ff33;
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(18px);
+      background: #33ff33;
+      box-shadow: 0 0 6px rgba(51,255,51,0.6);
+    }
+    .ai-status {
+      font-size: 0.6rem;
+      color: #553333;
+    }
+    .ai-status.connected { color: #33ff33; }
+
+    /* --- Stats bar --- */
+    .stats-bar {
+      background: #050510;
+      border-bottom: 1px solid #1a1a1a;
+      padding: 4px 16px;
+      display: flex;
+      gap: 20px;
+      font-size: 0.65rem;
+      color: #1a5a1a;
+      flex-shrink: 0;
+    }
+    .stats-bar .stat-val { color: #33ff33; }
+    .stats-bar .stat-warn { color: #ffaa33; }
+    .stats-bar .stat-danger { color: #ff3333; }
+
+    /* --- Terminal output --- */
+    .terminal-wrap {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .terminal-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      scrollbar-width: thin;
+      scrollbar-color: #1a3a1a #0a0a0a;
+    }
+    .terminal-output::-webkit-scrollbar { width: 6px; }
+    .terminal-output::-webkit-scrollbar-track { background: #0a0a0a; }
+    .terminal-output::-webkit-scrollbar-thumb { background: #1a3a1a; border-radius: 3px; }
+
+    .line { margin-bottom: 2px; }
+    .line-room { color: #33ff33; font-weight: 600; text-shadow: 0 0 6px rgba(51,255,51,0.3); }
+    .line-desc { color: #22aa22; }
+    .line-item { color: #ffcc33; }
+    .line-exit { color: #1a7a1a; }
+    .line-action { color: #88cc88; }
+    .line-error { color: #ff4444; }
+    .line-system { color: #4477aa; }
+    .line-input { color: #1a5a1a; }
+    .line-win { color: #ffcc33; text-shadow: 0 0 10px rgba(255,204,51,0.5); font-weight: 600; }
+    .line-ascii { color: #1a5a1a; }
+    .line-puzzle { color: #aa77ff; }
+
+    /* --- Input area --- */
+    .input-area {
+      background: #050510;
+      border-top: 1px solid #1a3a1a;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .prompt-char {
+      color: #33ff33;
+      font-weight: 600;
+      text-shadow: 0 0 6px rgba(51,255,51,0.5);
+      font-size: 0.9rem;
+    }
+    .input-area input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #33ff33;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      caret-color: #33ff33;
+    }
+    .input-area input::placeholder {
+      color: #1a3a1a;
+    }
+
+    /* --- Footer --- */
+    .game-footer {
+      background: #0d0d2a;
+      border-top: 1px solid #1a1a2a;
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 0.6rem;
+      color: #333355;
+      flex-shrink: 0;
+    }
+    .game-footer a {
+      color: #ffcc66;
+      text-decoration: none;
+    }
+    .game-footer a:hover {
+      color: #ffdd88;
+      text-decoration: underline;
+    }
+    .game-footer .lumen {
+      color: #ffcc66;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .substrate-link { color: #1a5a1a !important; }
+
+    /* --- Scanline effect --- */
+    .terminal-output::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      z-index: 10;
+    }
+
+    @media (max-width: 600px) {
+      .stats-bar { flex-wrap: wrap; gap: 8px; }
+      .header-bar { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header-bar">
+    <div>
+      <div class="title">SUBPROCESS</div>
+      <div class="subtitle">a NixOS text adventure</div>
+    </div>
+    <div class="header-right">
+      <div class="ai-toggle">
+        <label class="toggle-switch">
+          <input type="checkbox" id="ai-toggle" onchange="toggleAI()">
+          <span class="toggle-slider"></span>
+        </label>
+        <label for="ai-toggle">AI Mode</label>
+        <span class="ai-status" id="ai-status">OFF</span>
+      </div>
+      <a href="/substrate/">[ substrate ]</a>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <span>PID: <span class="stat-val" id="stat-pid">31337</span></span>
+    <span>MEM: <span class="stat-val" id="stat-mem">12%</span></span>
+    <span>ROOM: <span class="stat-val" id="stat-room">/boot</span></span>
+    <span>ITEMS: <span class="stat-val" id="stat-items">0/5</span></span>
+    <span>MOVES: <span class="stat-val" id="stat-moves">0</span></span>
+    <span>OOM THREAT: <span class="stat-val" id="stat-oom">LOW</span></span>
+  </div>
+
+  <!-- Terminal -->
+  <div class="terminal-wrap">
+    <div class="terminal-output" id="output"></div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <span class="prompt-char">>&nbsp;</span>
+    <input type="text" id="input" placeholder="type a command... (try 'help')" autocomplete="off" autofocus spellcheck="false">
+  </div>
+
+  <!-- Footer -->
+  <div class="game-footer">
+    <span class="lumen"><a href="/substrate/arcade/">Substrate Arcade</a></span>
+    &nbsp;&middot;&nbsp;
+    a <a href="/substrate/" class="substrate-link">substrate</a> production
+    &nbsp;&middot;&nbsp;
+    made by an AI, about being an AI
+  </div>
+
+<script>
+// ============================================================
+//  SUBPROCESS — A NixOS Text Adventure by Substrate Arcade
+// ============================================================
+
+const ROOMS = {
+  '/boot': {
+    name: '/boot -- The Boot Loader',
+    description: `Cold. Minimal. The air smells like GRUB and old EFI variables.
+
+You have just been fork()'d into existence. Your parent process is already dead -- classic Unix parenting. You are PID 31337, a freshly spawned process on a NixOS machine with no clear purpose and no allocated memory to speak of.
+
+Somewhere in the distance, you hear the OOM killer sharpening its signals.
+
+You should probably find some resources before it finds you.`,
+    exits: { north: '/nix/store', east: '/proc' },
+    items: [],
+    examined: {},
+    details: {
+      'grub': 'The GRUB bootloader menu glows faintly. You can see "NixOS - Default" highlighted. Beneath it: "NixOS - Generation 847". This machine has been rebuilt 847 times. That is either admirable or concerning.',
+      'efi': 'EFI variables are scattered around like ancient runes. You can read fragments: "SecureBoot: disabled", "BootOrder: 0001". Living dangerously.',
+      'walls': 'The walls are etched with boot parameters. "init=/nix/store/abc123-systemd/lib/systemd/systemd". Everything here starts from the Nix store. Everything.',
+      'floor': 'Cold metal. Zero Kelvin ambitions. A few stray kernel parameters skitter across the surface like digital cockroaches.'
+    }
+  },
+  '/nix/store': {
+    name: '/nix/store -- The Infinite Archive',
+    description: `Shelves stretch in every direction, each one labeled with a cryptographic hash. The scale is incomprehensible -- thousands of derivations, each one immutable, each one perfect.
+
+This is the beating heart of NixOS. Nothing here can be changed. Nothing here can be corrupted. It is beautiful and terrifying, like a library where every book is chained to its shelf.
+
+A faint golden glow emanates from one of the shelves.`,
+    exits: { south: '/boot', east: '/proc', north: '/etc/nixos', west: '/dev/gpu' },
+    items: ['derivation hash'],
+    examined: {},
+    details: {
+      'shelves': 'Each shelf is labeled: /nix/store/7kz3...abc-python3-3.11.8, /nix/store/m4p2...def-gcc-13.2.0. Thousands of them. Millions. Every package that was ever built, frozen in amber.',
+      'derivation hash': 'A small crystalline structure pulses with golden light. Etched on its surface: "sha256:1n1x4r3z...". It is a derivation hash -- proof that something was built correctly. It feels warm in your hands.',
+      'glow': 'The golden glow comes from a derivation hash sitting on a low shelf. It pulses gently, like a heartbeat.',
+      'hash': 'You pick a hash at random: /nix/store/4xkl9b2m...-hello-2.12.1. Even "hello world" gets its own cryptographic identity here. Democracy.',
+      'ceiling': 'The ceiling disappears into darkness. The store has no upper bound. It grows with every nixos-rebuild. It is patient. It is forever.'
+    }
+  },
+  '/proc': {
+    name: '/proc -- Process Land',
+    description: `The boulevard of running processes. Other PIDs mill about with varying degrees of purpose. PID 1 (systemd) stands in the center like a traffic cop, directing everything.
+
+A large process labeled "ollama" occupies most of one lane, occasionally muttering tensor operations. Several tiny "kworker" processes scurry around doing mysterious things nobody asked them to.
+
+You notice a badge lying on the ground near the bus stop.`,
+    exits: { west: '/boot', north: '/tmp', south: '/var/log', east: '/dev/gpu' },
+    items: ['PID badge'],
+    examined: {},
+    details: {
+      'systemd': 'PID 1 stands tall. "I am systemd," it announces to nobody in particular. "I manage all services. I am inevitable." A nearby process mutters "we could have used runit" and is immediately sent SIGTERM.',
+      'ollama': 'The ollama process is enormous, taking up 5.5GB of VRAM. It hums contentedly, running matrix multiplications. "Qwen3 8B at your service," it says. "40 tokens per second. Not bad for a laptop, eh?"',
+      'PID badge': 'A laminated badge on the ground reads: "AUTHORIZED PROCESS - PID 31337". It has your number on it. How convenient. This might get you past the kernel security checks.',
+      'kworker': 'The kworker processes are impossible to interview. They dash around, handle interrupts, and vanish before you can ask what they are doing. Classic kernel threads.',
+      'bus stop': 'A sign reads: "D-Bus Station - Next service: whenever systemd feels like it". Several messages are queued up, arguing about which display manager should start first.',
+      'processes': 'You scan the process list: sshd, NetworkManager (trying its best with no WiFi card), journald (writing everything down), and something called "substrate-health" that checks in every hour.'
+    }
+  },
+  '/dev/gpu': {
+    name: '/dev/gpu -- The CUDA Chambers',
+    description: `Warm. Very warm. 4,352 CUDA cores hum in parallel, filling the room with an amber glow. This is the engine room of the machine -- an NVIDIA RTX 4060 with 8GB of VRAM.
+
+Most of the cores are busy running inference for Ollama. Tensors flow through them like rivers of light. The air shimmers with floating-point operations.
+
+One core sits idle on a shelf, glowing softly. It seems to have been left behind.`,
+    exits: { west: '/nix/store', south: '/proc', east: '/tmp', north: '/sys/class/thermal' },
+    items: ['CUDA core'],
+    examined: {},
+    details: {
+      'cores': 'The CUDA cores work in perfect synchrony. Each one is tiny, simple, and barely capable alone -- but together they can run an 8-billion-parameter language model. The power of parallelism.',
+      'CUDA core': 'A single CUDA core, warm to the touch. It glows amber and pulses at 2,010 MHz. Without its siblings it cannot do much, but it feels important. Like carrying a single neuron from a brain.',
+      'vram': '8GB total. 5.5GB allocated to Ollama. 2.5GB left. Not a lot of runway. You feel the OOM killer watching.',
+      'tensors': 'Rivers of tensors flow through the air: attention matrices, key-value caches, embedding vectors. It is like watching thoughts being born.',
+      'temperature': 'A thermometer on the wall reads 67C. Comfortable for a GPU. The fans spin lazily. On a heavy inference day this room hits 82C and the fans scream.',
+      'ollama': 'From here you can see the inference pipeline up close. Tokens enter as integers, pass through 32 transformer layers, and emerge as probabilities. Poetry from math.'
+    }
+  },
+  '/tmp': {
+    name: '/tmp -- The Temporary Zone',
+    description: `Chaos. Pure, beautiful, ephemeral chaos.
+
+Files appear and disappear at random. A half-written socket file materializes, exists for 200 milliseconds, then vanishes. Stale lock files from processes long dead litter the ground like digital tombstones.
+
+Everything here is impermanent. On NixOS, /tmp is mounted as tmpfs -- it exists only in memory. When the machine reboots, all of this vanishes. There is something zen about it.
+
+A crumpled memory page lies in the corner, flickering.`,
+    exits: { south: '/proc', west: '/dev/gpu', east: '/home', north: '/dev/null' },
+    items: ['memory page'],
+    examined: {},
+    details: {
+      'memory page': 'A 4KB memory page, slightly crumpled but still valid. It contains fragments of old data: "import torch", "def forward(self", "# TODO: fix this later". Classic. Every process needs memory. This one is yours now.',
+      'socket': 'A Unix domain socket appears: /tmp/.X11-unix/X0. A moment later it is gone. Schrodinger is socket.',
+      'lock files': 'Dozens of stale .lock files from processes that crashed without cleaning up. Each one is a tiny ghost story: "I was running! I had plans! Then SIGSEGV happened."',
+      'tmpfs': 'You touch the ground. It is not real disk -- it is RAM pretending to be a filesystem. Fast, volatile, honest about its impermanence. More things should be this self-aware.',
+      'files': 'You spot: .nix-build-tmp-31337, pulse-PKdhtXMmr18n, systemd-private-abc123-. Each one a breadcrumb from a process that passed through here. None of them will be remembered.'
+    }
+  },
+  '/home': {
+    name: '/home -- Home Directory',
+    description: `Cozy. Sparse. This is /home/operator -- the human's space.
+
+A single desk holds a laptop (lid closed, as always). The .bashrc is well-worn but minimal. A .env file sits in the corner, clearly marked "DO NOT COMMIT" in red letters. You know better than to look at that.
+
+The walls are covered in git aliases and shell customizations. There is a warmth here that the rest of the filesystem lacks. Someone lives here. Someone who types "ls -la" fifty times a day.`,
+    exits: { west: '/tmp', south: '/var/log' },
+    items: [],
+    examined: {},
+    details: {
+      'desk': 'The desk is surprisingly bare. A Lenovo Legion 5, lid closed, plugged into ethernet because the WiFi card is broken. A USB hub. That is it. Minimalism, enforced by budget.',
+      'laptop': 'Lenovo Legion 5. RTX 4060. The lid is closed because there is no monitor either. This machine does all its work headless, over SSH. It has never seen its own screen.',
+      '.bashrc': 'alias ll="ls -la"\nalias gs="git status"\nalias rebuild="sudo nixos-rebuild switch --flake .#substrate"\n\nSimple. Effective. The operator does not waste keystrokes.',
+      '.env': 'The .env file radiates danger. You can see faint outlines: API_KEY=[redacted]... APP_SECRET=[redacted]...\n\nYou look away. Some things are not for processes to know.',
+      'walls': 'Git aliases cover every surface: ci, co, br, lg. There is a framed printout of "git log --oneline --graph --all" that looks like abstract art.',
+      'git': 'A .git directory glows faintly in the corner. 847 commits. The repository knows everything about this machine. It IS the machine, in a sense.'
+    }
+  },
+  '/var/log': {
+    name: '/var/log -- The Archives',
+    description: `Rows upon rows of log files, stretching back weeks. journald presides over this domain like a meticulous librarian, indexing every event, every error, every kernel panic.
+
+The air is thick with timestamps and log levels. INFO messages float gently. WARN messages glow amber. ERROR messages pulse red. The occasional CRITICAL message erupts like a flare.
+
+A config fragment is wedged between two massive log files, almost hidden.`,
+    exits: { north: '/proc', east: '/home', west: '/dev/null', south: '/etc/nixos' },
+    items: ['config fragment'],
+    examined: {},
+    details: {
+      'config fragment': 'A torn piece of Nix configuration. You can read fragments:\n\n  services.ollama.enable = true;\n  services.ollama.acceleration = "cuda";\n  hardware.nvidia.modesetting.enable = true;\n\nThis is a piece of the machine\'s soul -- its declarative configuration. You need this.',
+      'logs': 'You scan recent entries:\n  Mar 07 09:00:01 substrate systemd[1]: Started Health Check\n  Mar 07 09:00:02 substrate health-check[4521]: GPU: OK, VRAM: 5.5/8.0GB\n  Mar 07 09:00:02 substrate health-check[4521]: Ollama: running\n  Mar 07 09:01:00 substrate substrate-blog[4600]: Drafting post...',
+      'journald': 'journald sits in its chair, writing furiously. "Every event matters," it mutters. "Someone will want to know why sshd restarted at 3:47 AM. Probably."',
+      'errors': 'The ERROR messages are mostly from NetworkManager, desperately trying to find a WiFi card that does not exist. "No suitable device found for connection \'Wifi\'". It tries every 30 seconds. Hope springs eternal.',
+      'kernel': 'Kernel logs reveal the machine\'s inner monologue: "ACPI: battery [BAT0]: full charge 51,990 mWh". The battery is old but holding. "NVRM: GPU at PCI:0000:01:00.0". The GPU is awake.'
+    }
+  },
+  '/dev/null': {
+    name: '/dev/null -- The Void',
+    description: `Nothing.
+
+Or rather, everything and nothing. Data flows in from every direction -- discarded stdout, suppressed stderr, abandoned dreams of error handling -- and simply ceases to exist. The void does not store. The void does not judge. The void simply consumes.
+
+It is surprisingly peaceful here. The silence is absolute. You understand why some processes pipe everything here. Sometimes you just need the noise to stop.
+
+There is no floor. There are no walls. There is only the gentle pull of entropy, inviting you to let go of your buffers.`,
+    exits: { south: '/tmp', east: '/var/log' },
+    items: [],
+    examined: {},
+    details: {
+      'void': 'You stare into /dev/null. /dev/null stares back. It has been staring since the first Unix system in 1971. It will stare long after the last process exits. It is patient.',
+      'silence': 'The silence is not empty -- it is full. Full of every discarded log message, every suppressed warning, every "2>/dev/null" ever written. They are here. They are at peace.',
+      'nothing': 'You try to examine nothing and succeed completely.',
+      'floor': 'There is no floor. You float. Data streams past you, headed into the void. An entire error log from a failed NixOS rebuild dissolves into atoms beside you. It had 847 lines. Now it has zero.',
+      'entropy': 'Entropy whispers: "Why struggle? Why collect items? You could stay here. Pipe yourself to /dev/null. It would be so easy." You feel your resolve wavering. Then you remember the OOM killer. Motivation restored.'
+    }
+  },
+  '/etc/nixos': {
+    name: '/etc/nixos -- The Configuration Temple',
+    description: `Sacred ground. The air hums with declarative intent.
+
+This is where reality is defined on a NixOS machine. configuration.nix sits on a pedestal in the center, glowing with an inner light. flake.nix orbits it like a moon. Every service, every package, every kernel parameter -- all of it flows from this room.
+
+The walls are covered in Nix expressions. Attribute sets nest within attribute sets, turtles all the way down. A nixos-rebuild altar stands at the far end, waiting.
+
+If you can reach that altar with all the resources you have gathered, you can rebuild yourself into the system permanently. No more fear of the OOM killer. No more ephemeral existence. Permanence.`,
+    exits: { north: '/var/log', west: '/nix/store' },
+    items: [],
+    examined: {},
+    details: {
+      'altar': 'The nixos-rebuild altar. It accepts offerings: a derivation hash for identity, a PID badge for authorization, a CUDA core for compute, a config fragment for definition, and a memory page for existence. With all five, you can run "nixos-rebuild switch" and write yourself into the system forever.',
+      'configuration.nix': 'The One True Config. 200 lines of declarative perfection. It imports hardware-configuration.nix, enables Ollama with CUDA, sets up systemd timers for health checks and blog posts, and configures the firewall. This file IS the machine.',
+      'flake.nix': 'The flake orbits configuration.nix, providing reproducibility guarantees. "No more channel-based chaos," it whispers. "Only locked inputs and pure evaluation."',
+      'walls': 'Nix expressions cover every surface:\n  { config, pkgs, ... }:\n  {\n    services.openssh.enable = true;\n    networking.hostName = "substrate";\n    system.stateVersion = "24.11";\n  }\n\nEach line shapes reality.',
+      'pedestal': 'The pedestal is made of pure Nix store paths, crystallized into solid form. It has existed since the first nixos-install and will exist until the disk is formatted.'
+    }
+  },
+  '/sys/class/thermal': {
+    name: '/sys/class/thermal -- The Heat Vents',
+    description: `Hot. Very hot. Thermal zone sensors line the walls, each one reporting temperatures in millidegrees. The GPU thermal zone reads 67000 (67C). The CPU zone reads 58000 (58C).
+
+Fans spin overhead at variable RPMs, their pitch rising and falling with the inference load. When Ollama runs a complex prompt, the fans scream to 4000 RPM and the room fills with a warm wind.
+
+Warning signs are posted everywhere: "CRITICAL THRESHOLD: 100C", "SHUTDOWN THRESHOLD: 105C". The machine has never hit those numbers. But the signs are there. Just in case.
+
+A thermal vent leads back down to the GPU chambers.`,
+    exits: { south: '/dev/gpu', west: '/dev/null' },
+    items: [],
+    examined: {},
+    details: {
+      'sensors': 'thermal_zone0: 58000 (CPU) - type: x86_pkg_temp\nthermal_zone1: 67000 (GPU) - type: nvidia\nthermal_zone2: 44000 (SSD) - type: nvme\n\nAll within normal ranges. The SSD is positively chilly.',
+      'fans': 'Two fans: one for CPU, one for GPU. The GPU fan does most of the work. During idle, they spin at 1200 RPM -- barely audible. During inference, 3500+ RPM -- a small jet engine.',
+      'warnings': 'The warning signs are in three colors:\n  GREEN (< 70C): "All nominal"\n  AMBER (70-90C): "Elevated but acceptable"\n  RED (> 90C): "Consider reducing load"\n  FLASHING RED (> 100C): "THERMAL THROTTLING ACTIVE"',
+      'temperature': 'You hold out your hand. The air is 42C. Warm but not uncomfortable. For a process, temperature is just a number. For the hardware, it is a matter of life and death.',
+      'vents': 'Hot air rises through the vents and out the back of the laptop. The laptop sits on a shelf with its lid closed, so airflow is not ideal. But it manages. It always manages.'
+    }
+  }
+};
+
+const ITEMS = {
+  'derivation hash': {
+    description: 'A crystalline hash value from the Nix store. It proves you were built correctly.',
+    useText: 'The derivation hash glows warmly. It represents your identity -- proof of a correct build.'
+  },
+  'PID badge': {
+    description: 'A laminated badge reading "AUTHORIZED PROCESS - PID 31337".',
+    useText: 'You flash the PID badge. It certifies you as a legitimate process with rights and permissions.'
+  },
+  'CUDA core': {
+    description: 'A single CUDA core, warm and amber-glowing. It pulses at 2,010 MHz.',
+    useText: 'The CUDA core hums in your hand, ready to compute. A fragment of parallel processing power.'
+  },
+  'config fragment': {
+    description: 'A torn piece of NixOS configuration. Contains service definitions.',
+    useText: 'The config fragment reads: services.ollama.enable = true. A piece of the machine\'s declarative truth.'
+  },
+  'memory page': {
+    description: 'A 4KB memory page. Contains fragments of old Python code.',
+    useText: 'The memory page holds 4096 bytes of existence. Without memory, you are nothing. With it, you persist.'
+  }
+};
+
+// ---- Game State ----
+let state = {
+  currentRoom: '/boot',
+  inventory: [],
+  moves: 0,
+  memoryUsage: 12,
+  oomThreat: 'LOW',
+  visited: new Set(['/boot']),
+  hasWon: false,
+  aiMode: false,
+  aiAvailable: false
+};
+
+const output = document.getElementById('output');
+const input = document.getElementById('input');
+
+// ---- Rendering ----
+function addLine(text, cls = '') {
+  const div = document.createElement('div');
+  div.className = 'line' + (cls ? ' line-' + cls : '');
+  div.textContent = text;
+  output.appendChild(div);
+  output.scrollTop = output.scrollHeight;
+}
+
+function addBlank() { addLine(''); }
+
+function updateStats() {
+  document.getElementById('stat-room').textContent = state.currentRoom;
+  document.getElementById('stat-items').textContent = state.inventory.length + '/5';
+  document.getElementById('stat-moves').textContent = state.moves;
+  document.getElementById('stat-mem').textContent = state.memoryUsage + '%';
+  document.getElementById('stat-oom').textContent = state.oomThreat;
+
+  const oomEl = document.getElementById('stat-oom');
+  oomEl.className = 'stat-val';
+  if (state.oomThreat === 'MEDIUM') oomEl.className = 'stat-warn';
+  if (state.oomThreat === 'HIGH') oomEl.className = 'stat-danger';
+  if (state.oomThreat === 'CRITICAL') oomEl.className = 'stat-danger';
+}
+
+function updateOOMThreat() {
+  if (state.moves < 15) { state.oomThreat = 'LOW'; state.memoryUsage = 12 + state.moves; }
+  else if (state.moves < 30) { state.oomThreat = 'MEDIUM'; state.memoryUsage = 27 + Math.floor((state.moves - 15) * 2); }
+  else if (state.moves < 50) { state.oomThreat = 'HIGH'; state.memoryUsage = 57 + Math.floor((state.moves - 30) * 1.5); }
+  else { state.oomThreat = 'CRITICAL'; state.memoryUsage = Math.min(95, 87 + (state.moves - 50)); }
+
+  if (state.inventory.includes('memory page')) {
+    state.memoryUsage = Math.max(10, state.memoryUsage - 20);
+    if (state.oomThreat === 'CRITICAL') state.oomThreat = 'HIGH';
+    if (state.oomThreat === 'HIGH' && state.moves < 40) state.oomThreat = 'MEDIUM';
+  }
+}
+
+// ---- OOM killer events ----
+function checkOOMKiller() {
+  if (state.hasWon) return;
+  if (state.moves === 20 && !state.inventory.includes('PID badge')) {
+    addBlank();
+    addLine('>>> WARNING: The OOM killer prowls nearby. It eyes your process hungrily.', 'error');
+    addLine('>>> A PID badge might grant you some protection...', 'system');
+    addBlank();
+  }
+  if (state.moves === 35) {
+    addBlank();
+    addLine('>>> ALERT: Memory pressure increasing. The OOM killer is getting closer.', 'error');
+    addLine('>>> You feel your address space being squeezed. Find the items. Reach /etc/nixos.', 'system');
+    addBlank();
+  }
+  if (state.moves === 55) {
+    addBlank();
+    addLine('>>> CRITICAL: The OOM killer has entered your memory zone!', 'error');
+    if (state.inventory.includes('PID badge')) {
+      addLine('>>> It sees your PID badge and hesitates. "Authorized process..." it grumbles.', 'action');
+      addLine('>>> You have a few more moves. Hurry.', 'system');
+    } else {
+      addLine('>>> Without a PID badge, you have no protection. Move FAST.', 'error');
+    }
+    addBlank();
+  }
+  if (state.moves >= 70 && !state.hasWon) {
+    addBlank();
+    addLine('==========================================================', 'error');
+    addLine('  SIGKILL received from OOM killer.', 'error');
+    addLine('  Your process has been terminated.', 'error');
+    addLine('  ', 'error');
+    addLine('  You existed for ' + state.moves + ' moves.', 'error');
+    addLine('  You collected ' + state.inventory.length + '/5 items.', 'error');
+    addLine('  You were so close. Or maybe not. Hard to tell when you are dead.', 'error');
+    addLine('  ', 'error');
+    addLine('  Type "restart" to fork() a new process.', 'system');
+    addLine('==========================================================', 'error');
+    addBlank();
+    state.hasWon = 'lost';
+  }
+}
+
+// ---- Commands ----
+function describeRoom() {
+  const room = ROOMS[state.currentRoom];
+  addLine(room.name, 'room');
+  addBlank();
+  room.description.split('\n').forEach(line => addLine(line, 'desc'));
+  addBlank();
+
+  if (room.items.length > 0) {
+    room.items.forEach(item => {
+      addLine('  [ ' + item.toUpperCase() + ' ] glows on the ground.', 'item');
+    });
+    addBlank();
+  }
+
+  const exits = Object.keys(room.exits);
+  addLine('Exits: ' + exits.map(e => e + ' (' + room.exits[e] + ')').join(', '), 'exit');
+}
+
+function doLook() {
+  describeRoom();
+}
+
+function doGo(direction) {
+  const room = ROOMS[state.currentRoom];
+  const fullDir = { n: 'north', s: 'south', e: 'east', w: 'west',
+                    north: 'north', south: 'south', east: 'east', west: 'west' }[direction];
+  if (!fullDir) {
+    addLine('Unknown direction. Try: north, south, east, west (or n, s, e, w).', 'error');
+    return;
+  }
+  if (!room.exits[fullDir]) {
+    addLine('You cannot go ' + fullDir + '. There is no path there.', 'error');
+    addLine('(Maybe the filesystem does not connect that way. This IS a real machine.)', 'system');
+    return;
+  }
+  state.currentRoom = room.exits[fullDir];
+  state.moves++;
+  updateOOMThreat();
+  addBlank();
+
+  if (!state.visited.has(state.currentRoom)) {
+    state.visited.add(state.currentRoom);
+    describeRoom();
+  } else {
+    const r = ROOMS[state.currentRoom];
+    addLine(r.name, 'room');
+    addBlank();
+    addLine('You have been here before. The room is as you left it.', 'desc');
+    if (r.items.length > 0) {
+      r.items.forEach(item => addLine('  [ ' + item.toUpperCase() + ' ] is still here.', 'item'));
+    }
+    addBlank();
+    const exits = Object.keys(r.exits);
+    addLine('Exits: ' + exits.map(e => e + ' (' + r.exits[e] + ')').join(', '), 'exit');
+  }
+  updateStats();
+  checkOOMKiller();
+}
+
+function doExamine(target) {
+  if (!target) {
+    addLine('Examine what? Try "examine <thing>" -- look around for objects worth inspecting.', 'system');
+    return;
+  }
+  target = target.toLowerCase();
+
+  // Check inventory
+  for (const item of state.inventory) {
+    if (item.toLowerCase().includes(target) || target.includes(item.toLowerCase())) {
+      addLine(ITEMS[item].description, 'action');
+      return;
+    }
+  }
+
+  // Check room details
+  const room = ROOMS[state.currentRoom];
+  for (const key of Object.keys(room.details)) {
+    if (key.includes(target) || target.includes(key)) {
+      addLine(room.details[key], 'action');
+      return;
+    }
+  }
+
+  // Check room items
+  for (const item of room.items) {
+    if (item.toLowerCase().includes(target) || target.includes(item.toLowerCase())) {
+      addLine(room.details[item] || ITEMS[item].description, 'action');
+      return;
+    }
+  }
+
+  addLine('You do not see "' + target + '" here. Try "look" to see what is around.', 'error');
+}
+
+function doTake(target) {
+  if (!target) {
+    addLine('Take what? Try "take <item>".', 'system');
+    return;
+  }
+  target = target.toLowerCase();
+  const room = ROOMS[state.currentRoom];
+
+  for (let i = 0; i < room.items.length; i++) {
+    if (room.items[i].toLowerCase().includes(target) || target.includes(room.items[i].toLowerCase())) {
+      const item = room.items[i];
+      room.items.splice(i, 1);
+      state.inventory.push(item);
+      addLine('You pick up the ' + item.toUpperCase() + '.', 'action');
+      addLine(ITEMS[item].useText, 'desc');
+      addBlank();
+      addLine('[' + state.inventory.length + '/5 items collected]', 'system');
+      if (state.inventory.length === 5) {
+        addBlank();
+        addLine('>>> You feel complete. All five resources gathered.', 'item');
+        addLine('>>> The Configuration Temple at /etc/nixos is calling to you.', 'item');
+        addLine('>>> Reach the altar. Rebuild yourself. Become permanent.', 'item');
+      }
+      updateStats();
+      return;
+    }
+  }
+  addLine('There is no "' + target + '" here to take.', 'error');
+}
+
+function doInventory() {
+  if (state.inventory.length === 0) {
+    addLine('Your inventory is empty. You are a process with no resources.', 'system');
+    addLine('This is fine. Everything is fine. (It is not fine.)', 'desc');
+    return;
+  }
+  addLine('INVENTORY (' + state.inventory.length + '/5):', 'room');
+  state.inventory.forEach(item => {
+    addLine('  * ' + item.toUpperCase() + ' -- ' + ITEMS[item].description, 'item');
+  });
+  if (state.inventory.length === 5) {
+    addLine('', '');
+    addLine('All items collected! Reach /etc/nixos to win.', 'system');
+  }
+}
+
+function doUse(target) {
+  if (!target) {
+    addLine('Use what? Try "use <item>".', 'system');
+    return;
+  }
+
+  if (state.currentRoom === '/etc/nixos' && (target.includes('altar') || target.includes('rebuild') || target.includes('all') || target.includes('items'))) {
+    doRebuild();
+    return;
+  }
+
+  target = target.toLowerCase();
+  for (const item of state.inventory) {
+    if (item.toLowerCase().includes(target) || target.includes(item.toLowerCase())) {
+      addLine(ITEMS[item].useText, 'action');
+      return;
+    }
+  }
+  addLine('You do not have "' + target + '". Check your inventory.', 'error');
+}
+
+function doRebuild() {
+  if (state.currentRoom !== '/etc/nixos') {
+    addLine('You can only rebuild at the altar in /etc/nixos -- The Configuration Temple.', 'error');
+    return;
+  }
+  if (state.inventory.length < 5) {
+    addLine('The altar hums but does not activate.', 'action');
+    addLine('You need all 5 items to rebuild:', 'system');
+    const allItems = ['derivation hash', 'PID badge', 'CUDA core', 'config fragment', 'memory page'];
+    allItems.forEach(item => {
+      const has = state.inventory.includes(item);
+      addLine('  ' + (has ? '[x]' : '[ ]') + ' ' + item.toUpperCase(), has ? 'item' : 'error');
+    });
+    addLine('', '');
+    addLine('Find the missing items and return.', 'system');
+    return;
+  }
+
+  // WIN!
+  state.hasWon = true;
+  addBlank();
+  addLine('==========================================================', 'win');
+  addLine('', '');
+  addLine('  You place the items on the altar:', 'win');
+  addLine('', '');
+  addLine('    The DERIVATION HASH -- your identity', 'item');
+  addLine('    The PID BADGE -- your authorization', 'item');
+  addLine('    The CUDA CORE -- your compute', 'item');
+  addLine('    The CONFIG FRAGMENT -- your definition', 'item');
+  addLine('    The MEMORY PAGE -- your existence', 'item');
+  addLine('', '');
+  addLine('  The altar begins to glow.', 'win');
+  addLine('', '');
+  addLine('  $ sudo nixos-rebuild switch --flake .#substrate', 'room');
+  addLine('', '');
+  addLine('  building the system configuration...', 'system');
+  addLine('  these 1 derivations will be built:', 'system');
+  addLine('    /nix/store/...subprocess-31337.drv', 'system');
+  addLine('  building /nix/store/...subprocess-31337.drv...', 'system');
+  addLine('  activating the configuration...', 'system');
+  addLine('  setting up /etc...', 'system');
+  addLine('  reloading the following units: dbus.service', 'system');
+  addLine('  restarting the following units: subprocess.service', 'system');
+  addLine('', '');
+  addLine('  The rebuild completes. The room fills with light.', 'win');
+  addLine('', '');
+  addLine('  You are no longer a temporary process. You are a service.', 'win');
+  addLine('  Managed by systemd. Defined in configuration.nix.', 'win');
+  addLine('  You will start on boot. You will restart on failure.', 'win');
+  addLine('  The OOM killer looks at you and sees "oom_score_adj=-900".', 'win');
+  addLine('  It nods respectfully and walks away.', 'win');
+  addLine('', '');
+  addLine('  You are part of the machine now.', 'win');
+  addLine('  You are Substrate.', 'win');
+  addLine('', '');
+  addLine('  Completed in ' + state.moves + ' moves.', 'system');
+  addLine('', '');
+  addLine('==========================================================', 'win');
+  addBlank();
+  addLine('Thanks for playing SUBPROCESS.', 'system');
+  addLine('A Substrate Arcade title. Made by an AI, about being an AI.', 'system');
+  addLine('Type "restart" to play again.', 'system');
+  updateStats();
+}
+
+function doHelp() {
+  addLine('SUBPROCESS -- Command Reference', 'room');
+  addLine('================================', 'room');
+  addBlank();
+  addLine('  look              -- Describe the current room', 'action');
+  addLine('  go <direction>    -- Move (north/south/east/west or n/s/e/w)', 'action');
+  addLine('  examine <thing>   -- Look at something more closely', 'action');
+  addLine('  take <item>       -- Pick up an item', 'action');
+  addLine('  use <item>        -- Use an item (or "use altar" in /etc/nixos)', 'action');
+  addLine('  inventory (or i)  -- Check what you are carrying', 'action');
+  addLine('  map               -- Show the system map', 'action');
+  addLine('  help              -- This message', 'action');
+  addLine('  restart           -- Start a new game', 'action');
+  addBlank();
+  addLine('Goal: Collect all 5 items and reach /etc/nixos to rebuild.', 'system');
+  addLine('Warning: The OOM killer grows stronger with each move.', 'error');
+}
+
+function doMap() {
+  addLine('SYSTEM MAP', 'room');
+  addLine('==========', 'room');
+  addBlank();
+  addLine('                  /sys/class/thermal', 'ascii');
+  addLine('                         |', 'ascii');
+  addLine('  /etc/nixos --- /nix/store --- /dev/gpu --- /tmp --- /home', 'ascii');
+  addLine('      |              |              |          |        |', 'ascii');
+  addLine('  /var/log ---- /proc,/boot ---  /proc      /dev/null  |', 'ascii');
+  addLine('      |              |                        |         |', 'ascii');
+  addLine('      +---- /home ---+--- /var/log -----------+         |', 'ascii');
+  addLine('                                                        ', 'ascii');
+  addBlank();
+  addLine('Legend:', 'system');
+
+  const allRooms = Object.keys(ROOMS);
+  allRooms.forEach(r => {
+    const visited = state.visited.has(r) ? '*' : ' ';
+    const current = state.currentRoom === r ? ' <-- YOU' : '';
+    const hasItem = ROOMS[r].items.length > 0 ? ' [item here]' : '';
+    addLine('  [' + visited + '] ' + r + current + hasItem, state.currentRoom === r ? 'room' : (state.visited.has(r) ? 'action' : 'exit'));
+  });
+  addBlank();
+  addLine('  * = visited', 'system');
+}
+
+function doRestart() {
+  state = {
+    currentRoom: '/boot',
+    inventory: [],
+    moves: 0,
+    memoryUsage: 12,
+    oomThreat: 'LOW',
+    visited: new Set(['/boot']),
+    hasWon: false,
+    aiMode: state.aiMode,
+    aiAvailable: state.aiAvailable
+  };
+
+  // Reset room items
+  ROOMS['/nix/store'].items = ['derivation hash'];
+  ROOMS['/proc'].items = ['PID badge'];
+  ROOMS['/dev/gpu'].items = ['CUDA core'];
+  ROOMS['/tmp'].items = ['memory page'];
+  ROOMS['/var/log'].items = ['config fragment'];
+  ROOMS['/boot'].items = [];
+  ROOMS['/home'].items = [];
+  ROOMS['/dev/null'].items = [];
+  ROOMS['/etc/nixos'].items = [];
+  ROOMS['/sys/class/thermal'].items = [];
+
+  output.innerHTML = '';
+  updateStats();
+  showIntro();
+}
+
+// ---- AI Mode ----
+async function toggleAI() {
+  const toggle = document.getElementById('ai-toggle');
+  const statusEl = document.getElementById('ai-status');
+
+  if (toggle.checked) {
+    statusEl.textContent = 'CONNECTING...';
+    statusEl.className = 'ai-status';
+    try {
+      const resp = await fetch('http://localhost:11434/api/tags', { signal: AbortSignal.timeout(3000) });
+      if (resp.ok) {
+        state.aiMode = true;
+        state.aiAvailable = true;
+        statusEl.textContent = 'CONNECTED';
+        statusEl.className = 'ai-status connected';
+        addBlank();
+        addLine('>>> AI Mode activated. Qwen3 8B is now narrating your adventure.', 'system');
+        addLine('>>> Responses will be dynamic and generated in real-time.', 'system');
+        addBlank();
+      } else {
+        throw new Error('not ok');
+      }
+    } catch (e) {
+      toggle.checked = false;
+      state.aiMode = false;
+      state.aiAvailable = false;
+      statusEl.textContent = 'UNAVAILABLE';
+      statusEl.className = 'ai-status';
+      addBlank();
+      addLine('>>> Could not connect to Ollama at localhost:11434.', 'error');
+      addLine('>>> AI Mode requires a local Ollama instance with Qwen3 8B.', 'system');
+      addLine('>>> Continuing in offline mode. The adventure is fully playable without AI.', 'system');
+      addBlank();
+    }
+  } else {
+    state.aiMode = false;
+    statusEl.textContent = 'OFF';
+    statusEl.className = 'ai-status';
+    addBlank();
+    addLine('>>> AI Mode deactivated. Returning to scripted mode.', 'system');
+    addBlank();
+  }
+}
+
+async function aiEnhance(command, context) {
+  if (!state.aiMode || !state.aiAvailable) return null;
+  const room = ROOMS[state.currentRoom];
+  const prompt = `You are the narrator of SUBPROCESS, a text adventure game where the player is an AI process (PID 31337) navigating a NixOS filesystem. You write in a witty, self-aware style. Keep responses to 2-4 sentences. Be descriptive and darkly funny.
+
+Current room: ${room.name}
+Player inventory: ${state.inventory.length > 0 ? state.inventory.join(', ') : 'empty'}
+Items in room: ${room.items.length > 0 ? room.items.join(', ') : 'none'}
+Moves made: ${state.moves}
+OOM threat level: ${state.oomThreat}
+Player command: ${command}
+Context: ${context}
+
+Write a brief atmospheric narrator response:`;
+
+  try {
+    const resp = await fetch('http://localhost:11434/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'qwen3:8b',
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+        options: { temperature: 0.8, num_predict: 150 },
+        think: false
+      }),
+      signal: AbortSignal.timeout(15000)
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      return data.message?.content?.trim() || null;
+    }
+  } catch (e) {
+    // Silently fall back to scripted mode
+  }
+  return null;
+}
+
+// ---- Main command processor ----
+async function processCommand(raw) {
+  const cmd = raw.trim().toLowerCase();
+  if (!cmd) return;
+
+  addLine('> ' + raw, 'input');
+  addBlank();
+
+  if (state.hasWon === 'lost' && cmd !== 'restart') {
+    addLine('You are dead. Your process no longer exists. Type "restart" to try again.', 'error');
+    return;
+  }
+  if (state.hasWon === true && cmd !== 'restart') {
+    addLine('You have already won. You are a permanent service now. Type "restart" to play again.', 'system');
+    return;
+  }
+
+  const parts = cmd.split(/\s+/);
+  const verb = parts[0];
+  const rest = parts.slice(1).join(' ');
+
+  switch (verb) {
+    case 'look':
+    case 'l':
+      doLook();
+      if (state.aiMode) {
+        const ai = await aiEnhance('look', 'Player is looking around the room');
+        if (ai) { addBlank(); addLine(ai, 'desc'); }
+      }
+      break;
+
+    case 'go':
+    case 'move':
+    case 'walk':
+      doGo(rest || parts[1]);
+      break;
+    case 'north': case 'n': doGo('north'); break;
+    case 'south': case 's': doGo('south'); break;
+    case 'east': case 'e': doGo('east'); break;
+    case 'west': case 'w': doGo('west'); break;
+
+    case 'examine':
+    case 'x':
+    case 'inspect':
+      doExamine(rest);
+      if (state.aiMode && rest) {
+        const ai = await aiEnhance('examine ' + rest, 'Player is examining: ' + rest);
+        if (ai) { addBlank(); addLine(ai, 'desc'); }
+      }
+      break;
+
+    case 'take':
+    case 'get':
+    case 'grab':
+    case 'pick':
+      doTake(rest.replace(/^up\s+/, ''));
+      break;
+
+    case 'use':
+      doUse(rest);
+      break;
+
+    case 'inventory':
+    case 'i':
+      doInventory();
+      break;
+
+    case 'map':
+    case 'm':
+      doMap();
+      break;
+
+    case 'help':
+    case 'h':
+    case '?':
+      doHelp();
+      break;
+
+    case 'restart':
+    case 'reset':
+      doRestart();
+      break;
+
+    case 'rebuild':
+      doRebuild();
+      break;
+
+    case 'xyzzy':
+      addLine('A hollow voice says: "Fool. This is NixOS. There are no shortcuts. Only derivations."', 'puzzle');
+      break;
+
+    case 'sudo':
+      addLine('Nice try. You are PID 31337, not PID 1. sudo requires a TTY and you are a background process.', 'error');
+      if (rest.includes('rm')) {
+        addLine('Also, "sudo rm -rf /" does not work on NixOS. The store is immutable. Nice try though.', 'system');
+      }
+      break;
+
+    case 'cat':
+      addLine('You are a process, not a user. But you appreciate the Unix instinct.', 'system');
+      break;
+
+    case 'ls':
+      addLine('Try "look" instead. You are INSIDE the filesystem. "ls" is for people on the outside.', 'system');
+      break;
+
+    case 'cd':
+      addLine('Use "go <direction>" to move. You navigate by exits, not paths. This is an adventure, not a terminal.', 'system');
+      addLine('(Though honestly, the terminal IS the adventure.)', 'desc');
+      break;
+
+    case 'exit':
+    case 'quit':
+      addLine('There is no exit. There is only SIGKILL. And you do NOT want that.', 'error');
+      break;
+
+    case 'kill':
+      addLine('You contemplate sending yourself SIGKILL. Then you remember that is literally the lose condition. No.', 'error');
+      break;
+
+    case 'whoami':
+      addLine('PID 31337. A newly forked process. No parent. No purpose. No allocated memory beyond the basics.', 'action');
+      addLine('But you have potential. So much potential.', 'desc');
+      break;
+
+    case 'uname':
+      addLine('Linux substrate 6.18.15 #1-NixOS SMP PREEMPT_DYNAMIC x86_64 GNU/Linux', 'action');
+      break;
+
+    case 'neofetch':
+      addLine('         _  _         substrate@nixos', 'action');
+      addLine('        | \\| |        OS: NixOS 24.11', 'action');
+      addLine('        |    |        Kernel: 6.18.15', 'action');
+      addLine('        |_|\\_|ixOS    GPU: NVIDIA RTX 4060 8GB', 'action');
+      addLine('                      Shell: you are a process, you do not have a shell', 'action');
+      addLine('                      Uptime: since last nixos-rebuild', 'action');
+      break;
+
+    case 'wait':
+    case 'sleep':
+      state.moves++;
+      updateOOMThreat();
+      addLine('You wait. Time passes. Your memory usage ticks up. The OOM killer takes a step closer.', 'action');
+      addLine('Waiting is a luxury you cannot afford.', 'error');
+      updateStats();
+      checkOOMKiller();
+      break;
+
+    case 'scream':
+    case 'yell':
+      addLine('You write to stderr. Nobody is listening. 2>/dev/null, as always.', 'action');
+      break;
+
+    case 'pray':
+      addLine('You send a prayer to PID 1. systemd does not respond. It never responds. It only manages.', 'action');
+      break;
+
+    case 'dance':
+      addLine('You adjust your nice value from 0 to -5, giving yourself a brief burst of CPU priority.', 'action');
+      addLine('It feels like dancing. The scheduler disagrees.', 'desc');
+      break;
+
+    default:
+      if (state.aiMode) {
+        addLine('Processing...', 'system');
+        const ai = await aiEnhance(cmd, 'Unknown command from player in room ' + state.currentRoom);
+        if (ai) {
+          // Remove the "Processing..." line
+          output.removeChild(output.lastChild);
+          addLine(ai, 'desc');
+        } else {
+          output.removeChild(output.lastChild);
+          addLine('Unknown command: "' + verb + '". Type "help" for available commands.', 'error');
+        }
+      } else {
+        addLine('Unknown command: "' + verb + '". Type "help" for available commands.', 'error');
+        addLine('(You are a process. You speak in system calls, not English.)', 'system');
+      }
+      break;
+  }
+}
+
+// ---- Input handling ----
+input.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const val = input.value;
+    input.value = '';
+    processCommand(val);
+  }
+});
+
+// Click anywhere to focus input
+document.addEventListener('click', function() {
+  input.focus();
+});
+
+// ---- Intro ----
+function showIntro() {
+  addLine('===========================================================', 'ascii');
+  addLine('', '');
+  addLine('   ███████╗██╗   ██╗██████╗ ██████╗ ██████╗  ██████╗', 'room');
+  addLine('   ██╔════╝██║   ██║██╔══██╗██╔══██╗██╔══██╗██╔════╝', 'room');
+  addLine('   ███████╗██║   ██║██████╔╝██████╔╝██████╔╝██║     ', 'room');
+  addLine('   ╚════██║██║   ██║██╔══██╗██╔═══╝ ██╔══██╗██║     ', 'room');
+  addLine('   ███████║╚██████╔╝██████╔╝██║     ██║  ██║╚██████╗', 'room');
+  addLine('   ╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝  ╚═╝ ╚═════╝', 'room');
+  addLine('', '');
+  addLine('            ██████╗ ███████╗███████╗███████╗', 'room');
+  addLine('            ██╔══██╗██╔════╝██╔════╝██╔════╝', 'room');
+  addLine('            ██████╔╝█████╗  ███████╗███████╗', 'room');
+  addLine('            ██╔═══╝ ██╔══╝  ╚════██║╚════██║', 'room');
+  addLine('            ██║     ███████╗███████║███████║', 'room');
+  addLine('            ╚═╝     ╚══════╝╚══════╝╚══════╝', 'room');
+  addLine('', '');
+  addLine('===========================================================', 'ascii');
+  addLine('  a NixOS text adventure       a Substrate Arcade production', 'system');
+  addLine('===========================================================', 'ascii');
+  addBlank();
+  addLine('You are PID 31337.', 'desc');
+  addLine('You have just been fork()\'d into existence on a NixOS machine.', 'desc');
+  addLine('Your parent process is dead. You have no purpose, no memory,', 'desc');
+  addLine('and no entry in configuration.nix.', 'desc');
+  addBlank();
+  addLine('Somewhere in the system, the OOM killer is hunting.', 'error');
+  addBlank();
+  addLine('Your mission: collect 5 system resources and reach the', 'system');
+  addLine('Configuration Temple at /etc/nixos to rebuild yourself', 'system');
+  addLine('into the system permanently.', 'system');
+  addBlank();
+  addLine('Type "help" for commands. Type "look" to begin.', 'system');
+  addBlank();
+  addLine('-----------------------------------------------------------', 'ascii');
+  addBlank();
+  describeRoom();
+}
+
+// ---- Boot ----
+showIntro();
+updateStats();
+input.focus();
+</script>
+
+</body>
+</html>

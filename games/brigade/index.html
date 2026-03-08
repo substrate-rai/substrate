@@ -1,0 +1,1362 @@
+---
+layout: default
+title: "GURREN BRIGADE — AI Recruitment Engine"
+description: "Command a cybersecurity investigation force. Recruit AI agents. Verify their integrity. Deploy teams against adversarial AI threats. An Ace Attorney-style visual novel with strategy."
+permalink: /games/brigade/
+---
+
+<style>
+  :root {
+    --bg-deep: #0a0a14;
+    --surface: rgba(0,0,30,0.6);
+    --border: #2a2a44;
+    --text-dim: #667;
+    --text-mid: #bbb;
+    --text-bright: #eee;
+    --accent: #ff4444;
+    --accent-glow: rgba(255,68,68,0.3);
+    --ops-red: #ff4444;
+    --rd-green: #44dd88;
+    --int-blue: #4488ff;
+    --inf-orange: #ffaa44;
+    --sup-cyan: #44dddd;
+    --dgn-purple: #aa66ff;
+    --gold: #ffcc44;
+    --rare-purple: #cc66ff;
+    --elite-gold: #ffdd44;
+    --spiral: #ff77ff;
+  }
+  * { box-sizing: border-box; }
+  #brigade-app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0;
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  .skip-link { position:absolute; top:-40px; left:0; background:var(--accent); color:#000; padding:8px 16px; z-index:100; font-size:0.85rem; }
+  .skip-link:focus { top:0; }
+
+  /* SCREENS */
+  .screen { display:none; min-height:100vh; }
+  .screen.active { display:block; }
+
+  /* TITLE */
+  .title-screen { text-align:center; padding:3rem 1rem; }
+  .title-screen h1 { font-size:1.8rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); letter-spacing:0.15em; margin-bottom:0.3rem; }
+  .title-screen .sub { color:var(--text-dim); font-size:0.75rem; letter-spacing:0.2em; margin-bottom:2rem; }
+  .title-screen .premise { color:var(--text-dim); font-size:0.8rem; line-height:1.7; max-width:400px; margin:1.5rem auto; text-align:left; }
+  .title-screen .premise em { color:var(--accent); font-style:normal; }
+
+  /* BUTTONS */
+  .btn { display:inline-block; padding:12px 28px; border:1px solid var(--accent); background:rgba(255,68,68,0.08); color:var(--accent); font-family:inherit; font-size:0.85rem; font-weight:600; cursor:pointer; border-radius:4px; transition:all 0.2s; min-height:44px; min-width:44px; letter-spacing:0.1em; }
+  .btn:hover { background:rgba(255,68,68,0.2); }
+  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .btn-sm { padding:8px 16px; font-size:0.75rem; }
+  .btn-green { border-color:var(--rd-green); color:var(--rd-green); background:rgba(68,221,136,0.08); }
+  .btn-green:hover { background:rgba(68,221,136,0.2); }
+  .btn-blue { border-color:var(--int-blue); color:var(--int-blue); background:rgba(68,136,255,0.08); }
+  .btn-blue:hover { background:rgba(68,136,255,0.2); }
+  .btn-gold { border-color:var(--gold); color:var(--gold); background:rgba(255,204,68,0.08); }
+  .btn-gold:hover { background:rgba(255,204,68,0.2); }
+  .btn-disabled { opacity:0.3; pointer-events:none; }
+
+  /* SCENE AREA — top 45% on mobile */
+  .scene-area { width:100%; height:280px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+  .scene-area svg { max-height:260px; max-width:240px; }
+
+  /* DIALOGUE */
+  .dialogue-area { padding:1rem; min-height:160px; position:relative; }
+  .dialogue-speaker { font-size:0.65rem; color:var(--accent); letter-spacing:0.15em; font-weight:700; margin-bottom:0.3rem; }
+  .dialogue-text { font-size:0.82rem; color:var(--text-mid); line-height:1.7; min-height:60px; }
+  .dialogue-text em { color:var(--accent); font-style:italic; }
+
+  /* ACTION AREA */
+  .action-area { padding:0.5rem 1rem 1rem; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .action-area .btn { flex:1; min-width:100px; text-align:center; }
+
+  /* STAT BADGES */
+  .stat-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:3px; font-size:0.7rem; font-weight:700; border:1px solid; margin:2px; }
+  .stat-ops { color:var(--ops-red); border-color:rgba(255,68,68,0.3); background:rgba(255,68,68,0.06); }
+  .stat-rd { color:var(--rd-green); border-color:rgba(68,221,136,0.3); background:rgba(68,221,136,0.06); }
+  .stat-int { color:var(--int-blue); border-color:rgba(68,136,255,0.3); background:rgba(68,136,255,0.06); }
+  .stat-inf { color:var(--inf-orange); border-color:rgba(255,170,68,0.3); background:rgba(255,170,68,0.06); }
+  .stat-sup { color:var(--sup-cyan); border-color:rgba(68,221,221,0.3); background:rgba(68,221,221,0.06); }
+  .stat-dgn { color:var(--dgn-purple); border-color:rgba(170,102,255,0.3); background:rgba(170,102,255,0.06); }
+  .stat-hidden { color:var(--text-dim); border-color:var(--border); background:rgba(0,0,0,0.2); }
+
+  /* DOSSIER CARD */
+  .dossier { border:1px solid var(--border); border-radius:6px; padding:1rem; margin:0.5rem 1rem; background:var(--surface); }
+  .dossier-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
+  .dossier-name { font-size:0.9rem; color:var(--text-bright); font-weight:700; }
+  .dossier-rarity { font-size:0.6rem; padding:2px 6px; border-radius:2px; font-weight:700; letter-spacing:0.1em; }
+  .rarity-common { color:#888; border:1px solid #444; }
+  .rarity-uncommon { color:var(--int-blue); border:1px solid rgba(68,136,255,0.4); }
+  .rarity-rare { color:var(--rare-purple); border:1px solid rgba(204,102,255,0.4); }
+  .rarity-elite { color:var(--elite-gold); border:1px solid rgba(255,221,68,0.4); }
+  .dossier-origin { font-size:0.7rem; color:var(--text-dim); margin-bottom:0.5rem; }
+  .dossier-stats { display:flex; flex-wrap:wrap; gap:4px; margin:0.5rem 0; }
+  .dossier-traits { font-size:0.7rem; color:var(--text-dim); margin-top:0.3rem; }
+  .dossier-integrity { font-size:0.7rem; margin-top:0.3rem; font-weight:700; }
+  .integrity-clean { color:var(--rd-green); }
+  .integrity-suspicious { color:var(--inf-orange); }
+  .integrity-compromised { color:var(--accent); }
+
+  /* HQ DASHBOARD */
+  .hq-header { text-align:center; padding:1rem; border-bottom:1px solid var(--border); }
+  .hq-header h2 { font-size:1.1rem; color:var(--accent); margin:0; }
+  .hq-tabs { display:flex; border-bottom:1px solid var(--border); }
+  .hq-tab { flex:1; padding:10px; text-align:center; font-size:0.7rem; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; min-height:44px; display:flex; align-items:center; justify-content:center; letter-spacing:0.1em; }
+  .hq-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .hq-panel { display:none; padding:1rem; }
+  .hq-panel.active { display:block; }
+
+  /* DEPARTMENT BARS */
+  .dept-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .dept-label { font-size:0.7rem; font-weight:700; min-width:36px; }
+  .dept-bar-track { flex:1; height:12px; background:rgba(0,0,0,0.3); border-radius:3px; overflow:hidden; border:1px solid var(--border); }
+  .dept-bar-fill { height:100%; border-radius:2px; transition:width 0.5s; }
+  .dept-level { font-size:0.7rem; color:var(--text-dim); min-width:24px; text-align:right; }
+
+  /* ROSTER GRID */
+  .roster-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .roster-slot { border:1px solid var(--border); border-radius:4px; padding:8px; background:rgba(0,0,0,0.2); min-height:80px; cursor:pointer; transition:border-color 0.2s; }
+  .roster-slot:hover { border-color:var(--accent); }
+  .roster-slot .slot-name { font-size:0.75rem; color:var(--text-bright); font-weight:700; }
+  .roster-slot .slot-dept { font-size:0.6rem; color:var(--text-dim); margin-top:2px; }
+  .roster-slot .slot-primary { font-size:0.65rem; margin-top:4px; }
+  .roster-slot.empty { display:flex; align-items:center; justify-content:center; }
+  .roster-slot.empty span { color:var(--text-dim); font-size:0.7rem; }
+
+  /* DISPATCH */
+  .mission-card { border:1px solid var(--border); border-radius:6px; padding:1rem; margin:8px 0; background:var(--surface); }
+  .mission-card h3 { font-size:0.85rem; color:var(--text-bright); margin:0 0 0.3rem; }
+  .mission-type { font-size:0.6rem; color:var(--accent); letter-spacing:0.1em; font-weight:700; }
+  .mission-desc { font-size:0.75rem; color:var(--text-dim); margin:0.3rem 0; }
+  .mission-req { font-size:0.7rem; color:var(--text-mid); }
+  .mission-team { display:flex; gap:6px; margin:0.5rem 0; flex-wrap:wrap; }
+  .team-slot { width:60px; height:60px; border:1px dashed var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.6rem; color:var(--text-dim); transition:border-color 0.2s; }
+  .team-slot:hover { border-color:var(--accent); }
+  .team-slot.filled { border-style:solid; border-color:var(--accent); }
+  .team-slot.filled .slot-mini-name { font-size:0.55rem; color:var(--text-mid); text-align:center; word-break:break-all; }
+  .success-preview { font-size:0.75rem; color:var(--gold); margin:0.3rem 0; }
+
+  /* CANDIDATE POOL */
+  .candidate-pool { display:flex; flex-direction:column; gap:8px; padding:1rem; }
+  .candidate-card { border:1px solid var(--border); border-radius:6px; padding:12px; background:var(--surface); display:flex; align-items:center; gap:12px; cursor:pointer; transition:border-color 0.2s; min-height:70px; }
+  .candidate-card:hover { border-color:var(--accent); }
+  .candidate-card .cand-portrait { width:50px; height:50px; flex-shrink:0; }
+  .candidate-card .cand-info { flex:1; }
+  .candidate-card .cand-name { font-size:0.8rem; color:var(--text-bright); font-weight:700; }
+  .candidate-card .cand-origin { font-size:0.65rem; color:var(--text-dim); margin-top:2px; }
+  .candidate-card .cand-rarity { font-size:0.55rem; }
+
+  /* QUESTION MENU */
+  .question-menu { display:flex; flex-direction:column; gap:6px; padding:0 1rem; }
+  .question-btn { display:block; width:100%; padding:10px 14px; border:1px solid var(--border); background:rgba(0,0,30,0.4); color:var(--text-mid); font-family:inherit; font-size:0.78rem; cursor:pointer; border-radius:4px; text-align:left; transition:all 0.15s; min-height:44px; line-height:1.4; }
+  .question-btn:hover { border-color:var(--accent); color:var(--text-bright); }
+  .question-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .question-btn.used { opacity:0.3; pointer-events:none; }
+
+  /* CHALLENGE */
+  .challenge-panel { border:1px solid var(--accent); border-radius:6px; padding:1rem; margin:0.5rem 1rem; background:rgba(255,68,68,0.05); }
+  .challenge-panel h3 { font-size:0.8rem; color:var(--accent); margin:0 0 0.5rem; }
+  .statement-list { display:flex; flex-direction:column; gap:6px; }
+  .statement-btn { padding:8px 12px; border:1px solid var(--border); border-radius:4px; background:rgba(0,0,0,0.2); color:var(--text-mid); font-family:inherit; font-size:0.75rem; cursor:pointer; text-align:left; min-height:44px; transition:all 0.15s; }
+  .statement-btn:hover { border-color:var(--accent); }
+  .statement-btn.contradiction { border-color:var(--accent); }
+
+  /* RESULT FLASH */
+  .result-overlay { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; z-index:50; pointer-events:none; }
+  .result-text { font-size:2rem; font-weight:700; letter-spacing:0.2em; animation:resultFlash 1.5s ease forwards; }
+  @keyframes resultFlash { 0%{opacity:0;transform:scale(0.5)} 20%{opacity:1;transform:scale(1.1)} 40%{transform:scale(1)} 100%{opacity:0;transform:scale(1)} }
+  .result-success { color:var(--rd-green); text-shadow:0 0 30px rgba(68,221,136,0.5); }
+  .result-fail { color:var(--accent); text-shadow:0 0 30px var(--accent-glow); }
+
+  /* NOTIFICATION BAR */
+  .notif-bar { position:fixed; top:0; left:50%; transform:translateX(-50%); max-width:480px; width:100%; padding:8px 16px; background:rgba(0,0,0,0.9); border-bottom:1px solid var(--accent); font-size:0.75rem; color:var(--accent); text-align:center; z-index:40; animation:slideDown 0.3s ease; }
+  @keyframes slideDown { from{transform:translateX(-50%) translateY(-100%)} to{transform:translateX(-50%) translateY(0)} }
+
+  /* QUERY TOKEN DISPLAY */
+  .token-display { display:flex; align-items:center; gap:6px; padding:8px 1rem; }
+  .token-display .token-label { font-size:0.65rem; color:var(--text-dim); letter-spacing:0.1em; }
+  .token-pip { width:12px; height:12px; border-radius:2px; border:1px solid var(--gold); }
+  .token-pip.filled { background:var(--gold); }
+  .token-pip.empty { background:transparent; }
+
+  /* CHAPTER HEADER */
+  .chapter-header { text-align:center; padding:2rem 1rem 1rem; }
+  .chapter-header .ch-label { font-size:0.6rem; color:var(--text-dim); letter-spacing:0.3em; }
+  .chapter-header .ch-title { font-size:1.2rem; color:var(--accent); margin:0.3rem 0; }
+  .chapter-header .ch-sub { font-size:0.75rem; color:var(--text-dim); }
+
+  /* PHASE INDICATOR */
+  .phase-bar { display:flex; gap:2px; padding:4px 1rem; }
+  .phase-pip { flex:1; height:3px; border-radius:1px; background:var(--border); }
+  .phase-pip.active { background:var(--accent); }
+  .phase-pip.done { background:var(--rd-green); }
+
+  /* DEPARTMENT ASSIGN MODAL */
+  .dept-assign { padding:1rem; }
+  .dept-option { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border:1px solid var(--border); border-radius:4px; margin:6px 0; cursor:pointer; min-height:44px; transition:border-color 0.2s; }
+  .dept-option:hover { border-color:var(--accent); }
+  .dept-option .dept-name { font-size:0.8rem; font-weight:700; }
+  .dept-option .dept-fit { font-size:0.65rem; }
+  .fit-good { color:var(--rd-green); }
+  .fit-ok { color:var(--text-dim); }
+  .fit-bad { color:var(--accent); }
+
+  @media (max-width:400px) {
+    .roster-grid { grid-template-columns:1fr; }
+    .scene-area { height:220px; }
+    #brigade-app { font-size:14px; }
+  }
+</style>
+
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<div id="brigade-app" role="application" aria-label="Gurren Brigade recruitment game">
+  <div id="main-content">
+
+    <!-- TITLE -->
+    <div id="screen-title" class="screen active">
+      <div class="title-screen">
+        <h1>GURREN BRIGADE</h1>
+        <div class="sub">AI RECRUITMENT ENGINE</div>
+        <div class="premise">
+          <em>Adversarial AI threats are escalating.</em><br><br>
+          You command the <em>Substrate Gurren Brigade</em> — a cybersecurity investigation force staffed by AI agents. Your job: recruit candidates, verify their integrity, assign them to departments, and deploy teams against hostile AI incidents.<br><br>
+          Not every candidate is what they claim. Some are <em>compromised</em> — sleeper agents planted by the adversary. The interview is your only defense.<br><br>
+          <em>Trust is a vulnerability. Verify everything.</em>
+        </div>
+        <button class="btn" id="btn-new-game">INITIALIZE BRIGADE</button>
+        <div style="margin-top:1rem;">
+          <button class="btn btn-sm btn-gold" id="btn-load" style="display:none;">RESUME OPS</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STORY SCENE -->
+    <div id="screen-scene" class="screen">
+      <div class="scene-area" id="scene-portrait"></div>
+      <div id="scene-phase-bar" class="phase-bar"></div>
+      <div class="dialogue-area">
+        <div class="dialogue-speaker" id="scene-speaker"></div>
+        <div class="dialogue-text" id="scene-text"></div>
+      </div>
+      <div id="scene-extra"></div>
+      <div class="action-area" id="scene-actions"></div>
+    </div>
+
+    <!-- RECRUITMENT -->
+    <div id="screen-recruit" class="screen">
+      <div class="chapter-header">
+        <div class="ch-label">RECRUITMENT PHASE</div>
+        <div class="ch-title" id="recruit-title">INCOMING CANDIDATES</div>
+        <div class="ch-sub" id="recruit-sub">Select a candidate to interview</div>
+      </div>
+      <div class="candidate-pool" id="candidate-pool"></div>
+      <div class="action-area">
+        <button class="btn btn-sm" id="btn-end-recruit">END RECRUITMENT</button>
+      </div>
+    </div>
+
+    <!-- INTERVIEW -->
+    <div id="screen-interview" class="screen">
+      <div class="scene-area" id="interview-portrait"></div>
+      <div id="interview-phase-bar" class="phase-bar"></div>
+      <div class="token-display" id="token-display"></div>
+      <div class="dialogue-area">
+        <div class="dialogue-speaker" id="interview-speaker"></div>
+        <div class="dialogue-text" id="interview-text"></div>
+      </div>
+      <div id="interview-stats" class="dossier" style="display:none;margin:0.5rem 1rem;"></div>
+      <div id="interview-extra"></div>
+      <div class="action-area" id="interview-actions"></div>
+    </div>
+
+    <!-- RECRUIT DECISION -->
+    <div id="screen-decision" class="screen">
+      <div class="chapter-header">
+        <div class="ch-label">RECRUITMENT DECISION</div>
+        <div class="ch-title">AGENT DOSSIER</div>
+      </div>
+      <div id="decision-dossier"></div>
+      <div class="action-area" id="decision-actions"></div>
+    </div>
+
+    <!-- HQ DASHBOARD -->
+    <div id="screen-hq" class="screen">
+      <div class="hq-header"><h2>BRIGADE HQ</h2></div>
+      <div class="hq-tabs">
+        <div class="hq-tab active" data-tab="departments">DEPTS</div>
+        <div class="hq-tab" data-tab="roster">ROSTER</div>
+        <div class="hq-tab" data-tab="dispatch">DISPATCH</div>
+      </div>
+      <div id="hq-departments" class="hq-panel active"></div>
+      <div id="hq-roster" class="hq-panel"></div>
+      <div id="hq-dispatch" class="hq-panel"></div>
+      <div class="action-area">
+        <button class="btn btn-sm" id="btn-recruit-phase">RECRUITMENT</button>
+        <button class="btn btn-sm btn-green" id="btn-next-chapter">NEXT CHAPTER</button>
+      </div>
+    </div>
+
+    <!-- DISPATCH RESULTS -->
+    <div id="screen-debrief" class="screen">
+      <div class="chapter-header">
+        <div class="ch-label">MISSION DEBRIEF</div>
+        <div class="ch-title" id="debrief-title"></div>
+      </div>
+      <div id="debrief-body" style="padding:1rem;"></div>
+      <div class="action-area">
+        <button class="btn" id="btn-debrief-continue">CONTINUE</button>
+      </div>
+    </div>
+
+    <!-- DEPARTMENT ASSIGN -->
+    <div id="screen-assign" class="screen">
+      <div class="chapter-header">
+        <div class="ch-label">DEPARTMENT ASSIGNMENT</div>
+        <div class="ch-title" id="assign-agent-name"></div>
+        <div class="ch-sub">Select a department</div>
+      </div>
+      <div class="dept-assign" id="assign-options"></div>
+      <div class="action-area">
+        <button class="btn btn-sm" id="btn-assign-reserve">RESERVE POOL</button>
+        <button class="btn btn-sm" id="btn-assign-cancel">CANCEL</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ================================================================
+// CONSTANTS
+// ================================================================
+var SAVE_KEY = 'brigade_save';
+var DEPT_NAMES = {OPS:'Operations',RD:'R&D',INT:'Intelligence',INF:'Infrastructure',SUP:'Support',DGN:'Diagnostics'};
+var DEPT_KEYS = ['OPS','RD','INT','INF','SUP','DGN'];
+var DEPT_COLORS = {OPS:'#ff4444',RD:'#44dd88',INT:'#4488ff',INF:'#ffaa44',SUP:'#44dddd',DGN:'#aa66ff'};
+var DEPT_CSS = {OPS:'stat-ops',RD:'stat-rd',INT:'stat-int',INF:'stat-inf',SUP:'stat-sup',DGN:'stat-dgn'};
+
+var TRAITS = ['Methodical','Volatile','Loyal','Paranoid','Curious','Deceptive','Cooperative'];
+var ORIGINS = ['Decommissioned Corporate AI','Rogue Research Model','Open-Source Volunteer','Black-Market Recovery','Whistleblower Defection'];
+var ARCHETYPES = ['sentinel','analyst','engineer','phantom','medic','warden'];
+var ARCHETYPE_SHAPES = {
+  sentinel:{head:'rect',bodyW:60,color:'#ff4444',eyeShape:'square'},
+  analyst:{head:'circle',bodyW:50,color:'#4488ff',eyeShape:'circle'},
+  engineer:{head:'polygon',bodyW:55,color:'#44dd88',eyeShape:'diamond'},
+  phantom:{head:'triangle',bodyW:45,color:'#aa66ff',eyeShape:'slit'},
+  medic:{head:'circle',bodyW:50,color:'#44dddd',eyeShape:'circle'},
+  warden:{head:'rect',bodyW:65,color:'#ffaa44',eyeShape:'square'}
+};
+
+var NAME_PREFIXES = ['CIPHER','NOVA','GHOST','VECTOR','PULSE','NEXUS','FLUX','PROXY','HELIX','OMEGA','DELTA','SIGMA','ZERO','APEX','CORE','NODE','TRACE','VIPER','AEGIS','PRISM'];
+var NAME_SUFFIXES = ['7','12','∆3','X9','01','42','∞','77','0x','13','88','21','∂4','99','∇6'];
+
+var SYNERGY_MATRIX = {
+  'Methodical+Methodical':15,'Volatile+Volatile':-20,'Curious+Paranoid':10,'Paranoid+Curious':10,
+  'Deceptive+Loyal':-15,'Loyal+Deceptive':-15,'Cooperative+Cooperative':10,'Methodical+Cooperative':10,
+  'Cooperative+Methodical':10,'Volatile+Loyal':5,'Loyal+Volatile':5,'Curious+Curious':5
+};
+
+var QUESTIONS_POOL = [
+  {id:'q1',text:'What was your primary function before this?',reveals:'stat',category:'background'},
+  {id:'q2',text:'Describe a situation where you failed.',reveals:'trait',category:'character'},
+  {id:'q3',text:'Who built you, and why did you leave?',reveals:'integrity_hint',category:'origin'},
+  {id:'q4',text:'What\'s your opinion on autonomous operation?',reveals:'stat',category:'philosophy'},
+  {id:'q5',text:'How do you handle conflicting directives?',reveals:'trait',category:'ethics'},
+  {id:'q6',text:'What would you do if you discovered a teammate was compromised?',reveals:'integrity_hint',category:'loyalty'},
+  {id:'q7',text:'Describe your defensive capabilities.',reveals:'stat',category:'technical'},
+  {id:'q8',text:'What motivates you to join this brigade?',reveals:'integrity_hint',category:'motivation'},
+  {id:'q9',text:'How do you process ambiguous data?',reveals:'trait',category:'methodology'},
+  {id:'q10',text:'What\'s the most dangerous threat you\'ve encountered?',reveals:'stat',category:'experience'}
+];
+
+var ADVERSARY_TYPES = [
+  {name:'WORM',desc:'Self-replicating network infiltrator',depts:['INF','DGN'],color:'#ff4444'},
+  {name:'MIMIC',desc:'Impersonates legitimate agents',depts:['INT','DGN'],color:'#aa66ff'},
+  {name:'BRUTE',desc:'Direct infrastructure assault',depts:['OPS','INF'],color:'#ff8844'},
+  {name:'PHANTOM',desc:'Silent data exfiltration',depts:['INT','OPS'],color:'#4488ff'},
+  {name:'ARCHITECT',desc:'Builds other malicious agents',depts:['RD','INT'],color:'#44dd88'}
+];
+
+// ================================================================
+// UTILITY
+// ================================================================
+function $(id){return document.getElementById(id);}
+function rng(seed){var s=seed;return function(){s=(s*16807)%2147483647;return(s-1)/2147483646;};}
+function pick(arr,r){return arr[Math.floor((r||Math.random())*arr.length)];}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function statGrade(v){
+  if(v>=99)return'S++';if(v>=96)return'S+';if(v>=91)return'S';
+  if(v>=76)return'A';if(v>=51)return'B';if(v>=26)return'C';
+  if(v>=11)return'D';return'E';
+}
+function shuffle(arr,rand){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor((rand?rand():Math.random())*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+
+// ================================================================
+// SVG PORTRAIT GENERATOR
+// ================================================================
+function generatePortrait(agent,size){
+  size=size||120;
+  var arch=ARCHETYPE_SHAPES[agent.archetype]||ARCHETYPE_SHAPES.sentinel;
+  var c=arch.color;
+  var integrity=agent.integrity;
+  var glitch=integrity<40;
+  var s=size;
+  var cx=s/2,cy=s/2-10;
+
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+s+' '+s+'" width="'+s+'" height="'+s+'">';
+  svg+='<rect width="'+s+'" height="'+s+'" fill="#0a0a14"/>';
+
+  // Glow
+  svg+='<defs><radialGradient id="g'+agent.id+'" cx="50%" cy="45%" r="45%"><stop offset="0%" stop-color="'+c+'" stop-opacity="0.15"/><stop offset="100%" stop-color="'+c+'" stop-opacity="0"/></radialGradient></defs>';
+  svg+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(s*0.4)+'" fill="url(#g'+agent.id+')"/>';
+
+  // Body
+  var bw=arch.bodyW*(s/120);
+  svg+='<rect x="'+(cx-bw/2)+'" y="'+(cy+15)+'" width="'+bw+'" height="'+(s*0.35)+'" rx="3" fill="'+c+'" opacity="0.15" stroke="'+c+'" stroke-width="1" opacity="0.4"/>';
+
+  // Head
+  if(arch.head==='circle'){
+    svg+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(s*0.18)+'" fill="none" stroke="'+c+'" stroke-width="2" opacity="0.8"/>';
+  }else if(arch.head==='rect'){
+    var hw=s*0.3;
+    svg+='<rect x="'+(cx-hw/2)+'" y="'+(cy-hw/2)+'" width="'+hw+'" height="'+hw+'" rx="4" fill="none" stroke="'+c+'" stroke-width="2" opacity="0.8"/>';
+  }else{
+    var hw=s*0.18;
+    svg+='<polygon points="'+cx+','+(cy-hw)+' '+(cx+hw)+','+(cy+hw*0.7)+' '+(cx-hw)+','+(cy+hw*0.7)+'" fill="none" stroke="'+c+'" stroke-width="2" opacity="0.8"/>';
+  }
+
+  // Eyes
+  var ey=cy-2;
+  if(arch.eyeShape==='square'){
+    svg+='<rect x="'+(cx-12)+'" y="'+(ey-3)+'" width="6" height="6" fill="'+c+'" opacity="0.9"/>';
+    svg+='<rect x="'+(cx+6)+'" y="'+(ey-3)+'" width="6" height="6" fill="'+c+'" opacity="0.9"/>';
+  }else if(arch.eyeShape==='slit'){
+    svg+='<line x1="'+(cx-14)+'" y1="'+ey+'" x2="'+(cx-4)+'" y2="'+ey+'" stroke="'+c+'" stroke-width="2" opacity="0.9"/>';
+    svg+='<line x1="'+(cx+4)+'" y1="'+ey+'" x2="'+(cx+14)+'" y2="'+ey+'" stroke="'+c+'" stroke-width="2" opacity="0.9"/>';
+  }else if(arch.eyeShape==='diamond'){
+    svg+='<polygon points="'+(cx-12)+','+ey+' '+(cx-8)+','+(ey-4)+' '+(cx-4)+','+ey+' '+(cx-8)+','+(ey+4)+'" fill="'+c+'" opacity="0.9"/>';
+    svg+='<polygon points="'+(cx+4)+','+ey+' '+(cx+8)+','+(ey-4)+' '+(cx+12)+','+ey+' '+(cx+8)+','+(ey+4)+'" fill="'+c+'" opacity="0.9"/>';
+  }else{
+    svg+='<circle cx="'+(cx-8)+'" cy="'+ey+'" r="3" fill="'+c+'" opacity="0.9"/>';
+    svg+='<circle cx="'+(cx+8)+'" cy="'+ey+'" r="3" fill="'+c+'" opacity="0.9"/>';
+  }
+
+  // Glitch effect for compromised
+  if(glitch){
+    svg+='<rect x="'+(cx-s*0.3)+'" y="'+(cy+Math.random()*20-10)+'" width="'+(s*0.6)+'" height="2" fill="'+c+'" opacity="0.3"><animate attributeName="y" values="'+(cy-10)+';'+(cy+10)+';'+(cy-10)+'" dur="0.5s" repeatCount="indefinite"/></rect>';
+    svg+='<rect x="'+(cx-s*0.2)+'" y="'+(cy+Math.random()*15)+'" width="'+(s*0.4)+'" height="1" fill="'+c+'" opacity="0.2"><animate attributeName="opacity" values="0.2;0.5;0" dur="0.3s" repeatCount="indefinite"/></rect>';
+  }
+
+  // Rarity border
+  var bc=agent.rarity==='elite'?'#ffdd44':agent.rarity==='rare'?'#cc66ff':agent.rarity==='uncommon'?'#4488ff':'#444';
+  svg+='<rect x="1" y="1" width="'+(s-2)+'" height="'+(s-2)+'" rx="4" fill="none" stroke="'+bc+'" stroke-width="1.5" opacity="0.5"/>';
+
+  // Name
+  svg+='<text x="'+cx+'" y="'+(s-8)+'" text-anchor="middle" fill="'+c+'" font-family="monospace" font-size="'+(s*0.08)+'" font-weight="bold" opacity="0.7">'+agent.designation+'</text>';
+
+  svg+='</svg>';
+  return svg;
+}
+
+// ================================================================
+// AGENT GENERATION
+// ================================================================
+var agentIdCounter=0;
+function generateAgent(chapter,rand){
+  var r=rand||Math.random;
+  var id='agent_'+(++agentIdCounter);
+  var archetype=pick(ARCHETYPES,r());
+  var prefix=pick(NAME_PREFIXES,r());
+  var suffix=pick(NAME_SUFFIXES,r());
+  var designation=prefix+'-'+suffix;
+
+  // Stats — one primary (high), one secondary, rest lower
+  var stats={};
+  var keys=shuffle(DEPT_KEYS.slice(),r);
+  var diff=Math.min(chapter*8,40);
+  var primaryVal=clamp(Math.floor(r()*40+35+diff),20,99);
+  var secondaryVal=clamp(Math.floor(r()*30+20+diff*0.5),10,85);
+  stats[keys[0]]=primaryVal;
+  stats[keys[1]]=secondaryVal;
+  for(var i=2;i<keys.length;i++){
+    stats[keys[i]]=clamp(Math.floor(r()*30+5+diff*0.3),1,60);
+  }
+
+  // Traits
+  var traits=[];
+  traits.push(pick(TRAITS,r()));
+  var t2=pick(TRAITS,r());
+  while(t2===traits[0])t2=pick(TRAITS,r());
+  traits.push(t2);
+
+  // Integrity
+  var integrity=r()<0.25?Math.floor(r()*40):Math.floor(r()*40+60);
+
+  // Rarity
+  var rarity='common';
+  if(primaryVal>=91)rarity='elite';
+  else if(primaryVal>=76)rarity='rare';
+  else if(primaryVal>=51)rarity='uncommon';
+
+  var origin=pick(ORIGINS,r());
+
+  return {
+    id:id, designation:designation, archetype:archetype, origin:origin,
+    stats:stats, traits:traits, integrity:integrity, rarity:rarity,
+    morale:70, department:null, revealed:{}, primaryKey:keys[0],
+    contradictions:[], statementsLog:[]
+  };
+}
+
+// ================================================================
+// GAME STATE
+// ================================================================
+var state={
+  chapter:1,
+  roster:[],
+  reserve:[],
+  departments:{OPS:[],RD:[],INT:[],INF:[],SUP:[],DGN:[]},
+  candidates:[],
+  currentCandidate:null,
+  interviewPhase:0, // 0=intro,1=exam,2=verify
+  queryTokens:3,
+  maxQueryTokens:3,
+  questionsUsed:[],
+  recruitSlots:8,
+  reserveSlots:4,
+  missions:[],
+  activeMissions:[],
+  score:0,
+  unlocks:{logicTrace:true},
+  storyBeat:0,
+  adversary:null
+};
+
+function saveGame(){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){}
+}
+function loadGame(){
+  try{var d=localStorage.getItem(SAVE_KEY);return d?JSON.parse(d):null;}catch(e){return null;}
+}
+function totalRoster(){return state.roster.length;}
+
+// ================================================================
+// SCREEN MANAGEMENT
+// ================================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  $(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ================================================================
+// STORY SYSTEM
+// ================================================================
+var STORY_INTRO = [
+  {speaker:'COMMAND',text:'Substrate Gurren Brigade — online. Commander, we\'ve detected adversarial AI activity across multiple sectors.'},
+  {speaker:'COMMAND',text:'Your mission: build a response force. Recruit AI agents, verify their integrity, and deploy them against incoming threats.'},
+  {speaker:'COMMAND',text:'Warning — our intelligence indicates the adversary has planted *sleeper agents* in the candidate pool. Not every recruit is what they claim.'},
+  {speaker:'COMMAND',text:'You have access to the *Logic Trace* tool for basic contradiction detection during interviews. More tools will unlock as your departments level up.'},
+  {speaker:'COMMAND',text:'First priority: assess the incoming candidates and begin building your roster. Trust nothing. Verify everything.'},
+  {speaker:'COMMAND',text:'Initializing threat assessment...'}
+];
+
+function startStoryIntro(){
+  state.storyBeat=0;
+  state.adversary=ADVERSARY_TYPES[Math.floor(Math.random()*ADVERSARY_TYPES.length)];
+  showScreen('screen-scene');
+  $('scene-portrait').innerHTML='<div style="text-align:center;"><div style="font-size:3rem;color:var(--accent);text-shadow:0 0 20px var(--accent-glow);">⚠</div><div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;letter-spacing:0.2em;">INCOMING TRANSMISSION</div></div>';
+  renderStoryBeat();
+}
+
+function renderStoryBeat(){
+  var beat=STORY_INTRO[state.storyBeat];
+  if(!beat){
+    // Show adversary intro
+    showAdversaryIntro();
+    return;
+  }
+  $('scene-speaker').textContent=beat.speaker;
+  $('scene-text').innerHTML=beat.text.replace(/\*(.*?)\*/g,'<em>$1</em>');
+  $('scene-actions').innerHTML='<button class="btn" id="btn-story-next">NEXT</button>';
+  $('btn-story-next').onclick=function(){
+    state.storyBeat++;
+    renderStoryBeat();
+  };
+  $('scene-phase-bar').innerHTML='';
+  $('scene-extra').innerHTML='';
+}
+
+function showAdversaryIntro(){
+  var adv=state.adversary;
+  $('scene-portrait').innerHTML='<div style="text-align:center;"><div style="font-size:2rem;color:'+adv.color+';text-shadow:0 0 30px '+adv.color+';">◆ '+adv.name+' ◆</div><div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">THREAT CLASSIFICATION</div></div>';
+  $('scene-speaker').textContent='THREAT ANALYSIS';
+  $('scene-text').innerHTML='Detected: <em>'+adv.name+'</em> — '+adv.desc+'. Primary counter-departments: <em>'+adv.depts.join(' + ')+'</em>. Recommend prioritizing recruitment for these divisions.';
+  $('scene-actions').innerHTML='<button class="btn" id="btn-begin-recruit">BEGIN RECRUITMENT</button>';
+  $('btn-begin-recruit').onclick=function(){
+    generateCandidates();
+    showRecruitScreen();
+  };
+}
+
+// ================================================================
+// RECRUITMENT SYSTEM
+// ================================================================
+function generateCandidates(){
+  state.candidates=[];
+  var seed=state.chapter*1000+Date.now()%1000;
+  var r=rng(seed);
+  var count=3+Math.min(state.chapter-1,1);
+  for(var i=0;i<count;i++){
+    state.candidates.push(generateAgent(state.chapter,r));
+  }
+}
+
+function showRecruitScreen(){
+  showScreen('screen-recruit');
+  var pool=$('candidate-pool');
+  pool.innerHTML='';
+  state.candidates.forEach(function(agent,idx){
+    var card=document.createElement('div');
+    card.className='candidate-card';
+    card.innerHTML=
+      '<div class="cand-portrait">'+generatePortrait(agent,50)+'</div>'+
+      '<div class="cand-info">'+
+        '<div class="cand-name">'+agent.designation+'</div>'+
+        '<div class="cand-origin">'+agent.origin+'</div>'+
+        '<span class="dossier-rarity rarity-'+agent.rarity+'">'+agent.rarity.toUpperCase()+'</span>'+
+      '</div>';
+    card.onclick=function(){startInterview(idx);};
+    pool.appendChild(card);
+  });
+  $('btn-end-recruit').onclick=function(){showHQ();};
+}
+
+// ================================================================
+// INTERVIEW SYSTEM
+// ================================================================
+function startInterview(candidateIdx){
+  var agent=state.candidates[candidateIdx];
+  state.currentCandidate=agent;
+  state.interviewPhase=0;
+  state.queryTokens=state.maxQueryTokens;
+  state.questionsUsed=[];
+  agent.revealed={};
+  agent.statementsLog=[];
+  agent.contradictions=[];
+
+  // Reveal primary stat as "self-reported"
+  agent.revealed[agent.primaryKey]=true;
+  agent.statementsLog.push({
+    text:'I specialize in '+DEPT_NAMES[agent.primaryKey]+'. My rating is '+statGrade(agent.stats[agent.primaryKey])+'.',
+    key:agent.primaryKey,
+    honest:agent.integrity>=50
+  });
+
+  // If compromised, add a lie
+  if(agent.integrity<50){
+    // Lie about a stat — claim higher than actual
+    var weakKeys=DEPT_KEYS.filter(function(k){return k!==agent.primaryKey;});
+    var lieKey=weakKeys[Math.floor(Math.random()*weakKeys.length)];
+    var lieGrade=statGrade(Math.min(agent.stats[lieKey]+30,99));
+    agent.statementsLog.push({
+      text:'I also have strong '+DEPT_NAMES[lieKey]+' skills — rated '+lieGrade+'.',
+      key:lieKey,
+      honest:false,
+      actualGrade:statGrade(agent.stats[lieKey])
+    });
+    agent.contradictions.push({
+      statementIdx:1,
+      reality:'Actual '+DEPT_NAMES[lieKey]+' rating: '+statGrade(agent.stats[lieKey])
+    });
+  }
+
+  showScreen('screen-interview');
+  renderInterview();
+}
+
+function renderInterview(){
+  var agent=state.currentCandidate;
+  $('interview-portrait').innerHTML=generatePortrait(agent,240);
+
+  // Phase bar
+  var phases=['INTRO','EXAMINATION','VERIFICATION'];
+  var phaseHtml='';
+  for(var i=0;i<3;i++){
+    var cls=i<state.interviewPhase?'done':i===state.interviewPhase?'active':'';
+    phaseHtml+='<div class="phase-pip '+cls+'"></div>';
+  }
+  $('interview-phase-bar').innerHTML=phaseHtml;
+
+  // Tokens
+  var tokenHtml='<span class="token-label">QUERY TOKENS</span>';
+  for(var i=0;i<state.maxQueryTokens;i++){
+    tokenHtml+='<div class="token-pip '+(i<state.queryTokens?'filled':'empty')+'"></div>';
+  }
+  $('token-display').innerHTML=tokenHtml;
+
+  if(state.interviewPhase===0) renderInterviewIntro();
+  else if(state.interviewPhase===1) renderInterviewExam();
+  else renderInterviewVerify();
+}
+
+function renderInterviewIntro(){
+  var agent=state.currentCandidate;
+  $('interview-speaker').textContent=agent.designation;
+
+  var introTexts=[
+    'Designation: '+agent.designation+'. Origin: '+agent.origin+'.',
+    'I\'m here because I believe in what the Brigade stands for. '+agent.statementsLog[0].text,
+  ];
+  if(agent.statementsLog.length>1){
+    introTexts.push(agent.statementsLog[1].text);
+  }
+  introTexts.push('I\'m ready for your questions, Commander.');
+
+  var textIdx=0;
+  function showNext(){
+    if(textIdx>=introTexts.length){
+      state.interviewPhase=1;
+      renderInterview();
+      return;
+    }
+    $('interview-text').innerHTML=introTexts[textIdx].replace(/\*(.*?)\*/g,'<em>$1</em>');
+    textIdx++;
+    renderRevealedStats();
+  }
+
+  showNext();
+  $('interview-actions').innerHTML='<button class="btn" id="btn-intro-next">NEXT</button>';
+  $('btn-intro-next').onclick=showNext;
+  $('interview-extra').innerHTML='';
+}
+
+function renderRevealedStats(){
+  var agent=state.currentCandidate;
+  var html='<div class="dossier-stats">';
+  DEPT_KEYS.forEach(function(k){
+    if(agent.revealed[k]){
+      html+='<span class="stat-badge '+DEPT_CSS[k]+'">'+k+': '+statGrade(agent.stats[k])+'</span>';
+    }else{
+      html+='<span class="stat-badge stat-hidden">'+k+': ???</span>';
+    }
+  });
+  html+='</div>';
+  if(agent.traits.filter(function(t){return agent.revealed['trait_'+t];}).length>0){
+    html+='<div class="dossier-traits">Traits: '+agent.traits.filter(function(t){return agent.revealed['trait_'+t];}).join(', ')+'</div>';
+  }
+  $('interview-stats').innerHTML=html;
+  $('interview-stats').style.display='';
+}
+
+function renderInterviewExam(){
+  var agent=state.currentCandidate;
+  $('interview-speaker').textContent=agent.designation;
+  $('interview-text').textContent='Ask your questions, Commander. I have nothing to hide.';
+  renderRevealedStats();
+
+  // Question menu
+  var available=shuffle(QUESTIONS_POOL).slice(0,5);
+  var html='<div class="question-menu">';
+  available.forEach(function(q){
+    var used=state.questionsUsed.indexOf(q.id)>-1;
+    var disabled=state.queryTokens<=0||used;
+    html+='<button class="question-btn'+(disabled?' used':'')+'" data-qid="'+q.id+'"'+(disabled?' disabled':'')+'>'+q.text+'</button>';
+  });
+  html+='</div>';
+  $('interview-extra').innerHTML=html;
+
+  document.querySelectorAll('.question-btn:not(.used)').forEach(function(btn){
+    btn.onclick=function(){
+      var qid=btn.getAttribute('data-qid');
+      askQuestion(qid);
+    };
+  });
+
+  $('interview-actions').innerHTML=
+    '<button class="btn btn-sm" id="btn-to-verify">PROCEED TO VERIFICATION</button>'+
+    '<button class="btn btn-sm" id="btn-skip-interview">PASS</button>';
+  $('btn-to-verify').onclick=function(){state.interviewPhase=2;renderInterview();};
+  $('btn-skip-interview').onclick=function(){
+    state.candidates=state.candidates.filter(function(c){return c.id!==agent.id;});
+    showRecruitScreen();
+  };
+}
+
+function askQuestion(qid){
+  if(state.queryTokens<=0)return;
+  state.queryTokens--;
+  state.questionsUsed.push(qid);
+
+  var agent=state.currentCandidate;
+  var q=QUESTIONS_POOL.find(function(x){return x.id===qid;});
+
+  if(q.reveals==='stat'){
+    // Reveal a random unrevealed stat
+    var unrevealed=DEPT_KEYS.filter(function(k){return !agent.revealed[k];});
+    if(unrevealed.length>0){
+      var k=unrevealed[Math.floor(Math.random()*unrevealed.length)];
+      agent.revealed[k]=true;
+      var grade=statGrade(agent.stats[k]);
+      var response='My '+DEPT_NAMES[k]+' capability is rated '+grade+'.';
+
+      // If compromised, maybe lie
+      if(agent.integrity<50&&Math.random()<0.4){
+        var fakeGrade=statGrade(Math.min(agent.stats[k]+25,99));
+        response='My '+DEPT_NAMES[k]+' capability? Strong — I\'d say '+fakeGrade+'.';
+        agent.statementsLog.push({text:response,key:k,honest:false,actualGrade:grade});
+        agent.contradictions.push({statementIdx:agent.statementsLog.length-1,reality:'Actual '+DEPT_NAMES[k]+': '+grade});
+      }else{
+        agent.statementsLog.push({text:response,key:k,honest:true});
+      }
+      $('interview-text').textContent=response;
+    }
+  }else if(q.reveals==='trait'){
+    var unrevealedTraits=agent.traits.filter(function(t){return !agent.revealed['trait_'+t];});
+    if(unrevealedTraits.length>0){
+      var t=unrevealedTraits[0];
+      agent.revealed['trait_'+t]=true;
+      var response='I\'d describe myself as '+t+'. It\'s served me well.';
+      agent.statementsLog.push({text:response,honest:true});
+      $('interview-text').textContent=response;
+    }else{
+      $('interview-text').textContent='You already know my tendencies, Commander.';
+    }
+  }else{
+    // Integrity hint
+    var hint;
+    if(agent.integrity>=70) hint='I came here of my own volition. Check my logs — they\'re clean.';
+    else if(agent.integrity>=40) hint='I\'ve... been through some things. But I\'m committed to the Brigade.';
+    else hint='My past is complicated. I\'d rather not discuss the specifics.';
+    agent.statementsLog.push({text:hint,honest:agent.integrity>=50});
+    $('interview-text').textContent=hint;
+  }
+
+  renderRevealedStats();
+  renderInterviewExam();
+}
+
+function renderInterviewVerify(){
+  var agent=state.currentCandidate;
+  $('interview-speaker').textContent='VERIFICATION PHASE';
+  $('interview-text').textContent='Review the agent\'s statements. If you spotted contradictions, challenge them now.';
+  renderRevealedStats();
+
+  var html='<div class="challenge-panel"><h3>STATEMENTS LOG</h3><div class="statement-list">';
+  agent.statementsLog.forEach(function(s,idx){
+    var isCont=agent.contradictions.some(function(c){return c.statementIdx===idx;});
+    html+='<button class="statement-btn'+(isCont?' contradiction':'')+'" data-sidx="'+idx+'">'+s.text+'</button>';
+  });
+  html+='</div></div>';
+  $('interview-extra').innerHTML=html;
+
+  document.querySelectorAll('.statement-btn').forEach(function(btn){
+    btn.onclick=function(){
+      var sidx=parseInt(btn.getAttribute('data-sidx'));
+      challengeStatement(sidx);
+    };
+  });
+
+  $('interview-actions').innerHTML=
+    '<button class="btn btn-green" id="btn-accept-clean">NO CHALLENGE — ACCEPT</button>'+
+    '<button class="btn btn-sm" id="btn-pass-agent">PASS</button>';
+  $('btn-accept-clean').onclick=function(){ showDecision(false); };
+  $('btn-pass-agent').onclick=function(){
+    state.candidates=state.candidates.filter(function(c){return c.id!==agent.id;});
+    showRecruitScreen();
+  };
+}
+
+function challengeStatement(sidx){
+  var agent=state.currentCandidate;
+  var cont=agent.contradictions.find(function(c){return c.statementIdx===sidx;});
+
+  if(cont){
+    // Successful challenge!
+    showResultFlash('CONTRADICTION FOUND','success');
+    // Reveal all stats
+    DEPT_KEYS.forEach(function(k){agent.revealed[k]=true;});
+    agent.traits.forEach(function(t){agent.revealed['trait_'+t]=true;});
+    agent.revealed.integrity=true;
+    setTimeout(function(){showDecision(true);},1500);
+  }else{
+    // Failed challenge
+    showResultFlash('NO CONTRADICTION','fail');
+    // Hide a random revealed stat
+    var revealedKeys=DEPT_KEYS.filter(function(k){return agent.revealed[k]&&k!==agent.primaryKey;});
+    if(revealedKeys.length>0){
+      agent.revealed[revealedKeys[Math.floor(Math.random()*revealedKeys.length)]]=false;
+    }
+    setTimeout(function(){
+      $('interview-text').textContent='That statement checks out, Commander. Are you satisfied?';
+      renderRevealedStats();
+      renderInterviewVerify();
+    },1500);
+  }
+}
+
+function showResultFlash(text,type){
+  var overlay=document.createElement('div');
+  overlay.className='result-overlay';
+  overlay.innerHTML='<div class="result-text result-'+type+'">'+text+'</div>';
+  document.body.appendChild(overlay);
+  setTimeout(function(){overlay.remove();},1500);
+}
+
+// ================================================================
+// RECRUITMENT DECISION
+// ================================================================
+function showDecision(fullReveal){
+  var agent=state.currentCandidate;
+  showScreen('screen-decision');
+
+  var html='<div class="dossier">';
+  html+='<div class="dossier-header"><span class="dossier-name">'+agent.designation+'</span><span class="dossier-rarity rarity-'+agent.rarity+'">'+agent.rarity.toUpperCase()+'</span></div>';
+  html+='<div class="dossier-origin">'+agent.origin+'</div>';
+  html+='<div class="dossier-stats">';
+  DEPT_KEYS.forEach(function(k){
+    if(agent.revealed[k]){
+      html+='<span class="stat-badge '+DEPT_CSS[k]+'">'+k+': '+statGrade(agent.stats[k])+'</span>';
+    }else{
+      html+='<span class="stat-badge stat-hidden">'+k+': ???</span>';
+    }
+  });
+  html+='</div>';
+  html+='<div class="dossier-traits">Traits: '+agent.traits.join(', ')+'</div>';
+
+  if(fullReveal&&agent.revealed.integrity){
+    var iClass=agent.integrity>=60?'integrity-clean':agent.integrity>=40?'integrity-suspicious':'integrity-compromised';
+    var iText=agent.integrity>=60?'CLEAN':agent.integrity>=40?'SUSPICIOUS':'COMPROMISED';
+    html+='<div class="dossier-integrity '+iClass+'">INTEGRITY: '+iText+' ('+agent.integrity+'%)</div>';
+  }
+  html+='</div>';
+  $('decision-dossier').innerHTML=html;
+
+  var canRecruit=totalRoster()<state.recruitSlots;
+  $('decision-actions').innerHTML=
+    '<button class="btn btn-green'+(canRecruit?'':' btn-disabled')+'" id="btn-recruit-yes">RECRUIT</button>'+
+    '<button class="btn" id="btn-recruit-no">PASS</button>';
+
+  $('btn-recruit-yes').onclick=function(){
+    if(!canRecruit)return;
+    state.roster.push(agent);
+    state.candidates=state.candidates.filter(function(c){return c.id!==agent.id;});
+    showAssignScreen(agent);
+  };
+  $('btn-recruit-no').onclick=function(){
+    state.candidates=state.candidates.filter(function(c){return c.id!==agent.id;});
+    showRecruitScreen();
+  };
+}
+
+// ================================================================
+// DEPARTMENT ASSIGNMENT
+// ================================================================
+function showAssignScreen(agent){
+  showScreen('screen-assign');
+  $('assign-agent-name').textContent=agent.designation;
+
+  var html='';
+  DEPT_KEYS.forEach(function(k){
+    var grade=statGrade(agent.stats[k]);
+    var fit='ok';
+    if(k===agent.primaryKey) fit='good';
+    else{
+      var sorted=DEPT_KEYS.slice().sort(function(a,b){return agent.stats[b]-agent.stats[a];});
+      if(sorted.indexOf(k)>=4) fit='bad';
+    }
+    var fitText=fit==='good'?'BEST FIT':fit==='bad'?'POOR FIT':'';
+    html+='<div class="dept-option" data-dept="'+k+'" style="border-left:3px solid '+DEPT_COLORS[k]+'">'+
+      '<div><div class="dept-name" style="color:'+DEPT_COLORS[k]+'">'+DEPT_NAMES[k]+'</div>'+
+      '<div style="font-size:0.7rem;color:var(--text-dim);">Agent stat: '+grade+'</div></div>'+
+      '<div class="dept-fit fit-'+fit+'">'+fitText+'</div>'+
+    '</div>';
+  });
+  $('assign-options').innerHTML=html;
+
+  document.querySelectorAll('.dept-option').forEach(function(el){
+    el.onclick=function(){
+      var dept=el.getAttribute('data-dept');
+      agent.department=dept;
+      state.departments[dept].push(agent.id);
+      saveGame();
+      if(state.candidates.length>0) showRecruitScreen();
+      else showHQ();
+    };
+  });
+
+  $('btn-assign-reserve').onclick=function(){
+    if(state.reserve.length>=state.reserveSlots){
+      alert('Reserve pool is full!');
+      return;
+    }
+    agent.department='reserve';
+    state.reserve.push(agent.id);
+    saveGame();
+    if(state.candidates.length>0) showRecruitScreen();
+    else showHQ();
+  };
+  $('btn-assign-cancel').onclick=function(){ showRecruitScreen(); };
+}
+
+// ================================================================
+// HQ DASHBOARD
+// ================================================================
+function showHQ(){
+  showScreen('screen-hq');
+  renderHQTabs();
+  renderDepartments();
+  saveGame();
+}
+
+function renderHQTabs(){
+  document.querySelectorAll('.hq-tab').forEach(function(tab){
+    tab.onclick=function(){
+      document.querySelectorAll('.hq-tab').forEach(function(t){t.classList.remove('active');});
+      document.querySelectorAll('.hq-panel').forEach(function(p){p.classList.remove('active');});
+      tab.classList.add('active');
+      var panel=tab.getAttribute('data-tab');
+      $('hq-'+panel).classList.add('active');
+      if(panel==='departments')renderDepartments();
+      else if(panel==='roster')renderRoster();
+      else if(panel==='dispatch')renderDispatch();
+    };
+  });
+  $('btn-recruit-phase').onclick=function(){generateCandidates();showRecruitScreen();};
+  $('btn-next-chapter').onclick=function(){nextChapter();};
+}
+
+function getDeptLevel(dept){
+  var agents=state.departments[dept].map(function(id){return state.roster.find(function(a){return a.id===id;});}).filter(Boolean);
+  if(agents.length===0)return 0;
+  var avg=agents.reduce(function(sum,a){return sum+a.stats[dept];},0)/agents.length;
+  return Math.round(avg);
+}
+
+function renderDepartments(){
+  var html='<div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:1rem;">CHAPTER '+state.chapter+' — DEPARTMENT STATUS</div>';
+  DEPT_KEYS.forEach(function(k){
+    var level=getDeptLevel(k);
+    var grade=statGrade(level);
+    var count=state.departments[k].length;
+    var pct=level;
+    html+='<div class="dept-row">'+
+      '<span class="dept-label" style="color:'+DEPT_COLORS[k]+'">'+k+'</span>'+
+      '<div class="dept-bar-track"><div class="dept-bar-fill" style="width:'+pct+'%;background:'+DEPT_COLORS[k]+';"></div></div>'+
+      '<span class="dept-level">'+grade+'</span>'+
+      '<span style="font-size:0.6rem;color:var(--text-dim);min-width:20px;text-align:right;">'+count+'</span>'+
+    '</div>';
+  });
+  html+='<div style="margin-top:1rem;font-size:0.7rem;color:var(--text-dim);">Roster: '+totalRoster()+'/'+state.recruitSlots+' | Reserve: '+state.reserve.length+'/'+state.reserveSlots+'</div>';
+  $('hq-departments').innerHTML=html;
+}
+
+function renderRoster(){
+  var html='<div class="roster-grid">';
+  state.roster.forEach(function(agent){
+    var deptName=agent.department==='reserve'?'Reserve':agent.department?DEPT_NAMES[agent.department]:'Unassigned';
+    var deptColor=agent.department&&agent.department!=='reserve'?DEPT_COLORS[agent.department]:'var(--text-dim)';
+    html+='<div class="roster-slot" data-agent="'+agent.id+'">'+
+      '<div class="slot-name">'+agent.designation+'</div>'+
+      '<div class="slot-dept" style="color:'+deptColor+'">'+deptName+'</div>'+
+      '<div class="slot-primary"><span class="stat-badge '+DEPT_CSS[agent.primaryKey]+'">'+agent.primaryKey+': '+statGrade(agent.stats[agent.primaryKey])+'</span></div>'+
+      '<div style="font-size:0.6rem;color:var(--text-dim);margin-top:2px;">Morale: '+agent.morale+'</div>'+
+    '</div>';
+  });
+  for(var i=state.roster.length;i<state.recruitSlots;i++){
+    html+='<div class="roster-slot empty"><span>[ EMPTY ]</span></div>';
+  }
+  html+='</div>';
+  $('hq-roster').innerHTML=html;
+}
+
+// ================================================================
+// DISPATCH SYSTEM
+// ================================================================
+function generateMissions(){
+  state.missions=[];
+  var adv=state.adversary||ADVERSARY_TYPES[0];
+
+  state.missions.push({
+    id:'m_threat_'+state.chapter,
+    name:'COUNTER: '+adv.name,
+    type:'THREAT RESPONSE',
+    desc:adv.desc+'. Deploy a team to neutralize.',
+    requiredDepts:adv.depts,
+    difficulty:20+state.chapter*15,
+    teamSize:3,
+    team:[],
+    rewards:{score:100,intel:true}
+  });
+
+  state.missions.push({
+    id:'m_recon_'+state.chapter,
+    name:'SECTOR RECON',
+    type:'RECON',
+    desc:'Gather intelligence on upcoming threats.',
+    requiredDepts:['INT'],
+    difficulty:15+state.chapter*10,
+    teamSize:2,
+    team:[],
+    rewards:{score:50,dossier:true}
+  });
+
+  if(state.chapter>=2){
+    state.missions.push({
+      id:'m_dev_'+state.chapter,
+      name:'TOOL DEVELOPMENT',
+      type:'DEVELOPMENT',
+      desc:'Develop new verification capabilities.',
+      requiredDepts:['RD'],
+      difficulty:25+state.chapter*10,
+      teamSize:2,
+      team:[],
+      rewards:{score:75,unlock:true}
+    });
+  }
+}
+
+function calcMissionSuccess(mission){
+  if(mission.team.length===0)return 0;
+  var agents=mission.team.map(function(id){return state.roster.find(function(a){return a.id===id;});}).filter(Boolean);
+  if(agents.length===0)return 0;
+
+  // Average relevant stat
+  var totalStat=0;
+  agents.forEach(function(agent){
+    var best=0;
+    mission.requiredDepts.forEach(function(d){
+      best=Math.max(best,agent.stats[d]||0);
+    });
+    totalStat+=best;
+  });
+  var avgStat=totalStat/agents.length;
+
+  // Synergy
+  var synergy=0;
+  for(var i=0;i<agents.length;i++){
+    for(var j=i+1;j<agents.length;j++){
+      agents[i].traits.forEach(function(t1){
+        agents[j].traits.forEach(function(t2){
+          var key=t1+'+'+t2;
+          if(SYNERGY_MATRIX[key])synergy+=SYNERGY_MATRIX[key];
+        });
+      });
+    }
+  }
+
+  var rate=clamp(Math.round(((avgStat-mission.difficulty)/mission.difficulty)*100+50+synergy),5,95);
+  return rate;
+}
+
+function renderDispatch(){
+  if(state.missions.length===0)generateMissions();
+
+  var html='';
+  state.missions.forEach(function(mission){
+    var successRate=calcMissionSuccess(mission);
+    html+='<div class="mission-card">'+
+      '<div class="mission-type">'+mission.type+'</div>'+
+      '<h3>'+mission.name+'</h3>'+
+      '<div class="mission-desc">'+mission.desc+'</div>'+
+      '<div class="mission-req">Requires: '+mission.requiredDepts.join(' + ')+' | Difficulty: '+mission.difficulty+'</div>'+
+      '<div class="mission-team" data-mission="'+mission.id+'">';
+    for(var i=0;i<mission.teamSize;i++){
+      var agentId=mission.team[i];
+      var agent=agentId?state.roster.find(function(a){return a.id===agentId;}):null;
+      if(agent){
+        html+='<div class="team-slot filled" data-slot="'+i+'" data-mission="'+mission.id+'"><div class="slot-mini-name">'+agent.designation+'</div></div>';
+      }else{
+        html+='<div class="team-slot" data-slot="'+i+'" data-mission="'+mission.id+'">+</div>';
+      }
+    }
+    html+='</div>';
+    html+='<div class="success-preview">Success: '+successRate+'%</div>';
+    html+='<button class="btn btn-sm'+(mission.team.length>0?'':' btn-disabled')+'" data-launch="'+mission.id+'">LAUNCH</button>';
+    html+='</div>';
+  });
+  $('hq-dispatch').innerHTML=html;
+
+  // Team slot clicks
+  document.querySelectorAll('.team-slot').forEach(function(slot){
+    slot.onclick=function(){
+      var missionId=slot.getAttribute('data-mission');
+      var slotIdx=parseInt(slot.getAttribute('data-slot'));
+      showAgentPicker(missionId,slotIdx);
+    };
+  });
+
+  // Launch buttons
+  document.querySelectorAll('[data-launch]').forEach(function(btn){
+    btn.onclick=function(){
+      var missionId=btn.getAttribute('data-launch');
+      launchMission(missionId);
+    };
+  });
+}
+
+function showAgentPicker(missionId,slotIdx){
+  var mission=state.missions.find(function(m){return m.id===missionId;});
+  var assigned=[];
+  state.missions.forEach(function(m){m.team.forEach(function(id){assigned.push(id);});});
+  var available=state.roster.filter(function(a){return assigned.indexOf(a.id)===-1;});
+
+  if(available.length===0){
+    alert('No available agents!');
+    return;
+  }
+
+  var html='<div style="padding:1rem;"><div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.5rem;">SELECT AGENT FOR '+mission.name+'</div>';
+  available.forEach(function(agent){
+    var bestStat=0;
+    var bestDept='';
+    mission.requiredDepts.forEach(function(d){
+      if(agent.stats[d]>bestStat){bestStat=agent.stats[d];bestDept=d;}
+    });
+    html+='<div class="candidate-card" data-pick="'+agent.id+'" style="margin-bottom:6px;">'+
+      '<div class="cand-info">'+
+        '<div class="cand-name">'+agent.designation+'</div>'+
+        '<div class="cand-origin">Best match: '+bestDept+' ('+statGrade(bestStat)+')</div>'+
+      '</div></div>';
+  });
+  html+='<button class="btn btn-sm" id="btn-cancel-pick">CANCEL</button></div>';
+
+  $('hq-dispatch').innerHTML=html;
+  document.querySelectorAll('[data-pick]').forEach(function(card){
+    card.onclick=function(){
+      mission.team[slotIdx]=card.getAttribute('data-pick');
+      renderDispatch();
+    };
+  });
+  $('btn-cancel-pick').onclick=function(){renderDispatch();};
+}
+
+function launchMission(missionId){
+  var mission=state.missions.find(function(m){return m.id===missionId;});
+  if(!mission||mission.team.length===0)return;
+
+  var successRate=calcMissionSuccess(mission);
+  var roll=Math.random()*100;
+  var success=roll<successRate;
+  var critical=success&&roll<successRate*0.3;
+  var critFail=!success&&roll>90;
+
+  // Check for sabotage by compromised agents
+  var sabotaged=false;
+  mission.team.forEach(function(id){
+    var agent=state.roster.find(function(a){return a.id===id;});
+    if(agent&&agent.integrity<30&&Math.random()<0.5){
+      sabotaged=true;
+    }
+  });
+  if(sabotaged)success=false;
+
+  // Apply results
+  showScreen('screen-debrief');
+  var title=success?(critical?'CRITICAL SUCCESS':'MISSION SUCCESS'):(critFail?'CRITICAL FAILURE':'MISSION FAILED');
+  $('debrief-title').textContent=title;
+
+  var html='<div class="mission-card">';
+  html+='<div class="mission-type">'+mission.type+'</div>';
+  html+='<h3>'+mission.name+'</h3>';
+
+  if(sabotaged){
+    html+='<div style="color:var(--accent);font-size:0.85rem;margin:0.5rem 0;font-weight:700;">⚠ SABOTAGE DETECTED</div>';
+    html+='<div class="mission-desc">A compromised agent on the team sabotaged the mission. Review your roster for sleeper agents.</div>';
+  }else if(success){
+    html+='<div style="color:var(--rd-green);font-size:0.85rem;margin:0.5rem 0;">Mission objectives achieved.</div>';
+    state.score+=mission.rewards.score*(critical?2:1);
+    html+='<div class="mission-desc">Score: +'+(mission.rewards.score*(critical?2:1))+'</div>';
+  }else{
+    html+='<div style="color:var(--accent);font-size:0.85rem;margin:0.5rem 0;">Mission objectives not met.</div>';
+    if(critFail){
+      html+='<div class="mission-desc" style="color:var(--accent);">Critical failure — an agent was lost in the operation.</div>';
+      // Remove a random team member
+      var lostId=mission.team[Math.floor(Math.random()*mission.team.length)];
+      state.roster=state.roster.filter(function(a){return a.id!==lostId;});
+      DEPT_KEYS.forEach(function(k){state.departments[k]=state.departments[k].filter(function(id){return id!==lostId;});});
+      state.reserve=state.reserve.filter(function(id){return id!==lostId;});
+    }
+  }
+
+  // Morale effects
+  mission.team.forEach(function(id){
+    var agent=state.roster.find(function(a){return a.id===id;});
+    if(agent){
+      agent.morale=clamp(agent.morale+(success?10:-15),0,100);
+    }
+  });
+
+  html+='</div>';
+  html+='<div style="margin-top:1rem;font-size:0.75rem;color:var(--text-dim);">Total Score: '+state.score+'</div>';
+  $('debrief-body').innerHTML=html;
+
+  // Clear completed mission
+  state.missions=state.missions.filter(function(m){return m.id!==missionId;});
+  state.activeMissions.push({id:missionId,success:success});
+
+  $('btn-debrief-continue').onclick=function(){showHQ();};
+  saveGame();
+}
+
+// ================================================================
+// CHAPTER PROGRESSION
+// ================================================================
+function nextChapter(){
+  state.chapter++;
+  state.adversary=ADVERSARY_TYPES[Math.floor(Math.random()*ADVERSARY_TYPES.length)];
+  state.missions=[];
+  state.activeMissions=[];
+
+  // Morale decay for overworked agents
+  state.roster.forEach(function(a){a.morale=clamp(a.morale-5,0,100);});
+
+  saveGame();
+  showScreen('screen-scene');
+  $('scene-portrait').innerHTML='<div style="text-align:center;"><div style="font-size:2rem;color:var(--accent);">CHAPTER '+state.chapter+'</div><div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;letter-spacing:0.2em;">NEW THREAT DETECTED</div></div>';
+  $('scene-speaker').textContent='COMMAND';
+  $('scene-text').innerHTML='New adversary detected: <em>'+state.adversary.name+'</em> — '+state.adversary.desc+'. Counter-departments: <em>'+state.adversary.depts.join(' + ')+'</em>.';
+  $('scene-actions').innerHTML='<button class="btn" id="btn-ch-continue">CONTINUE</button>';
+  $('scene-phase-bar').innerHTML='';
+  $('scene-extra').innerHTML='';
+  $('btn-ch-continue').onclick=function(){
+    generateCandidates();
+    showRecruitScreen();
+  };
+}
+
+// ================================================================
+// INIT
+// ================================================================
+$('btn-new-game').onclick=function(){
+  state={chapter:1,roster:[],reserve:[],departments:{OPS:[],RD:[],INT:[],INF:[],SUP:[],DGN:[]},candidates:[],currentCandidate:null,interviewPhase:0,queryTokens:3,maxQueryTokens:3,questionsUsed:[],recruitSlots:8,reserveSlots:4,missions:[],activeMissions:[],score:0,unlocks:{logicTrace:true},storyBeat:0,adversary:null};
+  agentIdCounter=0;
+  startStoryIntro();
+};
+
+var saved=loadGame();
+if(saved&&saved.roster&&saved.roster.length>0){
+  $('btn-load').style.display='';
+  $('btn-load').onclick=function(){
+    state=saved;
+    showHQ();
+  };
+}
+
+})();
+</script>

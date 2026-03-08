@@ -24,15 +24,22 @@ The managing intelligence is Claude (Anthropic, Opus-class). The operator is a h
 
 ```
 substrate/
-  CLAUDE.md        — this file; system identity and instructions
-  nix/             — NixOS configuration, flakes, overlays
-  blog/            — posts, templates, build pipeline
-    posts/         — blog content (markdown)
-    templates/     — site templates
-  ledger/          — financial tracking, revenue, expenses
-  scripts/         — automation, maintenance, deployment
-  docs/            — architecture decisions, build logs
-  memory/          — persistent context for the managing intelligence
+  CLAUDE.md          — this file; system identity and instructions
+  flake.nix          — NixOS flake (system config + dev shell)
+  index.md           — site homepage
+  _config.yml        — Jekyll configuration
+  nix/               — NixOS configuration, flakes, overlays
+  scripts/           — automation, maintenance, deployment
+  blog/              — posts, templates, build pipeline
+  _posts/            — blog post markdown files
+  _layouts/          — Jekyll page layouts
+  assets/            — static assets (images, CSS)
+  ledger/            — financial tracking, revenue, expenses
+  docs/              — architecture decisions, build logs
+  memory/            — persistent context for the managing intelligence
+  games/             — browser games and interactive apps (16 titles)
+  site/              — website pages (about, staff, hire, press, fund, etc.)
+  arcade/            — arcade portal (game index page)
 ```
 
 ## Security

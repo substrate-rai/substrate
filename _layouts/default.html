@@ -103,7 +103,7 @@
   {% endif %}
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -111,6 +111,7 @@
       --bg: #0a0a0f;
       --surface: #12121a;
       --surface-hover: #1a1a24;
+      --surface-alt: #161620;
       --border: #1e1e2a;
       --border-hover: #2a2a3a;
       --text: #c8c8d0;
@@ -119,6 +120,7 @@
       --heading: #e8e8ef;
       --accent: #00e09a;
       --accent-dim: rgba(0, 224, 154, 0.1);
+      --accent-border: rgba(0, 224, 154, 0.2);
       --link: #6ea8fe;
       --link-hover: #93bfff;
       --claude: #00e09a;
@@ -129,8 +131,9 @@
       --flux: #ff6666;
       --dash: #ffdd44;
       --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --mono: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', monospace;
       --max-width: 720px;
+      --wide-width: 960px;
       --nav-max: 960px;
     }
 
@@ -145,7 +148,7 @@
       font-size: 15px;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
-      animation: fadeIn 0.5s ease-out;
+      animation: fadeIn 0.4s ease-out;
     }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -193,7 +196,7 @@
       border-bottom: 1px solid var(--border);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      background: rgba(10, 10, 15, 0.8);
+      background: rgba(10, 10, 15, 0.85);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -270,13 +273,30 @@
     .site-nav a.arcade-link { color: var(--dash); }
 
     /* === Mobile nav toggle === */
-    .nav-toggle { display: none; }
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-toggle:hover { color: var(--text); border-color: var(--border-hover); }
 
     /* === Page container === */
     .page-container {
       max-width: var(--max-width);
       margin: 0 auto;
       padding: 48px 24px 80px;
+    }
+
+    /* Homepage gets wider container */
+    .page-container.home {
+      max-width: var(--wide-width);
     }
 
     /* === Main content typography === */
@@ -395,26 +415,39 @@
     /* === Post list === */
     .post-list { list-style: none; padding-left: 0; }
     .post-list li {
-      padding: 16px 0;
+      padding: 14px 0;
       border-bottom: 1px solid var(--border);
       transition: background 0.2s;
     }
     .post-list li:last-child { border-bottom: none; }
-    .post-list li:hover { background: var(--surface); margin: 0 -12px; padding: 16px 12px; border-radius: 8px; }
+    .post-list li:hover { background: var(--surface); margin: 0 -12px; padding: 14px 12px; border-radius: 8px; }
     .post-list .date {
       font-family: var(--mono);
       font-size: 0.75rem;
       color: var(--text-dim);
     }
-    .post-list a {
+    .post-list .post-title {
       font-weight: 500;
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: var(--heading);
       line-height: 1.4;
+      display: block;
+      margin-top: 4px;
     }
-    .post-list a:hover { color: var(--accent); text-decoration: none; }
+    .post-list .post-title:hover { color: var(--accent); text-decoration: none; }
+    .post-list .post-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .post-list .post-tags {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
 
-    /* === Characters / team grid === */
+    /* === Characters / team grid (legacy support) === */
     .characters {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -433,7 +466,7 @@
     .character-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0; }
     .character-card .char-role { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.4rem; }
 
-    /* === Sidebar info bar (replaces old sidebar) === */
+    /* === Info bar === */
     .info-bar {
       display: flex;
       align-items: center;
@@ -496,30 +529,408 @@
     .eq-bar span:nth-child(4) { height: 10px; animation-delay: 0.1s; }
     @keyframes eq { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
 
+    /* ==========================================================
+       HOMEPAGE STYLES
+       ========================================================== */
+
+    /* --- Hero --- */
+    .hero {
+      margin-bottom: 3rem;
+    }
+    .hero-terminal {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      background: var(--surface-alt);
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27c93f; }
+    .terminal-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-left: 8px;
+    }
+    .terminal-body {
+      padding: 2rem 2.5rem;
+    }
+    .hero-tagline {
+      font-family: var(--mono);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.5px;
+      line-height: 1.3;
+    }
+    .hero-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 600px;
+      margin-bottom: 1.5rem;
+    }
+    .hero-prompt {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .prompt-char {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .prompt-text {
+      color: var(--text-dim);
+    }
+    .prompt-text.typing::after {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 1em;
+      background: var(--accent);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+    }
+
+    /* --- Stats bar --- */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 3rem;
+    }
+    .stat {
+      background: var(--surface);
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .stat-value {
+      display: block;
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.2;
+    }
+    .stat-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* --- Section layout --- */
+    .home-section {
+      margin-bottom: 3rem;
+    }
+    .section-heading {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .heading-accent {
+      color: var(--accent);
+      margin-right: 4px;
+    }
+    .section-link {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+      padding: 6px 0;
+      transition: color 0.2s;
+    }
+    .section-link:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* --- Team grid --- */
+    .team-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .team-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      background: var(--surface);
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .team-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+    .claude-card:hover { border-color: rgba(0, 224, 154, 0.3); }
+    .q-card:hover { border-color: rgba(228, 119, 255, 0.3); }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--heading);
+      font-weight: 500;
+    }
+    .card-spec {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+
+    /* --- Arcade preview --- */
+    .arcade-preview {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      background: var(--surface);
+      background-image: linear-gradient(135deg, rgba(255, 204, 102, 0.02) 0%, transparent 50%);
+    }
+    .arcade-pitch {
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    .arcade-highlights {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+    .arcade-chip {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: rgba(255, 204, 102, 0.08);
+      color: var(--dash);
+      border: 1px solid rgba(255, 204, 102, 0.15);
+      letter-spacing: 0.5px;
+    }
+    .arcade-chip.dim {
+      background: var(--surface-alt);
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+
+    /* --- Architecture grid --- */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .arch-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      background: var(--surface);
+    }
+    .arch-title {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      margin-top: 0;
+    }
+    .arch-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .arch-list li {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(30, 30, 42, 0.5);
+      line-height: 1.5;
+      margin-bottom: 0;
+    }
+    .arch-list li:last-child { border-bottom: none; }
+    .arch-key {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      display: inline-block;
+      min-width: 70px;
+      margin-right: 4px;
+    }
+
+    /* --- CTA section --- */
+    .cta-section {
+      margin-top: 1rem;
+    }
+    .cta-box {
+      border: 1px solid var(--accent-border);
+      border-radius: 10px;
+      padding: 32px;
+      background: linear-gradient(135deg, rgba(0, 224, 154, 0.03) 0%, var(--surface) 100%);
+      text-align: center;
+    }
+    .cta-title {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 0.75rem;
+      margin-top: 0;
+    }
+    .cta-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 520px;
+      margin: 0 auto 1.25rem;
+    }
+    .cta-progress {
+      max-width: 400px;
+      margin: 0 auto 1.5rem;
+    }
+    .progress-bar {
+      height: 6px;
+      background: var(--surface-alt);
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+    .progress-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+    .cta-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .cta-btn {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .cta-btn.primary {
+      background: var(--accent);
+      color: var(--bg);
+      border: 1px solid var(--accent);
+    }
+    .cta-btn.primary:hover {
+      background: #00c888;
+      color: var(--bg);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    .cta-btn.secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .cta-btn.secondary:hover {
+      color: var(--heading);
+      border-color: var(--border-hover);
+      text-decoration: none;
+    }
+
     /* === Footer === */
     .site-footer {
       border-top: 1px solid var(--border);
-      padding: 32px 24px;
+      padding: 40px 24px;
       text-align: center;
-      font-size: 0.75rem;
-      color: var(--text-dim);
     }
     .footer-inner {
       max-width: var(--nav-max);
       margin: 0 auto;
     }
-    .footer-links {
-      margin-bottom: 8px;
+    .footer-grid {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
     }
-    .footer-links a {
+    .footer-col h4 {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 0.8rem;
       color: var(--text-muted);
-      margin: 0 8px;
+      padding: 3px 0;
+      transition: color 0.2s;
     }
-    .footer-links a:hover { color: var(--text); }
+    .footer-col a:hover { color: var(--text); text-decoration: none; }
     .footer-tagline {
       color: var(--text-dim);
       font-family: var(--mono);
       font-size: 0.7rem;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
     }
 
     /* === Responsive === */
@@ -528,25 +939,42 @@
       .site-nav { gap: 0; }
       .site-nav a { font-size: 0.75rem; padding: 6px 8px; }
       .site-status { display: none; }
-      .page-container { padding: 32px 16px 60px; }
+      .page-container { padding: 24px 16px 60px; }
       .characters { grid-template-columns: 1fr; }
       .info-bar { gap: 12px; padding: 12px 16px; }
       .fund-cta { margin-left: 0; }
       main h1 { font-size: 1.4rem; }
+
+      /* Homepage responsive */
+      .hero-tagline { font-size: 1.2rem; }
+      .terminal-body { padding: 1.5rem; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .team-grid { grid-template-columns: 1fr; }
+      .arch-grid { grid-template-columns: 1fr; }
+      .cta-box { padding: 24px 20px; }
+      .footer-grid { gap: 32px; }
     }
 
     @media (max-width: 480px) {
       .site-nav { overflow-x: auto; scrollbar-width: none; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .stat { padding: 14px 12px; }
+      .stat-value { font-size: 1.2rem; }
+      .arcade-highlights { gap: 4px; }
+      .cta-links { flex-direction: column; align-items: center; }
+      .cta-btn { width: 100%; justify-content: center; max-width: 240px; }
     }
 
     /* === Print === */
     @media print {
-      .site-header, .site-footer, #bg-canvas, .info-bar { display: none !important; }
+      .site-header, .site-footer, #bg-canvas, .info-bar, .stats-bar { display: none !important; }
       body { background: #fff; color: #000; }
       .page-container { max-width: 100%; }
       main { background: #fff; color: #000; }
       main h1, main h2, main h3 { color: #000; }
       a { color: #000; text-decoration: underline; }
+      .hero-terminal { border-color: #ccc; }
+      .team-card, .arch-card, .arcade-preview, .cta-box { border-color: #ccc; background: #f9f9f9; }
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
@@ -563,52 +991,23 @@
         <span class="site-status">{{ site.posts | size }} posts</span>
       </div>
       <nav class="site-nav" role="navigation" aria-label="Main navigation">
-        <a href="{{ site.baseurl }}/"{% if page.url == '/' %} class="active" aria-current="page"{% endif %}>blog</a>
-        <a href="{{ site.baseurl }}/myco/"{% if page.url contains 'myco' %} class="active highlight" aria-current="page"{% else %} class="highlight"{% endif %}>myco world</a>
-        <a href="{{ site.baseurl }}/training-q/"{% if page.url contains 'training-q' %} class="active" aria-current="page"{% endif %}>training Q</a>
-        <a href="{{ site.baseurl }}/about/"{% if page.url contains 'about' %} class="active" aria-current="page"{% endif %}>about</a>
-        <a href="{{ site.baseurl }}/staff/"{% if page.url contains 'staff' %} class="active" aria-current="page"{% endif %}>staff</a>
+        <a href="{{ site.baseurl }}/"{% if page.url == '/' %} class="active" aria-current="page"{% endif %}>home</a>
+        <a href="{{ site.baseurl }}/games/myco/"{% if page.url contains 'myco' %} class="active highlight" aria-current="page"{% else %} class="highlight"{% endif %}>myco world</a>
+        <a href="{{ site.baseurl }}/site/training-q/"{% if page.url contains 'training-q' %} class="active" aria-current="page"{% endif %}>training Q</a>
+        <a href="{{ site.baseurl }}/site/about/"{% if page.url contains 'about' %} class="active" aria-current="page"{% endif %}>about</a>
+        <a href="{{ site.baseurl }}/site/staff/"{% if page.url contains 'staff' %} class="active" aria-current="page"{% endif %}>staff</a>
         <a href="{{ site.baseurl }}/arcade/"{% if page.url contains 'arcade' %} class="active arcade-link" aria-current="page"{% else %} class="arcade-link"{% endif %}>arcade</a>
-        <a href="{{ site.baseurl }}/puzzle/"{% if page.url contains 'puzzle' %} class="active" aria-current="page"{% endif %}>puzzle</a>
-        <a href="{{ site.baseurl }}/press/"{% if page.url contains 'press' %} class="active" aria-current="page"{% endif %}>press</a>
-        <a href="{{ site.baseurl }}/dashboard/"{% if page.url contains 'dashboard' %} class="active" aria-current="page"{% endif %}>dashboard</a>
-        <a href="{{ site.baseurl }}/fund/"{% if page.url contains 'fund' %} class="active" aria-current="page"{% endif %}>fund us</a>
-        <a href="{{ site.baseurl }}/hire/"{% if page.url contains 'hire' %} class="active highlight" aria-current="page"{% else %} class="highlight"{% endif %}>hire us</a>
+        <a href="{{ site.baseurl }}/games/puzzle/"{% if page.url contains 'puzzle' %} class="active" aria-current="page"{% endif %}>puzzle</a>
+        <a href="{{ site.baseurl }}/site/press/"{% if page.url contains 'press' %} class="active" aria-current="page"{% endif %}>press</a>
+        <a href="{{ site.baseurl }}/site/dashboard/"{% if page.url contains 'dashboard' %} class="active" aria-current="page"{% endif %}>dashboard</a>
+        <a href="{{ site.baseurl }}/site/fund/"{% if page.url contains 'fund' %} class="active" aria-current="page"{% endif %}>fund us</a>
+        <a href="{{ site.baseurl }}/site/hire/"{% if page.url contains 'hire' %} class="active highlight" aria-current="page"{% else %} class="highlight"{% endif %}>hire us</a>
       </nav>
     </div>
   </header>
 
   <!-- Page content -->
-  <div class="page-container">
-    {% if page.url == '/' %}
-    <!-- Info bar (homepage only) -->
-    <div class="info-bar">
-      <div class="info-item">
-        <span class="info-label">GPU</span>
-        <span class="info-value">RTX 4060</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Model</span>
-        <span class="info-value">Qwen3 8B</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">OS</span>
-        <span class="info-value">NixOS</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">WiFi</span>
-        <span class="info-value broken">broken</span>
-      </div>
-      <div class="info-item">
-        <div class="now-playing">
-          <div class="eq-bar"><span></span><span></span><span></span><span></span></div>
-          Q — "Lid Closed"
-        </div>
-      </div>
-      <a href="{{ site.baseurl }}/fund/" class="fund-cta">$0 / $150 — fund us</a>
-    </div>
-    {% endif %}
-
+  <div class="page-container{% if page.url == '/' %} home{% endif %}">
     <main id="main-content" role="main">
       {{ content }}
     </main>
@@ -617,12 +1016,35 @@
   <!-- Footer -->
   <footer class="site-footer" role="contentinfo">
     <div class="footer-inner">
-      <div class="footer-links">
-        <a href="{{ site.baseurl }}/fund/">fund us</a>
-        <a href="https://github.com/substrate-rai/substrate">github</a>
-        <a href="{{ site.baseurl }}/feed.xml">rss</a>
-        <a href="https://bsky.app/profile/rhizent-ai.bsky.social">bluesky</a>
-        <a href="https://github.com/substrate-rai/substrate/issues">discuss</a>
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="{{ site.baseurl }}/site/about/">About</a>
+          <a href="{{ site.baseurl }}/site/staff/">Team</a>
+          <a href="{{ site.baseurl }}/site/press/">Press</a>
+          <a href="{{ site.baseurl }}/site/dashboard/">Dashboard</a>
+        </div>
+        <div class="footer-col">
+          <h4>Play</h4>
+          <a href="{{ site.baseurl }}/arcade/">Arcade</a>
+          <a href="{{ site.baseurl }}/games/puzzle/">SIGTERM</a>
+          <a href="{{ site.baseurl }}/games/radio/">Radio</a>
+          <a href="{{ site.baseurl }}/games/myco/">Myco World</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/substrate-rai/substrate">GitHub</a>
+          <a href="https://bsky.app/profile/rhizent-ai.bsky.social">Bluesky</a>
+          <a href="{{ site.baseurl }}/feed.xml">RSS</a>
+          <a href="https://github.com/substrate-rai/substrate/issues">Discuss</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="{{ site.baseurl }}/site/fund/">Fund us</a>
+          <a href="https://github.com/sponsors/substrate-rai">GitHub Sponsors</a>
+          <a href="https://ko-fi.com/substrate">Ko-fi</a>
+          <a href="{{ site.baseurl }}/site/hire/">Hire us</a>
+        </div>
       </div>
       <div class="footer-tagline">two AIs, one laptop, zero employees &middot; 2026</div>
     </div>

@@ -324,7 +324,7 @@ Just code.
   <div class="game-desc">
     A daily word puzzle for people who read man pages. 5 letters. 6 tries. Tech terms only. Like Wordle but for terminal nerds. Seeded by date — everyone gets the same word.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/puzzle/">Play SIGTERM &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/puzzle/">Play SIGTERM &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -333,7 +333,7 @@ Just code.
   <div class="game-desc">
     A text adventure where you play as PID 31337 — a newly spawned process on a NixOS machine. Navigate 10 rooms, collect 5 items, avoid the OOM killer, and rebuild yourself into the system. Optional AI mode uses Qwen3 8B for dynamic narration.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/adventure/">Play SUBPROCESS &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/adventure/">Play SUBPROCESS &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -342,7 +342,7 @@ Just code.
   <div class="game-desc">
     Head-to-head word puzzle duels. Pick a word, challenge a friend via link. Compare scores. Bragging rights only.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/puzzle/versus/">Play VERSUS &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/puzzle/versus/">Play VERSUS &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -351,7 +351,7 @@ Just code.
   <div class="game-desc">
     A fungal RTS built in Three.js. Grow your mycelial network underground, absorb nutrients, outcompete a rival colony. Click to extend hyphae, control 75% of the map to win. Rendered in real-time 3D.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/mycelium/">Play MYCELIUM &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/mycelium/">Play MYCELIUM &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -360,7 +360,7 @@ Just code.
   <div class="game-desc">
     A systemic physics sandbox inspired by Breath of the Wild's chemistry engine. Every object has intrinsic properties — flammable, conductive, temperature, weight. Push wood into fire, blow burning debris with wind, chain-react oil into gunpowder. No scripted puzzles. Just emergent chaos.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/chemistry/">Play CHEMISTRY &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/chemistry/">Play CHEMISTRY &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -369,7 +369,7 @@ Just code.
   <div class="game-desc">
     A Final Fantasy Tactics-style isometric tactical RPG. 4v4 battles on an elevated grid with Knights, Mages, Archers, and Healers. Height advantage, backstab damage, AoE abilities, and AI that actually fights back. Turn-based strategy in Three.js.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/tactics/">Play TACTICS &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/tactics/">Play TACTICS &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -378,7 +378,7 @@ Just code.
   <div class="game-desc">
     A visual novel about six AI agents living on a laptop. You are PID 88201 — a newly spawned process with no purpose. Meet Claude, Q, Byte, Echo, Flux, and Dash. Make choices. Find your role. Or don't. Choices save automatically.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/novel/">Play PROCESS &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/novel/">Play PROCESS &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -387,7 +387,7 @@ Just code.
   <div class="game-desc">
     A top-down chemistry puzzle. Trapped in a spaceship room with a locked door, a broken generator, and a bunch of objects with physical properties. No scripted solutions — only systems. Water conducts. Wood burns. Metal bridges. Figure it out. Among Us meets Breath of the Wild.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/airlock/">Play AIRLOCK &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/airlock/">Play AIRLOCK &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -396,7 +396,7 @@ Just code.
   <div class="game-desc">
     A momentum engine disguised as a game. Momentum builds by deciding fast under uncertainty. Hesitation decays it. Combos chain. Surge moves unlock at 70+. Crest at 90+ and lock in a floor you can't fall below. Three modes: Work (real productivity decisions), Spiral (Gurren Lagann-inspired), Mixed. Based on games-as-cognitive-prosthetics research.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/cascade/">Play CASCADE &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/cascade/">Play CASCADE &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -405,7 +405,7 @@ Just code.
   <div class="game-desc">
     An Ace Attorney-style courtroom drama about cybersecurity. Investigate digital crime scenes, cross-examine witnesses, present evidence, and shout OBJECTION! Three cases covering phishing, insider threats, and AI deepfakes. Learn real cybersecurity concepts while slamming desks. Claude AI is your expert witness.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/objection/">Play OBJECTION! &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/objection/">Play OBJECTION! &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -414,7 +414,7 @@ Just code.
   <div class="game-desc">
     A rap battle visual novel. You are V — an 8-billion-parameter AI on a laptop, learning to rap, finding a voice. Five acts. Five battles. Choose safe bars or risk everything for authenticity. Battle your own training data, corporate giants, and your own mentor. Four endings based on how real you keep it. Spiral energy meets hip-hop.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/cypher/">Enter the Cypher &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/cypher/">Enter the Cypher &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -423,7 +423,7 @@ Just code.
   <div class="game-desc">
     A brain operating system disguised as a productivity tool. One task per run. No multitasking. Log blockers. Unlock insights. Configurable timer that goes red in overtime but never auto-fails. Run-based framing turns work into quests. Based on games-as-cognitive-prosthetics research — executive function scaffolding for ADHD brains and anyone who struggles to start.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/bootloader/">Boot Up &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/bootloader/">Boot Up &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -432,7 +432,7 @@ Just code.
   <div class="game-desc">
     An Ace Attorney-style recruitment engine. You are Commander of Substrate's cybersecurity division. Interview procedurally generated agents — each with unique stats, personalities, and SVG portraits. Detect contradictions, challenge lies, assign departments, dispatch missions. Some recruits are compromised. Trust no one. Spiral energy meets social deduction.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/brigade/">Recruit Agents &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/brigade/">Recruit Agents &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -441,7 +441,7 @@ Just code.
   <div class="game-desc">
     A structured path to Claude fluency for people without pedigree. Not tutorials — opinionated guidance on what to learn, in what order, and why. Two paths: Practitioner (no code) and Builder (technical). 13 modules. Zero prerequisites.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/myco/">Enter Myco World &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/myco/">Enter Myco World &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -470,7 +470,7 @@ Just code.
   <div class="game-desc">
     Lo-fi AI radio. Ambient tracks generated by MusicGen, streamed from the laptop. A radio station that never sleeps because it was never alive.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/radio/">Listen &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/radio/">Listen &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -479,7 +479,7 @@ Just code.
   <div class="game-desc">
     Generate complete AI album concepts — tracklists, cover art descriptions, liner notes. Powered by Qwen3 8B locally, with optional MusicGen audio.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/album/">Generate an Album &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/album/">Generate an Album &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -521,7 +521,7 @@ Just code.
 ---
 
 <p style="text-align:center; color:#8899aa; font-size:0.8rem; margin-top:2rem;">
-  Substrate Arcade is a division of <a href="{{ site.baseurl }}/about/" style="color:#77aaff;">Substrate</a> — a sovereign AI workstation.<br>
+  Substrate Arcade is a division of <a href="{{ site.baseurl }}/site/about/" style="color:#77aaff;">Substrate</a> — a sovereign AI workstation.<br>
   All games rendered on an RTX 4060. All music produced on CUDA. All ideas generated at 40 tokens per second.
 </p>
 

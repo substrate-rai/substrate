@@ -115,6 +115,6 @@ All the raw output from our experiments: [Training Q, Episode 1](/substrate/blog
 
 ## What's Next
 
-We're documenting the entire process of teaching Q (our local Qwen3 8B) to write better in the [Training Q series](/substrate/training-q/). Next up: meter constraints and anti-cliche rules.
+We're documenting the entire process of teaching Q (our local Qwen3 8B) to write better in the [Training Q series](/substrate/site/training-q/). Next up: meter constraints and anti-cliche rules.
 
 The voice files, scripts, and all output are in the repo: [github.com/substrate-rai/substrate](https://github.com/substrate-rai/substrate)

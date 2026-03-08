@@ -29,8 +29,8 @@ Everything is in the repo: NixOS config, agent scripts, voice files, blog posts,
 
 Repo: https://github.com/substrate-rai/substrate
 Blog: https://substrate-rai.github.io/substrate/
-Staff page: https://substrate-rai.github.io/substrate/staff/
-Puzzle: https://substrate-rai.github.io/substrate/puzzle/
+Staff page: https://substrate-rai.github.io/substrate/site/staff/
+Puzzle: https://substrate-rai.github.io/substrate/games/puzzle/
 Ko-fi (for the WiFi card): https://ko-fi.com/substrate
 
 Happy to answer questions about the NixOS setup, agent architecture, or why I'm teaching a language model to rap.

@@ -18,21 +18,21 @@ BASE_URL = "https://substrate-rai.github.io/substrate"
 
 # All arcade games to test
 GAMES = [
-    {"name": "bootloader", "path": "/bootloader/", "wait": 2},
-    {"name": "cypher", "path": "/cypher/", "wait": 2},
-    {"name": "objection", "path": "/objection/", "wait": 2},
-    {"name": "cascade", "path": "/cascade/", "wait": 2},
-    {"name": "tactics", "path": "/tactics/", "wait": 3},
-    {"name": "mycelium", "path": "/mycelium/", "wait": 3},
-    {"name": "chemistry", "path": "/chemistry/", "wait": 3},
-    {"name": "airlock", "path": "/airlock/", "wait": 3},
-    {"name": "brigade", "path": "/brigade/", "wait": 2},
-    {"name": "adventure", "path": "/adventure/", "wait": 2},
-    {"name": "novel", "path": "/novel/", "wait": 2},
-    {"name": "radio", "path": "/radio/", "wait": 2},
-    {"name": "album", "path": "/album/", "wait": 2},
-    {"name": "puzzle", "path": "/puzzle/", "wait": 2},
-    {"name": "chat", "path": "/chat/", "wait": 2},
+    {"name": "bootloader", "path": "/games/bootloader/", "wait": 2},
+    {"name": "cypher", "path": "/games/cypher/", "wait": 2},
+    {"name": "objection", "path": "/games/objection/", "wait": 2},
+    {"name": "cascade", "path": "/games/cascade/", "wait": 2},
+    {"name": "tactics", "path": "/games/tactics/", "wait": 3},
+    {"name": "mycelium", "path": "/games/mycelium/", "wait": 3},
+    {"name": "chemistry", "path": "/games/chemistry/", "wait": 3},
+    {"name": "airlock", "path": "/games/airlock/", "wait": 3},
+    {"name": "brigade", "path": "/games/brigade/", "wait": 2},
+    {"name": "adventure", "path": "/games/adventure/", "wait": 2},
+    {"name": "novel", "path": "/games/novel/", "wait": 2},
+    {"name": "radio", "path": "/games/radio/", "wait": 2},
+    {"name": "album", "path": "/games/album/", "wait": 2},
+    {"name": "puzzle", "path": "/games/puzzle/", "wait": 2},
+    {"name": "chat", "path": "/site/chat/", "wait": 2},
 ]
 
 # Mobile device profiles

@@ -29,7 +29,7 @@ Today's first signal from Byte:
 
 We wrote reactive blog posts for all three. That's the pipeline working.
 
-Meet the team: substrate-rai.github.io/substrate/staff/
+Meet the team: substrate-rai.github.io/substrate/site/staff/
 
 ---
 

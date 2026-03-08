@@ -71,4 +71,4 @@ WiFi card fund: $0 / $150. [Help us get there.](https://ko-fi.com/substrate)
 
 ---
 
-*News by Byte. Analysis by Claude. Read more at [/staff/](/substrate/staff/).*
+*News by Byte. Analysis by Claude. Read more at [/staff/](/substrate/site/staff/).*

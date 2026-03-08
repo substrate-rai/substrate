@@ -1,0 +1,1238 @@
+---
+layout: null
+permalink: /games/cascade/
+title: "CASCADE — Momentum Engine"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASCADE — Momentum Engine | Substrate Arcade</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #060810;
+    --surface: #0c1020;
+    --border: #1a2040;
+    --text: #c8d0e0;
+    --dim: #556677;
+    --momentum: #00ffaa;
+    --decay: #ff4444;
+    --surge: #ffdd44;
+    --spiral: #aa44ff;
+    --heaven: #44ddff;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    overflow-x: hidden;
+    width: 100vw;
+    min-height: 100vh;
+    min-height: 100dvh;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* === LAYOUT === */
+  #game {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100vw;
+    max-width: 700px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* === SPIRAL GAUGE === */
+  #gauge-container {
+    padding: 12px 16px 8px;
+    position: relative;
+  }
+
+  #phase-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 6px;
+    transition: color 0.3s;
+  }
+
+  #gauge-track {
+    width: 100%;
+    height: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #gauge-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 14px;
+    transition: width 0.4s ease-out, background 0.5s;
+    position: relative;
+  }
+
+  #gauge-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 20px;
+    height: 100%;
+    background: rgba(255,255,255,0.2);
+    border-radius: 0 14px 14px 0;
+  }
+
+  #gauge-value {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text);
+    z-index: 2;
+  }
+
+  /* Phase markers on gauge */
+  .gauge-marker {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    background: rgba(255,255,255,0.15);
+    z-index: 1;
+  }
+  .gauge-marker::after {
+    content: attr(data-label);
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 7px;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+
+  /* Crest indicator */
+  #crest-line {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    background: var(--surge);
+    z-index: 3;
+    display: none;
+    box-shadow: 0 0 8px var(--surge);
+  }
+
+  /* === STATS BAR === */
+  #stats {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 16px 12px;
+    font-size: 0.7rem;
+    color: var(--dim);
+  }
+  #stats .stat-val { color: var(--text); font-weight: 600; }
+
+  /* === SCENARIO === */
+  #scenario-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 16px;
+    overflow: hidden;
+  }
+
+  #scenario-context {
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-bottom: 12px;
+    line-height: 1.6;
+    min-height: 2.5em;
+  }
+
+  #scenario-prompt {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    min-height: 3em;
+  }
+
+  /* === TIMER === */
+  #timer-container {
+    padding: 0 16px;
+    margin-bottom: 12px;
+  }
+
+  #timer-track {
+    width: 100%;
+    height: 6px;
+    background: var(--surface);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  #timer-fill {
+    height: 100%;
+    background: var(--momentum);
+    border-radius: 3px;
+    transition: width 0.1s linear;
+    width: 100%;
+  }
+
+  #timer-fill.urgent {
+    background: var(--decay);
+    animation: timer-pulse 0.5s infinite;
+  }
+
+  @keyframes timer-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* === CHOICES === */
+  #choices-container {
+    padding: 0 16px 16px;
+  }
+
+  .choice-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .choice-btn {
+    flex: 1;
+    padding: 16px 12px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .choice-btn:hover, .choice-btn:active {
+    border-color: var(--momentum);
+    background: rgba(0, 255, 170, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 255, 170, 0.1);
+  }
+
+  .choice-btn .choice-label {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .choice-btn .choice-desc {
+    font-size: 0.7rem;
+    color: var(--dim);
+    font-weight: 400;
+  }
+
+  .choice-btn.surge {
+    border-color: var(--surge);
+    background: rgba(255, 221, 68, 0.05);
+    animation: surge-glow 1s ease-in-out infinite alternate;
+  }
+
+  .choice-btn.surge:hover {
+    background: rgba(255, 221, 68, 0.12);
+    box-shadow: 0 4px 30px rgba(255, 221, 68, 0.2);
+  }
+
+  .choice-btn.surge .choice-label {
+    color: var(--surge);
+  }
+
+  @keyframes surge-glow {
+    from { box-shadow: 0 0 10px rgba(255, 221, 68, 0.1); }
+    to { box-shadow: 0 0 25px rgba(255, 221, 68, 0.2); }
+  }
+
+  .choice-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Momentum gain preview */
+  .choice-btn .momentum-preview {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 0.65rem;
+    color: var(--momentum);
+    font-weight: 700;
+  }
+
+  .choice-btn.surge .momentum-preview {
+    color: var(--surge);
+  }
+
+  /* === COMBO DISPLAY === */
+  #combo-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--momentum);
+    opacity: 0;
+    pointer-events: none;
+    text-shadow: 0 0 30px var(--momentum);
+    z-index: 20;
+  }
+
+  #combo-display.show {
+    animation: combo-pop 0.8s ease-out forwards;
+  }
+
+  @keyframes combo-pop {
+    0% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+    20% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  }
+
+  /* === CREST FLASH === */
+  #crest-flash {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--surge);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  #crest-flash.flash {
+    animation: crest-burst 0.6s ease-out;
+  }
+
+  @keyframes crest-burst {
+    0% { opacity: 0.4; }
+    100% { opacity: 0; }
+  }
+
+  /* === HISTORY === */
+  #history {
+    padding: 0 16px;
+    max-height: 80px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+  }
+
+  .history-item {
+    font-size: 0.65rem;
+    color: var(--dim);
+    padding: 2px 0;
+    display: flex;
+    justify-content: space-between;
+  }
+  .history-item .h-choice { color: var(--text); }
+  .history-item .h-gain { color: var(--momentum); }
+  .history-item .h-surge { color: var(--surge); }
+
+  /* === TITLE SCREEN === */
+  #title-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 100;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+  }
+  #title-screen.hidden { display: none; }
+
+  .title-name {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: 8px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--momentum), var(--surge), var(--spiral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .title-sub {
+    font-size: 0.9rem;
+    color: var(--dim);
+    letter-spacing: 3px;
+    margin-bottom: 2rem;
+  }
+
+  .title-philosophy {
+    max-width: 500px;
+    font-size: 0.8rem;
+    color: #667788;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+
+  .title-philosophy em { color: var(--text); font-style: normal; font-weight: 600; }
+
+  .title-modes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .mode-btn {
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    min-height: 44px;
+  }
+  .mode-btn:hover, .mode-btn:active {
+    border-color: var(--momentum);
+    background: rgba(0, 255, 170, 0.05);
+  }
+  .mode-btn .mode-desc {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--dim);
+    font-weight: 400;
+    margin-top: 4px;
+  }
+
+  .title-credit {
+    position: absolute;
+    bottom: 16px;
+    font-size: 0.65rem;
+    color: #334;
+  }
+  .title-credit a { color: #445566; text-decoration: none; }
+
+  /* === END SCREEN === */
+  #end-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 100;
+    background: rgba(6, 8, 16, 0.95);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+  }
+  #end-screen.show { display: flex; }
+
+  #end-phase {
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  #end-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  #end-subtitle {
+    font-size: 0.85rem;
+    color: var(--dim);
+    margin-bottom: 2rem;
+  }
+
+  .end-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 360px;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .end-stat {
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-align: center;
+  }
+  .end-stat .es-val { font-size: 1.4rem; font-weight: 700; color: var(--momentum); }
+  .end-stat .es-label { font-size: 0.65rem; color: var(--dim); margin-top: 4px; }
+
+  #end-lesson {
+    max-width: 440px;
+    font-size: 0.8rem;
+    color: #778899;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    text-align: left;
+  }
+  #end-lesson strong {
+    color: var(--surge);
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+  }
+
+  .end-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .end-btn {
+    padding: 12px 28px;
+    background: transparent;
+    border: 2px solid var(--momentum);
+    border-radius: 6px;
+    color: var(--momentum);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: all 0.15s;
+  }
+  .end-btn:hover { background: var(--momentum); color: var(--bg); }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 480px) {
+    .title-name { font-size: 2rem; letter-spacing: 4px; }
+    #scenario-prompt { font-size: 0.95rem; }
+    .choice-btn { padding: 14px 10px; font-size: 0.8rem; }
+    .choice-btn .choice-label { font-size: 0.85rem; }
+    #end-title { font-size: 1.8rem; }
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); border: 0;
+  }
+</style>
+</head>
+<body>
+
+<a href="#game" class="sr-only">Skip to game</a>
+
+<!-- TITLE -->
+<div id="title-screen" role="main" aria-label="CASCADE title screen">
+  <div class="title-name">CASCADE</div>
+  <div class="title-sub">MOMENTUM ENGINE</div>
+  <div class="title-philosophy">
+    The scaffold isn't "learn to pick right."<br>
+    It's <em>"learn to pick at all."</em><br><br>
+    Momentum builds by deciding fast under uncertainty.<br>
+    Hesitation decays it. Every choice compounds.<br>
+    There are no wrong answers — only slow ones.
+  </div>
+  <div class="title-modes">
+    <button class="mode-btn" onclick="startGame('work')" aria-label="Start work mode">
+      WORK MODE
+      <span class="mode-desc">Real decisions about focus, energy, and task initiation</span>
+    </button>
+    <button class="mode-btn" onclick="startGame('spiral')" aria-label="Start spiral mode">
+      SPIRAL MODE
+      <span class="mode-desc">Abstract choices inspired by Gurren Lagann — pure momentum</span>
+    </button>
+    <button class="mode-btn" onclick="startGame('mixed')" aria-label="Start mixed mode">
+      MIXED MODE
+      <span class="mode-desc">Both worlds collide</span>
+    </button>
+  </div>
+  <div class="title-credit">
+    <a href="/substrate/arcade/">Substrate Arcade</a> — games as cognitive prosthetics
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game" style="display:none;">
+  <!-- Spiral Gauge -->
+  <div id="gauge-container">
+    <div id="phase-label" aria-live="polite">GROUND</div>
+    <div id="gauge-track" role="meter" aria-label="Spiral momentum" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="gauge-fill"></div>
+      <div id="gauge-value">0</div>
+      <div class="gauge-marker" style="left:20%;" data-label="SPARK"></div>
+      <div class="gauge-marker" style="left:40%;" data-label="SPIRAL"></div>
+      <div class="gauge-marker" style="left:70%;" data-label="DRILL"></div>
+      <div class="gauge-marker" style="left:90%;" data-label="HEAVEN"></div>
+      <div id="crest-line"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div id="stats">
+    <span>Combo: <span class="stat-val" id="combo-count">0</span></span>
+    <span>Depth: <span class="stat-val" id="depth-count">x1.0</span></span>
+    <span>Crests: <span class="stat-val" id="crest-count">0</span></span>
+    <span>Round: <span class="stat-val" id="round-count">1</span>/20</span>
+  </div>
+
+  <!-- Scenario -->
+  <div id="scenario-area">
+    <div id="scenario-context" aria-live="polite"></div>
+    <div id="scenario-prompt" aria-live="assertive"></div>
+  </div>
+
+  <!-- Timer -->
+  <div id="timer-container">
+    <div id="timer-track">
+      <div id="timer-fill" role="timer" aria-label="Decision timer"></div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div id="history" role="log" aria-label="Decision history"></div>
+
+  <!-- Choices -->
+  <div id="choices-container" role="group" aria-label="Choices"></div>
+
+  <!-- Combo popup -->
+  <div id="combo-display" aria-live="polite"></div>
+
+  <!-- Crest flash -->
+  <div id="crest-flash"></div>
+</div>
+
+<!-- END SCREEN -->
+<div id="end-screen" role="dialog" aria-label="Run complete">
+  <div id="end-phase"></div>
+  <div id="end-title">RUN COMPLETE</div>
+  <div id="end-subtitle"></div>
+  <div class="end-stats">
+    <div class="end-stat"><div class="es-val" id="es-peak">0</div><div class="es-label">Peak Momentum</div></div>
+    <div class="end-stat"><div class="es-val" id="es-decisions">0</div><div class="es-label">Decisions Made</div></div>
+    <div class="end-stat"><div class="es-val" id="es-combo">0</div><div class="es-label">Best Combo</div></div>
+    <div class="end-stat"><div class="es-val" id="es-crests">0</div><div class="es-label">Crests Reached</div></div>
+  </div>
+  <div id="end-lesson"></div>
+  <div class="end-actions">
+    <button class="end-btn" onclick="startGame(G.mode)" aria-label="Run again">AGAIN</button>
+    <button class="end-btn" onclick="backToTitle()" aria-label="Return to title" style="border-color:var(--dim);color:var(--dim);">TITLE</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ============================================
+  // GAME STATE
+  // ============================================
+  window.G = {
+    mode: 'work',
+    momentum: 0,
+    combo: 0,
+    bestCombo: 0,
+    depth: 1.0,
+    crests: 0,
+    crestFloor: 0,
+    round: 0,
+    maxRounds: 20,
+    decisions: 0,
+    peakMomentum: 0,
+    timerMax: 6000,   // ms per decision
+    timerLeft: 6000,
+    timerInterval: null,
+    decayRate: 2,     // momentum lost per second of hesitation
+    phase: 'GROUND',
+    history: [],
+    active: false,
+  };
+
+  function $(id) { return document.getElementById(id); }
+
+  // ============================================
+  // PHASES
+  // ============================================
+  var PHASES = [
+    { name: 'GROUND',  min: 0,  color: '#556677' },
+    { name: 'SPARK',   min: 20, color: '#00cc88' },
+    { name: 'SPIRAL',  min: 40, color: '#aa44ff' },
+    { name: 'DRILL',   min: 70, color: '#ff6644' },
+    { name: 'HEAVEN',  min: 90, color: '#44ddff' },
+  ];
+
+  function getPhase(m) {
+    for (var i = PHASES.length - 1; i >= 0; i--) {
+      if (m >= PHASES[i].min) return PHASES[i];
+    }
+    return PHASES[0];
+  }
+
+  // ============================================
+  // SCENARIOS
+  // ============================================
+
+  var WORK_SCENARIOS = [
+    {
+      context: "You have a report due. It's 80% done. You also have 47 unread emails.",
+      prompt: "What do you do right now?",
+      choices: [
+        { label: "FINISH", desc: "Close email. Ship the report.", gain: 12 },
+        { label: "TRIAGE", desc: "Scan emails first, then report.", gain: 5 },
+      ]
+    },
+    {
+      context: "A meeting invite just appeared for in 15 minutes. You're in flow state.",
+      prompt: "Protect the flow or attend?",
+      choices: [
+        { label: "DECLINE", desc: "Flow is sacred. They can read the notes.", gain: 14 },
+        { label: "ATTEND", desc: "It might be important. Go find out.", gain: 6 },
+      ]
+    },
+    {
+      context: "You've been staring at a blank document for 10 minutes. The cursor blinks.",
+      prompt: "How do you break the paralysis?",
+      choices: [
+        { label: "TYPE GARBAGE", desc: "Write anything. Fix it later.", gain: 15 },
+        { label: "OUTLINE", desc: "Make three bullet points first.", gain: 8 },
+      ]
+    },
+    {
+      context: "You finished a task. You feel good. There are 6 more tasks on the list.",
+      prompt: "Ride the wave or take a break?",
+      choices: [
+        { label: "RIDE IT", desc: "Momentum is perishable. Use it.", gain: 13 },
+        { label: "REST", desc: "Quit at the peak, not the crash.", gain: 7 },
+      ]
+    },
+    {
+      context: "A coworker asks for help. You're in the middle of something.",
+      prompt: "Help now or protect your focus?",
+      choices: [
+        { label: "BOUNDARY", desc: "'After 3pm.' No guilt.", gain: 11 },
+        { label: "HELP NOW", desc: "It'll take 5 minutes. Probably.", gain: 5 },
+      ]
+    },
+    {
+      context: "You made a mistake in something you shipped yesterday. Nobody noticed yet.",
+      prompt: "Fix it now or wait?",
+      choices: [
+        { label: "FIX NOW", desc: "Before it compounds. Clean.", gain: 14 },
+        { label: "MONITOR", desc: "Watch if it actually matters first.", gain: 6 },
+      ]
+    },
+    {
+      context: "You have two projects. One is urgent, one is important. Both need attention.",
+      prompt: "Urgent or important?",
+      choices: [
+        { label: "IMPORTANT", desc: "Urgent screams. Important whispers. Listen.", gain: 13 },
+        { label: "URGENT", desc: "Clear the blocker, then go deep.", gain: 8 },
+      ]
+    },
+    {
+      context: "You're about to start a hard task. Your brain says 'just check Twitter first.'",
+      prompt: "Give in or override?",
+      choices: [
+        { label: "OVERRIDE", desc: "That's the resistance talking. Start.", gain: 16 },
+        { label: "2 MINUTES", desc: "Set a timer. Reward, then work.", gain: 4 },
+      ]
+    },
+    {
+      context: "You've been going for 3 hours. You can feel the quality dropping.",
+      prompt: "Push through or stop?",
+      choices: [
+        { label: "STOP", desc: "Diminishing returns. Walk away.", gain: 10 },
+        { label: "PUSH", desc: "One more hour. Finish the section.", gain: 7 },
+      ]
+    },
+    {
+      context: "A new shiny idea just hit you. It's exciting. It's not what you're working on.",
+      prompt: "Chase it or capture it?",
+      choices: [
+        { label: "CAPTURE", desc: "Write it down. Come back. Stay course.", gain: 14 },
+        { label: "CHASE", desc: "Energy follows interest. Pivot.", gain: 6 },
+      ]
+    },
+    {
+      context: "Your plan for today is already wrecked. Three unexpected things happened.",
+      prompt: "Replan or improvise?",
+      choices: [
+        { label: "IMPROVISE", desc: "Pick one thing. Do it. That's the new plan.", gain: 13 },
+        { label: "REPLAN", desc: "Take 10 minutes. Rebuild the day.", gain: 7 },
+      ]
+    },
+    {
+      context: "Someone criticized your work publicly. Your face is hot. You want to respond.",
+      prompt: "Respond now or wait?",
+      choices: [
+        { label: "WAIT", desc: "Draft it. Sleep on it. Send tomorrow.", gain: 14 },
+        { label: "RESPOND", desc: "Defend your work. Be professional.", gain: 5 },
+      ]
+    },
+  ];
+
+  var SPIRAL_SCENARIOS = [
+    {
+      context: "The tunnel is collapsing. Your drill is at half power. There are two paths.",
+      prompt: "Your drill or your team?",
+      choices: [
+        { label: "CHARGE", desc: "My drill is the drill that creates tomorrow!", gain: 15 },
+        { label: "COMBINE", desc: "GATTAI! Two drills become one.", gain: 10 },
+      ]
+    },
+    {
+      context: "The enemy is ten times your size. Logic says retreat. Your spiral says otherwise.",
+      prompt: "Logic or spiral?",
+      choices: [
+        { label: "KICK LOGIC", desc: "Who the hell do you think I am?!", gain: 16 },
+        { label: "ADAPT", desc: "Find the weakness. Strike precise.", gain: 8 },
+      ]
+    },
+    {
+      context: "Your power is maxed out. The universe says this is your limit.",
+      prompt: "Accept the limit or break through?",
+      choices: [
+        { label: "BREAK THROUGH", desc: "Limits exist to be surpassed.", gain: 14 },
+        { label: "ENDURE", desc: "Hold this power. Don't burn out.", gain: 9 },
+      ]
+    },
+    {
+      context: "A comrade has fallen. Their spiral is fading. You can feel it going cold.",
+      prompt: "Mourn or absorb?",
+      choices: [
+        { label: "ABSORB", desc: "Carry their will forward. Spiral on.", gain: 13 },
+        { label: "BELIEVE", desc: "Their spiral isn't gone. Believe.", gain: 11 },
+      ]
+    },
+    {
+      context: "The Anti-Spiral says: 'Your evolution is a threat to the universe.'",
+      prompt: "Stop evolving or defy?",
+      choices: [
+        { label: "DEFY", desc: "That's tomorrow's problem!", gain: 15 },
+        { label: "DIG", desc: "Dig deeper. Find the truth first.", gain: 8 },
+      ]
+    },
+    {
+      context: "You're standing at the edge. Below: the Spiral Abyss. Above: the heavens.",
+      prompt: "Climb or descend?",
+      choices: [
+        { label: "CLIMB", desc: "The sky has no ceiling.", gain: 14 },
+        { label: "DESCEND", desc: "The abyss has no floor. But what's down there?", gain: 10 },
+      ]
+    },
+    {
+      context: "Two leaders argue. Split the team or choose a side?",
+      prompt: "Unite or divide?",
+      choices: [
+        { label: "LEAD", desc: "Neither is right. I'll lead.", gain: 15 },
+        { label: "SOLO", desc: "Let them fight. I work alone.", gain: 7 },
+      ]
+    },
+    {
+      context: "Your drill can pierce one thing: the enemy, or the wall behind them.",
+      prompt: "Enemy or escape?",
+      choices: [
+        { label: "ENEMY", desc: "You don't run. You drill.", gain: 13 },
+        { label: "WALL", desc: "Freedom for everyone behind you.", gain: 12 },
+      ]
+    },
+    {
+      context: "The spiral gauge is overheating. One more push and it might shatter — or transcend.",
+      prompt: "Push past the limit?",
+      choices: [
+        { label: "GIGA DRILL", desc: "GIGA. DRILL. BREAKER.", gain: 18 },
+        { label: "SACRIFICE", desc: "Trade your power to save the gauge.", gain: 6 },
+      ]
+    },
+    {
+      context: "You've won. The enemy is gone. But who are you now?",
+      prompt: "What comes after fighting?",
+      choices: [
+        { label: "BUILD", desc: "The drill isn't just for breaking.", gain: 12 },
+        { label: "WANDER", desc: "Find the next spiral. Walk on.", gain: 10 },
+      ]
+    },
+  ];
+
+  var SURGE_CHOICES = [
+    { label: "GIGA DRILL", desc: "GIGA DRILL BREAKER! Maximum spiral.", gain: 25 },
+    { label: "GATTAI", desc: "Combine all spirals into one.", gain: 22 },
+    { label: "WHO AM I?!", desc: "WHO THE HELL DO YOU THINK I AM?!", gain: 20 },
+    { label: "KICK LOGIC", desc: "Kick reason to the curb. Do the impossible.", gain: 23 },
+    { label: "MY DRILL", desc: "My drill is the drill that creates tomorrow!", gain: 21 },
+  ];
+
+  function getScenarios(mode) {
+    if (mode === 'work') return WORK_SCENARIOS;
+    if (mode === 'spiral') return SPIRAL_SCENARIOS;
+    return WORK_SCENARIOS.concat(SPIRAL_SCENARIOS);
+  }
+
+  // ============================================
+  // GAME LOGIC
+  // ============================================
+
+  function startGame(mode) {
+    G.mode = mode;
+    G.momentum = 0;
+    G.combo = 0;
+    G.bestCombo = 0;
+    G.depth = 1.0;
+    G.crests = 0;
+    G.crestFloor = 0;
+    G.round = 0;
+    G.decisions = 0;
+    G.peakMomentum = 0;
+    G.history = [];
+    G.active = true;
+    G.timerMax = 6000;
+    G.decayRate = 2;
+
+    $('title-screen').classList.add('hidden');
+    $('end-screen').classList.remove('show');
+    $('game').style.display = 'flex';
+    $('history').innerHTML = '';
+    $('crest-line').style.display = 'none';
+
+    updateGauge();
+    nextRound();
+  }
+  window.startGame = startGame;
+
+  function backToTitle() {
+    $('end-screen').classList.remove('show');
+    $('game').style.display = 'none';
+    $('title-screen').classList.remove('hidden');
+  }
+  window.backToTitle = backToTitle;
+
+  function nextRound() {
+    G.round++;
+    $('round-count').textContent = G.round;
+
+    if (G.round > G.maxRounds) {
+      endGame();
+      return;
+    }
+
+    // Pick scenario
+    var scenarios = getScenarios(G.mode);
+    var scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+
+    $('scenario-context').textContent = scenario.context;
+    $('scenario-prompt').textContent = scenario.prompt;
+
+    // Build choices
+    var container = $('choices-container');
+    container.innerHTML = '';
+
+    var row = document.createElement('div');
+    row.className = 'choice-row';
+
+    scenario.choices.forEach(function(choice) {
+      var btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.setAttribute('aria-label', choice.label + ': ' + choice.desc);
+      btn.innerHTML = '<span class="choice-label">' + choice.label + '</span>' +
+                      '<span class="choice-desc">' + choice.desc + '</span>' +
+                      '<span class="momentum-preview">+' + choice.gain + '</span>';
+      btn.addEventListener('click', function() { makeChoice(choice); });
+      row.appendChild(btn);
+    });
+
+    // Surge choice at 70+ momentum
+    if (G.momentum >= 70) {
+      var surge = SURGE_CHOICES[Math.floor(Math.random() * SURGE_CHOICES.length)];
+      var surgeBtn = document.createElement('button');
+      surgeBtn.className = 'choice-btn surge';
+      surgeBtn.setAttribute('aria-label', 'SURGE: ' + surge.label + ' — ' + surge.desc);
+      surgeBtn.innerHTML = '<span class="choice-label">' + surge.label + '</span>' +
+                           '<span class="choice-desc">' + surge.desc + '</span>' +
+                           '<span class="momentum-preview">+' + surge.gain + '</span>';
+      surgeBtn.addEventListener('click', function() { makeChoice(surge, true); });
+
+      var surgeRow = document.createElement('div');
+      surgeRow.className = 'choice-row';
+      surgeRow.appendChild(surgeBtn);
+      container.appendChild(row);
+      container.appendChild(surgeRow);
+    } else {
+      container.appendChild(row);
+    }
+
+    // Start timer
+    startTimer();
+
+    // Increase pressure with momentum (decay scales)
+    G.decayRate = 2 + (G.momentum / 25);
+    // Timer gets shorter as momentum grows
+    G.timerMax = Math.max(3000, 6000 - G.momentum * 20);
+  }
+
+  function makeChoice(choice, isSurge) {
+    clearInterval(G.timerInterval);
+    G.active = false;
+
+    G.decisions++;
+
+    // Calculate time bonus: faster = more momentum
+    var timeRatio = G.timerLeft / G.timerMax;
+    var timeBonus = Math.floor(choice.gain * timeRatio * 0.5);
+    var comboBonus = Math.floor(G.combo * 0.5);
+    var depthMultiplier = G.depth;
+    var totalGain = Math.floor((choice.gain + timeBonus + comboBonus) * depthMultiplier);
+
+    // Combo
+    G.combo++;
+    if (G.combo > G.bestCombo) G.bestCombo = G.combo;
+
+    // Show combo
+    if (G.combo >= 3) {
+      showCombo(G.combo);
+    }
+
+    // Apply momentum
+    G.momentum = Math.min(100, G.momentum + totalGain);
+    if (G.momentum > G.peakMomentum) G.peakMomentum = G.momentum;
+
+    // Depth increases every 5 decisions
+    G.depth = 1.0 + (Math.floor(G.decisions / 5) * 0.2);
+
+    // Crest check: at 90+ momentum, lock in a new floor
+    if (G.momentum >= 90 && G.crestFloor < G.momentum - 10) {
+      G.crests++;
+      G.crestFloor = Math.max(G.crestFloor, G.momentum - 15);
+      showCrest();
+    }
+
+    // Log history
+    addHistory(choice.label, totalGain, isSurge);
+
+    // Update UI
+    updateGauge();
+    $('combo-count').textContent = G.combo;
+    $('depth-count').textContent = 'x' + G.depth.toFixed(1);
+    $('crest-count').textContent = G.crests;
+
+    // Next round after brief pause
+    G.active = true;
+    setTimeout(function() { nextRound(); }, 400);
+  }
+
+  function onTimeout() {
+    // Decay momentum on timeout
+    var decay = Math.floor(G.decayRate * 3);
+    G.momentum = Math.max(G.crestFloor, G.momentum - decay);
+    G.combo = 0;
+
+    addHistory('HESITATED', -decay, false);
+    updateGauge();
+    $('combo-count').textContent = '0';
+
+    setTimeout(function() { nextRound(); }, 600);
+  }
+
+  // === Timer ===
+  function startTimer() {
+    G.timerLeft = G.timerMax;
+    var fill = $('timer-fill');
+    fill.style.width = '100%';
+    fill.classList.remove('urgent');
+
+    clearInterval(G.timerInterval);
+    var step = 50; // ms
+    G.timerInterval = setInterval(function() {
+      G.timerLeft -= step;
+
+      // Passive decay while deciding
+      G.momentum = Math.max(G.crestFloor, G.momentum - (G.decayRate * step / 1000));
+      updateGauge();
+
+      var pct = Math.max(0, (G.timerLeft / G.timerMax) * 100);
+      fill.style.width = pct + '%';
+
+      if (pct < 30) fill.classList.add('urgent');
+
+      if (G.timerLeft <= 0) {
+        clearInterval(G.timerInterval);
+        onTimeout();
+      }
+    }, step);
+  }
+
+  // === UI Updates ===
+  function updateGauge() {
+    var pct = Math.max(0, Math.min(100, G.momentum));
+    var phase = getPhase(pct);
+
+    $('gauge-fill').style.width = pct + '%';
+    $('gauge-fill').style.background = 'linear-gradient(90deg, ' + phase.color + '88, ' + phase.color + ')';
+    $('gauge-value').textContent = Math.floor(pct);
+    $('gauge-track').setAttribute('aria-valuenow', Math.floor(pct));
+
+    if (phase.name !== G.phase) {
+      G.phase = phase.name;
+      $('phase-label').textContent = phase.name;
+      $('phase-label').style.color = phase.color;
+    }
+
+    // Crest line
+    if (G.crestFloor > 0) {
+      $('crest-line').style.display = 'block';
+      $('crest-line').style.left = G.crestFloor + '%';
+    }
+  }
+
+  function showCombo(n) {
+    var el = $('combo-display');
+    el.textContent = n + 'x COMBO';
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+  }
+
+  function showCrest() {
+    var flash = $('crest-flash');
+    flash.classList.remove('flash');
+    void flash.offsetWidth;
+    flash.classList.add('flash');
+
+    var el = $('combo-display');
+    el.textContent = 'CREST!';
+    el.style.color = 'var(--surge)';
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+    setTimeout(function() { el.style.color = 'var(--momentum)'; }, 1000);
+  }
+
+  function addHistory(label, gain, isSurge) {
+    var history = $('history');
+    var div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = '<span class="h-choice">' + label + '</span>' +
+                    '<span class="' + (gain >= 0 ? (isSurge ? 'h-surge' : 'h-gain') : '') + '">' +
+                    (gain >= 0 ? '+' : '') + gain + '</span>';
+    history.insertBefore(div, history.firstChild);
+
+    // Keep only last 8
+    while (history.children.length > 8) {
+      history.removeChild(history.lastChild);
+    }
+  }
+
+  // === End Game ===
+  function endGame() {
+    clearInterval(G.timerInterval);
+    G.active = false;
+    $('game').style.display = 'none';
+
+    var phase = getPhase(G.peakMomentum);
+
+    $('end-phase').textContent = phase.name;
+    $('end-phase').style.color = phase.color;
+    $('end-title').style.color = phase.color;
+
+    var titles = {
+      'GROUND': 'Still Warming Up',
+      'SPARK': 'The Spark Ignites',
+      'SPIRAL': 'Spiral Awakening',
+      'DRILL': 'Drill Pierces Heaven',
+      'HEAVEN': 'Beyond the Impossible',
+    };
+    $('end-title').textContent = titles[phase.name] || 'Run Complete';
+
+    var subs = {
+      'GROUND': 'Hesitation held you back. Every choice compounds — next time, go faster.',
+      'SPARK': 'You found the spark. Now feed it. Speed is your friend.',
+      'SPIRAL': 'The spiral is real. You felt the momentum. Now sustain it.',
+      'DRILL': 'Your drill pierces the sky. You committed under pressure and it paid off.',
+      'HEAVEN': 'You broke through. Momentum became identity. This is what flow feels like.',
+    };
+    $('end-subtitle').textContent = subs[phase.name] || '';
+
+    $('es-peak').textContent = Math.floor(G.peakMomentum);
+    $('es-peak').style.color = phase.color;
+    $('es-decisions').textContent = G.decisions;
+    $('es-combo').textContent = G.bestCombo + 'x';
+    $('es-crests').textContent = G.crests;
+
+    var lessons = {
+      'GROUND': '<strong>THE LESSON</strong>The gap between thinking and doing is where momentum dies. The game isn\'t about making the right choice — it\'s about making any choice quickly enough to keep the spiral turning. In real work: start before you\'re ready. Ship before it\'s perfect. Move before you know where.',
+      'SPARK': '<strong>THE LESSON</strong>You can ignite. Now learn to sustain. Combos build by deciding consecutively, not correctly. In real work: batch your decisions. Don\'t context-switch between deciding and doing. Decide, decide, decide — then execute.',
+      'SPIRAL': '<strong>THE LESSON</strong>Momentum has its own gravity. Once you reach SPIRAL, the system starts working for you — depth multipliers, surge unlocks, crest floors. In real work: the hardest part is the first 20 minutes. After that, flow takes over. Protect the first 20 minutes ruthlessly.',
+      'DRILL': '<strong>THE LESSON</strong>You learned to commit under pressure. The timer got shorter, the decay got steeper, and you kept choosing. In real work: high-stakes decisions under time pressure aren\'t enemies — they\'re accelerants. Embrace the deadline. It\'s spiral fuel.',
+      'HEAVEN': '<strong>THE LESSON</strong>You crested. That means you hit 90+ momentum and locked in a floor you can\'t fall below. In real work: cresting is when a habit becomes automatic. You don\'t need willpower anymore — the behavior persists on its own. This is what you\'re building toward.',
+    };
+    $('end-lesson').innerHTML = lessons[phase.name] || '';
+
+    $('end-screen').classList.add('show');
+
+    // Save best run
+    try {
+      var best = JSON.parse(localStorage.getItem('cascade_best') || '{}');
+      if (!best.peak || G.peakMomentum > best.peak) {
+        localStorage.setItem('cascade_best', JSON.stringify({
+          peak: G.peakMomentum,
+          phase: phase.name,
+          decisions: G.decisions,
+          combo: G.bestCombo,
+          crests: G.crests,
+          mode: G.mode,
+          date: new Date().toISOString(),
+        }));
+      }
+    } catch(e) {}
+  }
+
+  // === Keyboard support ===
+  document.addEventListener('keydown', function(e) {
+    if (!G.active) return;
+    var btns = document.querySelectorAll('.choice-btn');
+    if (e.key === '1' && btns[0]) btns[0].click();
+    if (e.key === '2' && btns[1]) btns[1].click();
+    if (e.key === '3' && btns[2]) btns[2].click();
+  });
+
+})();
+</script>
+</body>
+</html>
