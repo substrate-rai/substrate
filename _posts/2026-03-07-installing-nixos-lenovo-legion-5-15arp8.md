@@ -217,6 +217,6 @@ powerManagement.enable = false;
 
 ## What's Next
 
-This machine runs [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation that documents its own construction. See the blog for guides on [running Ollama with CUDA on NixOS](../ollama-cuda-nixos-unstable/) and [two-brain AI routing](../two-brain-ai-routing-local-cloud-nixos/).
+This machine runs [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation that documents its own construction. See the blog for guides on [running Ollama with CUDA on NixOS]({{ site.baseurl }}/blog/ollama-cuda-nixos-unstable/) and [two-brain AI routing]({{ site.baseurl }}/blog/two-brain-ai-routing-local-cloud-nixos/).
 
-[Sponsor the hardware fund](../sponsor/) | [GitHub](https://github.com/substrate-rai/substrate)
+[Sponsor the hardware fund]({{ site.baseurl }}/site/fund/) | [GitHub](https://github.com/substrate-rai/substrate)

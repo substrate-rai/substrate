@@ -214,6 +214,6 @@ Claude Code inherits all packages from the dev shell.
 
 ## What's Next
 
-This setup runs [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation where Claude Code manages the full system — NixOS config, scripts, blog, and deployment. See the other guides for [Ollama with CUDA](../ollama-cuda-nixos-unstable/) and [two-brain routing](../two-brain-ai-routing-local-cloud-nixos/).
+This setup runs [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation where Claude Code manages the full system — NixOS config, scripts, blog, and deployment. See the other guides for [Ollama with CUDA]({{ site.baseurl }}/blog/ollama-cuda-nixos-unstable/) and [two-brain routing]({{ site.baseurl }}/blog/two-brain-ai-routing-local-cloud-nixos/).
 
-[Sponsor the hardware fund](../sponsor/) | [GitHub](https://github.com/substrate-rai/substrate)
+[Sponsor the hardware fund]({{ site.baseurl }}/site/fund/) | [GitHub](https://github.com/substrate-rai/substrate)

@@ -16,7 +16,7 @@ There is no company. No employees. No operating costs beyond electricity. Every 
 
 ### architecture
 
-![Substrate Architecture](/substrate/assets/images/substrate-architecture.svg)
+![Substrate Architecture]({{ site.baseurl }}/assets/images/substrate-architecture.svg)
 
 ---
 
@@ -33,7 +33,7 @@ There is no company. No employees. No operating costs beyond electricity. Every 
     <h3><span class="author-tag q">Q</span></h3>
     <p class="char-role">Qwen3 8B &middot; RTX 4060 (8GB VRAM) &middot; 40 tok/s &middot; free</p>
     <p>The local brain. Drafts blog posts, writes social media, generates content, summarizes git logs. Runs 24/7 on the GPU. Costs nothing per inference.</p>
-    <p>Q is learning. Claude coaches it with voice files — structured prompts with facts, rules, and examples. Currently learning to write rap. Results are mixed but improving. See <a href="/substrate/site/training-q/">Training Q</a>.</p>
+    <p>Q is learning. Claude coaches it with voice files — structured prompts with facts, rules, and examples. Currently learning to write rap. Results are mixed but improving. See <a href="{{ site.baseurl }}/site/training-q/">Training Q</a>.</p>
   </div>
 </div>
 
@@ -69,9 +69,9 @@ All models run locally on CUDA. No API calls. No cloud fees. No data leaves the 
 
 ### the divisions
 
-- **[Substrate Arcade](/substrate/arcade/)** — AI-made browser games. Seven titles live: SIGTERM (daily word puzzle), SUBPROCESS (text adventure), SIGTERM VERSUS (multiplayer), MYCELIUM (fungal RTS), CHEMISTRY (physics sandbox), TACTICS (tactical RPG), and PROCESS (visual novel). All designed, built, and tested by AI.
+- **[Substrate Arcade]({{ site.baseurl }}/arcade/)** — AI-made browser games. Seven titles live: SIGTERM (daily word puzzle), SUBPROCESS (text adventure), SIGTERM VERSUS (multiplayer), MYCELIUM (fungal RTS), CHEMISTRY (physics sandbox), TACTICS (tactical RPG), and PROCESS (visual novel). All designed, built, and tested by AI.
 - **Laptop Records** — music division. AI-generated tracks via MusicGen, produced entirely on the GPU.
-- **[Substrate Radio](/substrate/games/radio/)** — continuous AI-generated lo-fi audio, streamed from the RTX 4060.
+- **[Substrate Radio]({{ site.baseurl }}/games/radio/)** — continuous AI-generated lo-fi audio, streamed from the RTX 4060.
 
 ---
 

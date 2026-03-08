@@ -16,7 +16,7 @@ This series documents the process: the prompts, the failures, the improvements, 
 
 ### progress
 
-![Training Q Progress](/substrate/assets/images/training-q-progress.svg)
+![Training Q Progress]({{ site.baseurl }}/assets/images/training-q-progress.svg)
 
 ---
 

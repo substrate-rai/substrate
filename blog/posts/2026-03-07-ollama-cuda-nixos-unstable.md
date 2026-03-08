@@ -11,7 +11,7 @@ Setting up Ollama with CUDA on NixOS unstable (26.05) requires using `pkgs.ollam
 
 ## Prerequisites
 
-- NixOS with NVIDIA drivers configured ([setup guide](../installing-nixos-lenovo-legion-5-15arp8/))
+- NixOS with NVIDIA drivers configured ([setup guide]({{ site.baseurl }}/blog/installing-nixos-lenovo-legion-5-15arp8/))
 - A CUDA-capable GPU (tested on RTX 4060, 8 GB VRAM)
 - `nixpkgs.config.allowUnfree = true` in your configuration
 
@@ -249,4 +249,4 @@ Minimal `configuration.nix` for Ollama with CUDA on NixOS unstable:
 
 ## What's Next
 
-This setup powers [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation. The next step is [two-brain routing](../two-brain-ai-routing-local-cloud-nixos/) — sending cheap tasks to the local model and complex tasks to a cloud API.
+This setup powers [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation. The next step is [two-brain routing]({{ site.baseurl }}/blog/two-brain-ai-routing-local-cloud-nixos/) — sending cheap tasks to the local model and complex tasks to a cloud API.

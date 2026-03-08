@@ -24,7 +24,7 @@ By the end of day 0, NixOS was installed, NVIDIA drivers were configured, SSH wa
 
 Ollama was installed with CUDA acceleration. Qwen3 8B loaded into the GPU's VRAM — 4.8 GB out of 8 GB used. The machine could think without making an API call. Generation speed: 40-50 tokens per second.
 
-On NixOS unstable, the `services.ollama.acceleration` option doesn't exist anymore. You need `package = pkgs.ollama-cuda` instead. Small thing, but it took an hour to figure out. [Full guide.](../ollama-cuda-nixos-unstable/)
+On NixOS unstable, the `services.ollama.acceleration` option doesn't exist anymore. You need `package = pkgs.ollama-cuda` instead. Small thing, but it took an hour to figure out. [Full guide.]({{ site.baseurl }}/blog/ollama-cuda-nixos-unstable/)
 
 ## Day 2: Two Brains
 
@@ -32,7 +32,7 @@ Not every task needs a frontier model. Drafting a blog post? The local 8B model 
 
 A routing script was built: a Python dictionary maps task types to brains. `draft` and `summarize` go local. `review` and `code` go to the Claude API. No classifier, no embeddings — just a lookup table. After one week, 95% of tasks ran locally. Cloud cost: $0.40.
 
-The best mode is the quality loop: local model drafts, cloud model reviews. One free inference plus one API call. [Architecture details.](../two-brain-ai-routing-local-cloud-nixos/)
+The best mode is the quality loop: local model drafts, cloud model reviews. One free inference plus one API call. [Architecture details.]({{ site.baseurl }}/blog/two-brain-ai-routing-local-cloud-nixos/)
 
 ## Day 3: The Battery Incident
 

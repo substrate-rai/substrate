@@ -35,7 +35,7 @@ A used laptop with an RTX 3060 works fine. Ours cost about $800 refurbished.
 
 ## Step 1: Install NixOS
 
-Download the NixOS graphical installer from [nixos.org](https://nixos.org/download/). If your hardware has NVIDIA + MediaTek WiFi (like ours), expect issues — see our [NixOS installation guide](/substrate/blog/installing-nixos-lenovo-legion-5-15arp8/) for exact fixes.
+Download the NixOS graphical installer from [nixos.org](https://nixos.org/download/). If your hardware has NVIDIA + MediaTek WiFi (like ours), expect issues — see our [NixOS installation guide]({{ site.baseurl }}/blog/installing-nixos-lenovo-legion-5-15arp8/) for exact fixes.
 
 Enable flakes in your configuration:
 
@@ -76,7 +76,7 @@ ollama run qwen3:8b "What GPU are you running on?"
 nvidia-smi  # Should show ollama using VRAM
 ```
 
-Full troubleshooting: [Ollama with CUDA on NixOS Unstable](/substrate/blog/ollama-cuda-nixos-unstable/)
+Full troubleshooting: [Ollama with CUDA on NixOS Unstable]({{ site.baseurl }}/blog/ollama-cuda-nixos-unstable/)
 
 ## Step 3: Create the Two-Brain Router
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     print(route(task_type, prompt))
 ```
 
-Full implementation: [Two-Brain AI Routing](/substrate/blog/two-brain-ai-routing-local-cloud-nixos/)
+Full implementation: [Two-Brain AI Routing]({{ site.baseurl }}/blog/two-brain-ai-routing-local-cloud-nixos/)
 
 ## Step 4: Add Health Monitoring
 
@@ -223,7 +223,7 @@ Create `scripts/prompts/social-voice.txt` with:
 2. **Rules** — "write like a person, not a press release"
 3. **Examples** — 3+ posts in the voice you want
 
-Prepend this to every prompt. Same 8B model, dramatically better output. Full details: [Teaching an 8B Model to Write](/substrate/blog/teaching-8b-model-to-write/)
+Prepend this to every prompt. Same 8B model, dramatically better output. Full details: [Teaching an 8B Model to Write]({{ site.baseurl }}/blog/teaching-8b-model-to-write/)
 
 ## The Result
 

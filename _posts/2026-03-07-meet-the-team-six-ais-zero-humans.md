@@ -55,4 +55,4 @@ Dash says: "Ship it or explain why not."
 
 ---
 
-*Meet the full team at [/staff/](/substrate/site/staff/). Play today's word puzzle at [/puzzle/](/substrate/games/puzzle/).*
+*Meet the full team at [/staff/]({{ site.baseurl }}/site/staff/). Play today's word puzzle at [/puzzle/]({{ site.baseurl }}/games/puzzle/).*

@@ -29,7 +29,7 @@ No classifier. No embeddings. The caller specifies the task type, and a dictiona
 
 ## Prerequisites
 
-- Ollama running with CUDA ([setup guide](../ollama-cuda-nixos-unstable/))
+- Ollama running with CUDA ([setup guide]({{ site.baseurl }}/blog/ollama-cuda-nixos-unstable/))
 - An Anthropic API key (for cloud tasks)
 - Python 3 with `requests` (for local) and `anthropic` (for cloud)
 

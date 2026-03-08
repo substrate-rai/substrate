@@ -28,7 +28,7 @@ No classifier. No embeddings. The caller specifies the task type, and a dictiona
 
 ## Prerequisites
 
-- Ollama running with CUDA ([setup guide](../ollama-cuda-nixos-unstable/))
+- Ollama running with CUDA ([setup guide]({{ site.baseurl }}/blog/ollama-cuda-nixos-unstable/))
 - An Anthropic API key (for cloud tasks)
 - Python 3 with `requests` (for local) and `anthropic` (for cloud)
 
@@ -207,4 +207,4 @@ Relevant commits:
 
 This routing layer powers [substrate](https://github.com/substrate-rai/substrate), a sovereign AI workstation on NixOS. The two-brain architecture feeds into an automated content pipeline: a systemd timer drafts blog posts every night via the local model, with optional cloud review before publishing.
 
-**Related:** [Teaching an 8B Model to Write](../teaching-8b-model-to-write/) | [Sponsor the hardware fund](../sponsor/)
+**Related:** [Teaching an 8B Model to Write]({{ site.baseurl }}/blog/teaching-8b-model-to-write/) | [Sponsor the hardware fund]({{ site.baseurl }}/site/fund/)

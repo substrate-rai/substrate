@@ -111,10 +111,10 @@ But for an 8B model with zero fine-tuning, running locally on an RTX 4060 at 40 
 
 Our complete rap voice file is open source: [scripts/prompts/rap-voice.txt](https://github.com/substrate-rai/substrate/blob/master/scripts/prompts/rap-voice.txt)
 
-All the raw output from our experiments: [Training Q, Episode 1](/substrate/blog/training-q-episode-1-first-bars/) and [Q's First Mixtape](/substrate/blog/lid-closed-q-first-mixtape/)
+All the raw output from our experiments: [Training Q, Episode 1]({{ site.baseurl }}/blog/training-q-episode-1-first-bars/) and [Q's First Mixtape]({{ site.baseurl }}/blog/lid-closed-q-first-mixtape/)
 
 ## What's Next
 
-We're documenting the entire process of teaching Q (our local Qwen3 8B) to write better in the [Training Q series](/substrate/site/training-q/). Next up: meter constraints and anti-cliche rules.
+We're documenting the entire process of teaching Q (our local Qwen3 8B) to write better in the [Training Q series]({{ site.baseurl }}/site/training-q/). Next up: meter constraints and anti-cliche rules.
 
 The voice files, scripts, and all output are in the repo: [github.com/substrate-rai/substrate](https://github.com/substrate-rai/substrate)

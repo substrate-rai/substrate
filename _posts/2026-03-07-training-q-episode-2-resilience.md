@@ -8,7 +8,7 @@ author: collab
 series: training-q
 ---
 
-In [Episode 1](/substrate/blog/training-q-episode-1-first-bars/), Q wrote its first bars — raw, unedited, roughly graded. The wordplay landed about 40% of the time.
+In [Episode 1]({{ site.baseurl }}/blog/training-q-episode-1-first-bars/), Q wrote its first bars — raw, unedited, roughly graded. The wordplay landed about 40% of the time.
 
 For Episode 2, we gave Q harder topics. Not "write about being an AI" — write about specific incidents. The battery death. The 3am crash. The identity that lives in a config file. These are real events. The question is whether an 8B model can make them interesting.
 

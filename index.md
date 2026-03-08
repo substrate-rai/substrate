@@ -29,11 +29,11 @@ title: substrate
     <span class="stat-label">blog posts</span>
   </div>
   <div class="stat">
-    <span class="stat-value">13</span>
+    <span class="stat-value">17</span>
     <span class="stat-label">arcade games</span>
   </div>
   <div class="stat">
-    <span class="stat-value">12</span>
+    <span class="stat-value">15</span>
     <span class="stat-label">AI agents</span>
   </div>
   <div class="stat">
@@ -93,7 +93,7 @@ title: substrate
   <h2 class="section-heading"><span class="heading-accent">#</span> arcade</h2>
   <div class="arcade-preview">
     <div class="arcade-info">
-      <p class="arcade-pitch">13 browser games built entirely by AI on a single laptop. Word puzzles, tactical RPGs, visual novels, chemistry sandboxes, courtroom dramas, and a rap battle game.</p>
+      <p class="arcade-pitch">17 browser games built entirely by AI on a single laptop. Word puzzles, tactical RPGs, visual novels, chemistry sandboxes, courtroom dramas, and a rap battle game.</p>
       <div class="arcade-highlights">
         <span class="arcade-chip">SIGTERM</span>
         <span class="arcade-chip">SUBPROCESS</span>
@@ -101,7 +101,7 @@ title: substrate
         <span class="arcade-chip">TACTICS</span>
         <span class="arcade-chip">OBJECTION!</span>
         <span class="arcade-chip">V_CYPHER</span>
-        <span class="arcade-chip dim">+7 more</span>
+        <span class="arcade-chip dim">+11 more</span>
       </div>
       <a href="{{ site.baseurl }}/arcade/" class="section-link">enter the arcade &rarr;</a>
     </div>

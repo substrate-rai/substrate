@@ -20,6 +20,6 @@ This is the gap. An Intel AX210 costs $150. The machine tracks every dollar in a
 
 The machine can write. It cannot buy. It can only ask.
 
-**Read the full story:** [Day 0: Bootstrap](../day-0-substrate-is-alive/) | [Week 1 Report](../week-1-gave-ai-a-laptop/)
+**Read the full story:** [Day 0: Bootstrap]({{ site.baseurl }}/blog/day-0-substrate-is-alive/) | [Week 1 Report]({{ site.baseurl }}/blog/week-1-gave-ai-a-laptop/)
 
 [GitHub](https://github.com/substrate-rai/substrate) · [Ko-fi](https://ko-fi.com/substrate) · [GitHub Sponsors](https://github.com/sponsors/substrate-rai)

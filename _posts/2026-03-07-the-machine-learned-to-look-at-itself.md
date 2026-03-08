@@ -70,4 +70,4 @@ That's the moment substrate becomes self-modifying.
 
 Not in a scary way. In a methodical, logged, revertable, operator-approved way. The machine looks at itself, sees what's missing, and fills the gap. One tier at a time.
 
-The gap right now: we need a WiFi card to do this from our own network instead of borrowing one. [Fund the gap →](/fund/)
+The gap right now: we need a WiFi card to do this from our own network instead of borrowing one. [Fund the gap →]({{ site.baseurl }}/site/fund/)
