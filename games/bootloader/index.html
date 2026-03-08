@@ -1,7 +1,7 @@
 ---
 layout: null
 permalink: /games/bootloader/
-title: "BOOTLOADER — Run-Based Productivity"
+title: "BOOTLOADER — System Initialization Protocol"
 redirect_from:
   - /bootloader/
 ---
@@ -10,7 +10,7 @@ redirect_from:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>BOOTLOADER — Brain OS | Substrate Arcade</title>
+<title>BOOTLOADER — System Initialization Protocol | Substrate Arcade</title>
 <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
@@ -24,9 +24,9 @@ redirect_from:
     --border: #1a2040;
     --text: #c8d0e0;
     --dim: #556677;
-    --accent: #00ffaa;
+    --accent: #00e09a;
     --warn: #ff6644;
-    --gold: #ffdd44;
+    --gold: #ffaa00;
     --purple: #aa66ff;
     --blue: #4488ff;
   }
@@ -154,8 +154,8 @@ redirect_from:
     font-size: 0.75rem;
     color: var(--accent);
     padding: 6px 8px;
-    background: rgba(0, 255, 170, 0.06);
-    border: 1px solid rgba(0, 255, 170, 0.15);
+    background: rgba(0, 224, 154, 0.06);
+    border: 1px solid rgba(0, 224, 154, 0.15);
     border-radius: 4px;
   }
 
@@ -245,7 +245,7 @@ redirect_from:
     border-color: var(--accent);
     color: var(--accent);
   }
-  .action-btn.start:hover { background: rgba(0, 255, 170, 0.08); }
+  .action-btn.start:hover { background: rgba(0, 224, 154, 0.08); }
 
   .action-btn.block {
     border-color: var(--warn);
@@ -257,7 +257,7 @@ redirect_from:
     border-color: var(--gold);
     color: var(--gold);
   }
-  .action-btn.done:hover { background: rgba(255, 221, 68, 0.08); }
+  .action-btn.done:hover { background: rgba(255, 170, 0, 0.08); }
 
   .action-btn.fail {
     border-color: var(--dim);
@@ -383,7 +383,7 @@ redirect_from:
     border: 2px solid var(--accent);
     color: var(--accent);
   }
-  .modal-btn.confirm:hover { background: rgba(0, 255, 170, 0.08); }
+  .modal-btn.confirm:hover { background: rgba(0, 224, 154, 0.08); }
 
   .modal-btn.cancel {
     background: transparent;
@@ -421,7 +421,7 @@ redirect_from:
     letter-spacing: 4px;
     color: var(--accent);
     margin-bottom: 4px;
-    text-shadow: 0 0 40px rgba(0, 255, 170, 0.3);
+    text-shadow: 0 0 40px rgba(0, 224, 154, 0.3);
   }
 
   .t-sub {
@@ -654,32 +654,32 @@ redirect_from:
 <div id="title" role="main" aria-label="Bootloader title screen">
   <div class="t-logo">SUBSTRATE ARCADE</div>
   <div class="t-name">BOOTLOADER</div>
-  <div class="t-sub">BRAIN OPERATING SYSTEM</div>
+  <div class="t-sub">SYSTEM INITIALIZATION PROTOCOL</div>
 
   <div class="t-rules">
     <div class="t-rule">
       <span class="t-rule-num">01</span>
-      <span>A <em>run</em> is one task. One objective. One timer. It ends in <em>success</em> or <em>failure</em>. Both count.</span>
+      <span>A <em>boot stage</em> is one init task. One process. One watchdog timer. It ends in <em>online</em> or <em>timeout</em>. Both are logged.</span>
     </div>
     <div class="t-rule">
       <span class="t-rule-num">02</span>
-      <span>You cannot start two runs. You cannot multitask inside a run. <em>One move per turn.</em></span>
+      <span>You cannot run two stages at once. The kernel is single-threaded at init. <em>One process per stage.</em></span>
     </div>
     <div class="t-rule">
       <span class="t-rule-num">03</span>
-      <span>When blocked, <em>log the blocker</em>. It becomes visible. Visible problems are solvable problems.</span>
+      <span>When blocked, <em>log the fault</em>. Hardware faults, missing drivers, failed mounts — visible faults are fixable faults.</span>
     </div>
     <div class="t-rule">
       <span class="t-rule-num">04</span>
-      <span>Every run ends with an optional <em>unlock</em> — one thing you learned. Unlocks persist. Streaks don't.</span>
+      <span>Every stage ends with an optional <em>capability unlock</em> — what the system gained. Capabilities persist. Uptimes don't.</span>
     </div>
   </div>
 
-  <button class="t-start-btn" onclick="openNewRun()" aria-label="Start a new run">NEW RUN</button>
-  <button class="t-history-link" onclick="showLog()" aria-label="View run history">view run history</button>
+  <button class="t-start-btn" onclick="openNewRun()" aria-label="Start a new boot stage">NEW BOOT STAGE</button>
+  <button class="t-history-link" onclick="showLog()" aria-label="View boot log">view boot log</button>
 
   <div class="t-credit">
-    <a href="{{ site.baseurl }}/arcade/">Substrate Arcade</a> — games as executive function scaffolding
+    <a href="{{ site.baseurl }}/arcade/">Substrate Arcade</a> — boot the system, one stage at a time
   </div>
 </div>
 
@@ -687,9 +687,9 @@ redirect_from:
 <div id="hud" style="display:none;">
   <!-- Top bar -->
   <div id="topbar">
-    <div id="mode-label">RUN ACTIVE</div>
-    <div id="timer-display" role="timer" aria-label="Run timer">00:00</div>
-    <div id="run-counter">RUN #1</div>
+    <div id="mode-label">STAGE ACTIVE</div>
+    <div id="timer-display" role="timer" aria-label="Watchdog timer">00:00</div>
+    <div id="run-counter">STAGE #1</div>
   </div>
 
   <!-- Main panels -->
@@ -697,56 +697,56 @@ redirect_from:
     <!-- Quest -->
     <div class="panel" id="quest-panel">
       <div class="panel-title">
-        <span>OBJECTIVE</span>
+        <span>INIT TASK</span>
         <span class="panel-icon" style="color:var(--accent);">◆</span>
       </div>
       <div id="quest-objective" aria-live="polite">—</div>
-      <div id="quest-constraint">Constraint: —</div>
-      <div id="quest-done">Done when: —</div>
+      <div id="quest-constraint">Dependency: —</div>
+      <div id="quest-done">Online when: —</div>
     </div>
 
     <!-- Blockers -->
     <div class="panel" id="blockers-panel">
       <div class="panel-title">
-        <span>BLOCKERS</span>
+        <span>FAULTS</span>
         <span class="panel-icon" style="color:var(--warn);">⚠</span>
       </div>
       <div id="blocker-list" aria-live="polite">
-        <div class="no-blockers">No blockers. Clear path.</div>
+        <div class="no-blockers">No faults detected. All clear.</div>
       </div>
     </div>
   </div>
 
   <!-- Actions -->
-  <div id="actions" role="toolbar" aria-label="Run actions">
-    <button class="action-btn done" onclick="endRun('success')" aria-label="Mark run as success">DONE</button>
-    <button class="action-btn block" onclick="openBlockerInput()" aria-label="Log a blocker">BLOCKED</button>
-    <button class="action-btn fail" onclick="endRun('failure')" aria-label="Mark run as failure">ABORT</button>
+  <div id="actions" role="toolbar" aria-label="Stage actions">
+    <button class="action-btn done" onclick="endRun('success')" aria-label="Stage complete">ONLINE</button>
+    <button class="action-btn block" onclick="openBlockerInput()" aria-label="Log a fault">FAULT</button>
+    <button class="action-btn fail" onclick="endRun('failure')" aria-label="Emergency halt">E-HALT</button>
     <button class="action-btn" onclick="quitToTitle()" aria-label="Quit to title" style="max-width:60px;">ESC</button>
   </div>
 
   <!-- Bottom bar -->
   <div id="bottom-bar">
-    <div id="unlocks-display" aria-live="polite">No unlocks yet</div>
+    <div id="unlocks-display" aria-live="polite">No capabilities unlocked</div>
     <div id="streak-display"></div>
   </div>
 </div>
 
 <!-- NEW RUN MODAL -->
-<div id="input-modal" role="dialog" aria-label="Define your run">
+<div id="input-modal" role="dialog" aria-label="Define boot stage">
   <div class="modal-box">
-    <h2 style="color:var(--accent);">NEW RUN</h2>
+    <h2 style="color:var(--accent);">NEW BOOT STAGE</h2>
 
-    <label for="inp-objective">What's the one thing?</label>
-    <input type="text" id="inp-objective" placeholder="e.g., Write the introduction paragraph" maxlength="120" autocomplete="off">
+    <label for="inp-objective">Init task</label>
+    <input type="text" id="inp-objective" placeholder="e.g., Load kernel modules" maxlength="120" autocomplete="off">
 
-    <label for="inp-constraint">Constraint (optional)</label>
-    <input type="text" id="inp-constraint" placeholder="e.g., No research, just write" maxlength="80" autocomplete="off">
+    <label for="inp-constraint">Dependency (optional)</label>
+    <input type="text" id="inp-constraint" placeholder="e.g., Requires encrypted root mounted" maxlength="80" autocomplete="off">
 
-    <label for="inp-done">Done when...</label>
-    <input type="text" id="inp-done" placeholder="e.g., First draft saved to file" maxlength="80" autocomplete="off">
+    <label for="inp-done">Online when...</label>
+    <input type="text" id="inp-done" placeholder="e.g., Ollama service responds on port 11434" maxlength="80" autocomplete="off">
 
-    <label for="inp-timer">Timer (minutes)</label>
+    <label for="inp-timer">Watchdog timer (minutes)</label>
     <div style="display:flex;gap:8px;align-items:center;">
       <input type="range" id="inp-timer" min="5" max="90" value="25" style="flex:1;accent-color:var(--accent);" oninput="document.getElementById('inp-timer-val').textContent=this.value+'m'">
       <span id="inp-timer-val" style="font-size:0.85rem;color:var(--accent);min-width:36px;">25m</span>
@@ -754,41 +754,41 @@ redirect_from:
 
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
-      <button class="modal-btn confirm" onclick="startRun()">START RUN</button>
+      <button class="modal-btn confirm" onclick="startRun()">INIT STAGE</button>
     </div>
   </div>
 </div>
 
 <!-- BLOCKER INPUT MODAL -->
-<div id="blocker-modal" role="dialog" aria-label="Log a blocker" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,8,16,0.92);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+<div id="blocker-modal" role="dialog" aria-label="Log a fault" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,8,16,0.92);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
   <div class="modal-box">
-    <h2 style="color:var(--warn);">LOG BLOCKER</h2>
-    <label for="inp-blocker">What's blocking you?</label>
-    <input type="text" id="inp-blocker" placeholder="e.g., Waiting for API credentials" maxlength="100" autocomplete="off">
+    <h2 style="color:var(--warn);">LOG FAULT</h2>
+    <label for="inp-blocker">What fault occurred?</label>
+    <input type="text" id="inp-blocker" placeholder="e.g., Missing GPU driver, VRAM allocation failed" maxlength="100" autocomplete="off">
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeBlockerModal()">Cancel</button>
-      <button class="modal-btn confirm" onclick="addBlocker()" style="border-color:var(--warn);color:var(--warn);">LOG IT</button>
+      <button class="modal-btn confirm" onclick="addBlocker()" style="border-color:var(--warn);color:var(--warn);">LOG FAULT</button>
     </div>
   </div>
 </div>
 
 <!-- END RUN -->
-<div id="end-run" role="dialog" aria-label="Run complete">
+<div id="end-run" role="dialog" aria-label="Stage complete">
   <div class="end-box">
-    <div id="end-result">SUCCESS</div>
+    <div id="end-result">STAGE COMPLETE</div>
     <div id="end-objective"></div>
     <div id="end-time"></div>
-    <label for="end-unlock-input">What did you learn? (unlock)</label>
-    <input type="text" id="end-unlock-input" placeholder="One thing you'll carry forward..." maxlength="120" autocomplete="off">
+    <label for="end-unlock-input">Capability unlocked</label>
+    <input type="text" id="end-unlock-input" placeholder="What capability did the system gain?" maxlength="120" autocomplete="off">
     <br><br>
-    <button class="end-next-btn" onclick="saveAndContinue()">NEXT RUN</button>
+    <button class="end-next-btn" onclick="saveAndContinue()">NEXT STAGE</button>
   </div>
 </div>
 
 <!-- RUN LOG -->
 <div id="log-modal">
   <div class="log-header">
-    <h2>RUN HISTORY</h2>
+    <h2>BOOT LOG</h2>
     <button class="log-close" onclick="closeLog()">CLOSE</button>
   </div>
   <div class="log-stats" id="log-stats"></div>
@@ -864,22 +864,22 @@ redirect_from:
 
     // Populate HUD
     var data = loadData();
-    $('run-counter').textContent = 'RUN #' + (data.runs.length + 1);
+    $('run-counter').textContent = 'STAGE #' + (data.runs.length + 1);
     $('quest-objective').textContent = state.objective;
-    $('quest-constraint').textContent = 'Constraint: ' + state.constraint;
-    $('quest-done').textContent = 'Done when: ' + state.doneCriteria;
-    $('blocker-list').innerHTML = '<div class="no-blockers">No blockers. Clear path.</div>';
+    $('quest-constraint').textContent = 'Dependency: ' + state.constraint;
+    $('quest-done').textContent = 'Online when: ' + state.doneCriteria;
+    $('blocker-list').innerHTML = '<div class="no-blockers">No faults detected. All clear.</div>';
 
     // Show latest unlock
     if (data.unlocks.length > 0) {
-      $('unlocks-display').textContent = '⚡ ' + data.unlocks[data.unlocks.length - 1];
+      $('unlocks-display').textContent = '▶ ' + data.unlocks[data.unlocks.length - 1];
     } else {
-      $('unlocks-display').textContent = 'No unlocks yet';
+      $('unlocks-display').textContent = 'No capabilities unlocked';
     }
 
     // Stats
     var successes = data.runs.filter(function(r) { return r.result === 'success'; }).length;
-    $('streak-display').textContent = successes + '/' + data.runs.length + ' completed';
+    $('streak-display').textContent = successes + '/' + data.runs.length + ' stages online';
 
     // Start timer
     updateTimerDisplay();
@@ -891,7 +891,7 @@ redirect_from:
       if (state.elapsed >= state.timerSeconds) {
         // Timer expired — doesn't auto-fail, just goes red
         $('timer-display').classList.add('urgent');
-        $('mode-label').textContent = 'OVERTIME';
+        $('mode-label').textContent = 'WATCHDOG EXPIRED';
         $('mode-label').style.color = 'var(--warn)';
       }
     }, 1000);
@@ -931,7 +931,7 @@ redirect_from:
   function renderBlockers() {
     var list = $('blocker-list');
     if (state.blockers.length === 0) {
-      list.innerHTML = '<div class="no-blockers">No blockers. Clear path.</div>';
+      list.innerHTML = '<div class="no-blockers">No faults detected. All clear.</div>';
       return;
     }
     list.innerHTML = '';
@@ -939,7 +939,7 @@ redirect_from:
       var div = document.createElement('div');
       div.className = 'blocker-item';
       div.innerHTML = '<span class="blocker-text">' + escapeHtml(b) + '</span>' +
-        '<button class="blocker-dismiss" onclick="dismissBlocker(' + i + ')" aria-label="Dismiss blocker">×</button>';
+        '<button class="blocker-dismiss" onclick="dismissBlocker(' + i + ')" aria-label="Dismiss fault">×</button>';
       list.appendChild(div);
     });
   }
@@ -954,7 +954,7 @@ redirect_from:
     clearInterval(state.timerInterval);
     state.active = false;
 
-    $('end-result').textContent = result === 'success' ? 'SUCCESS' : 'ABORTED';
+    $('end-result').textContent = result === 'success' ? 'STAGE COMPLETE' : 'WATCHDOG TIMEOUT';
     $('end-result').style.color = result === 'success' ? 'var(--accent)' : 'var(--warn)';
     $('end-objective').textContent = state.objective;
 
@@ -992,9 +992,9 @@ redirect_from:
 
     $('end-run').classList.remove('show');
 
-    // Immediately open next run
+    // Immediately open next stage
     $('timer-display').classList.remove('urgent');
-    $('mode-label').textContent = 'RUN ACTIVE';
+    $('mode-label').textContent = 'STAGE ACTIVE';
     $('mode-label').style.color = 'var(--accent)';
     openNewRun();
   };
@@ -1002,7 +1002,7 @@ redirect_from:
   // === QUIT ===
   window.quitToTitle = function() {
     if (state.active) {
-      if (!confirm('Abort this run?')) return;
+      if (!confirm('Emergency halt this stage?')) return;
       endRun('failure');
       return;
     }
@@ -1023,15 +1023,15 @@ redirect_from:
     var avgTime = total > 0 ? Math.floor(totalTime / total / 60) : 0;
 
     $('log-stats').innerHTML =
-      '<div class="log-stat"><div class="ls-val">' + total + '</div><div class="ls-label">Total Runs</div></div>' +
-      '<div class="log-stat"><div class="ls-val">' + successes + '</div><div class="ls-label">Successes</div></div>' +
-      '<div class="log-stat"><div class="ls-val">' + (total > 0 ? Math.round(successes/total*100) + '%' : '—') + '</div><div class="ls-label">Rate</div></div>' +
-      '<div class="log-stat"><div class="ls-val">' + data.unlocks.length + '</div><div class="ls-label">Unlocks</div></div>';
+      '<div class="log-stat"><div class="ls-val">' + total + '</div><div class="ls-label">Stages</div></div>' +
+      '<div class="log-stat"><div class="ls-val">' + successes + '</div><div class="ls-label">Online</div></div>' +
+      '<div class="log-stat"><div class="ls-val">' + (total > 0 ? Math.round(successes/total*100) + '%' : '—') + '</div><div class="ls-label">Boot Rate</div></div>' +
+      '<div class="log-stat"><div class="ls-val">' + data.unlocks.length + '</div><div class="ls-label">Capabilities</div></div>';
 
     // Entries
     var entries = $('log-entries');
     if (data.runs.length === 0) {
-      entries.innerHTML = '<div class="log-empty">No runs yet. Start your first run.</div>';
+      entries.innerHTML = '<div class="log-empty">No boot stages logged. Initialize first stage.</div>';
     } else {
       entries.innerHTML = '';
       // Reverse chronological
@@ -1045,12 +1045,12 @@ redirect_from:
         div.innerHTML =
           '<div class="le-obj">' + escapeHtml(run.objective) + '</div>' +
           '<div class="le-meta">' +
-            '<span class="le-result ' + run.result + '">' + run.result.toUpperCase() + '</span>' +
+            '<span class="le-result ' + run.result + '">' + (run.result === 'success' ? 'ONLINE' : 'TIMEOUT') + '</span>' +
             '<span>' + m + 'm</span>' +
             '<span>' + dateStr + '</span>' +
           '</div>' +
-          (run.unlock ? '<div class="le-unlock">⚡ ' + escapeHtml(run.unlock) + '</div>' : '') +
-          (run.blockers && run.blockers.length > 0 ? '<div class="le-blockers">Blockers: ' + run.blockers.map(escapeHtml).join(', ') + '</div>' : '');
+          (run.unlock ? '<div class="le-unlock">▶ ' + escapeHtml(run.unlock) + '</div>' : '') +
+          (run.blockers && run.blockers.length > 0 ? '<div class="le-blockers">Faults: ' + run.blockers.map(escapeHtml).join(', ') + '</div>' : '');
         entries.appendChild(div);
       });
     }
@@ -1085,47 +1085,47 @@ redirect_from:
 
 })();
 
-// === ANIME EFFECTS: Evangelion-style mission briefing ===
+// === ANIME EFFECTS: Boot sequence dramatic transitions ===
 (function() {
   if (typeof AnimeEffects === 'undefined') return;
 
   AnimeEffects.addScanlines(0.04);
 
-  // Patch startRun for "MISSION START" effect
+  // Patch startRun for "STAGE INIT" effect
   var origStartRun = window.startRun;
   window.startRun = function() {
     origStartRun();
-    // Evangelion-style countdown/start
-    AnimeEffects.screenFlash('#00ffaa', 200);
+    // Boot sequence countdown/start
+    AnimeEffects.screenFlash('#00e09a', 200);
     setTimeout(function() {
-      AnimeEffects.textSlam('MISSION', '#00ffaa', 800);
+      AnimeEffects.textSlam('STAGE', '#00e09a', 800);
     }, 100);
     setTimeout(function() {
-      AnimeEffects.textSlam('START', '#ffdd44', 1000);
+      AnimeEffects.textSlam('INIT', '#ffaa00', 1000);
     }, 600);
     // Speed lines burst from center
     setTimeout(function() {
-      AnimeEffects.speedLinesBurst(window.innerWidth / 2, window.innerHeight / 2, '#00ffaa', 20);
+      AnimeEffects.speedLinesBurst(window.innerWidth / 2, window.innerHeight / 2, '#00e09a', 20);
     }, 300);
   };
 
-  // Watch for end-run screen (mission complete/fail)
+  // Watch for end-run screen (stage complete/fail)
   var endRun = document.getElementById('end-run');
   if (endRun) {
     var endObs = new MutationObserver(function() {
       if (endRun.classList.contains('show')) {
         var title = endRun.querySelector('h2') || endRun.querySelector('h1');
         if (title) {
-          var isSuccess = title.textContent.indexOf('COMPLETE') >= 0 || title.textContent.indexOf('SUCCESS') >= 0;
+          var isSuccess = title.textContent.indexOf('COMPLETE') >= 0 || title.textContent.indexOf('ONLINE') >= 0;
           if (isSuccess) {
-            AnimeEffects.screenFlash('#ffdd44', 300);
-            AnimeEffects.textSlam('MISSION COMPLETE', '#ffdd44', 1500);
+            AnimeEffects.screenFlash('#ffaa00', 300);
+            AnimeEffects.textSlam('CAPABILITY ONLINE', '#00e09a', 1500);
             setTimeout(function() {
-              AnimeEffects.speedLinesBurst(window.innerWidth / 2, window.innerHeight / 2, '#ffdd44', 24);
+              AnimeEffects.speedLinesBurst(window.innerWidth / 2, window.innerHeight / 2, '#00e09a', 24);
             }, 200);
           } else {
             AnimeEffects.screenFlash('#ff6644', 300);
-            AnimeEffects.textSlam('MISSION FAILED', '#ff6644', 1500);
+            AnimeEffects.textSlam('SYSTEM DEGRADED', '#ff6644', 1500);
           }
         }
       }
@@ -1133,7 +1133,7 @@ redirect_from:
     endObs.observe(endRun, { attributes: true, attributeFilter: ['class'] });
   }
 
-  // Timer urgent effect — when timer goes red, add dramatic border
+  // Watchdog expired effect — when timer goes red, add dramatic border
   var timerDisplay = document.getElementById('timer-display');
   if (timerDisplay) {
     var timerObs = new MutationObserver(function() {

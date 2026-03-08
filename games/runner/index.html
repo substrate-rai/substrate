@@ -1,0 +1,1412 @@
+---
+layout: null
+permalink: /games/runner/
+title: "PIPELINE — Endless Runner"
+redirect_from:
+  - /runner/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>PIPELINE — Endless Runner | Substrate Arcade</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #060810;
+  font-family: 'IBM Plex Mono', monospace;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#wrap {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative;
+}
+
+canvas {
+  display: block;
+  background: #060810;
+  image-rendering: pixelated;
+}
+
+#scanlines {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none; z-index: 10;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+}
+
+#hud {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 12px 16px;
+  pointer-events: none; z-index: 5;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+#score-display {
+  color: #00e09a;
+  font-size: 20px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(0,224,154,0.5);
+}
+
+#distance-display {
+  color: #77bbdd;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+#shield-indicator {
+  position: fixed; top: 50px; left: 16px;
+  color: #44ddff;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none; z-index: 5;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+#boost-indicator {
+  position: fixed; top: 68px; left: 16px;
+  color: #ffdd44;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none; z-index: 5;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game"></canvas>
+  <div id="scanlines"></div>
+  <div id="hud">
+    <div id="score-display">0</div>
+    <div id="distance-display">0m</div>
+  </div>
+  <div id="shield-indicator">SHIELD ACTIVE</div>
+  <div id="boost-indicator">BOOST x2</div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+// ===================== CONSTANTS =====================
+var CYAN = '#00e09a';
+var RED = '#ff4444';
+var ORANGE = '#ff8844';
+var GOLD = '#ffdd44';
+var SHIELD_BLUE = '#44ddff';
+var PURPLE = '#aa44ff';
+var BG = '#060810';
+var GRID_COLOR = 'rgba(0,224,154,0.06)';
+var GRID_LINE = 'rgba(0,224,154,0.12)';
+
+var GRAVITY = 0.65;
+var JUMP_FORCE = -13;
+var DOUBLE_JUMP_FORCE = -11;
+var SLIDE_DURATION = 30; // frames
+var SHIELD_DURATION = 300; // frames (5s at 60fps)
+var BOOST_DURATION = 300;
+var BOOST_MULTIPLIER = 2;
+
+var BASE_SPEED = 4;
+var MAX_SPEED = 14;
+var SPEED_INCREMENT = 0.0008;
+
+var PLAYER_W = 24;
+var PLAYER_H = 36;
+var PLAYER_SLIDE_H = 16;
+
+var GROUND_H_RATIO = 0.18; // ground height as fraction of canvas height
+
+// ===================== STATE =====================
+var canvas, ctx;
+var W, H, groundY, groundH;
+var state = 'title'; // title, playing, dead
+var score = 0;
+var distance = 0;
+var highScore = parseInt(localStorage.getItem('pipeline_high') || '0');
+var speed = BASE_SPEED;
+var frameCount = 0;
+var shakeFrames = 0;
+var flashAlpha = 0;
+var impactFreeze = 0;
+
+// Player
+var player = {
+  x: 0, y: 0, vy: 0,
+  onGround: true,
+  jumps: 0,
+  sliding: false,
+  slideTimer: 0,
+  shieldTimer: 0,
+  boostTimer: 0,
+  trail: [],
+  alive: true
+};
+
+// World
+var obstacles = [];
+var collectibles = [];
+var particles = [];
+var bgStars = [];
+var bgCircuits = [];
+var gridOffset = 0;
+
+// Timers
+var spawnTimer = 0;
+var collectibleTimer = 0;
+var difficultyLevel = 0;
+
+// Touch
+var touchStartY = 0;
+var touchStartTime = 0;
+
+// Audio
+var audioCtx = null;
+var audioStarted = false;
+var bgBeatInterval = null;
+var beatStep = 0;
+
+// HUD elements
+var scoreEl, distEl, shieldEl, boostEl;
+
+// ===================== INIT =====================
+function init() {
+  canvas = document.getElementById('game');
+  ctx = canvas.getContext('2d');
+  scoreEl = document.getElementById('score-display');
+  distEl = document.getElementById('distance-display');
+  shieldEl = document.getElementById('shield-indicator');
+  boostEl = document.getElementById('boost-indicator');
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Input
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+  canvas.addEventListener('touchend', onTouchEnd, { passive: false });
+  canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+  canvas.addEventListener('mousedown', onMouseDown);
+
+  generateBackground();
+  requestAnimationFrame(loop);
+}
+
+function resize() {
+  var dpr = window.devicePixelRatio || 1;
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  W = w;
+  H = h;
+  groundH = Math.floor(H * GROUND_H_RATIO);
+  groundY = H - groundH;
+
+  player.x = W * 0.15;
+  if (state !== 'playing') {
+    player.y = groundY - PLAYER_H;
+  }
+
+  generateBackground();
+}
+
+// ===================== BACKGROUND =====================
+function generateBackground() {
+  bgStars = [];
+  for (var i = 0; i < 80; i++) {
+    bgStars.push({
+      x: Math.random() * W * 3,
+      y: Math.random() * (groundY - 20),
+      size: 0.5 + Math.random() * 2,
+      brightness: 0.2 + Math.random() * 0.6,
+      speed: 0.1 + Math.random() * 0.3
+    });
+  }
+
+  bgCircuits = [];
+  for (var i = 0; i < 30; i++) {
+    bgCircuits.push({
+      x: Math.random() * W * 3,
+      y: 40 + Math.random() * (groundY - 80),
+      w: 20 + Math.random() * 80,
+      h: 2,
+      speed: 0.3 + Math.random() * 0.5,
+      brightness: 0.05 + Math.random() * 0.1,
+      vertical: Math.random() < 0.3,
+      vH: 10 + Math.random() * 40
+    });
+  }
+}
+
+// ===================== AUDIO =====================
+function initAudio() {
+  if (audioStarted) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioStarted = true;
+  } catch(e) {}
+}
+
+function playTone(freq, dur, type, vol, detune) {
+  if (!audioCtx) return;
+  try {
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.type = type || 'square';
+    osc.frequency.value = freq;
+    if (detune) osc.detune.value = detune;
+    gain.gain.setValueAtTime(vol || 0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur);
+  } catch(e) {}
+}
+
+function playNoise(dur, vol) {
+  if (!audioCtx) return;
+  try {
+    var bufSize = audioCtx.sampleRate * dur;
+    var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var i = 0; i < bufSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.5;
+    }
+    var src = audioCtx.createBufferSource();
+    var gain = audioCtx.createGain();
+    src.buffer = buf;
+    gain.gain.setValueAtTime(vol || 0.08, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    src.connect(gain);
+    gain.connect(audioCtx.destination);
+    src.start();
+  } catch(e) {}
+}
+
+function sfxJump() {
+  playTone(400, 0.1, 'square', 0.08);
+  playTone(600, 0.08, 'square', 0.06);
+}
+
+function sfxDoubleJump() {
+  playTone(600, 0.08, 'square', 0.06);
+  setTimeout(function() { playTone(900, 0.08, 'square', 0.05); }, 40);
+}
+
+function sfxCollect() {
+  playTone(800, 0.08, 'sine', 0.07);
+  setTimeout(function() { playTone(1200, 0.1, 'sine', 0.06); }, 50);
+}
+
+function sfxBigCollect() {
+  playTone(600, 0.06, 'sine', 0.08);
+  setTimeout(function() { playTone(900, 0.06, 'sine', 0.07); }, 40);
+  setTimeout(function() { playTone(1200, 0.1, 'sine', 0.06); }, 80);
+}
+
+function sfxShield() {
+  playTone(300, 0.2, 'sine', 0.06);
+  playTone(450, 0.3, 'sine', 0.05);
+  playTone(600, 0.4, 'sine', 0.04);
+}
+
+function sfxBoost() {
+  playTone(200, 0.1, 'sawtooth', 0.05);
+  setTimeout(function() { playTone(400, 0.15, 'sawtooth', 0.05); }, 60);
+  setTimeout(function() { playTone(800, 0.2, 'sawtooth', 0.04); }, 120);
+}
+
+function sfxDeath() {
+  playTone(200, 0.3, 'sawtooth', 0.12);
+  playTone(100, 0.5, 'square', 0.08);
+  playNoise(0.4, 0.15);
+}
+
+function startBeat() {
+  if (bgBeatInterval) return;
+  beatStep = 0;
+  bgBeatInterval = setInterval(function() {
+    if (state !== 'playing' || !audioCtx) { stopBeat(); return; }
+    var step = beatStep % 8;
+    // Kick on 0, 4
+    if (step === 0 || step === 4) {
+      playTone(60, 0.12, 'sine', 0.06);
+    }
+    // Hi-hat on every other
+    if (step % 2 === 0) {
+      playNoise(0.04, 0.02);
+    }
+    // Snare on 2, 6
+    if (step === 2 || step === 6) {
+      playNoise(0.08, 0.04);
+      playTone(180, 0.06, 'triangle', 0.03);
+    }
+    beatStep++;
+  }, 140);
+}
+
+function stopBeat() {
+  if (bgBeatInterval) {
+    clearInterval(bgBeatInterval);
+    bgBeatInterval = null;
+  }
+}
+
+// ===================== INPUT =====================
+var keysDown = {};
+
+function onKeyDown(e) {
+  if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+    e.preventDefault();
+    handleJumpPress();
+  }
+  if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+    e.preventDefault();
+    handleSlidePress();
+  }
+  keysDown[e.code] = true;
+}
+
+function onKeyUp(e) {
+  keysDown[e.code] = false;
+}
+
+function onTouchStart(e) {
+  e.preventDefault();
+  var t = e.touches[0];
+  touchStartY = t.clientY;
+  touchStartTime = Date.now();
+}
+
+function onTouchEnd(e) {
+  e.preventDefault();
+  // If very short touch without significant swipe, it's a tap (jump)
+  var dt = Date.now() - touchStartTime;
+  if (dt < 300) {
+    handleJumpPress();
+  }
+}
+
+function onTouchMove(e) {
+  e.preventDefault();
+  var t = e.touches[0];
+  var dy = t.clientY - touchStartY;
+  if (dy > 30) {
+    handleSlidePress();
+    touchStartY = 99999; // prevent re-trigger
+  }
+}
+
+function onMouseDown(e) {
+  handleJumpPress();
+}
+
+function handleJumpPress() {
+  initAudio();
+  if (state === 'title') {
+    startGame();
+    return;
+  }
+  if (state === 'dead') {
+    if (frameCount > 30) { // prevent instant restart
+      startGame();
+    }
+    return;
+  }
+  if (state === 'playing') {
+    if (player.sliding) return;
+    if (player.onGround) {
+      player.vy = JUMP_FORCE;
+      player.onGround = false;
+      player.jumps = 1;
+      sfxJump();
+    } else if (player.jumps < 2) {
+      player.vy = DOUBLE_JUMP_FORCE;
+      player.jumps = 2;
+      sfxDoubleJump();
+      // Double jump particles
+      for (var i = 0; i < 8; i++) {
+        particles.push({
+          x: player.x + PLAYER_W / 2,
+          y: player.y + PLAYER_H,
+          vx: (Math.random() - 0.5) * 4,
+          vy: Math.random() * 3 + 1,
+          life: 15 + Math.random() * 10,
+          maxLife: 25,
+          color: CYAN,
+          size: 2 + Math.random() * 3
+        });
+      }
+    }
+  }
+}
+
+function handleSlidePress() {
+  initAudio();
+  if (state === 'title') {
+    startGame();
+    return;
+  }
+  if (state === 'dead') {
+    if (frameCount > 30) startGame();
+    return;
+  }
+  if (state === 'playing' && player.onGround && !player.sliding) {
+    player.sliding = true;
+    player.slideTimer = SLIDE_DURATION;
+    playTone(150, 0.08, 'square', 0.04);
+  }
+}
+
+// ===================== GAME LOGIC =====================
+function startGame() {
+  state = 'playing';
+  score = 0;
+  distance = 0;
+  speed = BASE_SPEED;
+  frameCount = 0;
+  shakeFrames = 0;
+  flashAlpha = 0;
+  impactFreeze = 0;
+  difficultyLevel = 0;
+
+  player.y = groundY - PLAYER_H;
+  player.vy = 0;
+  player.onGround = true;
+  player.jumps = 0;
+  player.sliding = false;
+  player.slideTimer = 0;
+  player.shieldTimer = 0;
+  player.boostTimer = 0;
+  player.trail = [];
+  player.alive = true;
+
+  obstacles = [];
+  collectibles = [];
+  particles = [];
+  spawnTimer = 90;
+  collectibleTimer = 40;
+
+  shieldEl.style.opacity = '0';
+  boostEl.style.opacity = '0';
+
+  startBeat();
+}
+
+function die() {
+  if (!player.alive) return;
+  if (player.shieldTimer > 0) {
+    player.shieldTimer = 0;
+    shieldEl.style.opacity = '0';
+    // Shield break effect
+    for (var i = 0; i < 20; i++) {
+      particles.push({
+        x: player.x + PLAYER_W / 2,
+        y: player.y + PLAYER_H / 2,
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.5) * 8,
+        life: 20 + Math.random() * 15,
+        maxLife: 35,
+        color: SHIELD_BLUE,
+        size: 3 + Math.random() * 4
+      });
+    }
+    playTone(300, 0.15, 'sine', 0.08);
+    return;
+  }
+
+  player.alive = false;
+  state = 'dead';
+  frameCount = 0;
+  shakeFrames = 15;
+  flashAlpha = 0.8;
+  impactFreeze = 12;
+
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('pipeline_high', String(highScore));
+  }
+
+  sfxDeath();
+  stopBeat();
+
+  // Death explosion
+  for (var i = 0; i < 30; i++) {
+    var angle = (Math.PI * 2 * i) / 30;
+    particles.push({
+      x: player.x + PLAYER_W / 2,
+      y: player.y + PLAYER_H / 2,
+      vx: Math.cos(angle) * (3 + Math.random() * 5),
+      vy: Math.sin(angle) * (3 + Math.random() * 5),
+      life: 30 + Math.random() * 20,
+      maxLife: 50,
+      color: i % 3 === 0 ? RED : (i % 3 === 1 ? ORANGE : CYAN),
+      size: 2 + Math.random() * 5
+    });
+  }
+}
+
+// ===================== SPAWNING =====================
+var obstacleTypes = ['FIREWALL', 'MEMORY_LEAK', 'LOW_BEAM', 'SEGFAULT', 'CORRUPTION'];
+
+function spawnObstacle() {
+  var available = ['FIREWALL', 'MEMORY_LEAK'];
+  if (distance > 300) available.push('LOW_BEAM');
+  if (distance > 800) available.push('SEGFAULT');
+  if (distance > 1500) available.push('CORRUPTION');
+
+  var type = available[Math.floor(Math.random() * available.length)];
+  var obs = { type: type, x: W + 50 };
+
+  switch (type) {
+    case 'FIREWALL':
+      obs.w = 20 + Math.random() * 15;
+      obs.h = 50 + Math.random() * 30;
+      obs.y = groundY - obs.h;
+      obs.color = RED;
+      break;
+    case 'LOW_BEAM':
+      obs.w = 60 + Math.random() * 40;
+      obs.h = 14;
+      obs.y = groundY - 45 - Math.random() * 10;
+      obs.color = ORANGE;
+      break;
+    case 'MEMORY_LEAK':
+      obs.w = 40 + Math.random() * 30;
+      obs.h = groundH + 10;
+      obs.y = groundY;
+      obs.isGap = true;
+      obs.color = PURPLE;
+      break;
+    case 'SEGFAULT':
+      obs.w = 22;
+      obs.h = 22;
+      obs.y = groundY - 30 - Math.random() * 50;
+      obs.vy = (Math.random() < 0.5 ? 1 : -1) * (1 + Math.random());
+      obs.baseY = obs.y;
+      obs.amplitude = 20 + Math.random() * 20;
+      obs.phase = Math.random() * Math.PI * 2;
+      obs.color = '#ff6666';
+      break;
+    case 'CORRUPTION':
+      obs.w = 30;
+      obs.h = 30;
+      obs.y = groundY - obs.h;
+      obs.growRate = 0.3;
+      obs.maxW = 60;
+      obs.maxH = 70;
+      obs.color = '#cc44ff';
+      break;
+  }
+
+  obstacles.push(obs);
+}
+
+function spawnCollectible() {
+  var r = Math.random();
+  var type, color;
+  if (r < 0.6) {
+    type = 'CYCLES';
+    color = GOLD;
+  } else if (r < 0.82) {
+    type = 'DATA_PACKET';
+    color = CYAN;
+  } else if (r < 0.93) {
+    type = 'SHIELD';
+    color = SHIELD_BLUE;
+  } else {
+    type = 'BOOST';
+    color = '#ffaa44';
+  }
+
+  var yOptions = [
+    groundY - 30,
+    groundY - 60,
+    groundY - 90,
+    groundY - 120
+  ];
+  var y = yOptions[Math.floor(Math.random() * yOptions.length)];
+
+  collectibles.push({
+    type: type,
+    x: W + 20 + Math.random() * 100,
+    y: y,
+    w: type === 'DATA_PACKET' ? 18 : 14,
+    h: type === 'DATA_PACKET' ? 18 : 14,
+    color: color,
+    bobPhase: Math.random() * Math.PI * 2,
+    sparkle: 0
+  });
+}
+
+// ===================== UPDATE =====================
+function update() {
+  if (state !== 'playing') return;
+
+  if (impactFreeze > 0) {
+    impactFreeze--;
+    return;
+  }
+
+  frameCount++;
+
+  // Speed up
+  speed = Math.min(MAX_SPEED, BASE_SPEED + distance * SPEED_INCREMENT);
+  var effectiveSpeed = speed;
+  if (player.boostTimer > 0) effectiveSpeed *= 1.4;
+
+  // Distance
+  distance += effectiveSpeed * 0.3;
+
+  // Score from distance
+  score = Math.floor(distance);
+
+  // Difficulty milestones
+  difficultyLevel = Math.floor(distance / 500);
+
+  // Grid scroll
+  gridOffset = (gridOffset + effectiveSpeed) % 40;
+
+  // Player physics
+  if (!player.onGround) {
+    player.vy += GRAVITY;
+    player.y += player.vy;
+
+    if (player.y >= groundY - PLAYER_H) {
+      player.y = groundY - PLAYER_H;
+      player.vy = 0;
+      player.onGround = true;
+      player.jumps = 0;
+    }
+  }
+
+  // Slide
+  if (player.sliding) {
+    player.slideTimer--;
+    if (player.slideTimer <= 0) {
+      player.sliding = false;
+    }
+  }
+
+  // Shield / Boost timers
+  if (player.shieldTimer > 0) {
+    player.shieldTimer--;
+    if (player.shieldTimer <= 0) {
+      shieldEl.style.opacity = '0';
+    }
+  }
+  if (player.boostTimer > 0) {
+    player.boostTimer--;
+    if (player.boostTimer <= 0) {
+      boostEl.style.opacity = '0';
+    }
+  }
+
+  // Trail
+  var ph = player.sliding ? PLAYER_SLIDE_H : PLAYER_H;
+  var py = player.sliding ? groundY - PLAYER_SLIDE_H : player.y;
+  player.trail.push({ x: player.x, y: py + ph / 2, alpha: 1 });
+  if (player.trail.length > 12) player.trail.shift();
+  for (var i = 0; i < player.trail.length; i++) {
+    player.trail[i].alpha *= 0.85;
+  }
+
+  // Spawn obstacles
+  spawnTimer--;
+  var minSpawn = Math.max(35, 90 - difficultyLevel * 8);
+  var maxSpawn = Math.max(60, 140 - difficultyLevel * 10);
+  if (spawnTimer <= 0) {
+    spawnObstacle();
+    spawnTimer = minSpawn + Math.floor(Math.random() * (maxSpawn - minSpawn));
+  }
+
+  // Spawn collectibles
+  collectibleTimer--;
+  if (collectibleTimer <= 0) {
+    spawnCollectible();
+    collectibleTimer = 30 + Math.floor(Math.random() * 50);
+  }
+
+  // Update obstacles
+  for (var i = obstacles.length - 1; i >= 0; i--) {
+    var o = obstacles[i];
+    o.x -= effectiveSpeed;
+
+    if (o.type === 'SEGFAULT') {
+      o.phase += 0.05;
+      o.y = o.baseY + Math.sin(o.phase) * o.amplitude;
+    }
+    if (o.type === 'CORRUPTION') {
+      if (o.w < o.maxW) o.w += o.growRate;
+      if (o.h < o.maxH) {
+        o.h += o.growRate;
+        o.y = groundY - o.h;
+      }
+    }
+
+    if (o.x + o.w < -20) {
+      obstacles.splice(i, 1);
+      continue;
+    }
+
+    // Collision
+    var pLeft = player.x + 4;
+    var pRight = player.x + PLAYER_W - 4;
+    var pTop = player.sliding ? groundY - PLAYER_SLIDE_H : player.y;
+    var pBottom = player.sliding ? groundY : player.y + PLAYER_H;
+
+    if (o.isGap) {
+      // Gap: player falls if overlapping and on ground
+      if (player.onGround && pRight > o.x + 5 && pLeft < o.x + o.w - 5) {
+        die();
+      }
+    } else {
+      // Standard AABB
+      if (pRight > o.x + 3 && pLeft < o.x + o.w - 3 &&
+          pBottom > o.y + 3 && pTop < o.y + o.h - 3) {
+        die();
+      }
+    }
+  }
+
+  // Update collectibles
+  for (var i = collectibles.length - 1; i >= 0; i--) {
+    var c = collectibles[i];
+    c.x -= effectiveSpeed;
+    c.bobPhase += 0.08;
+    c.sparkle = (c.sparkle + 1) % 30;
+
+    if (c.x + c.w < -20) {
+      collectibles.splice(i, 1);
+      continue;
+    }
+
+    // Collect
+    var cx = c.x + c.w / 2;
+    var cy = c.y + Math.sin(c.bobPhase) * 4 + c.h / 2;
+    var px = player.x + PLAYER_W / 2;
+    var pyc = (player.sliding ? groundY - PLAYER_SLIDE_H / 2 : player.y + PLAYER_H / 2);
+    var dist = Math.sqrt((cx - px) * (cx - px) + (cy - pyc) * (cy - pyc));
+
+    if (dist < 22) {
+      // Collected!
+      var pts = 0;
+      switch (c.type) {
+        case 'CYCLES':
+          pts = 1;
+          sfxCollect();
+          break;
+        case 'DATA_PACKET':
+          pts = 10;
+          sfxBigCollect();
+          break;
+        case 'SHIELD':
+          player.shieldTimer = SHIELD_DURATION;
+          shieldEl.style.opacity = '1';
+          sfxShield();
+          break;
+        case 'BOOST':
+          player.boostTimer = BOOST_DURATION;
+          boostEl.style.opacity = '1';
+          sfxBoost();
+          break;
+      }
+
+      var mult = player.boostTimer > 0 ? BOOST_MULTIPLIER : 1;
+      score += pts * mult;
+
+      // Collect particles
+      for (var j = 0; j < 6; j++) {
+        particles.push({
+          x: cx, y: cy,
+          vx: (Math.random() - 0.5) * 5,
+          vy: (Math.random() - 0.5) * 5 - 2,
+          life: 15 + Math.random() * 10,
+          maxLife: 25,
+          color: c.color,
+          size: 2 + Math.random() * 3
+        });
+      }
+
+      collectibles.splice(i, 1);
+    }
+  }
+
+  // Update particles
+  for (var i = particles.length - 1; i >= 0; i--) {
+    var p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+    if (p.life <= 0) {
+      particles.splice(i, 1);
+    }
+  }
+
+  // Scroll background
+  for (var i = 0; i < bgStars.length; i++) {
+    bgStars[i].x -= effectiveSpeed * bgStars[i].speed;
+    if (bgStars[i].x < -10) bgStars[i].x += W * 3;
+  }
+  for (var i = 0; i < bgCircuits.length; i++) {
+    bgCircuits[i].x -= effectiveSpeed * bgCircuits[i].speed;
+    if (bgCircuits[i].x + bgCircuits[i].w < -10) bgCircuits[i].x += W * 3;
+  }
+
+  // Update HUD
+  scoreEl.textContent = score;
+  distEl.textContent = Math.floor(distance) + 'm';
+
+  // Shake decay
+  if (shakeFrames > 0) shakeFrames--;
+  if (flashAlpha > 0) flashAlpha *= 0.9;
+}
+
+// ===================== RENDER =====================
+function render() {
+  ctx.save();
+
+  // Screen shake
+  if (shakeFrames > 0) {
+    var sx = (Math.random() - 0.5) * shakeFrames * 1.5;
+    var sy = (Math.random() - 0.5) * shakeFrames * 1.5;
+    ctx.translate(sx, sy);
+  }
+
+  // Clear
+  ctx.fillStyle = BG;
+  ctx.fillRect(-10, -10, W + 20, H + 20);
+
+  // Background layer 1: stars
+  for (var i = 0; i < bgStars.length; i++) {
+    var s = bgStars[i];
+    if (s.x < 0 || s.x > W) continue;
+    ctx.globalAlpha = s.brightness * 0.6;
+    ctx.fillStyle = CYAN;
+    ctx.fillRect(s.x, s.y, s.size, s.size);
+  }
+  ctx.globalAlpha = 1;
+
+  // Background layer 2: circuits
+  for (var i = 0; i < bgCircuits.length; i++) {
+    var c = bgCircuits[i];
+    if (c.x > W || c.x + c.w < 0) continue;
+    ctx.globalAlpha = c.brightness;
+    ctx.strokeStyle = CYAN;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(c.x, c.y);
+    ctx.lineTo(c.x + c.w, c.y);
+    if (c.vertical) {
+      ctx.lineTo(c.x + c.w, c.y + c.vH);
+    }
+    ctx.stroke();
+    // Node dot at end
+    ctx.fillStyle = CYAN;
+    ctx.fillRect(c.x + c.w - 2, c.y - 2, 4, 4);
+  }
+  ctx.globalAlpha = 1;
+
+  // Grid
+  ctx.strokeStyle = GRID_LINE;
+  ctx.lineWidth = 1;
+  // Vertical lines
+  for (var x = -gridOffset; x < W + 40; x += 40) {
+    ctx.globalAlpha = 0.08;
+    ctx.beginPath();
+    ctx.moveTo(x, groundY);
+    ctx.lineTo(x, H);
+    ctx.stroke();
+  }
+  // Horizontal perspective lines on ground
+  ctx.globalAlpha = 0.06;
+  for (var y = groundY; y < H; y += 12) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // Ground surface line
+  ctx.strokeStyle = CYAN;
+  ctx.globalAlpha = 0.4;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  ctx.lineTo(W, groundY);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Ground fill
+  ctx.fillStyle = 'rgba(0,224,154,0.03)';
+  ctx.fillRect(0, groundY, W, groundH);
+
+  // Draw memory leak gaps (darker ground where gaps are)
+  for (var i = 0; i < obstacles.length; i++) {
+    var o = obstacles[i];
+    if (o.isGap) {
+      ctx.fillStyle = BG;
+      ctx.fillRect(o.x, groundY - 2, o.w, groundH + 4);
+      // Gap edges glow
+      ctx.strokeStyle = PURPLE;
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(o.x, groundY);
+      ctx.lineTo(o.x, H);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(o.x + o.w, groundY);
+      ctx.lineTo(o.x + o.w, H);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      // Label
+      ctx.fillStyle = PURPLE;
+      ctx.globalAlpha = 0.5;
+      ctx.font = '9px IBM Plex Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText('MEMORY_LEAK', o.x + o.w / 2, groundY + 20);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Obstacles (non-gap)
+  for (var i = 0; i < obstacles.length; i++) {
+    var o = obstacles[i];
+    if (o.isGap) continue;
+
+    ctx.strokeStyle = o.color;
+    ctx.lineWidth = 2;
+    ctx.fillStyle = o.color + '22';
+
+    if (o.type === 'SEGFAULT') {
+      // Rotating diamond
+      ctx.save();
+      ctx.translate(o.x + o.w / 2, o.y + o.h / 2);
+      ctx.rotate(frameCount * 0.05);
+      ctx.beginPath();
+      ctx.moveTo(0, -o.h / 2);
+      ctx.lineTo(o.w / 2, 0);
+      ctx.lineTo(0, o.h / 2);
+      ctx.lineTo(-o.w / 2, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+      // Glow
+      ctx.shadowColor = o.color;
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = o.color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(o.x + o.w / 2, o.y + o.h / 2, o.w / 2 + 3, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    } else if (o.type === 'CORRUPTION') {
+      // Blobby shape
+      ctx.fillStyle = o.color + '33';
+      ctx.beginPath();
+      var cx = o.x + o.w / 2;
+      var cy = o.y + o.h / 2;
+      for (var a = 0; a < Math.PI * 2; a += 0.3) {
+        var r = (o.w / 2) + Math.sin(a * 3 + frameCount * 0.1) * 5;
+        var px = cx + Math.cos(a) * r;
+        var py = cy + Math.sin(a) * (o.h / 2 + Math.cos(a * 2 + frameCount * 0.08) * 4);
+        if (a === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      // Label
+      ctx.fillStyle = o.color;
+      ctx.globalAlpha = 0.4;
+      ctx.font = '8px IBM Plex Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText('CORRUPTION', o.x + o.w / 2, o.y - 6);
+      ctx.globalAlpha = 1;
+    } else if (o.type === 'FIREWALL') {
+      // Wall with pattern
+      ctx.fillRect(o.x, o.y, o.w, o.h);
+      ctx.strokeRect(o.x, o.y, o.w, o.h);
+      // Brick pattern
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = o.color;
+      ctx.lineWidth = 1;
+      for (var by = o.y; by < o.y + o.h; by += 10) {
+        ctx.beginPath();
+        ctx.moveTo(o.x, by);
+        ctx.lineTo(o.x + o.w, by);
+        ctx.stroke();
+        var offset = ((by - o.y) / 10 % 2 === 0) ? 0 : o.w / 2;
+        ctx.beginPath();
+        ctx.moveTo(o.x + offset, by);
+        ctx.lineTo(o.x + offset, by + 10);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      // Label
+      ctx.fillStyle = o.color;
+      ctx.globalAlpha = 0.5;
+      ctx.font = '8px IBM Plex Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText('FIREWALL', o.x + o.w / 2, o.y - 6);
+      ctx.globalAlpha = 1;
+    } else if (o.type === 'LOW_BEAM') {
+      // Horizontal beam with warning stripes
+      ctx.fillStyle = o.color + '44';
+      ctx.fillRect(o.x, o.y, o.w, o.h);
+      ctx.strokeStyle = o.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(o.x, o.y, o.w, o.h);
+      // Warning stripes
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.rect(o.x, o.y, o.w, o.h);
+      ctx.clip();
+      ctx.strokeStyle = o.color;
+      ctx.lineWidth = 2;
+      for (var sx = o.x - o.h; sx < o.x + o.w + o.h; sx += 8) {
+        ctx.beginPath();
+        ctx.moveTo(sx, o.y);
+        ctx.lineTo(sx + o.h, o.y + o.h);
+        ctx.stroke();
+      }
+      ctx.restore();
+      // Label
+      ctx.fillStyle = o.color;
+      ctx.globalAlpha = 0.5;
+      ctx.font = '8px IBM Plex Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText('LOW_BEAM', o.x + o.w / 2, o.y - 6);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Collectibles
+  for (var i = 0; i < collectibles.length; i++) {
+    var c = collectibles[i];
+    var bobY = c.y + Math.sin(c.bobPhase) * 4;
+
+    ctx.save();
+    ctx.translate(c.x + c.w / 2, bobY + c.h / 2);
+
+    // Glow
+    ctx.shadowColor = c.color;
+    ctx.shadowBlur = 10;
+
+    if (c.type === 'CYCLES') {
+      // Small diamond
+      ctx.fillStyle = c.color;
+      ctx.globalAlpha = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(0, -c.h / 2);
+      ctx.lineTo(c.w / 2, 0);
+      ctx.lineTo(0, c.h / 2);
+      ctx.lineTo(-c.w / 2, 0);
+      ctx.closePath();
+      ctx.fill();
+    } else if (c.type === 'DATA_PACKET') {
+      // Larger square with inner pattern
+      ctx.fillStyle = c.color + '44';
+      ctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+      ctx.strokeStyle = c.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-c.w / 2, -c.h / 2, c.w, c.h);
+      ctx.fillStyle = c.color;
+      ctx.fillRect(-3, -3, 6, 6);
+    } else if (c.type === 'SHIELD') {
+      // Shield icon
+      ctx.strokeStyle = c.color;
+      ctx.lineWidth = 2;
+      ctx.fillStyle = c.color + '33';
+      ctx.beginPath();
+      ctx.moveTo(0, -c.h / 2);
+      ctx.lineTo(c.w / 2, -c.h / 4);
+      ctx.lineTo(c.w / 2, c.h / 4);
+      ctx.lineTo(0, c.h / 2);
+      ctx.lineTo(-c.w / 2, c.h / 4);
+      ctx.lineTo(-c.w / 2, -c.h / 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (c.type === 'BOOST') {
+      // Lightning bolt
+      ctx.fillStyle = c.color;
+      ctx.beginPath();
+      ctx.moveTo(2, -c.h / 2);
+      ctx.lineTo(-c.w / 3, 1);
+      ctx.lineTo(1, 1);
+      ctx.lineTo(-2, c.h / 2);
+      ctx.lineTo(c.w / 3, -1);
+      ctx.lineTo(-1, -1);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Sparkle ring
+    if (c.sparkle < 15) {
+      ctx.globalAlpha = 0.3 * (1 - c.sparkle / 15);
+      ctx.strokeStyle = c.color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, c.w / 2 + c.sparkle, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  // Player trail
+  for (var i = 0; i < player.trail.length; i++) {
+    var t = player.trail[i];
+    ctx.globalAlpha = t.alpha * 0.4;
+    ctx.fillStyle = player.boostTimer > 0 ? GOLD : CYAN;
+    ctx.fillRect(t.x - 2, t.y - 4, 6, 8);
+  }
+  ctx.globalAlpha = 1;
+
+  // Player
+  if (player.alive || state === 'title') {
+    var ph = player.sliding ? PLAYER_SLIDE_H : PLAYER_H;
+    var py = player.sliding ? groundY - PLAYER_SLIDE_H : player.y;
+    var baseColor = player.boostTimer > 0 ? GOLD : CYAN;
+
+    // Shield aura
+    if (player.shieldTimer > 0) {
+      ctx.strokeStyle = SHIELD_BLUE;
+      ctx.globalAlpha = 0.3 + Math.sin(frameCount * 0.15) * 0.15;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(player.x + PLAYER_W / 2, py + ph / 2, Math.max(PLAYER_W, ph) / 2 + 8, 0, Math.PI * 2);
+      ctx.stroke();
+      // Flicker near end
+      if (player.shieldTimer < 90 && frameCount % 10 < 5) {
+        ctx.globalAlpha = 0;
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // Glow
+    ctx.shadowColor = baseColor;
+    ctx.shadowBlur = 15;
+
+    // Body
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(player.x, py, PLAYER_W, ph);
+
+    // Inner detail
+    ctx.fillStyle = BG;
+    ctx.fillRect(player.x + 4, py + 4, PLAYER_W - 8, ph - 8);
+    ctx.fillStyle = baseColor;
+    ctx.globalAlpha = 0.6;
+    ctx.fillRect(player.x + 6, py + 6, PLAYER_W - 12, ph - 12);
+    ctx.globalAlpha = 1;
+
+    // Eye(s)
+    if (!player.sliding) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(player.x + PLAYER_W - 8, py + 8, 4, 4);
+      ctx.fillRect(player.x + PLAYER_W - 8, py + 16, 4, 3);
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(player.x + PLAYER_W - 6, py + 4, 4, 3);
+    }
+
+    ctx.shadowBlur = 0;
+
+    // Speed lines during boost
+    if (player.boostTimer > 0) {
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = GOLD;
+      ctx.lineWidth = 1;
+      for (var sl = 0; sl < 5; sl++) {
+        var slY = py + Math.random() * ph;
+        var slLen = 20 + Math.random() * 40;
+        ctx.beginPath();
+        ctx.moveTo(player.x - 5, slY);
+        ctx.lineTo(player.x - 5 - slLen, slY);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Particles
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    ctx.globalAlpha = p.life / p.maxLife;
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+  }
+  ctx.globalAlpha = 1;
+
+  // Flash overlay (death impact)
+  if (flashAlpha > 0.01) {
+    ctx.fillStyle = 'rgba(255,255,255,' + flashAlpha + ')';
+    ctx.fillRect(-10, -10, W + 20, H + 20);
+  }
+
+  // ---- TITLE SCREEN ----
+  if (state === 'title') {
+    drawOverlay();
+    ctx.textAlign = 'center';
+
+    // Title
+    ctx.fillStyle = CYAN;
+    ctx.shadowColor = CYAN;
+    ctx.shadowBlur = 20;
+    ctx.font = 'bold 36px IBM Plex Mono';
+    ctx.fillText('PIPELINE', W / 2, H * 0.28);
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#556677';
+    ctx.font = '12px IBM Plex Mono';
+    ctx.fillText('ENDLESS RUNNER', W / 2, H * 0.28 + 28);
+
+    // Instructions
+    ctx.fillStyle = '#889999';
+    ctx.font = '13px IBM Plex Mono';
+    var instY = H * 0.44;
+    ctx.fillText('TAP / SPACE  —  Jump', W / 2, instY);
+    ctx.fillText('DOUBLE TAP  —  Double Jump', W / 2, instY + 24);
+    ctx.fillText('SWIPE DOWN / ↓  —  Slide', W / 2, instY + 48);
+
+    // Obstacles legend
+    ctx.font = '11px IBM Plex Mono';
+    var legY = instY + 90;
+    ctx.fillStyle = RED;
+    ctx.fillText('■ FIREWALL — jump over', W / 2, legY);
+    ctx.fillStyle = ORANGE;
+    ctx.fillText('■ LOW_BEAM — slide under', W / 2, legY + 20);
+    ctx.fillStyle = PURPLE;
+    ctx.fillText('■ MEMORY_LEAK — jump the gap', W / 2, legY + 40);
+
+    // High score
+    if (highScore > 0) {
+      ctx.fillStyle = GOLD;
+      ctx.font = '12px IBM Plex Mono';
+      ctx.fillText('HIGH SCORE: ' + highScore, W / 2, legY + 80);
+    }
+
+    // Start prompt
+    var pulse = 0.5 + Math.sin(frameCount * 0.06) * 0.5;
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = CYAN;
+    ctx.font = 'bold 16px IBM Plex Mono';
+    ctx.fillText('TAP TO RUN', W / 2, H * 0.88);
+    ctx.globalAlpha = 1;
+
+    // Subtitle
+    ctx.fillStyle = '#334455';
+    ctx.font = '10px IBM Plex Mono';
+    ctx.fillText('a substrate arcade game', W / 2, H * 0.94);
+  }
+
+  // ---- GAME OVER SCREEN ----
+  if (state === 'dead' && frameCount > 15) {
+    drawOverlay();
+    ctx.textAlign = 'center';
+
+    // Impact frame flash
+    if (frameCount < 20) {
+      ctx.fillStyle = 'rgba(255,68,68,0.2)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // CRASHED
+    ctx.fillStyle = RED;
+    ctx.shadowColor = RED;
+    ctx.shadowBlur = 20;
+    ctx.font = 'bold 32px IBM Plex Mono';
+    ctx.fillText('CRASHED', W / 2, H * 0.28);
+    ctx.shadowBlur = 0;
+
+    // Stats
+    ctx.fillStyle = '#c8d0e0';
+    ctx.font = '14px IBM Plex Mono';
+    ctx.fillText('DISTANCE: ' + Math.floor(distance) + 'm', W / 2, H * 0.40);
+    ctx.fillText('SCORE: ' + score, W / 2, H * 0.46);
+
+    // High score
+    ctx.fillStyle = GOLD;
+    ctx.font = 'bold 14px IBM Plex Mono';
+    if (score >= highScore && score > 0) {
+      ctx.fillText('★ NEW HIGH SCORE ★', W / 2, H * 0.54);
+    } else {
+      ctx.fillText('HIGH SCORE: ' + highScore, W / 2, H * 0.54);
+    }
+
+    // Retry
+    if (frameCount > 40) {
+      var pulse2 = 0.5 + Math.sin(frameCount * 0.06) * 0.5;
+      ctx.globalAlpha = pulse2;
+      ctx.fillStyle = CYAN;
+      ctx.font = 'bold 16px IBM Plex Mono';
+      ctx.fillText('TAP TO RETRY', W / 2, H * 0.72);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawOverlay() {
+  ctx.fillStyle = 'rgba(6,8,16,0.75)';
+  ctx.fillRect(0, 0, W, H);
+}
+
+// ===================== GAME LOOP =====================
+function loop() {
+  if (state === 'title') frameCount++;
+  update();
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ===================== BOOT =====================
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>

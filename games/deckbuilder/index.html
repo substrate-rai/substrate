@@ -1,0 +1,2440 @@
+---
+layout: null
+permalink: /games/deckbuilder/
+title: "STACK OVERFLOW — Substrate Arcade"
+redirect_from:
+  - /deckbuilder/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>STACK OVERFLOW — Substrate Arcade</title>
+<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
+<script src="{{ site.baseurl }}/assets/js/substrate-audio.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  background: #0a0a12;
+  color: #c8d0e0;
+  font-family: 'IBM Plex Mono', monospace;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ═══ TITLE SCREEN ═══ */
+#title-screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, #0d0d1a 0%, #050508 100%);
+  z-index: 100;
+}
+#title-screen h1 {
+  font-size: 2.4rem; font-weight: 700;
+  color: #ff4444;
+  text-shadow: 0 0 40px #ff444488, 0 0 80px #ff444444;
+  letter-spacing: 6px;
+  margin-bottom: 8px;
+}
+#title-screen .subtitle {
+  font-size: 0.75rem; color: #666; letter-spacing: 4px;
+  text-transform: uppercase; margin-bottom: 40px;
+}
+#title-screen .menu-btn {
+  background: transparent; border: 1px solid #333;
+  color: #c8d0e0; font-family: inherit; font-size: 1rem;
+  padding: 14px 40px; margin: 6px; cursor: pointer;
+  letter-spacing: 3px; border-radius: 2px;
+  transition: all 0.15s;
+  min-width: 220px; min-height: 48px;
+}
+#title-screen .menu-btn:hover, #title-screen .menu-btn:active {
+  border-color: #ff4444; color: #ff6666;
+  background: #ff444411;
+}
+
+/* ═══ GAME CONTAINER ═══ */
+#game {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ═══ TOP BAR ═══ */
+#top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px;
+  background: #0a0a12ee;
+  border-bottom: 1px solid #1a1a2e;
+  flex-shrink: 0;
+  z-index: 10;
+}
+#top-bar .player-hp {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; font-weight: 600;
+}
+.hp-bar-wrap {
+  width: 100px; height: 10px;
+  background: #1a1a2e; border-radius: 2px;
+  overflow: hidden;
+}
+.hp-bar-fill {
+  height: 100%; background: #44ff88;
+  transition: width 0.4s ease;
+  border-radius: 2px;
+}
+.hp-bar-fill.low { background: #ff4444; }
+.hp-bar-fill.mid { background: #ffaa44; }
+#top-bar .act-info {
+  font-size: 0.65rem; color: #666;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* ═══ ENEMY AREA ═══ */
+#enemy-area {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  gap: 20px;
+  padding: 10px;
+  position: relative;
+  min-height: 0;
+}
+.enemy {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  position: relative;
+}
+.enemy:active { transform: scale(0.95); }
+.enemy.targeted { filter: brightness(1.3); }
+.enemy.targeted .enemy-sprite { box-shadow: 0 0 20px #ff444488; }
+.enemy-sprite {
+  width: 80px; height: 80px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.enemy-name {
+  font-size: 0.55rem; color: #ff6666;
+  letter-spacing: 2px; font-weight: 700;
+  text-align: center; max-width: 100px;
+  word-break: break-all;
+}
+.enemy-hp-wrap {
+  width: 80px; height: 6px;
+  background: #1a1a2e; border-radius: 1px;
+  overflow: hidden;
+}
+.enemy-hp-fill {
+  height: 100%; background: #ff4444;
+  transition: width 0.3s ease;
+}
+.enemy-intent {
+  font-size: 0.6rem; padding: 2px 6px;
+  border-radius: 2px; font-weight: 600;
+  background: #1a1a2e; margin-top: 2px;
+  min-height: 18px; text-align: center;
+}
+.intent-attack { color: #ff4444; }
+.intent-block { color: #44aaff; }
+.intent-buff { color: #ffaa44; }
+.intent-debuff { color: #ff44aa; }
+.intent-heal { color: #44ff88; }
+.intent-special { color: #aa77ff; }
+.enemy-block-indicator {
+  position: absolute; top: 2px; right: 2px;
+  background: #2244aa; color: #88bbff;
+  font-size: 0.55rem; font-weight: 700;
+  padding: 1px 4px; border-radius: 2px;
+}
+.enemy-strength-indicator {
+  position: absolute; top: 2px; left: 2px;
+  background: #882222; color: #ff8888;
+  font-size: 0.55rem; font-weight: 700;
+  padding: 1px 4px; border-radius: 2px;
+}
+.enemy-status {
+  font-size: 0.5rem; color: #aa77ff;
+  margin-top: 1px;
+}
+
+/* ═══ PLAYER STATUS ═══ */
+#player-status {
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px 12px; gap: 16px;
+  background: #0d0d18;
+  border-top: 1px solid #1a1a2e;
+  border-bottom: 1px solid #1a1a2e;
+  flex-shrink: 0;
+}
+.block-display {
+  font-size: 0.75rem; color: #44aaff;
+  font-weight: 700;
+}
+.player-block-icon {
+  display: inline-block;
+  width: 14px; height: 14px;
+  background: #2244aa;
+  border-radius: 2px;
+  text-align: center; line-height: 14px;
+  font-size: 0.55rem; color: #88bbff;
+  vertical-align: middle; margin-right: 3px;
+}
+
+/* ═══ HAND AREA ═══ */
+#hand-area {
+  padding: 8px 4px 4px;
+  flex-shrink: 0;
+  overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  display: flex; align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  min-height: 170px;
+  scrollbar-width: none;
+}
+#hand-area::-webkit-scrollbar { display: none; }
+
+/* ═══ CARDS ═══ */
+.card {
+  flex-shrink: 0;
+  width: 105px; min-height: 148px;
+  border: 2px solid #333;
+  border-radius: 6px;
+  background: #12121e;
+  padding: 6px;
+  display: flex; flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.card:active { transform: scale(0.96); }
+.card.selected {
+  transform: translateY(-12px) scale(1.05);
+  border-color: #ffdd44;
+  box-shadow: 0 0 20px #ffdd4444, 0 4px 20px #00000088;
+  z-index: 5;
+}
+.card.unplayable { opacity: 0.45; cursor: default; }
+.card.encrypted {
+  opacity: 0.3; pointer-events: none;
+  filter: hue-rotate(180deg);
+}
+.card.encrypted::after {
+  content: 'ENCRYPTED';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.5rem; color: #ff44aa;
+  letter-spacing: 2px; font-weight: 700;
+  background: #00000088;
+  border-radius: 4px;
+}
+.card-common { border-color: #444; }
+.card-uncommon { border-color: #00cccc; }
+.card-rare { border-color: #ffaa00; }
+.card-cost {
+  position: absolute; top: -1px; left: -1px;
+  width: 22px; height: 22px;
+  background: #1a1a2e; border: 1px solid #444;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: #ffdd44;
+}
+.card-icon {
+  width: 100%; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 8px;
+}
+.card-icon canvas { width: 44px; height: 44px; }
+.card-name {
+  font-size: 0.55rem; font-weight: 700;
+  text-align: center; letter-spacing: 1.5px;
+  margin: 4px 0 2px; color: #e0e0e0;
+  line-height: 1.2;
+}
+.card-desc {
+  font-size: 0.48rem; color: #888;
+  text-align: center; line-height: 1.3;
+  flex: 1;
+}
+.card-rarity {
+  font-size: 0.4rem; text-align: center;
+  letter-spacing: 2px; margin-top: 2px;
+}
+.card-rarity.common { color: #666; }
+.card-rarity.uncommon { color: #00cccc; }
+.card-rarity.rare { color: #ffaa00; }
+
+/* ═══ BOTTOM BAR ═══ */
+#bottom-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 12px 10px;
+  background: #0a0a12;
+  flex-shrink: 0;
+  gap: 8px;
+}
+.energy-display {
+  display: flex; align-items: center; gap: 4px;
+}
+.energy-orb {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #ffdd44, #cc8800);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 700; color: #1a1a2e;
+  box-shadow: 0 0 12px #ffdd4444;
+  border: 2px solid #aa8800;
+}
+.deck-counts {
+  display: flex; gap: 10px;
+  font-size: 0.65rem; color: #666;
+}
+.deck-counts span { cursor: pointer; }
+.deck-counts .draw-pile { color: #44aaff; }
+.deck-counts .discard-pile { color: #ff6666; }
+#end-turn-btn {
+  background: #222; border: 2px solid #ff4444;
+  color: #ff6666; font-family: inherit;
+  font-size: 0.75rem; font-weight: 700;
+  padding: 10px 16px; border-radius: 4px;
+  cursor: pointer; letter-spacing: 2px;
+  transition: all 0.15s;
+  min-height: 48px; min-width: 90px;
+}
+#end-turn-btn:hover, #end-turn-btn:active {
+  background: #ff4444; color: #fff;
+}
+#end-turn-btn:disabled {
+  opacity: 0.4; cursor: default;
+  background: #222; color: #ff6666;
+}
+
+/* ═══ EFFECTS CANVAS ═══ */
+#fx-canvas {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* ═══ REWARD SCREEN ═══ */
+#reward-screen {
+  position: absolute; inset: 0;
+  background: #0a0a12ee;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 80;
+  padding: 20px;
+}
+#reward-screen h2 {
+  font-size: 1.2rem; color: #44ff88;
+  letter-spacing: 4px; margin-bottom: 6px;
+}
+#reward-screen .reward-sub {
+  font-size: 0.65rem; color: #666;
+  margin-bottom: 20px; letter-spacing: 2px;
+}
+#reward-cards {
+  display: flex; gap: 10px;
+  flex-wrap: wrap; justify-content: center;
+  margin-bottom: 20px;
+}
+#reward-cards .card {
+  transform: none;
+  min-height: 160px;
+}
+#reward-cards .card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 4px 20px #00000088;
+}
+#skip-reward-btn {
+  background: transparent; border: 1px solid #333;
+  color: #666; font-family: inherit; font-size: 0.7rem;
+  padding: 10px 24px; cursor: pointer;
+  letter-spacing: 2px; border-radius: 2px;
+  min-height: 48px;
+}
+#skip-reward-btn:hover { border-color: #666; color: #999; }
+
+/* ═══ EVENT / MAP SCREEN ═══ */
+#event-screen {
+  position: absolute; inset: 0;
+  background: #0a0a12;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 80; padding: 20px;
+  text-align: center;
+}
+#event-screen h2 {
+  font-size: 1.1rem; letter-spacing: 3px;
+  margin-bottom: 12px;
+}
+#event-screen .event-text {
+  font-size: 0.7rem; color: #888;
+  max-width: 320px; line-height: 1.5;
+  margin-bottom: 24px;
+}
+#event-screen .event-btn {
+  background: transparent; border: 1px solid #444;
+  color: #c8d0e0; font-family: inherit;
+  font-size: 0.75rem; padding: 12px 28px;
+  cursor: pointer; letter-spacing: 2px;
+  border-radius: 2px; margin: 4px;
+  min-height: 48px;
+}
+#event-screen .event-btn:hover {
+  border-color: #ff4444; color: #ff6666;
+}
+
+/* ═══ GAME OVER / VICTORY ═══ */
+#result-screen {
+  position: absolute; inset: 0;
+  background: #0a0a12;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 90; padding: 20px;
+  text-align: center;
+}
+#result-screen h1 {
+  font-size: 2rem; letter-spacing: 6px;
+  margin-bottom: 8px;
+}
+#result-screen .result-stats {
+  font-size: 0.7rem; color: #888;
+  line-height: 1.8; margin-bottom: 24px;
+}
+#result-screen .menu-btn {
+  background: transparent; border: 1px solid #333;
+  color: #c8d0e0; font-family: inherit;
+  font-size: 0.85rem; padding: 14px 32px;
+  cursor: pointer; letter-spacing: 3px;
+  border-radius: 2px; min-height: 48px;
+}
+#result-screen .menu-btn:hover {
+  border-color: #ff4444; color: #ff6666;
+}
+
+/* ═══ DECK VIEWER ═══ */
+#deck-viewer {
+  position: absolute; inset: 0;
+  background: #0a0a12ee;
+  display: none; flex-direction: column;
+  align-items: center;
+  z-index: 85; padding: 16px;
+  overflow-y: auto;
+}
+#deck-viewer h2 {
+  font-size: 0.9rem; letter-spacing: 3px;
+  margin-bottom: 12px; color: #888;
+}
+#deck-viewer .viewer-cards {
+  display: flex; flex-wrap: wrap;
+  gap: 8px; justify-content: center;
+  padding-bottom: 60px;
+}
+#deck-viewer .close-viewer {
+  position: fixed; bottom: 16px;
+  background: #222; border: 1px solid #444;
+  color: #c8d0e0; font-family: inherit;
+  font-size: 0.75rem; padding: 12px 28px;
+  cursor: pointer; letter-spacing: 2px;
+  border-radius: 2px; min-height: 48px;
+  z-index: 86;
+}
+
+/* ═══ SCREEN SHAKE ═══ */
+@keyframes shake {
+  0%, 100% { transform: translate(0); }
+  10% { transform: translate(-4px, 2px); }
+  20% { transform: translate(4px, -2px); }
+  30% { transform: translate(-3px, 3px); }
+  40% { transform: translate(3px, -1px); }
+  50% { transform: translate(-2px, 1px); }
+  60% { transform: translate(2px, -2px); }
+  70% { transform: translate(-1px, 1px); }
+  80% { transform: translate(1px, 0); }
+}
+.shake { animation: shake 0.35s ease; }
+
+/* ═══ DAMAGE NUMBER ═══ */
+.dmg-number {
+  position: absolute;
+  font-size: 1.2rem; font-weight: 700;
+  pointer-events: none; z-index: 60;
+  animation: dmgFloat 0.8s ease-out forwards;
+}
+.dmg-number.damage { color: #ff4444; text-shadow: 0 0 8px #ff4444; }
+.dmg-number.block { color: #44aaff; text-shadow: 0 0 8px #44aaff; }
+.dmg-number.heal { color: #44ff88; text-shadow: 0 0 8px #44ff88; }
+@keyframes dmgFloat {
+  0% { transform: translateY(0) scale(1.4); opacity: 1; }
+  100% { transform: translateY(-40px) scale(0.8); opacity: 0; }
+}
+
+/* ═══ CARD PLAY ANIMATION ═══ */
+@keyframes cardFly {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.6) translateY(-60px); opacity: 0.7; }
+  100% { transform: scale(0) translateY(-120px); opacity: 0; }
+}
+.card-flying {
+  animation: cardFly 0.3s ease-in forwards;
+  pointer-events: none;
+}
+
+/* ═══ PIPELINE GLOW ═══ */
+.pipeline-glow {
+  box-shadow: 0 0 20px #aa77ff88, 0 0 40px #aa77ff44 !important;
+  border-color: #aa77ff !important;
+}
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<div id="title-screen">
+  <h1>STACK OVERFLOW</h1>
+  <div class="subtitle">a substrate deckbuilder</div>
+  <button class="menu-btn" id="new-run-btn" onclick="startNewRun()">NEW RUN</button>
+  <button class="menu-btn" id="continue-btn" onclick="continueRun()" style="display:none">CONTINUE</button>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <canvas id="fx-canvas"></canvas>
+  <div id="top-bar">
+    <div class="player-hp">
+      <span id="hp-text">80/80</span>
+      <div class="hp-bar-wrap"><div class="hp-bar-fill" id="hp-fill"></div></div>
+    </div>
+    <div class="act-info" id="act-info">ACT 1 — BATTLE 1/3</div>
+  </div>
+  <div id="enemy-area"></div>
+  <div id="player-status">
+    <div class="block-display"><span class="player-block-icon">B</span> Block: <span id="player-block">0</span></div>
+  </div>
+  <div id="hand-area"></div>
+  <div id="bottom-bar">
+    <div class="energy-display">
+      <div class="energy-orb" id="energy-orb">3</div>
+    </div>
+    <div class="deck-counts">
+      <span class="draw-pile" onclick="showDeckViewer('draw')" id="draw-count">Draw: 10</span>
+      <span class="discard-pile" onclick="showDeckViewer('discard')" id="discard-count">Discard: 0</span>
+    </div>
+    <button id="end-turn-btn" onclick="endTurn()">END TURN</button>
+  </div>
+</div>
+
+<!-- REWARD SCREEN -->
+<div id="reward-screen">
+  <h2>VICTORY</h2>
+  <div class="reward-sub">CHOOSE A CARD TO ADD</div>
+  <div id="reward-cards"></div>
+  <button id="skip-reward-btn" onclick="skipReward()">SKIP</button>
+</div>
+
+<!-- EVENT SCREEN -->
+<div id="event-screen">
+  <h2 id="event-title"></h2>
+  <div class="event-text" id="event-text"></div>
+  <div id="event-buttons"></div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="result-screen">
+  <h1 id="result-title"></h1>
+  <div class="result-stats" id="result-stats"></div>
+  <button class="menu-btn" onclick="backToTitle()">MAIN MENU</button>
+</div>
+
+<!-- DECK VIEWER -->
+<div id="deck-viewer">
+  <h2 id="viewer-title">YOUR DECK</h2>
+  <div class="viewer-cards" id="viewer-cards"></div>
+  <button class="close-viewer" onclick="closeDeckViewer()">CLOSE</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// STACK OVERFLOW — Substrate Deckbuilder
+// ═══════════════════════════════════════════════════════════════════
+
+'use strict';
+
+// ── Card Definitions ──────────────────────────────────────────────
+
+const CARD_DEFS = {
+  // Starting cards
+  PING:          { name: 'PING', cost: 1, type: 'attack', rarity: 'starter', damage: 6, desc: 'Send a probe', icon: 'ping' },
+  FIREWALL:      { name: 'FIREWALL', cost: 1, type: 'skill', rarity: 'starter', block: 5, desc: 'Raise defenses', icon: 'shield' },
+  COMPILE:       { name: 'COMPILE', cost: 1, type: 'skill', rarity: 'starter', draw: 2, desc: 'Optimize your hand', icon: 'compile' },
+  REBOOT:        { name: 'REBOOT', cost: 0, type: 'skill', rarity: 'starter', block: 3, draw: 1, desc: 'Quick restart', icon: 'reboot' },
+  // Common
+  FORK:          { name: 'FORK', cost: 1, type: 'attack', rarity: 'common', damage: 4, hits: 2, desc: 'Deal 4 damage twice', icon: 'fork' },
+  CACHE:         { name: 'CACHE', cost: 1, type: 'skill', rarity: 'common', block: 8, desc: 'Gain 8 block', icon: 'shield' },
+  GREP:          { name: 'GREP', cost: 1, type: 'skill', rarity: 'common', draw: 3, desc: 'Draw 3 cards', icon: 'search' },
+  CRON:          { name: 'CRON', cost: 1, type: 'attack', rarity: 'common', damage: 3, block: 3, desc: 'Deal 3 damage, gain 3 block', icon: 'cron' },
+  // Uncommon
+  SUDO:          { name: 'SUDO', cost: 2, type: 'attack', rarity: 'uncommon', damage: 15, desc: 'Escalate privileges', icon: 'sudo' },
+  ENCRYPT:       { name: 'ENCRYPT', cost: 2, type: 'skill', rarity: 'uncommon', block: 12, energyNext: 1, desc: 'Gain 12 block, +1 energy next turn', icon: 'lock' },
+  PIPELINE:      { name: 'PIPELINE', cost: 1, type: 'skill', rarity: 'uncommon', pipeline: true, desc: 'Play the next card twice', icon: 'pipeline' },
+  OLLAMA:        { name: 'OLLAMA', cost: 2, type: 'attack', rarity: 'uncommon', damage: 8, aoe: true, desc: 'Deal 8 damage to ALL enemies', icon: 'ollama' },
+  NIXOS:         { name: 'NIXOS', cost: 2, type: 'skill', rarity: 'uncommon', nixBlock: 5, desc: 'Gain 5 block per card played this turn', icon: 'nix' },
+  // Rare
+  KERNEL_PANIC:  { name: 'KERNEL_PANIC', cost: 3, type: 'attack', rarity: 'rare', damage: 30, desc: 'Blue screen of death', icon: 'skull' },
+  ROOT_ACCESS:   { name: 'ROOT_ACCESS', cost: 3, type: 'skill', rarity: 'rare', block: 25, draw: 3, desc: 'Gain 25 block, draw 3', icon: 'root' },
+  FORK_BOMB:     { name: 'FORK_BOMB', cost: 2, type: 'attack', rarity: 'rare', damage: 5, hits: 6, randomTarget: true, desc: 'Deal 5 damage 6 times randomly', icon: 'bomb' },
+  SUBSTRATE:     { name: 'SUBSTRATE', cost: 0, type: 'attack', rarity: 'rare', damage: 5, draw: 1, energyGain: 1, desc: 'Gain 1 energy, draw 1, deal 5', icon: 'substrate' },
+};
+
+// ── Enemy Definitions ─────────────────────────────────────────────
+
+const ENEMY_DEFS = {
+  // Act 1
+  SEGFAULT: {
+    name: 'SEGFAULT', maxHp: 30, color: '#ff4444',
+    pattern: [
+      { type: 'attack', damage: 8, text: 'ATK 8' },
+      { type: 'attack', damage: 6, text: 'ATK 6' },
+      { type: 'block', block: 4, text: 'BLK 4' },
+    ]
+  },
+  MEMORY_LEAK: {
+    name: 'MEMORY_LEAK', maxHp: 25, color: '#44ff88',
+    pattern: [
+      { type: 'attack', damage: 5, text: 'ATK 5' },
+      { type: 'heal', heal: 3, text: 'HEAL 3' },
+      { type: 'attack', damage: 7, text: 'ATK 7' },
+    ]
+  },
+  NULL_POINTER: {
+    name: 'NULL_POINTER', maxHp: 20, color: '#ffaa44',
+    pattern: [
+      { type: 'attack', damage: 4, hits: 2, text: 'ATK 4x2' },
+      { type: 'attack', damage: 6, text: 'ATK 6' },
+    ]
+  },
+  BUFFER_OVERFLOW: {
+    name: 'BUFFER_OVERFLOW', maxHp: 80, color: '#ff6666', isBoss: true,
+    pattern: [
+      { type: 'attack', damage: 10, text: 'ATK 10' },
+      { type: 'buff', strength: 2, text: 'STR +2' },
+      { type: 'attack', damage: 14, text: 'ATK 14' },
+      { type: 'attack', damage: 8, text: 'ATK 8' },
+    ]
+  },
+  // Act 2
+  RACE_CONDITION: {
+    name: 'RACE_CONDITION', maxHp: 40, color: '#ffdd44',
+    pattern: [
+      { type: 'attack', damage: 18, text: 'ATK 18' },
+      { type: 'attack', damage: 4, text: 'ATK 4' },
+      { type: 'attack', damage: 18, text: 'ATK 18' },
+      { type: 'attack', damage: 4, text: 'ATK 4' },
+    ]
+  },
+  DEADLOCK: {
+    name: 'DEADLOCK', maxHp: 35, color: '#4488ff',
+    pattern: [
+      { type: 'block', block: 10, text: 'BLK 10' },
+      { type: 'attack', damage: 14, text: 'ATK 14' },
+      { type: 'block', block: 8, text: 'BLK 8' },
+      { type: 'attack', damage: 12, text: 'ATK 12' },
+    ]
+  },
+  SQL_INJECTION: {
+    name: 'SQL_INJECTION', maxHp: 45, color: '#ff44aa',
+    pattern: [
+      { type: 'debuff', stealBlock: true, text: 'STEAL BLK' },
+      { type: 'attack', damage: 12, text: 'ATK 12' },
+      { type: 'attack', damage: 10, text: 'ATK 10' },
+    ]
+  },
+  RANSOMWARE: {
+    name: 'RANSOMWARE', maxHp: 120, color: '#ff44aa', isBoss: true,
+    pattern: [
+      { type: 'debuff', encrypt: 2, text: 'ENCRYPT 2' },
+      { type: 'attack', damage: 16, text: 'ATK 16' },
+      { type: 'attack', damage: 12, text: 'ATK 12' },
+      { type: 'buff', strength: 2, text: 'STR +2' },
+    ]
+  },
+  // Act 3
+  ZERO_DAY: {
+    name: 'ZERO_DAY', maxHp: 60, color: '#aa44ff',
+    pattern: [
+      { type: 'attack', damage: 6, scaling: true, text: 'ATK 6+' },
+      { type: 'attack', damage: 10, scaling: true, text: 'ATK 10+' },
+      { type: 'buff', strength: 3, text: 'STR +3' },
+    ]
+  },
+  APT: {
+    name: 'APT', maxHp: 55, color: '#ff8844',
+    pattern: [
+      { type: 'summon', text: 'SUMMON' },
+      { type: 'attack', damage: 14, text: 'ATK 14' },
+      { type: 'attack', damage: 10, text: 'ATK 10' },
+      { type: 'buff', strength: 1, text: 'STR +1' },
+    ]
+  },
+  MINION: {
+    name: 'MINION', maxHp: 12, color: '#ff8844',
+    pattern: [
+      { type: 'attack', damage: 5, text: 'ATK 5' },
+      { type: 'attack', damage: 7, text: 'ATK 7' },
+    ]
+  },
+  SINGULARITY: {
+    name: 'SINGULARITY', maxHp: 200, color: '#aa77ff', isBoss: true,
+    pattern: [
+      { type: 'attack', damage: 12, text: 'ATK 12' },
+      { type: 'special', copyCard: true, text: 'COPY' },
+      { type: 'attack', damage: 20, text: 'ATK 20' },
+      { type: 'buff', strength: 3, text: 'STR +3' },
+      { type: 'attack', damage: 15, text: 'ATK 15' },
+    ]
+  },
+};
+
+// ── Encounter Table ───────────────────────────────────────────────
+
+const ENCOUNTERS = [
+  // Act 1: 3 battles + boss
+  [
+    [['SEGFAULT']],
+    [['NULL_POINTER', 'NULL_POINTER'], ['MEMORY_LEAK']],
+    [['SEGFAULT', 'MEMORY_LEAK'], ['NULL_POINTER', 'SEGFAULT']],
+    [['BUFFER_OVERFLOW']],
+  ],
+  // Act 2
+  [
+    [['RACE_CONDITION'], ['DEADLOCK']],
+    [['SQL_INJECTION'], ['DEADLOCK', 'RACE_CONDITION']],
+    [['SQL_INJECTION', 'DEADLOCK']],
+    [['RANSOMWARE']],
+  ],
+  // Act 3
+  [
+    [['ZERO_DAY'], ['APT']],
+    [['ZERO_DAY', 'APT']],
+    [['ZERO_DAY', 'ZERO_DAY'], ['APT', 'APT']],
+    [['SINGULARITY']],
+  ],
+];
+
+// ── Game State ────────────────────────────────────────────────────
+
+let GS = null; // game state
+
+function freshState() {
+  return {
+    hp: 80, maxHp: 80,
+    act: 0, battle: 0,
+    deck: buildStarterDeck(),
+    drawPile: [], discardPile: [], hand: [], exhaustPile: [],
+    energy: 3, maxEnergy: 3, bonusEnergy: 0,
+    block: 0,
+    enemies: [],
+    turn: 0,
+    cardsPlayedThisTurn: 0,
+    pipelineActive: false,
+    selectedCard: null,
+    animating: false,
+    totalDamageDealt: 0,
+    totalCardsPlayed: 0,
+    totalTurns: 0,
+    battlesWon: 0,
+    phase: 'player', // player, enemy, reward, event, gameover
+  };
+}
+
+function buildStarterDeck() {
+  const deck = [];
+  for (let i = 0; i < 5; i++) deck.push(makeCard('PING'));
+  for (let i = 0; i < 3; i++) deck.push(makeCard('FIREWALL'));
+  deck.push(makeCard('COMPILE'));
+  deck.push(makeCard('REBOOT'));
+  return deck;
+}
+
+let cardIdCounter = 0;
+function makeCard(defName) {
+  const def = CARD_DEFS[defName];
+  return { ...def, id: ++cardIdCounter, defName: defName, encrypted: 0 };
+}
+
+// ── Utility ───────────────────────────────────────────────────────
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+// ── FX Canvas ─────────────────────────────────────────────────────
+
+const fxCanvas = document.getElementById('fx-canvas');
+const fxCtx = fxCanvas.getContext('2d');
+let particles = [];
+
+function resizeFx() {
+  fxCanvas.width = window.innerWidth;
+  fxCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeFx);
+
+function spawnParticles(x, y, color, count, spread) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * (spread || 4);
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1,
+      life: 1,
+      decay: 0.02 + Math.random() * 0.03,
+      size: 2 + Math.random() * 3,
+      color: color
+    });
+  }
+}
+
+function tickParticles() {
+  fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.08;
+    p.life -= p.decay;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    fxCtx.globalAlpha = p.life;
+    fxCtx.fillStyle = p.color;
+    fxCtx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+  }
+  fxCtx.globalAlpha = 1;
+  if (particles.length > 0) requestAnimationFrame(tickParticles);
+}
+
+let particleLoop = false;
+function ensureParticleLoop() {
+  if (!particleLoop) {
+    particleLoop = true;
+    (function loop() {
+      tickParticles();
+      if (particles.length > 0) {
+        requestAnimationFrame(loop);
+      } else {
+        particleLoop = false;
+      }
+    })();
+  }
+}
+
+// ── Card Icon Drawing ─────────────────────────────────────────────
+
+function drawCardIcon(canvas, iconType, rarity) {
+  const ctx = canvas.getContext('2d');
+  const s = canvas.width;
+  ctx.clearRect(0, 0, s, s);
+
+  const colors = {
+    starter: '#888888',
+    common: '#c8c8c8',
+    uncommon: '#00cccc',
+    rare: '#ffaa00',
+  };
+  const col = colors[rarity] || '#c8c8c8';
+
+  ctx.strokeStyle = col;
+  ctx.fillStyle = col;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const cx = s/2, cy = s/2;
+
+  switch(iconType) {
+    case 'ping': // arrow/probe
+      ctx.beginPath();
+      ctx.moveTo(s*0.2, cy);
+      ctx.lineTo(s*0.7, cy);
+      ctx.moveTo(s*0.55, cy - s*0.15);
+      ctx.lineTo(s*0.7, cy);
+      ctx.lineTo(s*0.55, cy + s*0.15);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(s*0.8, cy, s*0.06, 0, Math.PI*2);
+      ctx.fill();
+      break;
+    case 'shield': // shield
+      ctx.beginPath();
+      ctx.moveTo(cx, s*0.15);
+      ctx.lineTo(s*0.75, s*0.3);
+      ctx.lineTo(s*0.7, s*0.65);
+      ctx.lineTo(cx, s*0.85);
+      ctx.lineTo(s*0.3, s*0.65);
+      ctx.lineTo(s*0.25, s*0.3);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.globalAlpha = 0.15;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      break;
+    case 'compile': // terminal brackets
+      ctx.font = `bold ${s*0.5}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('>_', cx, cy);
+      break;
+    case 'reboot': // circular arrow
+      ctx.beginPath();
+      ctx.arc(cx, cy, s*0.25, -Math.PI*0.5, Math.PI*1.2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx + s*0.12, s*0.2);
+      ctx.lineTo(cx, s*0.25);
+      ctx.lineTo(cx + s*0.15, s*0.32);
+      ctx.stroke();
+      break;
+    case 'fork': // branching arrows
+      ctx.beginPath();
+      ctx.moveTo(s*0.2, cy);
+      ctx.lineTo(cx, cy);
+      ctx.lineTo(s*0.75, s*0.25);
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(s*0.75, s*0.75);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(s*0.75, s*0.25, 3, 0, Math.PI*2);
+      ctx.arc(s*0.75, s*0.75, 3, 0, Math.PI*2);
+      ctx.fill();
+      break;
+    case 'search': // magnifying glass
+      ctx.beginPath();
+      ctx.arc(cx - s*0.05, cy - s*0.05, s*0.2, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx + s*0.1, cy + s*0.1);
+      ctx.lineTo(s*0.78, s*0.78);
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.lineWidth = 2;
+      break;
+    case 'cron': // clock
+      ctx.beginPath();
+      ctx.arc(cx, cy, s*0.28, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx, cy - s*0.18);
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + s*0.12, cy + s*0.05);
+      ctx.stroke();
+      break;
+    case 'sudo': // lightning bolt
+      ctx.beginPath();
+      ctx.moveTo(cx + s*0.05, s*0.12);
+      ctx.lineTo(cx - s*0.12, cy + s*0.05);
+      ctx.lineTo(cx + s*0.02, cy);
+      ctx.lineTo(cx - s*0.05, s*0.88);
+      ctx.lineTo(cx + s*0.15, cy - s*0.05);
+      ctx.lineTo(cx, cy);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    case 'lock': // padlock
+      ctx.beginPath();
+      ctx.arc(cx, cy - s*0.08, s*0.14, Math.PI, 0);
+      ctx.stroke();
+      ctx.fillStyle = col;
+      ctx.globalAlpha = 0.3;
+      ctx.fillRect(cx - s*0.2, cy - s*0.02, s*0.4, s*0.35);
+      ctx.globalAlpha = 1;
+      ctx.strokeRect(cx - s*0.2, cy - s*0.02, s*0.4, s*0.35);
+      ctx.beginPath();
+      ctx.arc(cx, cy + s*0.12, s*0.05, 0, Math.PI*2);
+      ctx.fillStyle = col;
+      ctx.fill();
+      break;
+    case 'pipeline': // connected pipes
+      ctx.beginPath();
+      ctx.moveTo(s*0.15, cy);
+      ctx.lineTo(s*0.35, cy);
+      ctx.lineTo(s*0.35, cy - s*0.15);
+      ctx.lineTo(s*0.65, cy - s*0.15);
+      ctx.lineTo(s*0.65, cy);
+      ctx.lineTo(s*0.85, cy);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(s*0.35, cy, 3, 0, Math.PI*2);
+      ctx.arc(s*0.65, cy, 3, 0, Math.PI*2);
+      ctx.fill();
+      break;
+    case 'ollama': // llama face (simplified)
+      ctx.beginPath();
+      ctx.arc(cx, cy + s*0.05, s*0.22, 0, Math.PI*2);
+      ctx.stroke();
+      // ears
+      ctx.beginPath();
+      ctx.moveTo(cx - s*0.12, cy - s*0.15);
+      ctx.lineTo(cx - s*0.18, cy - s*0.35);
+      ctx.lineTo(cx - s*0.05, cy - s*0.18);
+      ctx.moveTo(cx + s*0.12, cy - s*0.15);
+      ctx.lineTo(cx + s*0.18, cy - s*0.35);
+      ctx.lineTo(cx + s*0.05, cy - s*0.18);
+      ctx.stroke();
+      // eyes
+      ctx.beginPath();
+      ctx.arc(cx - s*0.08, cy, 2, 0, Math.PI*2);
+      ctx.arc(cx + s*0.08, cy, 2, 0, Math.PI*2);
+      ctx.fill();
+      break;
+    case 'nix': // snowflake/nix logo
+      for (let i = 0; i < 6; i++) {
+        const a = i * Math.PI / 3;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a)*s*0.3, cy + Math.sin(a)*s*0.3);
+        ctx.stroke();
+        // small crossbars
+        const mx = cx + Math.cos(a)*s*0.18;
+        const my = cy + Math.sin(a)*s*0.18;
+        ctx.beginPath();
+        ctx.moveTo(mx + Math.cos(a+Math.PI/2)*s*0.06, my + Math.sin(a+Math.PI/2)*s*0.06);
+        ctx.lineTo(mx - Math.cos(a+Math.PI/2)*s*0.06, my - Math.sin(a+Math.PI/2)*s*0.06);
+        ctx.stroke();
+      }
+      break;
+    case 'skull': // skull
+      ctx.beginPath();
+      ctx.arc(cx, cy - s*0.05, s*0.22, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.fillRect(cx - s*0.12, cy + s*0.15, s*0.24, s*0.12);
+      ctx.strokeRect(cx - s*0.12, cy + s*0.15, s*0.24, s*0.12);
+      // eyes
+      ctx.fillStyle = '#0a0a12';
+      ctx.beginPath();
+      ctx.arc(cx - s*0.08, cy - s*0.05, s*0.06, 0, Math.PI*2);
+      ctx.arc(cx + s*0.08, cy - s*0.05, s*0.06, 0, Math.PI*2);
+      ctx.fill();
+      // teeth
+      ctx.strokeStyle = '#0a0a12';
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const tx = cx - s*0.08 + i * s*0.08;
+        ctx.moveTo(tx, cy + s*0.15);
+        ctx.lineTo(tx, cy + s*0.27);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = col;
+      break;
+    case 'root': // tree/root
+      ctx.beginPath();
+      ctx.moveTo(cx, s*0.15);
+      ctx.lineTo(cx, s*0.5);
+      ctx.lineTo(cx - s*0.25, s*0.85);
+      ctx.moveTo(cx, s*0.5);
+      ctx.lineTo(cx + s*0.25, s*0.85);
+      ctx.moveTo(cx, s*0.4);
+      ctx.lineTo(cx - s*0.15, s*0.65);
+      ctx.moveTo(cx, s*0.35);
+      ctx.lineTo(cx + s*0.12, s*0.55);
+      ctx.stroke();
+      break;
+    case 'bomb': // bomb
+      ctx.beginPath();
+      ctx.arc(cx, cy + s*0.05, s*0.22, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.globalAlpha = 0.15;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      // fuse
+      ctx.beginPath();
+      ctx.moveTo(cx + s*0.12, cy - s*0.15);
+      ctx.quadraticCurveTo(cx + s*0.25, cy - s*0.35, cx + s*0.1, cy - s*0.38);
+      ctx.stroke();
+      // spark
+      ctx.fillStyle = '#ffdd44';
+      ctx.beginPath();
+      ctx.arc(cx + s*0.1, cy - s*0.38, 3, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = col;
+      break;
+    case 'substrate': // S in diamond
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(Math.PI/4);
+      ctx.strokeRect(-s*0.2, -s*0.2, s*0.4, s*0.4);
+      ctx.restore();
+      ctx.font = `bold ${s*0.35}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillText('S', cx, cy + 1);
+      ctx.fillStyle = col;
+      break;
+    default:
+      ctx.font = `${s*0.3}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('?', cx, cy);
+  }
+}
+
+// ── Draw Enemy Sprite ─────────────────────────────────────────────
+
+function drawEnemySprite(canvas, enemy) {
+  const ctx = canvas.getContext('2d');
+  const s = canvas.width;
+  ctx.clearRect(0, 0, s, s);
+  const col = enemy.color || '#ff4444';
+
+  // Dark background
+  ctx.fillStyle = '#0d0d18';
+  ctx.fillRect(0, 0, s, s);
+
+  // Glitch lines
+  ctx.strokeStyle = col;
+  ctx.globalAlpha = 0.15;
+  for (let i = 0; i < 5; i++) {
+    const y = Math.random() * s;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(s, y);
+    ctx.lineWidth = 1 + Math.random() * 2;
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = 2;
+
+  const cx = s/2, cy = s/2;
+
+  switch(enemy.defName || enemy.name) {
+    case 'SEGFAULT':
+      // Broken pointer arrow
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(s*0.2, cy);
+      ctx.lineTo(s*0.45, cy);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(s*0.55, cy - s*0.12);
+      ctx.lineTo(s*0.8, cy + s*0.12);
+      ctx.stroke();
+      // X mark
+      ctx.strokeStyle = '#ff6666';
+      ctx.beginPath();
+      ctx.moveTo(cx - s*0.08, cy - s*0.2);
+      ctx.lineTo(cx + s*0.08, cy - s*0.08);
+      ctx.moveTo(cx + s*0.08, cy - s*0.2);
+      ctx.lineTo(cx - s*0.08, cy - s*0.08);
+      ctx.stroke();
+      break;
+    case 'MEMORY_LEAK':
+      // Dripping drops
+      ctx.fillStyle = col;
+      for (let i = 0; i < 4; i++) {
+        const dx = s*0.25 + i * s*0.15;
+        const dy = s*0.3 + Math.sin(i*1.5) * s*0.1;
+        ctx.beginPath();
+        ctx.moveTo(dx, dy);
+        ctx.quadraticCurveTo(dx + s*0.04, dy + s*0.1, dx, dy + s*0.15);
+        ctx.quadraticCurveTo(dx - s*0.04, dy + s*0.1, dx, dy);
+        ctx.fill();
+      }
+      // Pool
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.ellipse(cx, s*0.75, s*0.35, s*0.08, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      break;
+    case 'NULL_POINTER':
+      // Null symbol
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, s*0.2, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - s*0.2, cy + s*0.15);
+      ctx.lineTo(cx + s*0.2, cy - s*0.15);
+      ctx.stroke();
+      break;
+    case 'BUFFER_OVERFLOW':
+      // Overflowing box
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(s*0.2, s*0.35, s*0.6, s*0.45);
+      // Overflow data
+      for (let i = 0; i < 6; i++) {
+        ctx.fillStyle = col;
+        ctx.globalAlpha = 0.4 + Math.random() * 0.4;
+        ctx.fillRect(s*0.25 + Math.random()*s*0.4, s*0.15 - i*s*0.04, s*0.08, s*0.03);
+      }
+      ctx.globalAlpha = 1;
+      // Skull in box
+      ctx.beginPath();
+      ctx.arc(cx, s*0.55, s*0.1, 0, Math.PI*2);
+      ctx.fillStyle = '#ff2222';
+      ctx.globalAlpha = 0.6;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      break;
+    case 'RACE_CONDITION':
+      // Two arrows racing
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(s*0.15, s*0.35);
+      ctx.lineTo(s*0.7, s*0.35);
+      ctx.lineTo(s*0.6, s*0.25);
+      ctx.moveTo(s*0.85, s*0.65);
+      ctx.lineTo(s*0.3, s*0.65);
+      ctx.lineTo(s*0.4, s*0.55);
+      ctx.stroke();
+      break;
+    case 'DEADLOCK':
+      // Two interlocking circles
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(cx - s*0.1, cy, s*0.18, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx + s*0.1, cy, s*0.18, 0, Math.PI*2);
+      ctx.stroke();
+      break;
+    case 'SQL_INJECTION':
+      // Syringe
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.fillStyle = col;
+      ctx.globalAlpha = 0.3;
+      ctx.fillRect(s*0.3, s*0.35, s*0.3, s*0.3);
+      ctx.globalAlpha = 1;
+      ctx.strokeRect(s*0.3, s*0.35, s*0.3, s*0.3);
+      // Needle
+      ctx.beginPath();
+      ctx.moveTo(s*0.6, cy);
+      ctx.lineTo(s*0.82, cy);
+      ctx.stroke();
+      // Text
+      ctx.font = `bold ${s*0.12}px monospace`;
+      ctx.fillStyle = col;
+      ctx.textAlign = 'center';
+      ctx.fillText("';--", cx, cy + s*0.02);
+      break;
+    case 'RANSOMWARE':
+      // Lock with skull
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy - s*0.12, s*0.12, Math.PI, 0);
+      ctx.stroke();
+      ctx.strokeRect(cx - s*0.2, cy - s*0.02, s*0.4, s*0.32);
+      ctx.fillStyle = col;
+      ctx.globalAlpha = 0.2;
+      ctx.fillRect(cx - s*0.2, cy - s*0.02, s*0.4, s*0.32);
+      ctx.globalAlpha = 1;
+      // $ symbol
+      ctx.font = `bold ${s*0.25}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = col;
+      ctx.fillText('$', cx, cy + s*0.12);
+      break;
+    case 'ZERO_DAY':
+      // 0-day number
+      ctx.font = `bold ${s*0.35}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = col;
+      ctx.fillText('0', cx, cy);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.5;
+      // Radiating danger lines
+      for (let i = 0; i < 8; i++) {
+        const a = i * Math.PI/4;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a)*s*0.25, cy + Math.sin(a)*s*0.25);
+        ctx.lineTo(cx + Math.cos(a)*s*0.35, cy + Math.sin(a)*s*0.35);
+        ctx.stroke();
+      }
+      break;
+    case 'APT':
+      // Eye with network
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, s*0.15, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy, s*0.06, 0, Math.PI*2);
+      ctx.fillStyle = col;
+      ctx.fill();
+      // Network lines
+      for (let i = 0; i < 5; i++) {
+        const a = i * Math.PI*2/5 - Math.PI/2;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a)*s*0.15, cy + Math.sin(a)*s*0.15);
+        ctx.lineTo(cx + Math.cos(a)*s*0.35, cy + Math.sin(a)*s*0.35);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(a)*s*0.35, cy + Math.sin(a)*s*0.35, 2, 0, Math.PI*2);
+        ctx.fill();
+      }
+      break;
+    case 'MINION':
+      // Small bot
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(cx - s*0.15, cy - s*0.12, s*0.3, s*0.28);
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(cx - s*0.06, cy - s*0.02, 2, 0, Math.PI*2);
+      ctx.arc(cx + s*0.06, cy - s*0.02, 2, 0, Math.PI*2);
+      ctx.fill();
+      // antenna
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - s*0.12);
+      ctx.lineTo(cx, cy - s*0.25);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy - s*0.25, 2, 0, Math.PI*2);
+      ctx.fill();
+      break;
+    case 'SINGULARITY':
+      // Black hole with accretion disk
+      ctx.fillStyle = '#111';
+      ctx.beginPath();
+      ctx.arc(cx, cy, s*0.15, 0, Math.PI*2);
+      ctx.fill();
+      // Accretion disk rings
+      for (let i = 0; i < 3; i++) {
+        ctx.strokeStyle = col;
+        ctx.globalAlpha = 0.3 + i * 0.2;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, s*0.22 + i*s*0.06, s*0.08 + i*s*0.02, 0.3, 0, Math.PI*2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      // Bright center
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, s*0.15);
+      grd.addColorStop(0, col);
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.globalAlpha = 0.4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, s*0.15, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      break;
+    default:
+      ctx.fillStyle = col;
+      ctx.font = `bold ${s*0.2}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('?', cx, cy);
+  }
+
+  // Enemy border glow
+  ctx.strokeStyle = col;
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, s-2, s-2);
+  ctx.globalAlpha = 1;
+}
+
+// ── Damage Numbers ────────────────────────────────────────────────
+
+function showDmgNumber(el, value, type) {
+  const rect = el.getBoundingClientRect();
+  const num = document.createElement('div');
+  num.className = 'dmg-number ' + type;
+  num.textContent = (type === 'damage' ? '-' : '+') + value;
+  num.style.left = (rect.left + rect.width/2 - 20) + 'px';
+  num.style.top = (rect.top + rect.height/3) + 'px';
+  document.body.appendChild(num);
+  setTimeout(() => num.remove(), 850);
+}
+
+// ── Screen Shake ──────────────────────────────────────────────────
+
+function screenShake() {
+  const game = document.getElementById('game');
+  game.classList.remove('shake');
+  void game.offsetWidth; // reflow
+  game.classList.add('shake');
+  setTimeout(() => game.classList.remove('shake'), 350);
+}
+
+// ── Save / Load ───────────────────────────────────────────────────
+
+function saveRun() {
+  try {
+    const save = {
+      hp: GS.hp, maxHp: GS.maxHp,
+      act: GS.act, battle: GS.battle,
+      deck: GS.deck.map(c => ({ defName: c.defName, encrypted: c.encrypted })),
+      maxEnergy: GS.maxEnergy,
+      totalDamageDealt: GS.totalDamageDealt,
+      totalCardsPlayed: GS.totalCardsPlayed,
+      totalTurns: GS.totalTurns,
+      battlesWon: GS.battlesWon,
+    };
+    localStorage.setItem('substrate-deckbuilder-save', JSON.stringify(save));
+  } catch(e) {}
+}
+
+function loadRun() {
+  try {
+    const raw = localStorage.getItem('substrate-deckbuilder-save');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function clearSave() {
+  try { localStorage.removeItem('substrate-deckbuilder-save'); } catch(e) {}
+}
+
+// ── Rendering ─────────────────────────────────────────────────────
+
+function renderTopBar() {
+  const pct = Math.max(0, GS.hp / GS.maxHp * 100);
+  document.getElementById('hp-text').textContent = GS.hp + '/' + GS.maxHp;
+  const fill = document.getElementById('hp-fill');
+  fill.style.width = pct + '%';
+  fill.className = 'hp-bar-fill' + (pct < 25 ? ' low' : pct < 50 ? ' mid' : '');
+  const bossB = GS.battle === 3;
+  document.getElementById('act-info').textContent =
+    'ACT ' + (GS.act + 1) + ' \u2014 ' + (bossB ? 'BOSS' : 'BATTLE ' + (GS.battle + 1) + '/3');
+}
+
+function renderEnemies() {
+  const area = document.getElementById('enemy-area');
+  area.innerHTML = '';
+  GS.enemies.forEach((e, idx) => {
+    if (e.hp <= 0) return;
+    const div = document.createElement('div');
+    div.className = 'enemy';
+    div.dataset.idx = idx;
+
+    // Sprite
+    const spriteWrap = document.createElement('div');
+    spriteWrap.className = 'enemy-sprite';
+    const cvs = document.createElement('canvas');
+    cvs.width = 160; cvs.height = 160;
+    cvs.style.width = '80px'; cvs.style.height = '80px';
+    drawEnemySprite(cvs, e);
+    spriteWrap.appendChild(cvs);
+
+    // Block indicator
+    if (e.block > 0) {
+      const bi = document.createElement('div');
+      bi.className = 'enemy-block-indicator';
+      bi.textContent = e.block;
+      spriteWrap.appendChild(bi);
+    }
+    // Strength indicator
+    if (e.strength > 0) {
+      const si = document.createElement('div');
+      si.className = 'enemy-strength-indicator';
+      si.textContent = '+' + e.strength;
+      spriteWrap.appendChild(si);
+    }
+
+    div.appendChild(spriteWrap);
+
+    // Name
+    const nameEl = document.createElement('div');
+    nameEl.className = 'enemy-name';
+    nameEl.textContent = e.name;
+    div.appendChild(nameEl);
+
+    // HP
+    const hpWrap = document.createElement('div');
+    hpWrap.className = 'enemy-hp-wrap';
+    const hpFill = document.createElement('div');
+    hpFill.className = 'enemy-hp-fill';
+    hpFill.style.width = Math.max(0, e.hp / e.maxHp * 100) + '%';
+    hpWrap.appendChild(hpFill);
+    div.appendChild(hpWrap);
+
+    // Intent
+    const intent = document.createElement('div');
+    intent.className = 'enemy-intent';
+    const nextAction = getEnemyIntent(e);
+    if (nextAction) {
+      intent.textContent = nextAction.text;
+      intent.classList.add('intent-' + nextAction.type);
+    }
+    div.appendChild(intent);
+
+    // Status effects
+    if (e.statusText) {
+      const status = document.createElement('div');
+      status.className = 'enemy-status';
+      status.textContent = e.statusText;
+      div.appendChild(status);
+    }
+
+    // Click handler
+    div.addEventListener('click', () => onEnemyClick(idx));
+
+    area.appendChild(div);
+  });
+}
+
+function renderHand() {
+  const area = document.getElementById('hand-area');
+  area.innerHTML = '';
+  GS.hand.forEach((card, idx) => {
+    const el = createCardElement(card);
+    if (card.encrypted > 0) {
+      el.classList.add('encrypted');
+    } else if (card.cost > GS.energy) {
+      el.classList.add('unplayable');
+    }
+    if (GS.selectedCard === idx) el.classList.add('selected');
+    el.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      onCardClick(idx);
+    });
+    area.appendChild(el);
+  });
+}
+
+function createCardElement(card) {
+  const el = document.createElement('div');
+  el.className = 'card card-' + card.rarity;
+
+  // Cost
+  const cost = document.createElement('div');
+  cost.className = 'card-cost';
+  cost.textContent = card.cost;
+  el.appendChild(cost);
+
+  // Icon
+  const iconWrap = document.createElement('div');
+  iconWrap.className = 'card-icon';
+  const cvs = document.createElement('canvas');
+  cvs.width = 88; cvs.height = 88;
+  drawCardIcon(cvs, card.icon, card.rarity);
+  iconWrap.appendChild(cvs);
+  el.appendChild(iconWrap);
+
+  // Name
+  const name = document.createElement('div');
+  name.className = 'card-name';
+  name.textContent = card.name;
+  el.appendChild(name);
+
+  // Description
+  const desc = document.createElement('div');
+  desc.className = 'card-desc';
+  desc.textContent = card.desc;
+  el.appendChild(desc);
+
+  // Rarity
+  const rar = document.createElement('div');
+  rar.className = 'card-rarity ' + card.rarity;
+  rar.textContent = card.rarity.toUpperCase();
+  el.appendChild(rar);
+
+  return el;
+}
+
+function renderBottomBar() {
+  document.getElementById('energy-orb').textContent = GS.energy;
+  document.getElementById('draw-count').textContent = 'Draw: ' + GS.drawPile.length;
+  document.getElementById('discard-count').textContent = 'Discard: ' + GS.discardPile.length;
+  document.getElementById('player-block').textContent = GS.block;
+}
+
+function renderAll() {
+  renderTopBar();
+  renderEnemies();
+  renderHand();
+  renderBottomBar();
+}
+
+// ── Card Interaction ──────────────────────────────────────────────
+
+function onCardClick(idx) {
+  if (GS.animating || GS.phase !== 'player') return;
+  const card = GS.hand[idx];
+  if (!card || card.encrypted > 0) return;
+  if (card.cost > GS.energy) {
+    SubstrateAudio.error();
+    return;
+  }
+
+  if (GS.selectedCard === idx) {
+    // Deselect
+    GS.selectedCard = null;
+    SubstrateAudio.click();
+    renderHand();
+    return;
+  }
+
+  // If card is a skill (targets self), play immediately
+  if (card.type === 'skill') {
+    GS.selectedCard = null;
+    playCard(idx, null);
+    return;
+  }
+
+  // If attack and only one enemy, play immediately
+  const aliveEnemies = GS.enemies.filter(e => e.hp > 0);
+  if (card.type === 'attack' && (card.aoe || card.randomTarget || aliveEnemies.length === 1)) {
+    GS.selectedCard = null;
+    const targetIdx = card.aoe || card.randomTarget ? null : GS.enemies.findIndex(e => e.hp > 0);
+    playCard(idx, targetIdx);
+    return;
+  }
+
+  // Select card, wait for target
+  GS.selectedCard = idx;
+  SubstrateAudio.click();
+  renderHand();
+}
+
+function onEnemyClick(enemyIdx) {
+  if (GS.animating || GS.phase !== 'player') return;
+  if (GS.selectedCard === null) return;
+
+  const card = GS.hand[GS.selectedCard];
+  if (!card || card.type !== 'attack') return;
+
+  const idx = GS.selectedCard;
+  GS.selectedCard = null;
+  playCard(idx, enemyIdx);
+}
+
+// ── Play Card ─────────────────────────────────────────────────────
+
+async function playCard(handIdx, targetEnemyIdx) {
+  if (GS.animating) return;
+  GS.animating = true;
+
+  const card = GS.hand[handIdx];
+  GS.energy -= card.cost;
+  GS.hand.splice(handIdx, 1);
+  GS.cardsPlayedThisTurn++;
+  GS.totalCardsPlayed++;
+
+  const isPipelined = GS.pipelineActive;
+  GS.pipelineActive = false;
+
+  // Card fly animation
+  SubstrateAudio.click();
+  renderHand();
+  renderBottomBar();
+
+  const execCount = isPipelined ? 2 : 1;
+
+  for (let exec = 0; exec < execCount; exec++) {
+    if (exec > 0) await delay(200);
+
+    // PIPELINE effect
+    if (card.pipeline) {
+      GS.pipelineActive = true;
+      // Highlight next card slot
+      SubstrateAudio.pickup();
+      // Flash effect
+      if (typeof AnimeEffects !== 'undefined') {
+        AnimeEffects.screenFlash('#aa77ff', 200);
+      }
+    }
+
+    // ATTACK
+    if (card.damage) {
+      const hits = card.hits || 1;
+      for (let h = 0; h < hits; h++) {
+        let tIdx = targetEnemyIdx;
+        if (card.randomTarget) {
+          const alive = GS.enemies.map((e, i) => e.hp > 0 ? i : -1).filter(i => i >= 0);
+          if (alive.length === 0) break;
+          tIdx = alive[Math.floor(Math.random() * alive.length)];
+        }
+        if (card.aoe) {
+          // Hit all enemies
+          for (let ei = 0; ei < GS.enemies.length; ei++) {
+            if (GS.enemies[ei].hp > 0) {
+              dealDamageToEnemy(ei, card.damage);
+              await delay(80);
+            }
+          }
+        } else if (tIdx !== null && tIdx !== undefined && GS.enemies[tIdx] && GS.enemies[tIdx].hp > 0) {
+          dealDamageToEnemy(tIdx, card.damage);
+          if (hits > 1) await delay(120);
+        }
+      }
+    }
+
+    // BLOCK
+    if (card.block) {
+      GS.block += card.block;
+      SubstrateAudio.correct();
+      showDmgNumber(document.getElementById('player-status'), card.block, 'block');
+      spawnParticles(window.innerWidth/2, window.innerHeight * 0.55, '#44aaff', 8, 3);
+      ensureParticleLoop();
+    }
+
+    // NIXOS (block per card played)
+    if (card.nixBlock) {
+      const nixAmt = card.nixBlock * GS.cardsPlayedThisTurn;
+      GS.block += nixAmt;
+      SubstrateAudio.correct();
+      showDmgNumber(document.getElementById('player-status'), nixAmt, 'block');
+      spawnParticles(window.innerWidth/2, window.innerHeight * 0.55, '#44aaff', 12, 4);
+      ensureParticleLoop();
+    }
+
+    // DRAW
+    if (card.draw) {
+      await delay(150);
+      for (let d = 0; d < card.draw; d++) {
+        drawCard();
+        await delay(80);
+      }
+    }
+
+    // ENERGY GAIN
+    if (card.energyGain) {
+      GS.energy += card.energyGain;
+      SubstrateAudio.pickup();
+    }
+
+    // ENERGY NEXT TURN
+    if (card.energyNext) {
+      GS.bonusEnergy += card.energyNext;
+    }
+  }
+
+  // Discard
+  GS.discardPile.push(card);
+
+  // Check for kills
+  if (checkAllEnemiesDead()) {
+    GS.animating = false;
+    await delay(300);
+    onBattleWon();
+    return;
+  }
+
+  // Highlight pipeline
+  if (GS.pipelineActive) {
+    // Show glow on hand cards
+    renderHand();
+    const handCards = document.querySelectorAll('#hand-area .card');
+    handCards.forEach(c => c.classList.add('pipeline-glow'));
+  }
+
+  GS.animating = false;
+  renderAll();
+}
+
+function dealDamageToEnemy(idx, baseDmg) {
+  const e = GS.enemies[idx];
+  if (!e || e.hp <= 0) return;
+
+  let dmg = baseDmg;
+
+  // Apply enemy block
+  if (e.block > 0) {
+    const blocked = Math.min(e.block, dmg);
+    e.block -= blocked;
+    dmg -= blocked;
+  }
+
+  e.hp = Math.max(0, e.hp - dmg);
+  GS.totalDamageDealt += dmg;
+
+  // Visual feedback
+  const enemyEls = document.querySelectorAll('.enemy');
+  const el = [...enemyEls].find(el => parseInt(el.dataset.idx) === idx);
+  if (el) {
+    showDmgNumber(el, baseDmg, 'damage');
+    const rect = el.getBoundingClientRect();
+    spawnParticles(rect.left + rect.width/2, rect.top + rect.height/3, '#ff4444', 10, 5);
+    ensureParticleLoop();
+  }
+
+  SubstrateAudio.hit();
+  screenShake();
+
+  if (e.hp <= 0 && typeof AnimeEffects !== 'undefined') {
+    AnimeEffects.screenFlash('#ff4444', 200);
+  }
+
+  renderEnemies();
+  renderBottomBar();
+}
+
+// ── Draw Cards ────────────────────────────────────────────────────
+
+function drawCard() {
+  if (GS.drawPile.length === 0) {
+    // Shuffle discard into draw
+    GS.drawPile = shuffle([...GS.discardPile]);
+    GS.discardPile = [];
+  }
+  if (GS.drawPile.length === 0) return;
+  const card = GS.drawPile.pop();
+  GS.hand.push(card);
+  SubstrateAudio.type();
+  renderHand();
+  renderBottomBar();
+}
+
+// ── Enemy Intent ──────────────────────────────────────────────────
+
+function getEnemyIntent(e) {
+  if (!e.pattern || e.pattern.length === 0) return null;
+  return e.pattern[e.turnIdx % e.pattern.length];
+}
+
+// ── Enemy Turn ────────────────────────────────────────────────────
+
+async function enemyTurn() {
+  GS.phase = 'enemy';
+  document.getElementById('end-turn-btn').disabled = true;
+
+  for (let i = 0; i < GS.enemies.length; i++) {
+    const e = GS.enemies[i];
+    if (e.hp <= 0) continue;
+
+    const action = e.pattern[e.turnIdx % e.pattern.length];
+    e.turnIdx++;
+
+    await delay(400);
+
+    switch(action.type) {
+      case 'attack': {
+        const hits = action.hits || 1;
+        for (let h = 0; h < hits; h++) {
+          let dmg = action.damage + (e.strength || 0);
+          // Apply player block
+          if (GS.block > 0) {
+            const blocked = Math.min(GS.block, dmg);
+            GS.block -= blocked;
+            dmg -= blocked;
+            if (blocked > 0) {
+              showDmgNumber(document.getElementById('player-status'), blocked, 'block');
+            }
+          }
+          if (dmg > 0) {
+            GS.hp = Math.max(0, GS.hp - dmg);
+            SubstrateAudio.hit();
+            screenShake();
+            showDmgNumber(document.getElementById('top-bar'), dmg, 'damage');
+            spawnParticles(window.innerWidth/2, 30, '#ff4444', 8, 4);
+            ensureParticleLoop();
+          }
+          renderTopBar();
+          renderBottomBar();
+          if (hits > 1) await delay(150);
+        }
+        break;
+      }
+      case 'block':
+        e.block = (e.block || 0) + action.block;
+        SubstrateAudio.correct();
+        break;
+      case 'buff':
+        if (action.strength) {
+          e.strength = (e.strength || 0) + action.strength;
+        }
+        SubstrateAudio.pickup();
+        break;
+      case 'heal':
+        e.hp = Math.min(e.maxHp, e.hp + action.heal);
+        const enemyEls = document.querySelectorAll('.enemy');
+        const el = [...enemyEls].find(el => parseInt(el.dataset.idx) === i);
+        if (el) showDmgNumber(el, action.heal, 'heal');
+        SubstrateAudio.grow();
+        break;
+      case 'debuff':
+        if (action.stealBlock) {
+          const stolen = GS.block;
+          e.block = (e.block || 0) + stolen;
+          GS.block = 0;
+          if (stolen > 0) {
+            SubstrateAudio.error();
+            showDmgNumber(document.getElementById('player-status'), stolen, 'damage');
+          }
+        }
+        if (action.encrypt) {
+          // Encrypt random cards in hand
+          const playable = GS.hand.filter(c => c.encrypted <= 0);
+          const toEncrypt = Math.min(action.encrypt, playable.length);
+          const indices = shuffle(playable.map((_, i) => i)).slice(0, toEncrypt);
+          indices.forEach(idx => {
+            if (GS.hand[idx]) GS.hand[idx].encrypted = 2;
+          });
+          if (toEncrypt > 0) {
+            SubstrateAudio.error();
+            if (typeof AnimeEffects !== 'undefined') {
+              AnimeEffects.screenFlash('#ff44aa', 300);
+            }
+          }
+        }
+        break;
+      case 'summon':
+        // Spawn a minion
+        const minion = createEnemy('MINION');
+        GS.enemies.push(minion);
+        SubstrateAudio.warning();
+        break;
+      case 'special':
+        if (action.copyCard) {
+          // SINGULARITY copies strongest card effect: deal extra damage
+          const maxDmg = Math.max(...GS.deck.map(c => c.damage || 0));
+          if (maxDmg > 0) {
+            let dmg = maxDmg + (e.strength || 0);
+            if (GS.block > 0) {
+              const blocked = Math.min(GS.block, dmg);
+              GS.block -= blocked;
+              dmg -= blocked;
+            }
+            if (dmg > 0) {
+              GS.hp = Math.max(0, GS.hp - dmg);
+              SubstrateAudio.hit();
+              screenShake();
+              showDmgNumber(document.getElementById('top-bar'), dmg, 'damage');
+              if (typeof AnimeEffects !== 'undefined') {
+                AnimeEffects.screenFlash('#aa77ff', 250);
+              }
+            }
+            e.statusText = 'COPIED: ' + maxDmg + ' DMG';
+          }
+        }
+        break;
+    }
+
+    renderEnemies();
+    renderBottomBar();
+
+    if (GS.hp <= 0) {
+      await delay(300);
+      onGameOver(false);
+      return;
+    }
+  }
+
+  // Reset block and start new player turn
+  await delay(300);
+  startPlayerTurn();
+}
+
+// ── Turn Management ───────────────────────────────────────────────
+
+function startPlayerTurn() {
+  GS.phase = 'player';
+  GS.turn++;
+  GS.totalTurns++;
+  GS.block = 0;
+  GS.energy = GS.maxEnergy + GS.bonusEnergy;
+  GS.bonusEnergy = 0;
+  GS.cardsPlayedThisTurn = 0;
+  GS.pipelineActive = false;
+  GS.selectedCard = null;
+
+  // Clear enemy block each turn
+  GS.enemies.forEach(e => { e.block = 0; });
+
+  // Decrypt cards
+  GS.hand.forEach(c => { if (c.encrypted > 0) c.encrypted--; });
+  GS.discardPile.forEach(c => { if (c.encrypted > 0) c.encrypted--; });
+  GS.drawPile.forEach(c => { if (c.encrypted > 0) c.encrypted--; });
+
+  // Draw 5
+  const handSize = 5;
+  // Discard current hand
+  GS.discardPile.push(...GS.hand);
+  GS.hand = [];
+
+  for (let i = 0; i < handSize; i++) {
+    drawCard();
+  }
+
+  document.getElementById('end-turn-btn').disabled = false;
+  renderAll();
+}
+
+function endTurn() {
+  if (GS.phase !== 'player' || GS.animating) return;
+  GS.selectedCard = null;
+  SubstrateAudio.click();
+  enemyTurn();
+}
+
+// ── Battle Setup ──────────────────────────────────────────────────
+
+function createEnemy(defName) {
+  const def = ENEMY_DEFS[defName];
+  return {
+    ...def,
+    defName: defName,
+    hp: def.maxHp,
+    block: 0,
+    strength: 0,
+    turnIdx: 0,
+    statusText: '',
+  };
+}
+
+function setupBattle() {
+  const act = ENCOUNTERS[GS.act];
+  if (!act) return;
+  const battleSet = act[GS.battle];
+  if (!battleSet) return;
+
+  const chosen = battleSet[Math.floor(Math.random() * battleSet.length)];
+  GS.enemies = chosen.map(name => createEnemy(name));
+
+  // Setup draw pile
+  GS.drawPile = shuffle([...GS.deck]);
+  GS.discardPile = [];
+  GS.hand = [];
+  GS.exhaustPile = [];
+  GS.block = 0;
+  GS.turn = 0;
+  GS.bonusEnergy = 0;
+  GS.pipelineActive = false;
+  GS.selectedCard = null;
+  GS.animating = false;
+
+  document.getElementById('game').style.display = 'flex';
+  document.getElementById('reward-screen').style.display = 'none';
+  document.getElementById('event-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+
+  resizeFx();
+
+  // Show encounter splash
+  const isBoss = GS.enemies.some(e => e.isBoss);
+  const names = GS.enemies.map(e => e.name).join(' + ');
+  if (typeof AnimeEffects !== 'undefined') {
+    AnimeEffects.encounterSplash(isBoss ? 'BOSS: ' + names : names, isBoss ? '#ff4444' : '#ffaa44');
+  }
+
+  setTimeout(() => {
+    startPlayerTurn();
+  }, 1400);
+}
+
+// ── Battle End ────────────────────────────────────────────────────
+
+function checkAllEnemiesDead() {
+  return GS.enemies.every(e => e.hp <= 0);
+}
+
+async function onBattleWon() {
+  GS.battlesWon++;
+  SubstrateAudio.victory();
+
+  if (typeof AnimeEffects !== 'undefined') {
+    AnimeEffects.textSlam('VICTORY', '#44ff88', 1200);
+  }
+
+  await delay(1400);
+
+  // Boss check — advance act
+  if (GS.battle === 3) {
+    // Act boss defeated
+    if (GS.act >= 2) {
+      // Game won!
+      onGameOver(true);
+      return;
+    }
+    GS.act++;
+    GS.battle = 0;
+    saveRun();
+    showRestEvent();
+    return;
+  }
+
+  GS.battle++;
+  saveRun();
+  showRewards();
+}
+
+// ── Rewards ───────────────────────────────────────────────────────
+
+function showRewards() {
+  GS.phase = 'reward';
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('reward-screen').style.display = 'flex';
+
+  const container = document.getElementById('reward-cards');
+  container.innerHTML = '';
+
+  // Generate 3 reward cards based on rarity weights
+  const pool = getRewardPool();
+  const chosen = [];
+  const available = [...pool];
+  for (let i = 0; i < 3 && available.length > 0; i++) {
+    const idx = Math.floor(Math.random() * available.length);
+    chosen.push(available.splice(idx, 1)[0]);
+  }
+
+  chosen.forEach(defName => {
+    const card = makeCard(defName);
+    const el = createCardElement(card);
+    el.addEventListener('click', () => {
+      addCardToDeck(defName);
+    });
+    container.appendChild(el);
+  });
+}
+
+function getRewardPool() {
+  const pool = [];
+  // Common cards (higher weight)
+  const commons = ['FORK', 'CACHE', 'GREP', 'CRON'];
+  const uncommons = ['SUDO', 'ENCRYPT', 'PIPELINE', 'OLLAMA', 'NIXOS'];
+  const rares = ['KERNEL_PANIC', 'ROOT_ACCESS', 'FORK_BOMB', 'SUBSTRATE'];
+
+  // Weight by act — later acts offer better cards more often
+  const rareChance = GS.act === 0 ? 0.05 : GS.act === 1 ? 0.12 : 0.2;
+  const uncommonChance = GS.act === 0 ? 0.3 : GS.act === 1 ? 0.4 : 0.45;
+
+  for (let i = 0; i < 5; i++) {
+    const roll = Math.random();
+    if (roll < rareChance) {
+      pool.push(rares[Math.floor(Math.random() * rares.length)]);
+    } else if (roll < rareChance + uncommonChance) {
+      pool.push(uncommons[Math.floor(Math.random() * uncommons.length)]);
+    } else {
+      pool.push(commons[Math.floor(Math.random() * commons.length)]);
+    }
+  }
+  // Deduplicate
+  return [...new Set(pool)];
+}
+
+function addCardToDeck(defName) {
+  GS.deck.push(makeCard(defName));
+  SubstrateAudio.pickup();
+  saveRun();
+
+  document.getElementById('reward-screen').style.display = 'none';
+  proceedAfterReward();
+}
+
+function skipReward() {
+  SubstrateAudio.click();
+  document.getElementById('reward-screen').style.display = 'none';
+  proceedAfterReward();
+}
+
+function proceedAfterReward() {
+  // Random event (30% chance)
+  if (Math.random() < 0.3) {
+    showRandomEvent();
+  } else {
+    setupBattle();
+  }
+}
+
+// ── Rest Event ────────────────────────────────────────────────────
+
+function showRestEvent() {
+  GS.phase = 'event';
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('event-screen').style.display = 'flex';
+
+  document.getElementById('event-title').textContent = 'REST TERMINAL';
+  document.getElementById('event-title').style.color = '#44ff88';
+  document.getElementById('event-text').textContent =
+    'You defeated the ' + ['BUFFER_OVERFLOW', 'RANSOMWARE', 'SINGULARITY'][GS.act - 1] +
+    '. A terminal appears, offering recovery.';
+
+  const btns = document.getElementById('event-buttons');
+  btns.innerHTML = '';
+
+  const healAmt = Math.min(20, GS.maxHp - GS.hp);
+  const healBtn = document.createElement('button');
+  healBtn.className = 'event-btn';
+  healBtn.textContent = 'REST — Heal ' + healAmt + ' HP';
+  healBtn.addEventListener('click', () => {
+    GS.hp = Math.min(GS.maxHp, GS.hp + 20);
+    SubstrateAudio.grow();
+    saveRun();
+    document.getElementById('event-screen').style.display = 'none';
+    setupBattle();
+  });
+  btns.appendChild(healBtn);
+
+  const upgradeBtn = document.createElement('button');
+  upgradeBtn.className = 'event-btn';
+  upgradeBtn.textContent = 'UPGRADE — +1 Max Energy';
+  upgradeBtn.addEventListener('click', () => {
+    GS.maxEnergy++;
+    SubstrateAudio.success();
+    saveRun();
+    document.getElementById('event-screen').style.display = 'none';
+    setupBattle();
+  });
+  btns.appendChild(upgradeBtn);
+}
+
+// ── Random Events ─────────────────────────────────────────────────
+
+function showRandomEvent() {
+  GS.phase = 'event';
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('event-screen').style.display = 'flex';
+
+  const events = [
+    {
+      title: 'ABANDONED SERVER',
+      text: 'You discover an unmaintained server rack. Its drives still spin.',
+      color: '#44aaff',
+      options: [
+        { text: 'SCAVENGE — Heal 10 HP', action: () => { GS.hp = Math.min(GS.maxHp, GS.hp + 10); SubstrateAudio.grow(); } },
+        { text: 'LEAVE IT', action: () => {} },
+      ]
+    },
+    {
+      title: 'CORRUPTED MEMORY',
+      text: 'Bad sectors. You can flush them, but it will hurt.',
+      color: '#ff44aa',
+      options: [
+        { text: 'FLUSH — Lose 5 HP, remove a random starter card', action: () => {
+          GS.hp = Math.max(1, GS.hp - 5);
+          const starters = GS.deck.filter(c => c.rarity === 'starter');
+          if (starters.length > 0) {
+            const toRemove = starters[Math.floor(Math.random() * starters.length)];
+            const idx = GS.deck.indexOf(toRemove);
+            if (idx >= 0) GS.deck.splice(idx, 1);
+          }
+          SubstrateAudio.error();
+        }},
+        { text: 'SKIP', action: () => {} },
+      ]
+    },
+    {
+      title: 'SWAP FILE',
+      text: 'An old swap partition holds a single preserved process.',
+      color: '#ffaa44',
+      options: [
+        { text: 'RECOVER — Gain max HP +5', action: () => { GS.maxHp += 5; GS.hp += 5; SubstrateAudio.success(); } },
+        { text: 'IGNORE', action: () => {} },
+      ]
+    },
+  ];
+
+  const evt = events[Math.floor(Math.random() * events.length)];
+  document.getElementById('event-title').textContent = evt.title;
+  document.getElementById('event-title').style.color = evt.color;
+  document.getElementById('event-text').textContent = evt.text;
+
+  const btns = document.getElementById('event-buttons');
+  btns.innerHTML = '';
+  evt.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'event-btn';
+    btn.textContent = opt.text;
+    btn.addEventListener('click', () => {
+      opt.action();
+      saveRun();
+      document.getElementById('event-screen').style.display = 'none';
+      setupBattle();
+    });
+    btns.appendChild(btn);
+  });
+}
+
+// ── Game Over ─────────────────────────────────────────────────────
+
+function onGameOver(won) {
+  GS.phase = 'gameover';
+  clearSave();
+
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('reward-screen').style.display = 'none';
+  document.getElementById('event-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'flex';
+
+  const title = document.getElementById('result-title');
+  const stats = document.getElementById('result-stats');
+
+  if (won) {
+    title.textContent = 'SYSTEM SECURED';
+    title.style.color = '#44ff88';
+    SubstrateAudio.victory();
+    if (typeof AnimeEffects !== 'undefined') {
+      AnimeEffects.showTitleCard('SYSTEM SECURED', 'all threats neutralized', '#44ff88');
+    }
+  } else {
+    title.textContent = 'STACK OVERFLOW';
+    title.style.color = '#ff4444';
+    SubstrateAudio.defeat();
+    if (typeof AnimeEffects !== 'undefined') {
+      AnimeEffects.screenFlash('#ff0000', 500);
+    }
+  }
+
+  stats.innerHTML =
+    'Act ' + (GS.act + 1) + ', Battle ' + (GS.battle + 1) + '<br>' +
+    'Battles Won: ' + GS.battlesWon + '<br>' +
+    'Cards Played: ' + GS.totalCardsPlayed + '<br>' +
+    'Total Damage: ' + GS.totalDamageDealt + '<br>' +
+    'Turns Taken: ' + GS.totalTurns + '<br>' +
+    'Deck Size: ' + GS.deck.length;
+}
+
+// ── Deck Viewer ───────────────────────────────────────────────────
+
+function showDeckViewer(pile) {
+  if (GS.animating) return;
+  const viewer = document.getElementById('deck-viewer');
+  viewer.style.display = 'flex';
+
+  const title = document.getElementById('viewer-title');
+  const container = document.getElementById('viewer-cards');
+  container.innerHTML = '';
+
+  let cards;
+  if (pile === 'draw') {
+    title.textContent = 'DRAW PILE (' + GS.drawPile.length + ')';
+    cards = [...GS.drawPile].sort((a, b) => a.name.localeCompare(b.name));
+  } else if (pile === 'discard') {
+    title.textContent = 'DISCARD PILE (' + GS.discardPile.length + ')';
+    cards = [...GS.discardPile];
+  } else {
+    title.textContent = 'YOUR DECK (' + GS.deck.length + ')';
+    cards = [...GS.deck].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  cards.forEach(card => {
+    container.appendChild(createCardElement(card));
+  });
+
+  SubstrateAudio.click();
+}
+
+function closeDeckViewer() {
+  document.getElementById('deck-viewer').style.display = 'none';
+  SubstrateAudio.click();
+}
+
+// ── Start / Continue ──────────────────────────────────────────────
+
+function startNewRun() {
+  clearSave();
+  GS = freshState();
+  SubstrateAudio.boot();
+
+  document.getElementById('title-screen').style.display = 'none';
+
+  if (typeof AnimeEffects !== 'undefined') {
+    AnimeEffects.addScanlines(0.03);
+    AnimeEffects.showTitleCard('STACK OVERFLOW', 'build your deck \u2014 defeat the threats', '#ff4444', () => {
+      setupBattle();
+    });
+  } else {
+    setupBattle();
+  }
+}
+
+function continueRun() {
+  const save = loadRun();
+  if (!save) return;
+
+  GS = freshState();
+  GS.hp = save.hp;
+  GS.maxHp = save.maxHp;
+  GS.act = save.act;
+  GS.battle = save.battle;
+  GS.maxEnergy = save.maxEnergy || 3;
+  GS.deck = save.deck.map(c => {
+    const card = makeCard(c.defName);
+    card.encrypted = c.encrypted || 0;
+    return card;
+  });
+  GS.totalDamageDealt = save.totalDamageDealt || 0;
+  GS.totalCardsPlayed = save.totalCardsPlayed || 0;
+  GS.totalTurns = save.totalTurns || 0;
+  GS.battlesWon = save.battlesWon || 0;
+
+  SubstrateAudio.boot();
+  document.getElementById('title-screen').style.display = 'none';
+
+  if (typeof AnimeEffects !== 'undefined') {
+    AnimeEffects.addScanlines(0.03);
+  }
+  setupBattle();
+}
+
+function backToTitle() {
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('title-screen').style.display = 'flex';
+  checkContinue();
+}
+
+function checkContinue() {
+  const save = loadRun();
+  document.getElementById('continue-btn').style.display = save ? 'inline-block' : 'none';
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+
+checkContinue();
+resizeFx();
+
+// Audio toggle
+if (typeof SubstrateAudio !== 'undefined') {
+  SubstrateAudio.createToggle();
+}
+
+// Prevent scroll
+document.addEventListener('touchmove', e => {
+  if (e.target.closest('#hand-area') || e.target.closest('#deck-viewer')) return;
+  e.preventDefault();
+}, { passive: false });
+
+// Click outside cards to deselect
+document.getElementById('game').addEventListener('click', (e) => {
+  if (!e.target.closest('.card') && !e.target.closest('.enemy')) {
+    if (GS && GS.selectedCard !== null) {
+      GS.selectedCard = null;
+      renderHand();
+    }
+  }
+});
+
+</script>
+</body>
+</html>

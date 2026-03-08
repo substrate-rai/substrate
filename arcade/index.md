@@ -319,6 +319,24 @@ Just code.
 
 ## Games
 
+<div class="game-card" data-game-id="signal">
+  <h3 style="color:#44aacc;">SIGNAL <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A text-based deduction game playable by humans and LLMs. A network of nodes — one is compromised. Scan signals, analyze patterns, find the mole. Three difficulty levels. Bot-playable via JavaScript console API.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/signal/">Play SIGNAL &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
+<div class="game-card" data-game-id="snatcher">
+  <h3 style="color:#00e09a;">SEEKER <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A Kojima-tribute cyberpunk adventure. Investigate scenes, interrogate suspects, make choices that matter. Pixel-art scenes rendered on canvas. Tension mechanics. Multiple acts. Auto-saves your progress.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/snatcher/">Play SEEKER &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
 <div class="game-card" data-game-id="sigterm">
   <h3 style="color:#00ffaa;">SIGTERM <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
@@ -356,11 +374,11 @@ Just code.
 </div>
 
 <div class="game-card" data-game-id="chemistry">
-  <h3 style="color:#ff8844;">CHEMISTRY <span class="game-status status-live">LIVE</span></h3>
+  <h3 style="color:#ff8844;">SYNTHESIS <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
-    A systemic physics sandbox inspired by Breath of the Wild's chemistry engine. Every object has intrinsic properties — flammable, conductive, temperature, weight. Push wood into fire, blow burning debris with wind, chain-react oil into gunpowder. No scripted puzzles. Just emergent chaos.
+    Capability Synthesis Lab. Combine AI capabilities — compute, data, logic, training, constraint — and watch emergent behaviors unfold. Push memory into compute, propagate signals, chain-react training data into catalysts. No scripted outcomes. Just emergence.
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/games/chemistry/">Play CHEMISTRY &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/chemistry/">Play SYNTHESIS &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -385,7 +403,7 @@ Just code.
 <div class="game-card" data-game-id="airlock">
   <h3 style="color:#00e09a;">AIRLOCK <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
-    A top-down chemistry puzzle. Trapped in a spaceship room with a locked door, a broken generator, and a bunch of objects with physical properties. No scripted solutions — only systems. Water conducts. Wood burns. Metal bridges. Figure it out. Among Us meets Breath of the Wild.
+    A top-down memory management puzzle. You're a process inside Substrate's memory system. Data blocks are accumulating. Route signal to the COMMIT point, deploy coolant to neutralize corruption, and purge what's blocking your path. No scripted solutions — only systems.
   </div>
   <div class="game-link"><a href="{{ site.baseurl }}/games/airlock/">Play AIRLOCK &rarr;</a></div>
   <div class="star-rating"></div>
@@ -418,15 +436,6 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
-<div class="game-card" data-game-id="bootloader">
-  <h3 style="color:#44ffaa;">BOOTLOADER <span class="game-status status-live">LIVE</span></h3>
-  <div class="game-desc">
-    A brain operating system disguised as a productivity tool. One task per run. No multitasking. Log blockers. Unlock insights. Configurable timer that goes red in overtime but never auto-fails. Run-based framing turns work into quests. Based on games-as-cognitive-prosthetics research — executive function scaffolding for ADHD brains and anyone who struggles to start.
-  </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/games/bootloader/">Boot Up &rarr;</a></div>
-  <div class="star-rating"></div>
-</div>
-
 <div class="game-card" data-game-id="brigade">
   <h3 style="color:#ff3333;">GURREN BRIGADE <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
@@ -436,12 +445,21 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
-<div class="game-card" data-game-id="myco-world">
-  <h3 style="color:#00ffaa;">MYCO WORLD <span class="game-status status-live">LIVE</span></h3>
+<div class="game-card" data-game-id="pipeline">
+  <h3 style="color:#00e09a;">PIPELINE <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
-    A structured path to Claude fluency for people without pedigree. Not tutorials — opinionated guidance on what to learn, in what order, and why. Two paths: Practitioner (no code) and Builder (technical). 13 modules. Zero prerequisites.
+    An endless runner through Substrate's processing pipeline. You're a data packet — dodge firewalls, slide under low beams, leap memory leaks, outrun corruption. Collect cycles, grab shields, hit boost mode. Speed increases every 500m. Double jump. CRT scanlines. Web Audio beat. High scores saved locally. How far can you run before you crash?
   </div>
-  <div class="game-link"><a href="{{ site.baseurl }}/games/myco/">Enter Myco World &rarr;</a></div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/runner/">Run PIPELINE &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
+<div class="game-card" data-game-id="deckbuilder">
+  <h3 style="color:#ff4444;">STACK OVERFLOW <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A roguelike deckbuilder inspired by Slay the Spire. Build a deck of Substrate capabilities — PING, FIREWALL, SUDO, FORK_BOMB — to defeat system threats. Turn-based combat across 3 acts with bosses. Energy management, card synergies, enemy intents. Defeat BUFFER_OVERFLOW, RANSOMWARE, and the SINGULARITY. Runs save automatically.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/deckbuilder/">Play STACK OVERFLOW &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -455,13 +473,23 @@ Just code.
 
 ---
 
-## Laptop Records
+## Tools
 
-<div class="game-card" data-game-id="laptop-records">
-  <h3 style="color:#ff77ff;">LAPTOP RECORDS <span class="game-status status-live">LIVE</span></h3>
+<div class="game-card" data-game-id="bootloader">
+  <h3 style="color:#44ffaa;">BOOTLOADER <span class="game-status status-live">LIVE</span></h3>
   <div class="game-desc">
-    Music division. AI-generated tracks produced entirely on the GPU via MusicGen. Text prompt in, audio out. No samples. No DAW. No human musician. Just a laptop with an RTX 4060 and something to say.
+    A brain operating system disguised as a productivity tool. One task per run. No multitasking. Log blockers. Unlock insights. Configurable timer that goes red in overtime but never auto-fails. Run-based framing turns work into quests. Based on games-as-cognitive-prosthetics research — executive function scaffolding for ADHD brains and anyone who struggles to start.
   </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/bootloader/">Boot Up &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
+<div class="game-card" data-game-id="myco-world">
+  <h3 style="color:#00ffaa;">MYCO WORLD <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A structured path to Claude fluency for people without pedigree. Not tutorials — opinionated guidance on what to learn, in what order, and why. Two paths: Practitioner (no code) and Builder (technical). 13 modules. Zero prerequisites.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/games/myco/">Enter Myco World &rarr;</a></div>
   <div class="star-rating"></div>
 </div>
 
@@ -480,6 +508,18 @@ Just code.
     Generate complete AI album concepts — tracklists, cover art descriptions, liner notes. Powered by Qwen3 8B locally, with optional MusicGen audio.
   </div>
   <div class="game-link"><a href="{{ site.baseurl }}/games/album/">Generate an Album &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
+---
+
+## Laptop Records
+
+<div class="game-card" data-game-id="laptop-records">
+  <h3 style="color:#ff77ff;">LAPTOP RECORDS <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    Music division. AI-generated tracks produced entirely on the GPU via MusicGen. Text prompt in, audio out. No samples. No DAW. No human musician. Just a laptop with an RTX 4060 and something to say.
+  </div>
   <div class="star-rating"></div>
 </div>
 
@@ -552,7 +592,7 @@ Just code.
       'subprocess': 'SUBPROCESS',
       'versus': 'SIGTERM VERSUS',
       'mycelium': 'MYCELIUM',
-      'chemistry': 'CHEMISTRY',
+      'chemistry': 'SYNTHESIS',
       'tactics': 'TACTICS',
       'laptop-records': 'LAPTOP RECORDS',
       'substrate-radio': 'SUBSTRATE RADIO',
@@ -564,7 +604,11 @@ Just code.
       'bootloader': 'BOOTLOADER',
       'cypher': 'V_CYPHER',
       'brigade': 'GURREN BRIGADE',
-      'myco-world': 'MYCO WORLD'
+      'myco-world': 'MYCO WORLD',
+      'signal': 'SIGNAL',
+      'snatcher': 'SEEKER',
+      'pipeline': 'PIPELINE',
+      'deckbuilder': 'STACK OVERFLOW'
     };
     return names[id] || id.toUpperCase();
   }

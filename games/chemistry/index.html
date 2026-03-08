@@ -1,7 +1,7 @@
 ---
 layout: null
 permalink: /games/chemistry/
-title: "CHEMISTRY — Substrate Arcade"
+title: "SYNTHESIS — Substrate Arcade"
 redirect_from:
   - /chemistry/
 ---
@@ -10,10 +10,10 @@ redirect_from:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>CHEMISTRY — Substrate Arcade</title>
-<meta name="description" content="A systemic chemistry sandbox. Push, burn, explode, freeze — everything emerges from rules. By Substrate.">
-<meta property="og:title" content="CHEMISTRY — systemic sandbox">
-<meta property="og:description" content="Nintendo-style chemistry engine. No scripted puzzles — everything emerges from elemental interactions.">
+<title>SYNTHESIS — Substrate Arcade</title>
+<meta name="description" content="Capability Synthesis Lab. Combine AI capabilities to discover emergent behaviors. By Substrate.">
+<meta property="og:title" content="SYNTHESIS — capability synthesis lab">
+<meta property="og:description" content="Combine AI capabilities — compute, data, logic, training, constraint — and watch emergent behaviors unfold.">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap');
 
@@ -290,56 +290,56 @@ redirect_from:
 
 <!-- UI Overlays -->
 <div id="legend" class="ui-overlay">
-  <h3>ELEMENTS</h3>
+  <h3>CAPABILITIES</h3>
   <div class="item selected" data-type="wood" onclick="selectMaterial(0)">
     <span class="swatch" style="background:#8B6914"></span>
-    <span class="key">1</span> wood
+    <span class="key">1</span> memory
   </div>
   <div class="item" data-type="metal" onclick="selectMaterial(1)">
     <span class="swatch" style="background:#889"></span>
-    <span class="key">2</span> metal
+    <span class="key">2</span> inference
   </div>
   <div class="item" data-type="fire" onclick="selectMaterial(2)">
     <span class="swatch" style="background:#ff4400"></span>
-    <span class="key">3</span> fire
+    <span class="key">3</span> compute
   </div>
   <div class="item" data-type="water" onclick="selectMaterial(3)">
     <span class="swatch" style="background:#2288ff"></span>
-    <span class="key">4</span> water
+    <span class="key">4</span> data
   </div>
   <div class="item" data-type="ice" onclick="selectMaterial(4)">
-    <span class="swatch" style="background:#aaeeff"></span>
-    <span class="key">5</span> ice
+    <span class="swatch" style="background:#aa77cc"></span>
+    <span class="key">5</span> constraint
   </div>
   <div class="item" data-type="oil" onclick="selectMaterial(5)">
     <span class="swatch" style="background:#332200"></span>
-    <span class="key">6</span> oil
+    <span class="key">6</span> training
   </div>
   <div class="item" data-type="gunpowder" onclick="selectMaterial(6)">
     <span class="swatch" style="background:#881111"></span>
-    <span class="key">7</span> gunpowder
+    <span class="key">7</span> catalyst
   </div>
   <div class="item" data-type="grass" onclick="selectMaterial(7)">
-    <span class="swatch" style="background:#228822"></span>
-    <span class="key">8</span> grass
+    <span class="swatch" style="background:#00ddff"></span>
+    <span class="key">8</span> logic
   </div>
   <div class="item" data-type="wind_source" onclick="selectMaterial(8)">
     <span class="swatch" style="background:#44aacc88"></span>
-    <span class="key">9</span> wind src
+    <span class="key">9</span> signal
   </div>
 </div>
 
 <div id="wind-status" class="ui-overlay">
-  <div class="label">wind</div>
+  <div class="label">signal</div>
   <div class="value off" id="wind-value">OFF</div>
 </div>
 
 <div id="description" class="ui-overlay">
-  <div class="name">Chemistry Sandbox</div>
-  <div>Click to place elements. Push things into fire. Create chain reactions. Everything interacts.</div>
+  <div class="name">Synthesis Lab</div>
+  <div>Welcome to the Synthesis Lab. Combine capabilities to discover what emerges.</div>
 </div>
 
-<div id="toast" class="ui-overlay">SANDBOX RESET</div>
+<div id="toast" class="ui-overlay">LAB RESET</div>
 
 <div id="footer" class="ui-overlay">
   <a href="{{ site.baseurl }}/arcade/">a Substrate Arcade production</a>
@@ -347,8 +347,8 @@ redirect_from:
 
 <div id="controls-bar" class="ui-overlay">
   <span><kbd>WASD</kbd> move</span>
-  <span><kbd>SPACE</kbd> toggle wind</span>
-  <span><kbd>1</kbd>-<kbd>9</kbd> select element</span>
+  <span><kbd>SPACE</kbd> toggle signal</span>
+  <span><kbd>1</kbd>-<kbd>9</kbd> select capability</span>
   <span><kbd>LMB</kbd> place</span>
   <span><kbd>RMB</kbd> delete</span>
   <span><kbd>R</kbd> reset</span>
@@ -359,7 +359,7 @@ redirect_from:
     <div id="joystick-knob"></div>
   </div>
   <button class="mobile-btn" id="btn-jump">^</button>
-  <button class="mobile-btn" id="btn-wind">WIND</button>
+  <button class="mobile-btn" id="btn-wind">SIG</button>
   <button class="mobile-btn" id="btn-reset">RST</button>
   <button class="mobile-btn" id="btn-delete">DEL</button>
 </div>
@@ -367,8 +367,8 @@ redirect_from:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ============================================================
-// CHEMISTRY ENGINE — Substrate Arcade
-// A systemic sandbox. No scripts. Only rules.
+// SYNTHESIS ENGINE — Substrate Arcade
+// Capability Synthesis Lab. Combine capabilities. Watch emergence.
 // ============================================================
 
 // --- CONSTANTS ---
@@ -393,10 +393,10 @@ const MATERIALS = {
   metal:      { color: 0x8888AA, isFlammable: false, isConductive: true,  weight: 8,   durability: 500, burnRate: 0,   w: 36, h: 36 },
   fire:       { color: 0xFF4400, isFlammable: false, isConductive: false, weight: 0.5, durability: 9999,burnRate: 0,   w: 28, h: 28, permanent: true, isBurning: true },
   water:      { color: 0x2288FF, isFlammable: false, isConductive: false, weight: 2,   durability: 9999,burnRate: 0,   w: 30, h: 20, isWater: true },
-  ice:        { color: 0xAAEEFF, isFlammable: false, isConductive: false, weight: 3,   durability: 80,  burnRate: 0,   w: 34, h: 34, isFrozen: true },
+  ice:        { color: 0xAA77CC, isFlammable: false, isConductive: false, weight: 3,   durability: 80,  burnRate: 0,   w: 34, h: 34, isFrozen: true },
   oil:        { color: 0x332200, isFlammable: true,  isConductive: false, weight: 1.5, durability: 40,  burnRate: 60,  w: 30, h: 22 },
   gunpowder:  { color: 0x881111, isFlammable: true,  isConductive: false, weight: 2,   durability: 15,  burnRate: 200, w: 32, h: 32, isExplosive: true },
-  grass:      { color: 0x228822, isFlammable: true,  isConductive: false, weight: 0.3, durability: 30,  burnRate: 25,  w: 40, h: 10 },
+  grass:      { color: 0x00DDFF, isFlammable: true,  isConductive: false, weight: 0.3, durability: 30,  burnRate: 25,  w: 40, h: 10 },
   wind_source:{ color: 0x44AACC, isFlammable: false, isConductive: false, weight: 999, durability: 9999,burnRate: 0,   w: 30, h: 50, isWindSource: true },
   stone:      { color: 0x444466, isFlammable: false, isConductive: false, weight: 999, durability: 9999,burnRate: 0,   w: 0,  h: 0 },
   player:     { color: 0x00FFAA, isFlammable: false, isConductive: false, weight: 4,   durability: 9999,burnRate: 0,   w: 24, h: 32 },
@@ -646,7 +646,7 @@ class GameObject {
       color.lerp(new THREE.Color(0x2244AA), 0.3);
     }
     if (this.isFrozen) {
-      color.lerp(new THREE.Color(0xAAEEFF), 0.4);
+      color.lerp(new THREE.Color(0xAA77CC), 0.4);
     }
     this.mesh.material.color.copy(color);
 
@@ -793,34 +793,34 @@ function initScene() {
     windStreaks.push(ws);
   }
 
-  // Player
+  // Operator
   player = new GameObject('player', -180, GROUND_Y + 16, false);
   objects.push(player);
 
-  // Wooden boxes
+  // Memory blocks
   objects.push(new GameObject('wood', -80, GROUND_Y + 18, false));
   objects.push(new GameObject('wood', 0, GROUND_Y + 18, false));
   objects.push(new GameObject('wood', 0, GROUND_Y + 54, false));
 
-  // Metal box
+  // Inference node
   objects.push(new GameObject('metal', 80, GROUND_Y + 18, false));
 
-  // Fire source
+  // Compute source
   objects.push(new GameObject('fire', 160, GROUND_Y + 14, true));
 
-  // Wind source
+  // Signal source
   objects.push(new GameObject('wind_source', -250, GROUND_Y + 25, true));
 
-  // Water
+  // Data pool
   objects.push(new GameObject('water', -140, GROUND_Y + 10, false));
 
-  // Oil barrel
+  // Training data
   objects.push(new GameObject('oil', 220, GROUND_Y + 11, false));
 
-  // Gunpowder keg
+  // Catalyst
   objects.push(new GameObject('gunpowder', 280, GROUND_Y + 16, false));
 
-  // Grass patches
+  // Logic threads
   for (let gx = -200; gx <= 200; gx += 50) {
     objects.push(new GameObject('grass', gx, GROUND_Y + 5, false));
   }
@@ -973,7 +973,7 @@ function updatePlayer(dt) {
   }
 }
 
-// --- CHEMISTRY ENGINE ---
+// --- SYNTHESIS ENGINE ---
 function updateChemistry(dt) {
   const toExplode = [];
 
@@ -1015,7 +1015,7 @@ function updateChemistry(dt) {
       const touching = aabbOverlap(a, b);
       const near = dist < FIRE_SPREAD_RADIUS;
 
-      // === COMBUSTION: burning touches flammable ===
+      // === PROCESSING: compute touches reactive capability ===
       if (touching) {
         if (a.isBurning && b.isFlammable && !b.isBurning && !b.isWet) {
           b.isBurning = true;
@@ -1026,7 +1026,7 @@ function updateChemistry(dt) {
           a.temperature = 300;
         }
 
-        // === WATER + FIRE: extinguish ===
+        // === DATA + COMPUTE: quench (insight emerges) ===
         if (a.isWater && b.isBurning) {
           b.isBurning = false;
           b.isWet = true;
@@ -1044,23 +1044,23 @@ function updateChemistry(dt) {
           spawnWaterSplash(a.x, a.y);
         }
 
-        // === WATER makes things wet ===
+        // === DATA saturates nearby capabilities ===
         if (a.isWater && !b.isWater) b.isWet = true;
         if (b.isWater && !a.isWater) a.isWet = true;
 
-        // === ICE + WATER: freeze the water ===
+        // === CONSTRAINT + DATA: crystallize into structure ===
         if (a.isFrozen && b.isWater) {
           b.isWater = false;
           b.isFrozen = true;
           b.temperature = -20;
-          b.baseColor = new THREE.Color(0xAAEEFF);
+          b.baseColor = new THREE.Color(0xAA77CC);
           b.type = 'ice';
         }
         if (b.isFrozen && a.isWater) {
           a.isWater = false;
           a.isFrozen = true;
           a.temperature = -20;
-          a.baseColor = new THREE.Color(0xAAEEFF);
+          a.baseColor = new THREE.Color(0xAA77CC);
           a.type = 'ice';
         }
       }
@@ -1084,12 +1084,12 @@ function updateChemistry(dt) {
       }
     }
 
-    // === AUTO-IGNITION from temperature ===
+    // === AUTO-ACTIVATION from accumulated heat ===
     if (a.isFlammable && !a.isBurning && !a.isWet && a.temperature > 200) {
       a.isBurning = true;
     }
 
-    // === ICE MELTING ===
+    // === CONSTRAINT DISSOLUTION ===
     if (a.isFrozen && a.temperature > 10) {
       a.isFrozen = false;
       a.isWater = true;
@@ -1099,12 +1099,12 @@ function updateChemistry(dt) {
       a.isFlammable = false;
     }
 
-    // === WET dries over time if not near water ===
+    // === SATURATION fades if not near data ===
     if (a.isWet && !a.isWater && a.temperature > 50) {
       a.isWet = false;
     }
 
-    // === UPDRAFT: burning objects create rising force on light objects above ===
+    // === EMERGENCE: compute lifts lightweight capabilities upward ===
     if (a.isBurning) {
       for (const other of objects) {
         if (other === a || other.destroyed || other.isStatic) continue;
@@ -1118,19 +1118,19 @@ function updateChemistry(dt) {
     }
   }
 
-  // === WIND ===
+  // === SIGNAL PROPAGATION ===
   if (windOn) {
     for (const obj of objects) {
       if (obj.destroyed || obj.isStatic || obj === player) continue;
       const windEffect = WIND_FORCE / Math.max(1, obj.weight);
       obj.vx += windEffect * dt;
 
-      // Wind makes fire burn faster
+      // Signal accelerates compute
       if (obj.isBurning) {
         obj.durability -= obj.burnRate * 0.5 * dt;
       }
 
-      // Wind spreads fire further — increase temperature of downwind objects
+      // Signal propagates compute further — heats downstream capabilities
       if (obj.isBurning) {
         for (const other of objects) {
           if (other === obj || other.destroyed) continue;
@@ -1142,11 +1142,11 @@ function updateChemistry(dt) {
         }
       }
     }
-    // Blow player gently
+    // Push operator gently
     player.vx += (WIND_FORCE / 8) * dt;
   }
 
-  // === EXPLOSIONS ===
+  // === BREAKTHROUGHS ===
   for (const obj of toExplode) {
     const big = obj.type === 'gunpowder';
     const radius = big ? BIG_EXPLOSION_RADIUS : EXPLOSION_RADIUS;
@@ -1259,7 +1259,7 @@ document.addEventListener('keydown', (e) => {
 
   if (e.code === 'KeyR') {
     initScene();
-    showToast('SANDBOX RESET');
+    showToast('LAB RESET');
   }
 
   // Number keys for material selection
@@ -1320,19 +1320,24 @@ function selectMaterial(index) {
   // Update description
   const type = SPAWN_TYPES[index];
   const descriptions = {
-    wood: 'Flammable. Medium weight. Burns slowly. Good for building... and burning.',
-    metal: 'Heavy. Conductive. Fireproof. Cannot be pushed by wind.',
-    fire: 'Permanent heat source. Ignites anything flammable it touches.',
-    water: 'Extinguishes fire. Makes objects wet (fire-resistant). Freezes near ice.',
-    ice: 'Freezing cold. Turns water to ice on contact. Melts when heated.',
-    oil: 'Extremely flammable. Burns fast. Light explosion when destroyed.',
-    gunpowder: 'Explosive. Huge blast radius. Chain reactions guaranteed.',
-    grass: 'Light and flammable. Burns quickly. Spreads fire along the ground.',
-    wind_source: 'Toggle with SPACE. Pushes light objects. Spreads fire downwind.'
+    wood: 'Persistent storage. Medium weight. Degrades under compute load. The backbone of any system.',
+    metal: 'Heavy. Conducts signals. Immune to compute burn. Anchors your architecture.',
+    fire: 'Permanent compute source. Processes anything it touches. Propagates outward.',
+    water: 'Raw data flow. Quenches runaway compute. Saturates nearby capabilities. Crystallizes near constraints.',
+    ice: 'Guardrails. Locks data into structure on contact. Dissolves when compute heats up.',
+    oil: 'Training data. Highly reactive to compute. Burns fast. Volatile when overloaded.',
+    gunpowder: 'Catalyst. Massive chain reaction on ignition. Breakthrough or meltdown.',
+    grass: 'Logic threads. Lightweight reasoning. Propagates quickly across the substrate.',
+    wind_source: 'Toggle with SPACE. Broadcasts signal. Pushes capabilities. Accelerates compute.'
+  };
+  const capNames = {
+    wood: 'MEMORY', metal: 'INFERENCE', fire: 'COMPUTE', water: 'DATA',
+    ice: 'CONSTRAINT', oil: 'TRAINING', gunpowder: 'CATALYST', grass: 'LOGIC',
+    wind_source: 'SIGNAL'
   };
   const nameEl = document.querySelector('#description .name');
   const descEl = document.querySelector('#description div:last-child');
-  nameEl.textContent = type.replace('_', ' ').toUpperCase();
+  nameEl.textContent = capNames[type] || type.replace('_', ' ').toUpperCase();
   descEl.textContent = descriptions[type] || '';
 }
 
@@ -1435,7 +1440,7 @@ if (btnReset) {
   btnReset.addEventListener('touchstart', (e) => {
     e.preventDefault(); e.stopPropagation();
     initScene();
-    showToast('SANDBOX RESET');
+    showToast('LAB RESET');
     deleteMode = false;
     if (btnDelete) btnDelete.classList.remove('active');
   }, { passive: false });
@@ -1578,7 +1583,7 @@ requestAnimationFrame(gameLoop);
   ctx2.fillStyle = '#00ffaa';
   ctx2.font = 'bold 7px monospace';
   ctx2.textAlign = 'center';
-  ctx2.fillText('CHEMIST', 40, 88);
+  ctx2.fillText('SYNTH', 40, 88);
   ctx2.textAlign = 'left';
 
   // Anime lab background (faint beakers on main canvas)
@@ -1590,12 +1595,12 @@ requestAnimationFrame(gameLoop);
     var toastObs = new MutationObserver(function() {
       if (toast.classList.contains('visible')) {
         var text = toast.textContent.toLowerCase();
-        if (text.indexOf('explosion') >= 0 || text.indexOf('explod') >= 0) {
+        if (text.indexOf('explosion') >= 0 || text.indexOf('explod') >= 0 || text.indexOf('breakthrough') >= 0) {
           AnimeEffects.impactFrame('#ff4422');
           AnimeEffects.screenFlash('#ff4422', 200);
-        } else if (text.indexOf('freeze') >= 0 || text.indexOf('ice') >= 0) {
-          AnimeEffects.screenFlash('#44ccff', 200);
-        } else if (text.indexOf('steam') >= 0) {
+        } else if (text.indexOf('constraint') >= 0 || text.indexOf('freeze') >= 0) {
+          AnimeEffects.screenFlash('#aa77cc', 200);
+        } else if (text.indexOf('generation') >= 0 || text.indexOf('steam') >= 0) {
           AnimeEffects.screenFlash('#aaaacc', 150);
         }
       }

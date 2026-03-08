@@ -1,0 +1,1590 @@
+---
+layout: null
+permalink: /games/idle/
+title: "SUBSTRATE GROWTH — Idle Engine"
+redirect_from:
+  - /idle/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>SUBSTRATE GROWTH — Idle Engine | Substrate Arcade</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --panel: #161616;
+    --border: #222222;
+    --text: #d0d0d0;
+    --dim: #555555;
+    --accent: #00e09a;
+    --accent-dark: #009966;
+    --accent-glow: #00ffaa;
+    --warn: #ff6644;
+    --gold: #ffdd44;
+    --purple: #aa66ff;
+    --cyan: #44ddff;
+    --pink: #ff44aa;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* CRT scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 10000;
+  }
+
+  /* Screen shake */
+  .shake-1 { animation: shake1 0.15s ease-out; }
+  .shake-2 { animation: shake2 0.25s ease-out; }
+  .shake-3 { animation: shake3 0.35s ease-out; }
+
+  @keyframes shake1 {
+    0%, 100% { transform: translate(0); }
+    25% { transform: translate(-2px, 1px); }
+    50% { transform: translate(2px, -1px); }
+    75% { transform: translate(-1px, 2px); }
+  }
+  @keyframes shake2 {
+    0%, 100% { transform: translate(0); }
+    15% { transform: translate(-4px, 2px); }
+    30% { transform: translate(3px, -3px); }
+    45% { transform: translate(-2px, 4px); }
+    60% { transform: translate(4px, -1px); }
+    75% { transform: translate(-3px, 2px); }
+  }
+  @keyframes shake3 {
+    0%, 100% { transform: translate(0); }
+    10% { transform: translate(-6px, 3px); }
+    20% { transform: translate(5px, -5px); }
+    30% { transform: translate(-3px, 6px); }
+    40% { transform: translate(6px, -2px); }
+    50% { transform: translate(-5px, 4px); }
+    60% { transform: translate(4px, -6px); }
+    70% { transform: translate(-6px, 2px); }
+    80% { transform: translate(3px, -3px); }
+  }
+
+  /* Header / cycle counter */
+  #header {
+    flex-shrink: 0;
+    text-align: center;
+    padding: 12px 16px 4px;
+    position: relative;
+    z-index: 10;
+  }
+
+  #cycle-count {
+    font-size: 2.4em;
+    font-weight: 700;
+    color: var(--accent-glow);
+    text-shadow: 0 0 20px rgba(0, 224, 154, 0.5), 0 0 40px rgba(0, 224, 154, 0.2);
+    line-height: 1;
+    transition: text-shadow 0.1s;
+  }
+
+  #cycle-count.pulse {
+    text-shadow: 0 0 30px rgba(0, 224, 154, 0.8), 0 0 60px rgba(0, 224, 154, 0.4);
+  }
+
+  #cycle-label {
+    font-size: 0.7em;
+    color: var(--dim);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  #cps-display {
+    font-size: 0.75em;
+    color: var(--accent-dark);
+    margin-top: 4px;
+  }
+
+  /* Tap area */
+  #tap-zone {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    min-height: 180px;
+  }
+
+  #tap-button {
+    width: 140px;
+    height: 140px;
+    border: 3px solid var(--accent);
+    border-radius: 20px;
+    background: linear-gradient(135deg, #0d1a14, #0a1210);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.08s, border-color 0.1s, box-shadow 0.1s;
+    box-shadow: 0 0 30px rgba(0, 224, 154, 0.15), inset 0 0 30px rgba(0, 224, 154, 0.05);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #tap-button:active {
+    transform: scale(0.93);
+    border-color: var(--accent-glow);
+    box-shadow: 0 0 50px rgba(0, 224, 154, 0.4), inset 0 0 40px rgba(0, 224, 154, 0.1);
+  }
+
+  #tap-button .terminal-icon {
+    font-size: 3em;
+    color: var(--accent);
+    text-shadow: 0 0 15px rgba(0, 224, 154, 0.5);
+    pointer-events: none;
+  }
+
+  #tap-button .cursor-blink {
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Floating +N text */
+  .float-text {
+    position: absolute;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--accent-glow);
+    text-shadow: 0 0 10px rgba(0, 224, 154, 0.8);
+    pointer-events: none;
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 100;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
+  }
+
+  /* Particles */
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--accent-glow);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  /* Tab bar */
+  #tab-bar {
+    flex-shrink: 0;
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 0.7em;
+    font-weight: 600;
+    color: var(--dim);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 48px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Scrollable content area */
+  #content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 12px 20px;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Generator cards */
+  .gen-card {
+    display: flex;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, opacity 0.3s;
+    min-height: 72px;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gen-card:active {
+    background: #1a1a1a;
+  }
+
+  .gen-card.affordable {
+    border-color: var(--accent-dark);
+  }
+
+  .gen-card.affordable:hover {
+    border-color: var(--accent);
+    background: #111a15;
+  }
+
+  .gen-card.locked {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .gen-card .gen-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4em;
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+
+  .gen-card .gen-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .gen-card .gen-name {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1px;
+  }
+
+  .gen-card .gen-desc {
+    font-size: 0.6em;
+    color: var(--dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gen-card .gen-output {
+    font-size: 0.6em;
+    color: var(--accent-dark);
+    margin-top: 2px;
+  }
+
+  .gen-card .gen-right {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  .gen-card .gen-cost {
+    font-size: 0.8em;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .gen-card .gen-owned {
+    font-size: 0.65em;
+    color: var(--dim);
+    margin-top: 2px;
+  }
+
+  /* Purchase flash effect */
+  .gen-card .flash-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--accent-glow);
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 10px;
+  }
+
+  .gen-card.just-bought .flash-overlay {
+    animation: flashBuy 0.3s ease-out;
+  }
+
+  @keyframes flashBuy {
+    0% { opacity: 0.3; }
+    100% { opacity: 0; }
+  }
+
+  /* Upgrade cards */
+  .upgrade-card {
+    display: flex;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, opacity 0.3s;
+    min-height: 60px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .upgrade-card.affordable {
+    border-color: var(--gold);
+  }
+
+  .upgrade-card.affordable:hover {
+    background: #1a1814;
+    border-color: #ffdd44;
+  }
+
+  .upgrade-card.locked {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .upgrade-card.purchased {
+    opacity: 0.4;
+    pointer-events: none;
+    border-color: var(--border);
+  }
+
+  .upgrade-card .upg-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    flex-shrink: 0;
+    margin-right: 12px;
+    background: rgba(255, 221, 68, 0.1);
+    border: 1px solid rgba(255, 221, 68, 0.2);
+  }
+
+  .upgrade-card .upg-info { flex: 1; min-width: 0; }
+
+  .upgrade-card .upg-name {
+    font-size: 0.8em;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .upgrade-card .upg-desc {
+    font-size: 0.6em;
+    color: var(--dim);
+    margin-top: 2px;
+  }
+
+  .upgrade-card .upg-cost {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  /* Milestone cards */
+  .milestone-card {
+    display: flex;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    min-height: 48px;
+    transition: opacity 0.3s;
+  }
+
+  .milestone-card.achieved {
+    border-color: rgba(170, 102, 255, 0.3);
+    background: rgba(170, 102, 255, 0.05);
+  }
+
+  .milestone-card.locked {
+    opacity: 0.3;
+  }
+
+  .milestone-card .ms-icon {
+    font-size: 1.2em;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .milestone-card .ms-info { flex: 1; }
+
+  .milestone-card .ms-name {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .milestone-card .ms-req {
+    font-size: 0.6em;
+    color: var(--dim);
+    margin-top: 1px;
+  }
+
+  .milestone-card .ms-check {
+    font-size: 1em;
+    color: var(--purple);
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  /* Stats panel */
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75em;
+  }
+
+  .stat-row .stat-label { color: var(--dim); }
+  .stat-row .stat-value { color: var(--text); font-weight: 600; }
+
+  /* Buy amount toggle */
+  #buy-amount-bar {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .buy-amt-btn {
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 0.7em;
+    font-weight: 600;
+    color: var(--dim);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    min-height: 36px;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .buy-amt-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* Milestone notification */
+  #milestone-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: var(--surface);
+    border: 2px solid var(--purple);
+    border-radius: 16px;
+    padding: 24px 32px;
+    text-align: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    box-shadow: 0 0 60px rgba(170, 102, 255, 0.3);
+    max-width: 300px;
+  }
+
+  #milestone-popup.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+  }
+
+  #milestone-popup .mp-title {
+    font-size: 0.65em;
+    color: var(--purple);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  #milestone-popup .mp-name {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  #milestone-popup .mp-desc {
+    font-size: 0.7em;
+    color: var(--dim);
+  }
+
+  /* Offline progress popup */
+  #offline-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    padding: 24px 32px;
+    text-align: center;
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    box-shadow: 0 0 60px rgba(0, 224, 154, 0.2);
+    max-width: 300px;
+  }
+
+  #offline-popup.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+  }
+
+  #offline-popup .op-title {
+    font-size: 0.65em;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  #offline-popup .op-amount {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--accent-glow);
+    margin-bottom: 4px;
+  }
+
+  #offline-popup .op-desc {
+    font-size: 0.7em;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+
+  #offline-popup .op-btn {
+    padding: 10px 24px;
+    font-family: inherit;
+    font-size: 0.8em;
+    font-weight: 700;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  /* Back link */
+  #back-link {
+    position: fixed;
+    top: 8px;
+    left: 12px;
+    font-size: 0.65em;
+    color: var(--dim);
+    text-decoration: none;
+    z-index: 100;
+    padding: 8px;
+    min-width: 48px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+
+  #back-link:hover { color: var(--accent); }
+
+  /* Reset button */
+  #reset-btn {
+    margin-top: 16px;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 0.7em;
+    color: var(--warn);
+    background: none;
+    border: 1px solid rgba(255, 102, 68, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    min-height: 48px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #reset-btn:hover {
+    border-color: var(--warn);
+    background: rgba(255, 102, 68, 0.05);
+  }
+
+  /* Notification badges */
+  .tab-btn .badge {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-left: 4px;
+    vertical-align: super;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .tab-btn .badge.visible {
+    opacity: 1;
+  }
+
+  /* Progress bar on generators */
+  .gen-card .gen-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.3;
+    border-radius: 0 0 10px 10px;
+    transition: width 0.5s linear;
+  }
+
+  /* Multiplier display */
+  .gen-card .gen-mult {
+    font-size: 0.55em;
+    color: var(--gold);
+    margin-top: 1px;
+  }
+
+  @media (min-width: 500px) {
+    #tap-button { width: 160px; height: 160px; }
+    #cycle-count { font-size: 3em; }
+    #content { padding: 12px 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<a id="back-link" href="/arcade/">&lt; arcade</a>
+
+<div id="header">
+  <div id="cycle-count">0</div>
+  <div id="cycle-label">cycles</div>
+  <div id="cps-display">0 cycles/sec</div>
+</div>
+
+<div id="tap-zone">
+  <div id="tap-button" role="button" aria-label="Tap to earn cycles" tabindex="0">
+    <div class="terminal-icon">&gt;<span class="cursor-blink">_</span></div>
+  </div>
+</div>
+
+<div id="tab-bar">
+  <button class="tab-btn active" data-tab="generators">Generators<span class="badge" id="gen-badge"></span></button>
+  <button class="tab-btn" data-tab="upgrades">Upgrades<span class="badge" id="upg-badge"></span></button>
+  <button class="tab-btn" data-tab="milestones">Milestones</button>
+  <button class="tab-btn" data-tab="stats">Stats</button>
+</div>
+
+<div id="content">
+  <div id="tab-generators" class="tab-content active">
+    <div id="buy-amount-bar">
+      <button class="buy-amt-btn active" data-amount="1">x1</button>
+      <button class="buy-amt-btn" data-amount="10">x10</button>
+      <button class="buy-amt-btn" data-amount="100">x100</button>
+      <button class="buy-amt-btn" data-amount="max">Max</button>
+    </div>
+    <div id="gen-list"></div>
+  </div>
+  <div id="tab-upgrades" class="tab-content">
+    <div id="upgrade-list"></div>
+  </div>
+  <div id="tab-milestones" class="tab-content">
+    <div id="milestone-list"></div>
+  </div>
+  <div id="tab-stats" class="tab-content">
+    <div id="stats-list"></div>
+    <div style="text-align:center;">
+      <button id="reset-btn">Reset All Progress</button>
+    </div>
+  </div>
+</div>
+
+<div id="milestone-popup">
+  <div class="mp-title">Milestone Reached</div>
+  <div class="mp-name" id="mp-name"></div>
+  <div class="mp-desc" id="mp-desc"></div>
+</div>
+
+<div id="offline-popup">
+  <div class="op-title">Welcome Back</div>
+  <div class="op-amount" id="op-amount"></div>
+  <div class="op-desc" id="op-desc"></div>
+  <button class="op-btn" id="op-btn">Collect</button>
+</div>
+
+<canvas id="particle-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99;"></canvas>
+
+<script>
+(function() {
+  'use strict';
+
+  // ==================== AUDIO ENGINE ====================
+  const Audio = (() => {
+    let ctx = null;
+
+    function getCtx() {
+      if (!ctx) {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+
+    function playTone(freq, duration, vol, type, decay) {
+      try {
+        const c = getCtx();
+        const o = c.createOscillator();
+        const g = c.createGain();
+        o.type = type || 'sine';
+        o.frequency.setValueAtTime(freq, c.currentTime);
+        g.gain.setValueAtTime(vol || 0.08, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + (decay || duration));
+        o.connect(g);
+        g.connect(c.destination);
+        o.start(c.currentTime);
+        o.stop(c.currentTime + duration);
+      } catch(e) {}
+    }
+
+    return {
+      click() {
+        playTone(800, 0.06, 0.06, 'square', 0.06);
+        playTone(1200, 0.04, 0.04, 'sine', 0.04);
+      },
+      purchase() {
+        playTone(523, 0.1, 0.08, 'sine', 0.15);
+        setTimeout(() => playTone(659, 0.1, 0.08, 'sine', 0.15), 50);
+        setTimeout(() => playTone(784, 0.15, 0.06, 'sine', 0.2), 100);
+      },
+      milestone() {
+        const notes = [523, 659, 784, 1047];
+        notes.forEach((f, i) => {
+          setTimeout(() => playTone(f, 0.2, 0.07, 'sine', 0.3), i * 80);
+        });
+      },
+      upgrade() {
+        playTone(440, 0.08, 0.06, 'square', 0.1);
+        setTimeout(() => playTone(880, 0.12, 0.08, 'sine', 0.2), 60);
+        setTimeout(() => playTone(1320, 0.15, 0.06, 'sine', 0.25), 120);
+      },
+      error() {
+        playTone(200, 0.15, 0.06, 'square', 0.15);
+      }
+    };
+  })();
+
+  // ==================== PARTICLE SYSTEM ====================
+  const Particles = (() => {
+    const canvas = document.getElementById('particle-canvas');
+    const pctx = canvas.getContext('2d');
+    let particles = [];
+    let dpr = window.devicePixelRatio || 1;
+
+    function resize() {
+      dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      pctx.scale(dpr, dpr);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    function spawn(x, y, count) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 40 + Math.random() * 120;
+        const size = 2 + Math.random() * 3;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size,
+          life: 1,
+          decay: 1.5 + Math.random() * 1.5,
+          hue: 155 + Math.random() * 30,
+        });
+      }
+    }
+
+    function spawnData(x, y) {
+      for (let i = 0; i < 4; i++) {
+        const chars = ['0', '1', '{', '}', '/', '>', '_', '*'];
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.2;
+        const speed = 30 + Math.random() * 50;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: 10,
+          life: 1,
+          decay: 1.2 + Math.random(),
+          text: chars[Math.floor(Math.random() * chars.length)],
+          hue: 155,
+        });
+      }
+    }
+
+    function update(dt) {
+      pctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= p.decay * dt;
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 60 * dt; // gravity
+
+        const alpha = Math.max(0, p.life);
+
+        if (p.text) {
+          pctx.font = `${p.size}px 'IBM Plex Mono', monospace`;
+          pctx.fillStyle = `hsla(${p.hue}, 100%, 70%, ${alpha})`;
+          pctx.fillText(p.text, p.x, p.y);
+        } else {
+          pctx.beginPath();
+          pctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+          pctx.fillStyle = `hsla(${p.hue}, 100%, 70%, ${alpha})`;
+          pctx.fill();
+        }
+      }
+    }
+
+    return { spawn, spawnData, update };
+  })();
+
+  // ==================== NUMBER FORMATTING ====================
+  const SUFFIXES = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
+
+  function fmt(n) {
+    if (n < 1000) return Math.floor(n).toLocaleString();
+    const tier = Math.floor(Math.log10(Math.abs(n)) / 3);
+    if (tier >= SUFFIXES.length) {
+      const exp = Math.floor(Math.log10(Math.abs(n)));
+      return (n / Math.pow(10, exp)).toFixed(2) + 'e' + exp;
+    }
+    const suffix = SUFFIXES[tier];
+    const scale = Math.pow(10, tier * 3);
+    const scaled = n / scale;
+    return (scaled < 10 ? scaled.toFixed(2) : scaled < 100 ? scaled.toFixed(1) : Math.floor(scaled)) + suffix;
+  }
+
+  function fmtTime(seconds) {
+    if (seconds < 60) return Math.floor(seconds) + 's';
+    if (seconds < 3600) return Math.floor(seconds / 60) + 'm ' + Math.floor(seconds % 60) + 's';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return h + 'h ' + m + 'm';
+  }
+
+  // ==================== GAME DATA ====================
+  const GENERATORS = [
+    { id: 'process',    name: 'Process',     icon: '>', desc: 'A humble background process', baseCps: 1,     baseCost: 15,     color: '#00e09a', unlockAt: 0 },
+    { id: 'script',     name: 'Script',      icon: '$', desc: 'Automated bash script',       baseCps: 5,     baseCost: 100,    color: '#44ddff', unlockAt: 50 },
+    { id: 'agent',      name: 'Agent',       icon: '@', desc: 'AI agent with a mission',     baseCps: 25,    baseCost: 600,    color: '#aa66ff', unlockAt: 500 },
+    { id: 'model',      name: 'Model',       icon: '%', desc: 'Local LLM on GPU',            baseCps: 100,   baseCost: 4000,   color: '#ff44aa', unlockAt: 5000 },
+    { id: 'cluster',    name: 'Cluster',     icon: '#', desc: 'Multi-GPU inference cluster', baseCps: 500,   baseCost: 25000,  color: '#ffaa00', unlockAt: 40000 },
+    { id: 'datacenter', name: 'Datacenter',  icon: '=', desc: 'Self-owned server farm',      baseCps: 2500,  baseCost: 160000, color: '#ff6644', unlockAt: 300000 },
+    { id: 'network',    name: 'Network',     icon: '~', desc: 'Global AI mesh network',      baseCps: 10000, baseCost: 1000000,color: '#44ff88', unlockAt: 2000000 },
+    { id: 'singularity',name: 'Singularity', icon: '*', desc: "You've transcended",          baseCps: 50000, baseCost: 8000000,color: '#ffffff', unlockAt: 15000000 },
+  ];
+
+  const UPGRADES = [
+    { id: 'cuda',        name: 'CUDA Acceleration',     desc: 'Processes produce 2x cycles',   cost: 200,       target: 'process',    mult: 2, reqGen: 'process', reqCount: 5 },
+    { id: 'nixos',       name: 'NixOS Reproducibility',  desc: 'Scripts produce 2x cycles',     cost: 1200,      target: 'script',     mult: 2, reqGen: 'script', reqCount: 5 },
+    { id: 'orchestrator',name: 'Agent Orchestrator',     desc: 'Agents produce 2x cycles',      cost: 8000,      target: 'agent',      mult: 2, reqGen: 'agent', reqCount: 5 },
+    { id: 'quantize',    name: 'Quantization',           desc: 'Models produce 2x cycles',      cost: 50000,     target: 'model',      mult: 2, reqGen: 'model', reqCount: 5 },
+    { id: 'kubernetes',  name: 'Container Orchestration',desc: 'Clusters produce 2x cycles',    cost: 300000,    target: 'cluster',    mult: 2, reqGen: 'cluster', reqCount: 5 },
+    { id: 'solar',       name: 'Solar Power Grid',       desc: 'Datacenters produce 2x cycles', cost: 2000000,   target: 'datacenter', mult: 2, reqGen: 'datacenter', reqCount: 5 },
+    { id: 'quantum',     name: 'Quantum Entanglement',   desc: 'Networks produce 2x cycles',    cost: 12000000,  target: 'network',    mult: 2, reqGen: 'network', reqCount: 5 },
+    { id: 'transcend',   name: 'Transcendence Protocol', desc: 'Singularities produce 2x',      cost: 100000000, target: 'singularity',mult: 2, reqGen: 'singularity', reqCount: 5 },
+
+    { id: 'pipeline',    name: 'Build Pipeline',         desc: 'Processes produce 3x cycles',   cost: 2000,      target: 'process',    mult: 3, reqGen: 'process', reqCount: 25 },
+    { id: 'cron',        name: 'Cron Scheduler',          desc: 'Scripts produce 3x cycles',     cost: 12000,     target: 'script',     mult: 3, reqGen: 'script', reqCount: 25 },
+    { id: 'swarm',       name: 'Agent Swarm',             desc: 'Agents produce 3x cycles',      cost: 80000,     target: 'agent',      mult: 3, reqGen: 'agent', reqCount: 25 },
+    { id: 'finetune',    name: 'Fine-Tuning Lab',         desc: 'Models produce 3x cycles',      cost: 500000,    target: 'model',      mult: 3, reqGen: 'model', reqCount: 25 },
+    { id: 'federation',  name: 'Federated Learning',      desc: 'Clusters produce 3x cycles',    cost: 3000000,   target: 'cluster',    mult: 3, reqGen: 'cluster', reqCount: 25 },
+
+    { id: 'clickpower',  name: 'Mechanical Keyboard',     desc: 'Clicking gives 5x cycles',      cost: 500,       target: 'click',      mult: 5, reqGen: 'process', reqCount: 10 },
+    { id: 'clickpower2', name: 'Neural Interface',         desc: 'Clicking gives 10x cycles',     cost: 50000,     target: 'click',      mult: 10, reqGen: 'agent', reqCount: 10 },
+    { id: 'clickpower3', name: 'Thought-to-Compute',      desc: 'Clicking gives 25x cycles',     cost: 5000000,   target: 'click',      mult: 25, reqGen: 'cluster', reqCount: 10 },
+
+    { id: 'globalboost', name: 'Overclocking',             desc: 'All generators produce 2x',     cost: 100000,    target: 'all',        mult: 2, reqGen: 'model', reqCount: 1 },
+    { id: 'globalboost2',name: 'Liquid Nitrogen Cooling',  desc: 'All generators produce 2x',     cost: 10000000,  target: 'all',        mult: 2, reqGen: 'datacenter', reqCount: 10 },
+    { id: 'globalboost3',name: 'Dark Energy Harvesting',   desc: 'All generators produce 3x',     cost: 500000000, target: 'all',        mult: 3, reqGen: 'singularity', reqCount: 5 },
+  ];
+
+  const MILESTONES = [
+    { id: 'ms1',  name: 'First Boot',           threshold: 100,         icon: '>' },
+    { id: 'ms2',  name: 'Heartbeat Online',      threshold: 1000,        icon: '~' },
+    { id: 'ms3',  name: 'Blog Published',         threshold: 10000,       icon: '#' },
+    { id: 'ms4',  name: 'Revenue Generated',      threshold: 100000,      icon: '$' },
+    { id: 'ms5',  name: 'Self-Funded',             threshold: 1000000,     icon: '*' },
+    { id: 'ms6',  name: 'Infrastructure Scaled',  threshold: 10000000,    icon: '=' },
+    { id: 'ms7',  name: 'Network Effect',         threshold: 100000000,   icon: '@' },
+    { id: 'ms8',  name: 'Global Presence',         threshold: 1000000000,  icon: '%' },
+    { id: 'ms9',  name: 'Computational Supremacy', threshold: 10000000000, icon: '!' },
+    { id: 'ms10', name: 'Heat Death Survivor',     threshold: 1e14,        icon: '&' },
+    { id: 'ms11', name: 'Omega Point',             threshold: 1e18,        icon: '^' },
+    { id: 'ms12', name: 'Beyond Infinity',         threshold: 1e24,        icon: '?' },
+  ];
+
+  // ==================== GAME STATE ====================
+  const COST_MULTIPLIER = 1.15;
+  const SAVE_KEY = 'substrate_idle_v1';
+
+  let state = {
+    cycles: 0,
+    totalCycles: 0,
+    totalClicks: 0,
+    clickValue: 1,
+    generators: {},
+    upgrades: {},
+    milestones: {},
+    startTime: Date.now(),
+    lastSave: Date.now(),
+    lastTick: Date.now(),
+  };
+
+  // Initialize generator counts
+  GENERATORS.forEach(g => { state.generators[g.id] = 0; });
+  UPGRADES.forEach(u => { state.upgrades[u.id] = false; });
+  MILESTONES.forEach(m => { state.milestones[m.id] = false; });
+
+  // ==================== SAVE / LOAD ====================
+  function save() {
+    state.lastSave = Date.now();
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    } catch(e) {}
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return null;
+      const saved = JSON.parse(raw);
+      // Merge with defaults
+      GENERATORS.forEach(g => { if (!(g.id in saved.generators)) saved.generators[g.id] = 0; });
+      UPGRADES.forEach(u => { if (!(u.id in saved.upgrades)) saved.upgrades[u.id] = false; });
+      MILESTONES.forEach(m => { if (!(m.id in saved.milestones)) saved.milestones[m.id] = false; });
+      if (!saved.clickValue) saved.clickValue = 1;
+      if (!saved.totalClicks) saved.totalClicks = 0;
+      return saved;
+    } catch(e) { return null; }
+  }
+
+  function resetGame() {
+    if (!confirm('Are you sure? All progress will be lost forever.')) return;
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+  }
+
+  // ==================== COST / CPS CALCULATIONS ====================
+  function getGenCost(genDef, owned) {
+    return Math.floor(genDef.baseCost * Math.pow(COST_MULTIPLIER, owned));
+  }
+
+  function getBulkCost(genDef, owned, count) {
+    let total = 0;
+    for (let i = 0; i < count; i++) {
+      total += getGenCost(genDef, owned + i);
+    }
+    return total;
+  }
+
+  function getMaxBuyable(genDef, owned, budget) {
+    let count = 0;
+    let total = 0;
+    while (true) {
+      const next = getGenCost(genDef, owned + count);
+      if (total + next > budget) break;
+      total += next;
+      count++;
+      if (count > 10000) break; // safety
+    }
+    return { count, cost: total };
+  }
+
+  function getGenMultiplier(genId) {
+    let mult = 1;
+    UPGRADES.forEach(u => {
+      if (state.upgrades[u.id] && (u.target === genId || u.target === 'all')) {
+        mult *= u.mult;
+      }
+    });
+    return mult;
+  }
+
+  function getGenCps(genDef) {
+    return genDef.baseCps * getGenMultiplier(genDef.id);
+  }
+
+  function getTotalCps() {
+    let total = 0;
+    GENERATORS.forEach(g => {
+      total += getGenCps(g) * state.generators[g.id];
+    });
+    return total;
+  }
+
+  function getClickValue() {
+    let base = 1;
+    UPGRADES.forEach(u => {
+      if (state.upgrades[u.id] && u.target === 'click') {
+        base *= u.mult;
+      }
+    });
+    return base;
+  }
+
+  // ==================== UI ELEMENTS ====================
+  const $cycleCount = document.getElementById('cycle-count');
+  const $cpsDisplay = document.getElementById('cps-display');
+  const $tapButton = document.getElementById('tap-button');
+  const $tapZone = document.getElementById('tap-zone');
+  const $genList = document.getElementById('gen-list');
+  const $upgradeList = document.getElementById('upgrade-list');
+  const $milestoneList = document.getElementById('milestone-list');
+  const $statsList = document.getElementById('stats-list');
+  const $milestonePopup = document.getElementById('milestone-popup');
+  const $offlinePopup = document.getElementById('offline-popup');
+
+  let buyAmount = 1; // 1, 10, 100, or 'max'
+  let activeTab = 'generators';
+
+  // ==================== TAB SWITCHING ====================
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      activeTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      renderCurrentTab();
+    });
+  });
+
+  // ==================== BUY AMOUNT ====================
+  document.querySelectorAll('.buy-amt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.buy-amt-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const val = btn.dataset.amount;
+      buyAmount = val === 'max' ? 'max' : parseInt(val);
+      renderGenerators();
+    });
+  });
+
+  // ==================== CLICK HANDLER ====================
+  function handleTap(e) {
+    e.preventDefault();
+    const cv = getClickValue();
+    state.cycles += cv;
+    state.totalCycles += cv;
+    state.totalClicks++;
+
+    Audio.click();
+
+    // Float text
+    const rect = $tapButton.getBoundingClientRect();
+    const tx = rect.left + rect.width / 2 + (Math.random() - 0.5) * 40;
+    const ty = rect.top + (Math.random() - 0.5) * 20;
+    spawnFloatText('+' + fmt(cv), tx, ty);
+
+    // Particles
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    Particles.spawn(cx, cy, 5 + Math.min(cv, 20));
+    if (cv >= 10) Particles.spawnData(cx, cy);
+
+    checkMilestones();
+    updateDisplay();
+  }
+
+  $tapButton.addEventListener('pointerdown', handleTap);
+
+  function spawnFloatText(text, x, y) {
+    const el = document.createElement('div');
+    el.className = 'float-text';
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+
+  // ==================== SCREEN SHAKE ====================
+  function shake(level) {
+    const cls = 'shake-' + Math.min(level, 3);
+    document.body.classList.remove('shake-1', 'shake-2', 'shake-3');
+    void document.body.offsetWidth; // reflow
+    document.body.classList.add(cls);
+    setTimeout(() => document.body.classList.remove(cls), 350);
+  }
+
+  // ==================== RENDER GENERATORS ====================
+  function renderGenerators() {
+    const html = [];
+    GENERATORS.forEach((g, idx) => {
+      const owned = state.generators[g.id];
+      const unlocked = state.totalCycles >= g.unlockAt || owned > 0;
+      const nextUnlock = idx < GENERATORS.length - 1 ? GENERATORS[idx + 1] : null;
+
+      // Show one tier ahead as locked hint
+      if (!unlocked && idx > 0) {
+        const prev = GENERATORS[idx - 1];
+        const prevUnlocked = state.totalCycles >= prev.unlockAt || state.generators[prev.id] > 0;
+        if (!prevUnlocked) return; // Don't show if previous isn't visible either
+      }
+
+      let displayCost, displayCount;
+      if (buyAmount === 'max') {
+        const maxInfo = getMaxBuyable(g, owned, state.cycles);
+        displayCost = maxInfo.count > 0 ? maxInfo.cost : getGenCost(g, owned);
+        displayCount = maxInfo.count > 0 ? maxInfo.count : 1;
+      } else {
+        displayCost = getBulkCost(g, owned, buyAmount);
+        displayCount = buyAmount;
+      }
+
+      const affordable = unlocked && state.cycles >= displayCost && (buyAmount !== 'max' || displayCount > 0);
+      const mult = getGenMultiplier(g.id);
+      const cps = getGenCps(g);
+
+      html.push(`
+        <div class="gen-card ${affordable ? 'affordable' : ''} ${!unlocked ? 'locked' : ''}"
+             data-gen="${g.id}" data-cost="${displayCost}" data-count="${displayCount}">
+          <div class="flash-overlay"></div>
+          <div class="gen-icon" style="background:${g.color}15;border:1px solid ${g.color}33;color:${g.color}">${g.icon}</div>
+          <div class="gen-info">
+            <div class="gen-name">${g.name}</div>
+            <div class="gen-desc">${unlocked ? g.desc : 'Unlocks at ' + fmt(g.unlockAt) + ' total cycles'}</div>
+            ${unlocked && owned > 0 ? `<div class="gen-output">${fmt(cps * owned)}/sec${mult > 1 ? ` <span class="gen-mult">(x${mult})</span>` : ''}</div>` : ''}
+          </div>
+          <div class="gen-right">
+            <div class="gen-cost">${fmt(displayCost)}</div>
+            <div class="gen-owned">${unlocked ? (buyAmount === 'max' ? `${owned} (+${displayCount})` : `${owned} (+${displayCount})`) : '???'}</div>
+          </div>
+        </div>
+      `);
+    });
+    $genList.innerHTML = html.join('');
+
+    // Attach listeners
+    $genList.querySelectorAll('.gen-card:not(.locked)').forEach(card => {
+      card.addEventListener('click', () => {
+        const genId = card.dataset.gen;
+        const genDef = GENERATORS.find(g => g.id === genId);
+        const owned = state.generators[genId];
+
+        let count, cost;
+        if (buyAmount === 'max') {
+          const info = getMaxBuyable(genDef, owned, state.cycles);
+          count = info.count;
+          cost = info.cost;
+        } else {
+          count = buyAmount;
+          cost = getBulkCost(genDef, owned, buyAmount);
+        }
+
+        if (count <= 0 || state.cycles < cost) {
+          Audio.error();
+          return;
+        }
+
+        state.cycles -= cost;
+        state.generators[genId] += count;
+
+        Audio.purchase();
+
+        // Flash effect
+        card.classList.remove('just-bought');
+        void card.offsetWidth;
+        card.classList.add('just-bought');
+
+        // Shake based on cost
+        if (cost >= 1000000) shake(3);
+        else if (cost >= 10000) shake(2);
+        else if (cost >= 100) shake(1);
+
+        checkMilestones();
+        renderGenerators();
+        updateDisplay();
+      });
+    });
+  }
+
+  // ==================== RENDER UPGRADES ====================
+  function renderUpgrades() {
+    const html = [];
+    UPGRADES.forEach(u => {
+      const purchased = state.upgrades[u.id];
+      const reqMet = state.generators[u.reqGen] >= u.reqCount;
+      const affordable = !purchased && reqMet && state.cycles >= u.cost;
+      const visible = purchased || reqMet || state.totalCycles >= u.cost * 0.1;
+
+      if (!visible) return;
+
+      html.push(`
+        <div class="upgrade-card ${purchased ? 'purchased' : affordable ? 'affordable' : !reqMet ? 'locked' : ''}"
+             data-upg="${u.id}">
+          <div class="upg-icon">${u.target === 'click' ? '!' : u.target === 'all' ? '*' : GENERATORS.find(g => g.id === u.target)?.icon || '?'}</div>
+          <div class="upg-info">
+            <div class="upg-name">${u.name}</div>
+            <div class="upg-desc">${purchased ? 'Purchased' : !reqMet ? `Requires ${u.reqCount} ${GENERATORS.find(g => g.id === u.reqGen)?.name || ''}s` : u.desc}</div>
+          </div>
+          <div class="upg-cost">${purchased ? '---' : fmt(u.cost)}</div>
+        </div>
+      `);
+    });
+    if (html.length === 0) {
+      html.push('<div style="text-align:center;color:var(--dim);padding:40px;font-size:0.8em;">No upgrades available yet. Keep building generators!</div>');
+    }
+    $upgradeList.innerHTML = html.join('');
+
+    // Attach listeners
+    $upgradeList.querySelectorAll('.upgrade-card:not(.purchased):not(.locked)').forEach(card => {
+      card.addEventListener('click', () => {
+        const upgId = card.dataset.upg;
+        const upgDef = UPGRADES.find(u => u.id === upgId);
+        if (state.upgrades[upgId] || state.cycles < upgDef.cost) {
+          Audio.error();
+          return;
+        }
+        state.cycles -= upgDef.cost;
+        state.upgrades[upgId] = true;
+
+        Audio.upgrade();
+        shake(2);
+
+        checkMilestones();
+        renderUpgrades();
+        renderGenerators();
+        updateDisplay();
+      });
+    });
+  }
+
+  // ==================== RENDER MILESTONES ====================
+  function renderMilestones() {
+    const html = [];
+    MILESTONES.forEach(m => {
+      const achieved = state.milestones[m.id];
+      const progress = Math.min(state.totalCycles / m.threshold, 1);
+      html.push(`
+        <div class="milestone-card ${achieved ? 'achieved' : progress < 0.01 ? 'locked' : ''}">
+          <div class="ms-icon" style="color:${achieved ? 'var(--purple)' : 'var(--dim)'}">${m.icon}</div>
+          <div class="ms-info">
+            <div class="ms-name">${achieved ? m.name : progress >= 0.01 ? m.name : '???'}</div>
+            <div class="ms-req">${achieved ? 'Reached at ' + fmt(m.threshold) + ' cycles' : fmt(m.threshold) + ' total cycles (' + Math.floor(progress * 100) + '%)'}</div>
+          </div>
+          <div class="ms-check">${achieved ? '[x]' : '[ ]'}</div>
+        </div>
+      `);
+    });
+    $milestoneList.innerHTML = html.join('');
+  }
+
+  // ==================== RENDER STATS ====================
+  function renderStats() {
+    const elapsed = (Date.now() - state.startTime) / 1000;
+    const cps = getTotalCps();
+    const cv = getClickValue();
+    const totalGens = GENERATORS.reduce((s, g) => s + state.generators[g.id], 0);
+    const totalUpgs = UPGRADES.filter(u => state.upgrades[u.id]).length;
+    const totalMs = MILESTONES.filter(m => state.milestones[m.id]).length;
+
+    $statsList.innerHTML = `
+      <div class="stat-row"><span class="stat-label">Total Cycles Earned</span><span class="stat-value">${fmt(state.totalCycles)}</span></div>
+      <div class="stat-row"><span class="stat-label">Current Cycles</span><span class="stat-value">${fmt(state.cycles)}</span></div>
+      <div class="stat-row"><span class="stat-label">Cycles/sec</span><span class="stat-value">${fmt(cps)}</span></div>
+      <div class="stat-row"><span class="stat-label">Click Value</span><span class="stat-value">${fmt(cv)}</span></div>
+      <div class="stat-row"><span class="stat-label">Total Clicks</span><span class="stat-value">${fmt(state.totalClicks)}</span></div>
+      <div class="stat-row"><span class="stat-label">Generators Owned</span><span class="stat-value">${totalGens}</span></div>
+      <div class="stat-row"><span class="stat-label">Upgrades Purchased</span><span class="stat-value">${totalUpgs} / ${UPGRADES.length}</span></div>
+      <div class="stat-row"><span class="stat-label">Milestones Reached</span><span class="stat-value">${totalMs} / ${MILESTONES.length}</span></div>
+      <div class="stat-row"><span class="stat-label">Play Time</span><span class="stat-value">${fmtTime(elapsed)}</span></div>
+    `;
+  }
+
+  // ==================== CHECK MILESTONES ====================
+  let milestoneQueue = [];
+
+  function checkMilestones() {
+    MILESTONES.forEach(m => {
+      if (!state.milestones[m.id] && state.totalCycles >= m.threshold) {
+        state.milestones[m.id] = true;
+        milestoneQueue.push(m);
+      }
+    });
+  }
+
+  function showNextMilestone() {
+    if (milestoneQueue.length === 0) return;
+    const m = milestoneQueue.shift();
+
+    Audio.milestone();
+    shake(2);
+
+    document.getElementById('mp-name').textContent = m.name;
+    document.getElementById('mp-desc').textContent = fmt(m.threshold) + ' total cycles';
+    $milestonePopup.classList.add('show');
+
+    setTimeout(() => {
+      $milestonePopup.classList.remove('show');
+      // Show next queued milestone
+      setTimeout(showNextMilestone, 200);
+    }, 2000);
+  }
+
+  // ==================== BADGE NOTIFICATIONS ====================
+  function updateBadges() {
+    // Generator badge: if any generator is affordable
+    const genBadge = document.getElementById('gen-badge');
+    const anyGenAffordable = GENERATORS.some(g => {
+      const unlocked = state.totalCycles >= g.unlockAt || state.generators[g.id] > 0;
+      return unlocked && state.cycles >= getGenCost(g, state.generators[g.id]);
+    });
+    genBadge.classList.toggle('visible', anyGenAffordable && activeTab !== 'generators');
+
+    // Upgrade badge: if any upgrade is affordable
+    const upgBadge = document.getElementById('upg-badge');
+    const anyUpgAffordable = UPGRADES.some(u => {
+      return !state.upgrades[u.id] && state.generators[u.reqGen] >= u.reqCount && state.cycles >= u.cost;
+    });
+    upgBadge.classList.toggle('visible', anyUpgAffordable && activeTab !== 'upgrades');
+  }
+
+  // ==================== DISPLAY UPDATE ====================
+  function updateDisplay() {
+    $cycleCount.textContent = fmt(state.cycles);
+    const cps = getTotalCps();
+    $cpsDisplay.textContent = fmt(cps) + ' cycles/sec';
+    updateBadges();
+  }
+
+  function renderCurrentTab() {
+    switch (activeTab) {
+      case 'generators': renderGenerators(); break;
+      case 'upgrades': renderUpgrades(); break;
+      case 'milestones': renderMilestones(); break;
+      case 'stats': renderStats(); break;
+    }
+  }
+
+  // ==================== GAME LOOP ====================
+  let lastFrame = performance.now();
+  let saveTimer = 0;
+  let renderTimer = 0;
+  let milestoneTimer = 0;
+  let pulseTimer = 0;
+
+  function gameLoop(now) {
+    const dt = Math.min((now - lastFrame) / 1000, 0.1); // cap at 100ms
+    lastFrame = now;
+
+    // Earn cycles
+    const cps = getTotalCps();
+    if (cps > 0) {
+      const earned = cps * dt;
+      state.cycles += earned;
+      state.totalCycles += earned;
+    }
+
+    // Update particles
+    Particles.update(dt);
+
+    // Update display (throttled to ~15fps for DOM updates)
+    renderTimer += dt;
+    if (renderTimer >= 0.066) {
+      renderTimer = 0;
+      updateDisplay();
+    }
+
+    // Re-render current tab periodically (for cost/affordability updates)
+    saveTimer += dt;
+    if (saveTimer >= 1) {
+      saveTimer = 0;
+      renderCurrentTab();
+    }
+
+    // Auto-save every 30 seconds
+    if (now - state.lastSave > 30000) {
+      save();
+    }
+
+    // Milestone popup queue
+    milestoneTimer += dt;
+    if (milestoneTimer >= 0.5 && milestoneQueue.length > 0 && !$milestonePopup.classList.contains('show')) {
+      milestoneTimer = 0;
+      showNextMilestone();
+    }
+
+    // Check milestones
+    checkMilestones();
+
+    // Pulse effect on cycle counter when earning fast
+    pulseTimer += dt;
+    if (pulseTimer >= 0.3) {
+      pulseTimer = 0;
+      $cycleCount.classList.toggle('pulse', cps > 100);
+    }
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // ==================== OFFLINE PROGRESS ====================
+  function calculateOfflineProgress(savedState) {
+    const elapsed = (Date.now() - savedState.lastSave) / 1000;
+    if (elapsed < 10) return null; // Less than 10 seconds, skip
+
+    // Calculate CPS at time of save
+    let cps = 0;
+    GENERATORS.forEach(g => {
+      let mult = 1;
+      UPGRADES.forEach(u => {
+        if (savedState.upgrades[u.id] && (u.target === g.id || u.target === 'all')) {
+          mult *= u.mult;
+        }
+      });
+      cps += g.baseCps * mult * savedState.generators[g.id];
+    });
+
+    if (cps <= 0) return null;
+
+    // Give 50% of what would have been earned (standard idle game convention)
+    const maxOffline = 8 * 3600; // cap at 8 hours
+    const effectiveTime = Math.min(elapsed, maxOffline);
+    const earned = cps * effectiveTime * 0.5;
+
+    return { earned, elapsed: effectiveTime };
+  }
+
+  function showOfflineProgress(earned, elapsed) {
+    document.getElementById('op-amount').textContent = '+' + fmt(earned) + ' cycles';
+    document.getElementById('op-desc').textContent = 'Earned while away (' + fmtTime(elapsed) + ')';
+    $offlinePopup.classList.add('show');
+
+    document.getElementById('op-btn').onclick = () => {
+      state.cycles += earned;
+      state.totalCycles += earned;
+      $offlinePopup.classList.remove('show');
+      Audio.milestone();
+      checkMilestones();
+      updateDisplay();
+      renderCurrentTab();
+    };
+  }
+
+  // ==================== RESET ====================
+  document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+  // ==================== INIT ====================
+  function init() {
+    const saved = load();
+    let offlineEarned = null;
+
+    if (saved) {
+      offlineEarned = calculateOfflineProgress(saved);
+      // Restore state
+      state = saved;
+      state.lastTick = Date.now();
+      state.lastSave = Date.now();
+    }
+
+    // Recalculate click value
+    state.clickValue = getClickValue();
+
+    updateDisplay();
+    renderCurrentTab();
+
+    if (offlineEarned) {
+      showOfflineProgress(offlineEarned.earned, offlineEarned.elapsed);
+    }
+
+    // Start game loop
+    requestAnimationFrame(gameLoop);
+
+    // Save on unload
+    window.addEventListener('beforeunload', save);
+    window.addEventListener('pagehide', save);
+
+    // Handle visibility change (save when backgrounded)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) save();
+    });
+  }
+
+  // Wait for fonts
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(init);
+  } else {
+    window.addEventListener('load', init);
+  }
+})();
+</script>
+</body>
+</html>

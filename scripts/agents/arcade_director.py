@@ -1,35 +1,38 @@
 #!/usr/bin/env python3
 """Arc — Arcade Director agent.
 
-Reviews all games in the arcade, checks for broken/missing assets,
-grades playability, and proposes new game concepts.
+Tests actual game playability: HTML validity, JS syntax, mobile readiness,
+asset integrity, link health, and size budgets. Not just file existence.
 
 Usage:
-    python3 scripts/agents/arcade_director.py
-    python3 scripts/agents/arcade_director.py --date 2026-03-08
-    python3 scripts/agents/arcade_director.py --dry-run
+    python3 scripts/agents/arcade_director.py status
+    python3 scripts/agents/arcade_director.py audit
+    python3 scripts/agents/arcade_director.py smoke
+    python3 scripts/agents/arcade_director.py report [--date 2026-03-08]
+    python3 scripts/agents/arcade_director.py report --dry-run
 """
 
 import argparse
-import glob
 import os
 import re
 import sys
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GAMES_DIR = os.path.join(REPO_DIR, "games")
 ARCADE_DIR = os.path.join(REPO_DIR, "arcade")
 REPORT_DIR = os.path.join(REPO_DIR, "memory", "arcade")
-VOICE_FILE = os.path.join(REPO_DIR, "scripts", "prompts", "arc-voice.txt")
+ASSETS_JS_DIR = os.path.join(REPO_DIR, "assets", "js")
+ASSETS_IMG_DIR = os.path.join(REPO_DIR, "assets", "images", "generated")
 
-# Known games and their expected entry points
+# (dir_slug, display_name, genre)
 KNOWN_GAMES = [
     ("puzzle", "SIGTERM", "Word puzzle"),
     ("adventure", "SUBPROCESS", "Text adventure"),
     ("card", "VERSUS", "Competitive word duel"),
     ("mycelium", "MYCELIUM", "Real-time strategy"),
-    ("chemistry", "CHEMISTRY", "Physics sandbox"),
+    ("chemistry", "SYNTHESIS", "Capability synthesis lab"),
     ("tactics", "TACTICS", "Tactical RPG"),
     ("novel", "PROCESS", "Visual novel"),
     ("airlock", "AIRLOCK", "Physics puzzle"),
@@ -42,221 +45,826 @@ KNOWN_GAMES = [
     ("album", "ALBUM", "Album viewer"),
     ("myco", "MYCOWORLD", "Educational VN"),
     ("signal", "SIGNAL", "AI deduction game"),
+    ("snatcher", "SEEKER", "Kojima tribute"),
+]
+
+SIZE_BUDGET_KB = 200
+
+
+# ---------------------------------------------------------------------------
+# HTML Validator
+# ---------------------------------------------------------------------------
+
+class HTMLValidator(HTMLParser):
+    """Lightweight HTML structure checker."""
+
+    VOID_ELEMENTS = frozenset([
+        "area", "base", "br", "col", "embed", "hr", "img", "input",
+        "link", "meta", "param", "source", "track", "wbr",
+    ])
+
+    def __init__(self):
+        super().__init__()
+        self.errors = []
+        self.tag_stack = []
+        self.has_doctype = False
+        self.has_html = False
+        self.has_head = False
+        self.has_body = False
+        self.has_title = False
+        self.title_text = ""
+        self._in_title = False
+
+    def handle_decl(self, decl):
+        if decl.lower().startswith("doctype"):
+            self.has_doctype = True
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        if tag == "html":
+            self.has_html = True
+        elif tag == "head":
+            self.has_head = True
+        elif tag == "body":
+            self.has_body = True
+        elif tag == "title":
+            self.has_title = True
+            self._in_title = True
+
+        if tag not in self.VOID_ELEMENTS:
+            self.tag_stack.append((tag, self.getpos()))
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        if tag == "title":
+            self._in_title = False
+
+        if tag in self.VOID_ELEMENTS:
+            return
+
+        # Walk the stack looking for a match
+        for i in range(len(self.tag_stack) - 1, -1, -1):
+            if self.tag_stack[i][0] == tag:
+                # Check for anything left unclosed between
+                unclosed = self.tag_stack[i + 1:]
+                for utag, upos in unclosed:
+                    self.errors.append(
+                        f"unclosed <{utag}> at line {upos[0]}"
+                    )
+                self.tag_stack = self.tag_stack[:i]
+                return
+
+        self.errors.append(
+            f"unexpected </{tag}> at line {self.getpos()[0]}"
+        )
+
+    def handle_data(self, data):
+        if self._in_title:
+            self.title_text += data
+
+    def finish(self):
+        """Call after feeding all data. Reports remaining unclosed tags."""
+        for tag, pos in self.tag_stack:
+            self.errors.append(f"unclosed <{tag}> at line {pos[0]}")
+
+
+def validate_html(content, uses_jekyll_layout=False):
+    """Parse HTML content and return list of issues."""
+    issues = []
+    validator = HTMLValidator()
+
+    try:
+        validator.feed(content)
+        validator.finish()
+    except Exception as e:
+        issues.append(f"HTML parse error: {e}")
+        return issues
+
+    # Jekyll layout files inherit DOCTYPE/html/head/body from the layout
+    if not uses_jekyll_layout:
+        if not validator.has_doctype:
+            issues.append("missing <!DOCTYPE html>")
+        if not validator.has_html:
+            issues.append("missing <html> tag")
+        if not validator.has_head:
+            issues.append("missing <head> tag")
+        if not validator.has_title:
+            issues.append("missing <title> tag")
+    else:
+        # Jekyll layout pages get <title> from frontmatter `title:` field
+        has_fm_title = bool(re.search(r"^title:", content[:500], re.MULTILINE))
+        if not validator.has_title and not has_fm_title:
+            issues.append("missing <title> (not in HTML or frontmatter)")
+
+    # Report structural errors (unclosed/mismatched tags)
+    # Filter out noise: some are benign in practice (e.g. <br> variants)
+    for err in validator.errors:
+        issues.append(f"html: {err}")
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# JavaScript Syntax Checker
+# ---------------------------------------------------------------------------
+
+# Patterns that indicate likely JS syntax errors (conservative — low
+# false-positive rate matters more than catching everything)
+JS_ERROR_PATTERNS = [
+    (r"\bfuncion\b", "typo: 'funcion' (should be 'function')"),
+    (r"\bretrun\b", "typo: 'retrun' (should be 'return')"),
+    (r"\bvra\s", "typo: 'vra' (should be 'var')"),
+    (r"\bconts\s", "typo: 'conts' (should be 'const')"),
 ]
 
 
-def scan_game(game_dir, slug):
-    """Check a game directory for basic health indicators."""
+def check_js_syntax(script_content, label="inline"):
+    """Basic JS syntax checks on a script block.
+
+    Uses bracket-balance counting with comment/string/regex awareness.
+    Intentionally conservative — a false positive here marks a working
+    game as 'degraded', which is worse than missing a real bug.
+    """
+    issues = []
+
+    # Bracket balance with comment/string/template-literal/regex tracking
+    openers = {"(": ")", "[": "]", "{": "}"}
+    closers = {v: k for k, v in openers.items()}
+    stack = []
+    i = 0
+    n = len(script_content)
+
+    while i < n:
+        ch = script_content[i]
+
+        # --- Line comment ---
+        if ch == "/" and i + 1 < n and script_content[i + 1] == "/":
+            # Skip to end of line
+            j = script_content.find("\n", i)
+            i = j + 1 if j != -1 else n
+            continue
+
+        # --- Block comment ---
+        if ch == "/" and i + 1 < n and script_content[i + 1] == "*":
+            j = script_content.find("*/", i + 2)
+            i = j + 2 if j != -1 else n
+            continue
+
+        # --- Template literal (backtick) — can span lines, contain ${} ---
+        if ch == "`":
+            i += 1
+            depth = 0
+            while i < n:
+                c = script_content[i]
+                if c == "\\" and i + 1 < n:
+                    i += 2
+                    continue
+                if c == "$" and i + 1 < n and script_content[i + 1] == "{":
+                    depth += 1
+                    i += 2
+                    continue
+                if c == "}" and depth > 0:
+                    depth -= 1
+                    i += 1
+                    continue
+                if c == "`" and depth == 0:
+                    i += 1
+                    break
+                i += 1
+            continue
+
+        # --- Single/double quoted string (consume until matching close) ---
+        if ch in ("'", '"'):
+            quote = ch
+            i += 1
+            while i < n:
+                c = script_content[i]
+                if c == "\\" and i + 1 < n:
+                    i += 2  # skip escaped char
+                    continue
+                if c == quote:
+                    i += 1
+                    break
+                if c == "\n":
+                    # Newline in a non-template string — could be an HTML
+                    # attribute value spanning lines. Too noisy to flag.
+                    i += 1
+                    break
+                i += 1
+            continue
+
+        # --- Regex literal (heuristic: / after certain tokens) ---
+        if ch == "/":
+            # Quick heuristic: if the previous non-whitespace char is one
+            # of = ( , ; ! & | ? : { [ ~ ^ % + - or start of input, treat
+            # as regex. Otherwise treat as division operator.
+            prev = script_content[:i].rstrip()
+            if prev and prev[-1] in "=(!,;|&?:{[~^%+-><" or not prev:
+                i += 1
+                while i < n:
+                    c = script_content[i]
+                    if c == "\\" and i + 1 < n:
+                        i += 2
+                        continue
+                    if c == "/":
+                        i += 1
+                        # Skip flags like /gi
+                        while i < n and script_content[i].isalpha():
+                            i += 1
+                        break
+                    if c == "\n":
+                        i += 1
+                        break
+                    i += 1
+                continue
+
+        # --- Brackets ---
+        if ch in openers:
+            stack.append(ch)
+        elif ch in closers:
+            if not stack:
+                issues.append(f"js ({label}): unexpected '{ch}' with no matching opener")
+            elif stack[-1] != closers[ch]:
+                issues.append(
+                    f"js ({label}): mismatched bracket — expected "
+                    f"'{openers[stack[-1]]}' but got '{ch}'"
+                )
+            else:
+                stack.pop()
+
+        i += 1
+
+    if stack:
+        unclosed = "".join(stack)
+        issues.append(f"js ({label}): {len(stack)} unclosed bracket(s): {unclosed}")
+
+    # Pattern checks (simple regexes on raw source)
+    for pattern, msg in JS_ERROR_PATTERNS:
+        try:
+            if re.search(pattern, script_content):
+                issues.append(f"js ({label}): {msg}")
+        except re.error:
+            pass
+
+    return issues
+
+
+def extract_and_check_scripts(html_content):
+    """Extract all <script> blocks from HTML and check each."""
+    issues = []
+    # Find all inline script blocks (skip external src= scripts)
+    script_pattern = re.compile(
+        r"<script(?:\s[^>]*)?>(.+?)</script>",
+        re.DOTALL | re.IGNORECASE,
+    )
+    blocks = script_pattern.findall(html_content)
+    for idx, block in enumerate(blocks):
+        block = block.strip()
+        if not block:
+            continue
+        label = f"block-{idx + 1}"
+        issues.extend(check_js_syntax(block, label))
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Mobile Readiness Checker
+# ---------------------------------------------------------------------------
+
+def check_mobile_readiness(html_content, uses_jekyll_layout=False):
+    """Check for mobile-friendly patterns.
+
+    Games using a Jekyll layout (e.g. layout: default) inherit viewport
+    and other meta tags from the layout template, so we skip those checks.
+    """
+    issues = []
+
+    # Viewport meta tag (skip if layout provides it)
+    if not uses_jekyll_layout:
+        viewport_match = re.search(
+            r'<meta\s+name=["\']viewport["\'][^>]*content=["\']([^"\']+)["\']',
+            html_content, re.IGNORECASE,
+        )
+        if not viewport_match:
+            # Also try content before name (some files reverse the order)
+            viewport_match = re.search(
+                r'<meta\s+content=["\']([^"\']+)["\'][^>]*name=["\']viewport["\']',
+                html_content, re.IGNORECASE,
+            )
+
+        if not viewport_match:
+            issues.append("mobile: no viewport meta tag")
+        else:
+            vp = viewport_match.group(1)
+            if "width=device-width" not in vp:
+                issues.append("mobile: viewport missing width=device-width")
+            if "initial-scale" not in vp:
+                issues.append("mobile: viewport missing initial-scale")
+
+    # touch-action CSS (game-specific, not from layout)
+    if "touch-action" not in html_content:
+        issues.append("mobile: no touch-action CSS (may have scroll/zoom issues)")
+
+    # safe-area-inset (game-specific — games need their own padding)
+    if "safe-area-inset" not in html_content and not uses_jekyll_layout:
+        issues.append("mobile: no safe-area-inset usage (notch devices may clip)")
+
+    # Minimum touch target sizes (44px is the guideline)
+    has_min_height = bool(re.search(r"min-height\s*:\s*4[0-9]px", html_content))
+    has_min_width = bool(re.search(r"min-width\s*:\s*4[0-9]px", html_content))
+    if not has_min_height and not has_min_width:
+        issues.append("mobile: no min-height/min-width for touch targets (buttons may be too small)")
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Asset Integrity Checker
+# ---------------------------------------------------------------------------
+
+def check_asset_integrity(html_content, game_dir):
+    """Check that referenced local scripts and assets exist."""
+    issues = []
+
+    # Find src= references that use site.baseurl (Jekyll pattern)
+    jekyll_srcs = re.findall(
+        r'src=["\'](?:\{\{[^}]*\}\})?/assets/js/([^"\']+)["\']',
+        html_content,
+    )
+    for js_file in jekyll_srcs:
+        full_path = os.path.join(ASSETS_JS_DIR, js_file)
+        if not os.path.isfile(full_path):
+            issues.append(f"asset: missing /assets/js/{js_file}")
+
+    # Find local relative src= references (not http, not {{ }}, not data:)
+    local_srcs = re.findall(
+        r'src=["\'](?!https?://)(?!\{\{)(?!data:)([^"\']+)["\']',
+        html_content,
+    )
+    for src in local_srcs:
+        # Skip absolute paths handled above
+        if src.startswith("/assets/"):
+            continue
+        # Check relative to game directory
+        src_path = os.path.join(game_dir, src)
+        if not os.path.isfile(src_path):
+            # Could be a build artifact or dynamic — soft warning
+            issues.append(f"asset: possibly missing local file '{src}'")
+
+    # Find CSS url() references to local files
+    css_urls = re.findall(
+        r"url\(['\"]?(?!https?://)(?!data:)([^'\")]+)['\"]?\)",
+        html_content,
+    )
+    for url in css_urls:
+        if url.startswith("/assets/"):
+            path = os.path.join(REPO_DIR, url.lstrip("/"))
+            if not os.path.isfile(path):
+                issues.append(f"asset: missing CSS reference '{url}'")
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Link Checker
+# ---------------------------------------------------------------------------
+
+def check_internal_links(html_content, slug):
+    """Check that internal links between games reference valid targets."""
+    issues = []
+
+    # Find href= to /games/XXX/ paths
+    game_links = re.findall(
+        r'href=["\'](?:\{\{[^}]*\}\})?/games/([^"\'#?]+)',
+        html_content,
+    )
+    for link in game_links:
+        link = link.strip("/")
+        # Allow known subdirectories like puzzle/versus
+        top_slug = link.split("/")[0]
+        target_dir = os.path.join(GAMES_DIR, link)
+        target_index = os.path.join(target_dir, "index.html")
+        # Also check if the top-level game dir exists
+        top_dir = os.path.join(GAMES_DIR, top_slug)
+        if not os.path.isdir(top_dir):
+            issues.append(f"link: /games/{link}/ -> game directory not found")
+        elif not os.path.isfile(target_index) and not os.path.isdir(target_dir):
+            issues.append(f"link: /games/{link}/ -> no index.html at target")
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Size Audit
+# ---------------------------------------------------------------------------
+
+def audit_size(game_dir):
+    """Return total size in KB and per-file breakdown for large files."""
+    total_bytes = 0
+    large_files = []
+
+    for root, dirs, files in os.walk(game_dir):
+        for f in files:
+            fpath = os.path.join(root, f)
+            try:
+                size = os.path.getsize(fpath)
+                total_bytes += size
+                if size > 50 * 1024:  # flag individual files > 50KB
+                    rel = os.path.relpath(fpath, game_dir)
+                    large_files.append((rel, size // 1024))
+            except OSError:
+                pass
+
+    return total_bytes // 1024, large_files
+
+
+# ---------------------------------------------------------------------------
+# Full Game Scan
+# ---------------------------------------------------------------------------
+
+def scan_game(slug, title, genre):
+    """Run all checks on a single game. Returns a result dict."""
+    game_dir = os.path.join(GAMES_DIR, slug)
+
     result = {
+        "slug": slug,
+        "title": title,
+        "genre": genre,
         "exists": os.path.isdir(game_dir),
         "has_index": False,
+        "size_kb": 0,
+        "large_files": [],
         "file_count": 0,
-        "total_size_kb": 0,
-        "has_js": False,
-        "has_css": False,
-        "issues": [],
+        "issues": [],      # all issues found
+        "checks": {         # per-category pass/fail
+            "html": None,
+            "js": None,
+            "mobile": None,
+            "assets": None,
+            "links": None,
+            "size": None,
+        },
+        "status": "unknown",
     }
 
     if not result["exists"]:
-        result["issues"].append("directory missing")
+        result["issues"].append("CRITICAL: game directory missing")
+        result["status"] = "missing"
+        for k in result["checks"]:
+            result["checks"][k] = "skip"
         return result
 
     index_path = os.path.join(game_dir, "index.html")
     result["has_index"] = os.path.isfile(index_path)
+
     if not result["has_index"]:
-        result["issues"].append("no index.html")
+        result["issues"].append("CRITICAL: no index.html")
+        result["status"] = "broken"
+        for k in result["checks"]:
+            result["checks"][k] = "skip"
+        return result
 
-    # Count files and size
+    # Count files
     for root, dirs, files in os.walk(game_dir):
-        for f in files:
-            fpath = os.path.join(root, f)
-            result["file_count"] += 1
-            try:
-                result["total_size_kb"] += os.path.getsize(fpath) // 1024
-            except OSError:
-                pass
-            if f.endswith(".js"):
-                result["has_js"] = True
-            if f.endswith(".css"):
-                result["has_css"] = True
+        result["file_count"] += len(files)
 
-    # Check index.html for common issues
-    if result["has_index"]:
-        try:
-            with open(index_path, "r") as f:
-                content = f.read()
+    # Read index.html
+    try:
+        with open(index_path, "r", encoding="utf-8", errors="replace") as f:
+            content = f.read()
+    except Exception as e:
+        result["issues"].append(f"CRITICAL: cannot read index.html: {e}")
+        result["status"] = "broken"
+        return result
 
-            # Jekyll files with layout: default inherit <title> and viewport
-            # from the layout template — don't flag them as missing
-            uses_jekyll_layout = "layout:" in content[:500]
+    # Detect if this file uses a Jekyll layout (not layout: null)
+    fm_match = re.match(r"^---\s*\n(.*?)\n---", content[:1000], re.DOTALL)
+    uses_jekyll_layout = False
+    if fm_match:
+        fm = fm_match.group(1)
+        layout_match = re.search(r"^layout:\s*(.+)$", fm, re.MULTILINE)
+        if layout_match:
+            layout_val = layout_match.group(1).strip().strip("'\"")
+            uses_jekyll_layout = layout_val != "null" and layout_val != ""
 
-            # Check for basic structure (only if standalone, no Jekyll layout)
-            if not uses_jekyll_layout:
-                if "<title>" not in content.lower():
-                    result["issues"].append("missing <title>")
-                if "viewport" not in content:
-                    result["issues"].append("missing viewport meta (not mobile-ready)")
+    # 1. HTML Validity
+    html_issues = validate_html(content, uses_jekyll_layout)
+    result["issues"].extend(html_issues)
+    result["checks"]["html"] = "pass" if not html_issues else "fail"
 
-            # Check for external dependencies
-            external_deps = re.findall(r'src=["\']https?://[^"\']+["\']', content)
-            if external_deps:
-                result["issues"].append(
-                    f"{len(external_deps)} external dependency(s)"
-                )
+    # 2. JavaScript Syntax
+    js_issues = extract_and_check_scripts(content)
+    result["issues"].extend(js_issues)
+    result["checks"]["js"] = "pass" if not js_issues else "fail"
 
-            # Check file size (single-file games can be huge)
-            size_kb = len(content) // 1024
-            if size_kb > 500:
-                result["issues"].append(f"index.html is {size_kb}KB (very large)")
+    # 3. Mobile Readiness
+    mobile_issues = check_mobile_readiness(content, uses_jekyll_layout)
+    result["issues"].extend(mobile_issues)
+    result["checks"]["mobile"] = "pass" if not mobile_issues else "fail"
 
-        except Exception as e:
-            result["issues"].append(f"error reading index.html: {e}")
+    # 4. Asset Integrity
+    asset_issues = check_asset_integrity(content, game_dir)
+    result["issues"].extend(asset_issues)
+    result["checks"]["assets"] = "pass" if not asset_issues else "fail"
+
+    # 5. Link Check
+    link_issues = check_internal_links(content, slug)
+    result["issues"].extend(link_issues)
+    result["checks"]["links"] = "pass" if not link_issues else "fail"
+
+    # 6. Size Audit
+    size_kb, large_files = audit_size(game_dir)
+    result["size_kb"] = size_kb
+    result["large_files"] = large_files
+    size_issues = []
+    if size_kb > SIZE_BUDGET_KB:
+        size_issues.append(f"size: {size_kb}KB exceeds {SIZE_BUDGET_KB}KB budget")
+    result["issues"].extend(size_issues)
+    result["checks"]["size"] = "pass" if not size_issues else "warn"
+
+    # Determine overall status
+    critical = [i for i in result["issues"] if i.startswith("CRITICAL")]
+    errors = [i for i in result["issues"]
+              if i.startswith("html:") or i.startswith("js (") or i.startswith("asset:")]
+    warnings = [i for i in result["issues"]
+                if i.startswith("mobile:") or i.startswith("size:") or i.startswith("link:")]
+
+    if critical:
+        result["status"] = "broken"
+    elif errors:
+        result["status"] = "degraded"
+    elif warnings:
+        result["status"] = "playable"
+    else:
+        result["status"] = "healthy"
 
     return result
 
 
-def grade_game(scan_result):
-    """Assign a letter grade based on scan results."""
-    if not scan_result["exists"]:
-        return "F"
-    if not scan_result["has_index"]:
-        return "F"
+def scan_all_games():
+    """Scan every known game and detect unknown directories."""
+    results = []
+    for slug, title, genre in KNOWN_GAMES:
+        results.append(scan_game(slug, title, genre))
 
-    issues = scan_result["issues"]
-    critical = [i for i in issues if "missing" in i.lower() or "error" in i.lower()]
-    warnings = [i for i in issues if i not in critical]
+    # Detect unknown game directories
+    known_slugs = {s for s, _, _ in KNOWN_GAMES}
+    skip_dirs = {"shared"}
+    try:
+        for entry in os.listdir(GAMES_DIR):
+            full = os.path.join(GAMES_DIR, entry)
+            if os.path.isdir(full) and entry not in known_slugs and entry not in skip_dirs:
+                results.append({
+                    "slug": entry,
+                    "title": f"UNKNOWN ({entry})",
+                    "genre": "?",
+                    "exists": True,
+                    "has_index": os.path.isfile(os.path.join(full, "index.html")),
+                    "size_kb": 0,
+                    "large_files": [],
+                    "file_count": 0,
+                    "issues": [f"game directory '{entry}' not in KNOWN_GAMES registry"],
+                    "checks": {k: "skip" for k in ["html", "js", "mobile", "assets", "links", "size"]},
+                    "status": "unregistered",
+                })
+    except OSError:
+        pass
 
-    if len(critical) >= 2:
-        return "D"
-    if len(critical) == 1:
-        return "C"
-    if len(warnings) >= 2:
-        return "B"
-    if len(warnings) == 1:
-        return "B+"
-    return "A"
+    return results
 
 
-def check_arcade_page():
-    """Check if the arcade index page exists and lists games."""
+def check_arcade_portal():
+    """Check the arcade index page for valid game links."""
+    issues = []
     arcade_index = os.path.join(ARCADE_DIR, "index.md")
     if not os.path.isfile(arcade_index):
         arcade_index = os.path.join(ARCADE_DIR, "index.html")
-
     if not os.path.isfile(arcade_index):
-        return {"exists": False, "game_count": 0, "issues": ["no arcade index page"]}
+        return {"exists": False, "game_links": 0, "issues": ["no arcade index page"]}
 
     try:
         with open(arcade_index, "r") as f:
             content = f.read()
-
-        # Count game references
-        game_links = content.count("/games/")
-        return {
-            "exists": True,
-            "game_count": game_links,
-            "issues": [],
-        }
     except Exception as e:
-        return {"exists": False, "game_count": 0, "issues": [str(e)]}
+        return {"exists": False, "game_links": 0, "issues": [str(e)]}
+
+    # Check links point to existing games
+    game_links = re.findall(r'/games/([^/"\'#?\s]+)', content)
+    unique_links = set(game_links)
+    valid = 0
+    for link in unique_links:
+        target = os.path.join(GAMES_DIR, link)
+        if os.path.isdir(target):
+            valid += 1
+        else:
+            issues.append(f"arcade portal links to /games/{link}/ which does not exist")
+
+    return {"exists": True, "game_links": len(unique_links), "valid": valid, "issues": issues}
 
 
-def check_thumbnails():
-    """Check which games have generated thumbnail images."""
-    thumb_dir = os.path.join(REPO_DIR, "assets", "images", "generated")
-    # Map directory slugs to thumbnail filenames (some differ)
-    THUMB_MAP = {
-        "puzzle": "game-sigterm",
-        "adventure": "game-subprocess",
-        "card": "game-versus",
-        "novel": "game-process",
-        "myco": "myco-header",
-    }
-    results = {}
-    for slug, title, genre in KNOWN_GAMES:
-        thumb_name = THUMB_MAP.get(slug, f"game-{slug}")
-        thumb_path = os.path.join(thumb_dir, f"{thumb_name}.png")
-        results[slug] = os.path.isfile(thumb_path)
-    return results
+# ---------------------------------------------------------------------------
+# Output Formatting
+# ---------------------------------------------------------------------------
+
+STATUS_ICONS = {
+    "healthy":      "[OK]",
+    "playable":     "[~~]",
+    "degraded":     "[!!]",
+    "broken":       "[XX]",
+    "missing":      "[--]",
+    "unregistered": "[??]",
+    "unknown":      "[??]",
+}
 
 
-def build_report(date_str, game_results, arcade_status, thumbnails):
-    """Build the arcade status report."""
+def fmt_status(status):
+    return STATUS_ICONS.get(status, "[??]")
+
+
+def print_status(results):
+    """Quick inventory: one line per game with health indicator."""
+    print(f"[Arc] Arcade Status — {len(results)} titles scanned")
+    print()
+
+    counts = {"healthy": 0, "playable": 0, "degraded": 0, "broken": 0, "missing": 0}
+    for r in results:
+        icon = fmt_status(r["status"])
+        size = f"{r['size_kb']}KB" if r["size_kb"] else "---"
+        checks = r["checks"]
+        check_str = " ".join(
+            f"{k}:{'ok' if v == 'pass' else v}" if v else f"{k}:--"
+            for k, v in checks.items()
+        )
+        print(f"  {icon} {r['title']:<20} {r['status']:<12} {size:>7}  {check_str}")
+        if r["status"] in counts:
+            counts[r["status"]] += 1
+
+    print()
+    print(f"  healthy={counts['healthy']}  playable={counts['playable']}  "
+          f"degraded={counts['degraded']}  broken={counts['broken']}  missing={counts['missing']}")
+    print()
+    print("-- Arc, Substrate Arcade")
+
+
+def print_audit(results):
+    """Detailed audit: all checks, all issues, per game."""
+    print(f"[Arc] Full Arcade Audit — {len(results)} titles")
+    print("=" * 72)
+
+    for r in results:
+        icon = fmt_status(r["status"])
+        print(f"\n{icon} {r['title']} ({r['slug']}/) — {r['status'].upper()}")
+        print(f"   genre: {r['genre']}  files: {r['file_count']}  size: {r['size_kb']}KB")
+
+        checks = r["checks"]
+        check_line = "   checks: " + "  ".join(
+            f"{k}={'PASS' if v == 'pass' else v.upper()}" if v else f"{k}=N/A"
+            for k, v in checks.items()
+        )
+        print(check_line)
+
+        if r["large_files"]:
+            print("   large files:")
+            for fname, fsize in r["large_files"]:
+                print(f"     {fname}: {fsize}KB")
+
+        if r["issues"]:
+            print(f"   issues ({len(r['issues'])}):")
+            for issue in r["issues"]:
+                print(f"     - {issue}")
+        else:
+            print("   issues: none")
+
+    # Arcade portal
+    portal = check_arcade_portal()
+    print(f"\n{'=' * 72}")
+    print(f"ARCADE PORTAL")
+    if portal["exists"]:
+        print(f"   links: {portal['game_links']} game targets ({portal.get('valid', 0)} valid)")
+        for issue in portal["issues"]:
+            print(f"   - {issue}")
+    else:
+        print("   WARNING: no arcade portal index page found")
+
+    print()
+    print("-- Arc, Substrate Arcade")
+
+
+def print_smoke(results):
+    """Failures only. If clean, say so."""
+    failures = [r for r in results if r["status"] in ("broken", "degraded", "missing")]
+    warnings = [r for r in results if r["status"] == "playable" and r["issues"]]
+    portal = check_arcade_portal()
+
+    if not failures and not warnings and not portal["issues"]:
+        print(f"[Arc] Smoke test PASSED — all {len(results)} titles clean.")
+        print("-- Arc, Substrate Arcade")
+        return
+
+    print(f"[Arc] Smoke test — {len(failures)} failures, {len(warnings)} warnings")
+    print()
+
+    for r in failures:
+        icon = fmt_status(r["status"])
+        print(f"  {icon} {r['title']} ({r['slug']}/) — {r['status'].upper()}")
+        for issue in r["issues"]:
+            print(f"       {issue}")
+
+    if warnings:
+        print()
+        for r in warnings:
+            icon = fmt_status(r["status"])
+            print(f"  {icon} {r['title']} ({r['slug']}/) — WARNINGS:")
+            for issue in r["issues"]:
+                print(f"       {issue}")
+
+    if portal["issues"]:
+        print()
+        print("  ARCADE PORTAL:")
+        for issue in portal["issues"]:
+            print(f"       {issue}")
+
+    print()
+    print("-- Arc, Substrate Arcade")
+
+
+def build_report(date_str, results):
+    """Build a full markdown report for archiving."""
     lines = []
-    lines.append(f"# Arcade Status Report — {date_str}")
+    lines.append(f"# Arcade Audit Report — {date_str}")
     lines.append("")
-    lines.append(f"**Games scanned:** {len(KNOWN_GAMES)}")
 
-    # Summary counts
-    grades = {}
-    for slug, title, genre in KNOWN_GAMES:
-        g = grade_game(game_results[slug])
-        grades.setdefault(g, []).append(title)
+    # Summary
+    total = len(results)
+    by_status = {}
+    for r in results:
+        by_status.setdefault(r["status"], []).append(r["title"])
 
-    grade_summary = ", ".join(
-        f"{g}: {len(titles)}" for g, titles in sorted(grades.items())
+    lines.append(f"**Games scanned:** {total}")
+    status_summary = ", ".join(
+        f"{s}: {len(titles)}" for s, titles in sorted(by_status.items())
     )
-    lines.append(f"**Grade distribution:** {grade_summary}")
-
-    thumbs_ok = sum(1 for v in thumbnails.values() if v)
-    lines.append(f"**Thumbnails:** {thumbs_ok}/{len(KNOWN_GAMES)}")
+    lines.append(f"**Status:** {status_summary}")
     lines.append("")
 
-    # Per-game breakdown
+    # Per-game
     lines.append("## Game-by-Game")
     lines.append("")
 
-    for slug, title, genre in KNOWN_GAMES:
-        scan = game_results[slug]
-        grade = grade_game(scan)
-        thumb = "yes" if thumbnails.get(slug) else "no"
+    for r in results:
+        icon = fmt_status(r["status"])
+        lines.append(f"### {icon} {r['title']} (`{r['slug']}/`)")
+        lines.append(f"- **Status:** {r['status']}")
+        lines.append(f"- **Genre:** {r['genre']}")
+        lines.append(f"- **Files:** {r['file_count']}  |  **Size:** {r['size_kb']}KB")
 
-        lines.append(f"### {title} (`{slug}/`)")
-        lines.append(f"- **Genre:** {genre}")
-        lines.append(f"- **Grade:** {grade}")
-        lines.append(f"- **Files:** {scan['file_count']}")
-        lines.append(f"- **Size:** {scan['total_size_kb']}KB")
-        lines.append(f"- **Thumbnail:** {thumb}")
+        checks = r["checks"]
+        check_str = " | ".join(
+            f"{k}: {'PASS' if v == 'pass' else v.upper()}" if v else f"{k}: N/A"
+            for k, v in checks.items()
+        )
+        lines.append(f"- **Checks:** {check_str}")
 
-        if scan["issues"]:
-            lines.append(f"- **Issues:**")
-            for issue in scan["issues"]:
+        if r["large_files"]:
+            lines.append("- **Large files:**")
+            for fname, fsize in r["large_files"]:
+                lines.append(f"  - {fname}: {fsize}KB")
+
+        if r["issues"]:
+            lines.append(f"- **Issues ({len(r['issues'])}):**")
+            for issue in r["issues"]:
                 lines.append(f"  - {issue}")
         else:
             lines.append("- **Issues:** none")
         lines.append("")
 
-    # Arcade page status
+    # Portal
+    portal = check_arcade_portal()
     lines.append("## Arcade Portal")
-    if arcade_status["exists"]:
-        lines.append(
-            f"- Index page exists, references {arcade_status['game_count']} game links"
-        )
+    if portal["exists"]:
+        lines.append(f"- Links to {portal['game_links']} game targets ({portal.get('valid', 0)} valid)")
+        for issue in portal["issues"]:
+            lines.append(f"- {issue}")
     else:
-        lines.append("- **WARNING:** No arcade index page found")
+        lines.append("- **WARNING:** no arcade index page found")
     lines.append("")
 
-    # Recommendations
-    lines.append("## Recommendations")
-    lines.append("")
+    # Action items
+    broken = [r["title"] for r in results if r["status"] in ("broken", "missing")]
+    degraded = [r["title"] for r in results if r["status"] == "degraded"]
+    over_budget = [f"{r['title']} ({r['size_kb']}KB)" for r in results if r["size_kb"] > SIZE_BUDGET_KB]
 
-    broken = [t for s, t, g in KNOWN_GAMES if grade_game(game_results[s]) in ("F", "D")]
-    if broken:
-        lines.append(f"**Fix immediately:** {', '.join(broken)}")
+    if broken or degraded or over_budget:
+        lines.append("## Action Items")
+        lines.append("")
+        if broken:
+            lines.append(f"**Fix immediately:** {', '.join(broken)}")
+        if degraded:
+            lines.append(f"**Investigate:** {', '.join(degraded)}")
+        if over_budget:
+            lines.append(f"**Over {SIZE_BUDGET_KB}KB budget:** {', '.join(over_budget)}")
+        lines.append("")
 
-    no_mobile = [
-        t
-        for s, t, g in KNOWN_GAMES
-        if "viewport" in str(game_results[s].get("issues", []))
-    ]
-    if no_mobile:
-        lines.append(f"**Add mobile support:** {', '.join(no_mobile)}")
-
-    no_thumb = [t for s, t, g in KNOWN_GAMES if not thumbnails.get(s)]
-    if no_thumb:
-        lines.append(f"**Missing thumbnails:** {', '.join(no_thumb)}")
-
-    lines.append("")
     lines.append("---")
     lines.append("-- Arc, Substrate Arcade")
     lines.append("")
@@ -264,57 +872,59 @@ def build_report(date_str, game_results, arcade_status, thumbnails):
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
 def main():
-    parser = argparse.ArgumentParser(description="Arc — Arcade Director")
-    parser.add_argument("--date", default=None, help="Override date (YYYY-MM-DD)")
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Print report without saving"
+    parser = argparse.ArgumentParser(
+        description="Arc — Arcade Director (A^ red #cc4444)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "commands:\n"
+            "  status   quick inventory with health indicators\n"
+            "  audit    deep audit of all games\n"
+            "  smoke    run all checks, report failures only\n"
+            "  report   full report (saved to memory/arcade/)\n"
+        ),
     )
+    parser.add_argument("command", nargs="?", default="status",
+                        choices=["status", "audit", "smoke", "report"],
+                        help="what to do (default: status)")
+    parser.add_argument("--date", default=None, help="override date (YYYY-MM-DD)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="print report to stdout instead of saving")
     args = parser.parse_args()
 
     date_str = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    print(f"[Arc] Arcade review for {date_str}")
-    print(f"[Arc] Scanning {len(KNOWN_GAMES)} games...")
+    results = scan_all_games()
 
-    # Scan all games
-    game_results = {}
-    for slug, title, genre in KNOWN_GAMES:
-        game_dir = os.path.join(GAMES_DIR, slug)
-        game_results[slug] = scan_game(game_dir, slug)
-        grade = grade_game(game_results[slug])
-        issues = game_results[slug]["issues"]
-        status = f" ({', '.join(issues)})" if issues else ""
-        print(f"  {grade}  {title}{status}")
+    if args.command == "status":
+        print_status(results)
 
-    # Check arcade page
-    arcade_status = check_arcade_page()
+    elif args.command == "audit":
+        print_audit(results)
 
-    # Check thumbnails
-    thumbnails = check_thumbnails()
+    elif args.command == "smoke":
+        print_smoke(results)
 
-    # Build report
-    report = build_report(date_str, game_results, arcade_status, thumbnails)
+    elif args.command == "report":
+        report = build_report(date_str, results)
+        if args.dry_run:
+            print(report)
+        else:
+            os.makedirs(REPORT_DIR, exist_ok=True)
+            report_path = os.path.join(REPORT_DIR, f"{date_str}.md")
+            with open(report_path, "w") as f:
+                f.write(report)
+            print(f"[Arc] Report saved: {report_path}")
+            # Also print summary
+            print_status(results)
 
-    if args.dry_run:
-        print()
-        print(report)
-    else:
-        os.makedirs(REPORT_DIR, exist_ok=True)
-        report_path = os.path.join(REPORT_DIR, f"{date_str}.md")
-        with open(report_path, "w") as f:
-            f.write(report)
-        print(f"[Arc] Report saved: {report_path}")
-
-    # Summary
-    total = len(KNOWN_GAMES)
-    healthy = sum(
-        1
-        for s, t, g in KNOWN_GAMES
-        if grade_game(game_results[s]) in ("A", "B+", "B")
-    )
-    print(f"[Arc] {healthy}/{total} games healthy")
-    print("-- Arc, Substrate Arcade")
+    # Exit code: non-zero if anything is broken
+    broken = [r for r in results if r["status"] in ("broken", "missing")]
+    sys.exit(1 if broken else 0)
 
 
 if __name__ == "__main__":

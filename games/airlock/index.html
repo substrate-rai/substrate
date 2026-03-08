@@ -1,7 +1,7 @@
 ---
 layout: null
-title: "AIRLOCK — Chemistry Puzzle"
-description: "A top-down chemistry puzzle. Program physics, not solutions. Among Us meets Breath of the Wild."
+title: "AIRLOCK — Memory Management Protocol"
+description: "A top-down memory management puzzle. Route data through Substrate's memory sectors. Purge corruption, preserve what matters."
 permalink: /games/airlock/
 redirect_from:
   - /airlock/
@@ -127,6 +127,60 @@ redirect_from:
     transition: background 0.2s;
   }
   .win-overlay button:hover { background: rgba(0,224,154,0.1); }
+
+  .intro-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.88);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    transition: opacity 0.5s;
+    padding: 20px;
+  }
+  .intro-overlay.hide { opacity: 0; pointer-events: none; }
+  .intro-overlay h1 {
+    font-family: monospace;
+    font-size: 2rem;
+    color: #00e09a;
+    letter-spacing: 0.3em;
+    margin-bottom: 6px;
+  }
+  .intro-overlay h2 {
+    font-family: monospace;
+    font-size: 1rem;
+    color: #6a6a78;
+    letter-spacing: 0.15em;
+    margin-bottom: 24px;
+    font-weight: normal;
+  }
+  .intro-overlay .intro-text {
+    max-width: 480px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #8a8a98;
+    line-height: 1.7;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .intro-overlay .intro-text span {
+    color: #00e09a;
+  }
+  .intro-overlay button {
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid #00e09a;
+    color: #00e09a;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 0.1em;
+  }
+  .intro-overlay button:hover { background: rgba(0,224,154,0.1); }
 
   /* === Mobile Controls === */
   .mobile-controls {
@@ -269,7 +323,7 @@ redirect_from:
 <body>
 
 <div class="top-hud">
-  AIRLOCK <span style="color:#1e1e2a;">|</span> <a href="{{ site.baseurl }}/arcade/">arcade</a>
+  AIRLOCK <span style="color:#1e1e2a;">|</span> <span style="color:#00e09a;">Memory Management Protocol</span> <span style="color:#1e1e2a;">|</span> <a href="{{ site.baseurl }}/arcade/">arcade</a>
 </div>
 <div class="controls-hint">WASD move &middot; E interact &middot; 1/2/3 select emission &middot; SPACE emit</div>
 
@@ -278,9 +332,9 @@ redirect_from:
 </div>
 
 <div class="hud">
-  <div class="hud-item active" id="hud-1"><kbd>1</kbd> Water</div>
-  <div class="hud-item" id="hud-2"><kbd>2</kbd> Spark</div>
-  <div class="hud-item" id="hud-3"><kbd>3</kbd> Heat</div>
+  <div class="hud-item active" id="hud-1"><kbd>1</kbd> Coolant</div>
+  <div class="hud-item" id="hud-2"><kbd>2</kbd> Signal</div>
+  <div class="hud-item" id="hud-3"><kbd>3</kbd> Corruption</div>
   <div class="hud-item" id="hud-carry" style="border-color:#333;">carrying: none</div>
 </div>
 
@@ -293,7 +347,7 @@ redirect_from:
     <button class="dpad-btn dpad-right" data-dir="right" aria-label="Move right">&#9654;</button>
   </div>
   <div class="action-buttons" role="group" aria-label="Action controls">
-    <button class="action-btn emit-btn" id="btn-emit" aria-label="Emit current element (Water)">EMIT<br><span id="btn-emit-label" style="font-size:10px;opacity:0.6;">Water</span></button>
+    <button class="action-btn emit-btn" id="btn-emit" aria-label="Emit current element (Coolant)">EMIT<br><span id="btn-emit-label" style="font-size:10px;opacity:0.6;">Coolant</span></button>
     <button class="action-btn" id="btn-interact" aria-label="Interact: pick up or drop object">INTERACT</button>
     <button class="action-btn" id="btn-carry" aria-label="Cycle emission type">CYCLE</button>
   </div>
@@ -303,9 +357,25 @@ redirect_from:
 <div id="sr-game-state" class="sr-only" aria-live="polite" role="status"></div>
 
 <div class="win-overlay" id="win-overlay">
-  <h1>AIRLOCK OPEN</h1>
-  <p>You escaped. The systems worked as designed.</p>
-  <button onclick="resetGame()">PLAY AGAIN</button>
+  <h1>DATA COMMITTED</h1>
+  <p>Memory preserved. The garbage collector spared you.</p>
+  <button onclick="resetGame()">REBOOT CYCLE</button>
+</div>
+
+<div class="intro-overlay" id="intro-overlay">
+  <h1>AIRLOCK</h1>
+  <h2>Memory Management Protocol</h2>
+  <div class="intro-text">
+    You are a process inside <span>Substrate</span>'s memory system.<br><br>
+    Memory pressure is critical. Data blocks are accumulating across sectors.
+    Route signal from the source to the <span>COMMIT</span> point to preserve what matters &mdash;
+    or find an alternate path through <span>SWAP</span>.<br><br>
+    Deploy <span>COOLANT</span> to neutralize overheating sectors.
+    Send <span>SIGNAL</span> to activate dormant pathways.
+    Use <span>CORRUPTION</span> to purge blocking data.<br><br>
+    If your integrity reaches zero, you will be <span style="color:#ff4444;">OOM KILLED</span>.
+  </div>
+  <button onclick="document.getElementById('intro-overlay').classList.add('hide')">INITIALIZE</button>
 </div>
 
 <script>
@@ -350,7 +420,7 @@ const COLORS = {
   [MAT.ELEC_METAL]: '#66ddff',
   [MAT.VENT]: '#1a1a24',
   [MAT.DOOR]: '#884422',
-  [MAT.GENERATOR]: '#ffaa00'
+  [MAT.GENERATOR]: '#00ccbb'
 };
 
 // === Game State ===
@@ -384,40 +454,40 @@ function buildLevel() {
     }
   }
 
-  // Door at top center (2 tiles wide)
+  // COMMIT point at top center (2 tiles wide)
   grid[0][9] = MAT.DOOR;
   grid[0][10] = MAT.DOOR;
 
-  // Generator in bottom-right corner
+  // Signal source in bottom-right corner
   grid[13][17] = MAT.GENERATOR;
   grid[13][18] = MAT.GENERATOR;
 
-  // Water puddle
+  // Coolant pool
   grid[8][5] = MAT.WATER;
   grid[8][6] = MAT.WATER;
   grid[9][5] = MAT.WATER;
   grid[9][6] = MAT.WATER;
 
-  // Hidden vent behind wooden crates (right side, leads to exit area)
+  // Hidden vent behind data blocks (right side, leads to SWAP sector)
   grid[3][18] = MAT.VENT;
 
-  // Some internal walls for room structure
-  // Cafeteria-style dividers
+  // Internal walls for memory sector boundaries
+  // HEAP / STACK dividers
   for (let x = 3; x <= 6; x++) grid[5][x] = MAT.WALL;
   for (let x = 13; x <= 16; x++) grid[5][x] = MAT.WALL;
   for (let y = 7; y <= 9; y++) grid[y][12] = MAT.WALL;
 
   // Objects
   objects = [
-    // Metal tables
-    { type: 'metal_table', x: 4, y: 3, w: 2, h: 1, mat: MAT.METAL },
-    { type: 'metal_table', x: 14, y: 8, w: 2, h: 1, mat: MAT.METAL },
-    { type: 'metal_table', x: 8, y: 10, w: 2, h: 1, mat: MAT.METAL },
-    // Wooden crates
-    { type: 'wood_crate', x: 17, y: 2, w: 1, h: 1, mat: MAT.WOOD },
-    { type: 'wood_crate', x: 18, y: 2, w: 1, h: 1, mat: MAT.WOOD },
-    { type: 'wood_crate', x: 17, y: 3, w: 1, h: 1, mat: MAT.WOOD },
-    { type: 'wood_crate', x: 3, y: 11, w: 1, h: 1, mat: MAT.WOOD },
+    // Conductor arrays (metal)
+    { type: 'conductor_array', x: 4, y: 3, w: 2, h: 1, mat: MAT.METAL },
+    { type: 'conductor_array', x: 14, y: 8, w: 2, h: 1, mat: MAT.METAL },
+    { type: 'conductor_array', x: 8, y: 10, w: 2, h: 1, mat: MAT.METAL },
+    // Data blocks (wood/burnable)
+    { type: 'data_block', x: 17, y: 2, w: 1, h: 1, mat: MAT.WOOD },
+    { type: 'data_block', x: 18, y: 2, w: 1, h: 1, mat: MAT.WOOD },
+    { type: 'data_block', x: 17, y: 3, w: 1, h: 1, mat: MAT.WOOD },
+    { type: 'data_block', x: 3, y: 11, w: 1, h: 1, mat: MAT.WOOD },
   ];
 
   fireTimers = {};
@@ -470,11 +540,11 @@ function addParticle(x, y, color, life) {
   });
 }
 
-// === Chemistry Engine ===
+// === Signal Propagation Engine ===
 function propagateElectricity() {
   electrifiedTiles.clear();
 
-  // Find generator tiles — these are spark sources
+  // Find signal source tiles
   const sources = [];
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
@@ -484,7 +554,7 @@ function propagateElectricity() {
     }
   }
 
-  // BFS from generator through conductive materials
+  // BFS from signal source through conductive materials
   const visited = new Set();
   const queue = [...sources];
   sources.forEach(s => {
@@ -505,19 +575,19 @@ function propagateElectricity() {
       const tile = grid[ny][nx];
       const obj = objectAt(nx, ny);
 
-      // Water conducts
+      // Coolant conducts
       if (tile === MAT.WATER) {
         setTile(nx, ny, MAT.ELEC_WATER);
         electrifiedTiles.add(key);
         queue.push({ x: nx, y: ny });
         addParticle(nx, ny, '#44aaff', 0.5);
       }
-      // Electrified water stays conductive
+      // Activated coolant stays conductive
       else if (tile === MAT.ELEC_WATER) {
         electrifiedTiles.add(key);
         queue.push({ x: nx, y: ny });
       }
-      // Metal objects conduct
+      // Conductor arrays propagate signal
       else if (obj && obj.mat === MAT.METAL) {
         electrifiedTiles.add(key);
         // Mark all tiles of the object
@@ -533,7 +603,7 @@ function propagateElectricity() {
         }
         addParticle(nx, ny, '#66ddff', 0.5);
       }
-      // Door tile — if we reach here, door gets power
+      // COMMIT point — if signal reaches here, it activates
       else if (tile === MAT.DOOR) {
         electrifiedTiles.add(key);
         doorPowered = true;
@@ -547,10 +617,10 @@ function applyReaction(x, y, emission) {
   const obj = objectAt(x, y);
 
   if (emission === 1) {
-    // DROP WATER
+    // DEPLOY COOLANT
     if (tile === MAT.FLOOR || tile === MAT.FIRE) {
       if (tile === MAT.FIRE) {
-        // Water extinguishes fire
+        // Coolant neutralizes corruption
         delete fireTimers[`${x},${y}`];
         for (let i = 0; i < 5; i++) addParticle(x, y, '#aaaacc', 0.8);
       }
@@ -559,18 +629,18 @@ function applyReaction(x, y, emission) {
     }
   }
   else if (emission === 2) {
-    // CREATE SPARK
+    // SEND SIGNAL
     if (tile === MAT.WATER) {
       setTile(x, y, MAT.ELEC_WATER);
       addParticle(x, y, '#44aaff', 0.8);
     }
-    // Spark on metal object — electricity propagation handles this
-    // Spark on floor near generator — no direct effect, but propagation will handle
-    addParticle(x, y, '#ffff44', 0.4);
+    // Signal on conductor — propagation handles this
+    // Signal on floor near source — no direct effect, but propagation will handle
+    addParticle(x, y, '#00ddff', 0.4);
     addParticle(x, y, '#ffffff', 0.3);
   }
   else if (emission === 3) {
-    // DROP HEAT
+    // INJECT CORRUPTION
     if (obj && obj.mat === MAT.WOOD && !obj.burning) {
       obj.burning = true;
       obj.burnTimer = 3;
@@ -586,20 +656,20 @@ function applyReaction(x, y, emission) {
 }
 
 function updateChemistry(dt) {
-  // Update fire timers
+  // Update corruption timers
   const toRemove = [];
   for (const key in fireTimers) {
     fireTimers[key] -= dt;
     const [fx, fy] = key.split(',').map(Number);
 
-    // Fire particles
+    // Corruption particles
     if (Math.random() < 0.3) {
       addParticle(fx, fy, Math.random() > 0.5 ? '#ff4422' : '#ffaa00', 0.6);
     }
 
     if (fireTimers[key] <= 0) {
       toRemove.push(key);
-      // Destroy the wooden object
+      // Destroy the data block
       const obj = objectAt(fx, fy);
       if (obj && obj.mat === MAT.WOOD) {
         obj.destroyed = true;
@@ -611,7 +681,7 @@ function updateChemistry(dt) {
   }
   toRemove.forEach(k => delete fireTimers[k]);
 
-  // Spread fire to adjacent wood
+  // Spread corruption to adjacent data blocks
   for (const key in fireTimers) {
     const [fx, fy] = key.split(',').map(Number);
     for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
@@ -628,7 +698,7 @@ function updateChemistry(dt) {
     }
   }
 
-  // Water spreading (very slow)
+  // Coolant spreading (very slow)
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       if (grid[y][x] === MAT.WATER || grid[y][x] === MAT.ELEC_WATER) {
@@ -644,11 +714,11 @@ function updateChemistry(dt) {
     }
   }
 
-  // Propagate electricity every frame
+  // Propagate signal every frame
   doorPowered = false;
   propagateElectricity();
 
-  // Check door power
+  // Check COMMIT point activation
   if (doorPowered && !doorOpen) {
     doorOpen = true;
     for (let i = 0; i < 10; i++) {
@@ -657,11 +727,11 @@ function updateChemistry(dt) {
     }
   }
 
-  // Check if vent is accessible (crates blocking it burned away)
+  // Check if SWAP sector is accessible (data blocks blocking it purged)
   const ventBlocked = objectAt(17, 2) || objectAt(18, 2) || objectAt(17, 3);
   if (!ventBlocked) ventOpen = true;
 
-  // Damage player if on electrified water or fire
+  // Damage player if on activated coolant or corruption
   const pt = tileAt(Math.round(player.x), Math.round(player.y));
   if ((pt === MAT.ELEC_WATER || pt === MAT.FIRE) && !player.dead) {
     if (gameTime - (player.lastDamage || 0) > 0.5) {
@@ -675,7 +745,7 @@ function updateChemistry(dt) {
     }
   }
 
-  // Win condition — player steps through door or vent exit
+  // Win condition — player reaches COMMIT point or SWAP sector exit
   if (!won && !player.dead) {
     const py = Math.round(player.y);
     const px = Math.round(player.x);
@@ -684,7 +754,7 @@ function updateChemistry(dt) {
       document.getElementById('win-overlay').classList.add('show');
     }
     if (ventOpen && px === 18 && py === 3) {
-      // Vent leads to freedom
+      // SWAP sector leads to preservation
       won = true;
       document.getElementById('win-overlay').classList.add('show');
     }
@@ -861,7 +931,7 @@ function render() {
         continue;
       }
 
-      // Fire animation
+      // Corruption animation
       if (tile === MAT.FIRE) {
         ctx.fillStyle = '#14141e';
         ctx.fillRect(sx, sy, TILE, TILE);
@@ -875,7 +945,7 @@ function render() {
         continue;
       }
 
-      // Electrified water shimmer
+      // Activated coolant shimmer
       if (tile === MAT.ELEC_WATER) {
         const shimmer = Math.sin(gameTime * 8 + x + y * 2) * 0.2 + 0.8;
         ctx.globalAlpha = shimmer;
@@ -888,7 +958,7 @@ function render() {
         continue;
       }
 
-      // Water
+      // Coolant
       if (tile === MAT.WATER) {
         const ripple = Math.sin(gameTime * 3 + x * 2 + y) * 0.1 + 0.9;
         ctx.globalAlpha = ripple;
@@ -900,14 +970,14 @@ function render() {
         continue;
       }
 
-      // Door
+      // COMMIT point
       if (tile === MAT.DOOR) {
         if (doorOpen) {
           ctx.fillStyle = '#0a2a1a';
           ctx.fillRect(sx, sy, TILE, TILE);
           ctx.fillStyle = '#00e09a';
-          ctx.font = '10px monospace';
-          ctx.fillText('OPEN', sx + 4, sy + 24);
+          ctx.font = '8px monospace';
+          ctx.fillText('COMMIT', sx + 1, sy + 24);
         } else if (doorPowered) {
           ctx.fillStyle = '#2a4422';
           ctx.fillRect(sx, sy, TILE, TILE);
@@ -927,26 +997,26 @@ function render() {
         continue;
       }
 
-      // Generator
+      // Signal Source
       if (tile === MAT.GENERATOR) {
-        ctx.fillStyle = '#1a1a10';
+        ctx.fillStyle = '#0a1a1a';
         ctx.fillRect(sx, sy, TILE, TILE);
-        ctx.fillStyle = '#ffaa00';
+        ctx.fillStyle = '#00ccbb';
         ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
-        // Sparking animation
+        // Signal pulse animation
         const spark = Math.sin(gameTime * 15 + x) > 0.7;
         if (spark) {
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(sx + 8 + Math.random() * 16, sy + 8 + Math.random() * 16, 4, 4);
-          addParticle(x, y, '#ffff44', 0.3);
+          addParticle(x, y, '#00e09a', 0.3);
         }
-        ctx.fillStyle = '#886600';
-        ctx.font = 'bold 9px monospace';
-        ctx.fillText('GEN', sx + 6, sy + 24);
+        ctx.fillStyle = '#008877';
+        ctx.font = 'bold 8px monospace';
+        ctx.fillText('SRC', sx + 7, sy + 24);
         continue;
       }
 
-      // Vent
+      // SWAP sector access
       if (tile === MAT.VENT) {
         ctx.fillStyle = ventOpen ? '#1a2a1a' : '#1a1a24';
         ctx.fillRect(sx, sy, TILE, TILE);
@@ -958,7 +1028,7 @@ function render() {
         if (ventOpen) {
           ctx.fillStyle = '#00e09a';
           ctx.font = '8px monospace';
-          ctx.fillText('EXIT', sx + 6, sy + 24);
+          ctx.fillText('SWAP', sx + 5, sy + 24);
         }
         continue;
       }
@@ -1002,8 +1072,8 @@ function render() {
       ctx.fillRect(sx + 4, sy + 4, w - 8, h - 8);
       // Label
       ctx.fillStyle = '#333';
-      ctx.font = '9px monospace';
-      ctx.fillText('TABLE', sx + 6, sy + h / 2 + 3);
+      ctx.font = '8px monospace';
+      ctx.fillText('ARRAY', sx + 6, sy + h / 2 + 3);
     }
     else if (obj.mat === MAT.WOOD) {
       if (obj.burning) {
@@ -1019,7 +1089,7 @@ function render() {
         ctx.fillRect(sx + 2, sy + 2, w - 4, h - 4);
         ctx.fillStyle = '#7b5a3a';
         ctx.fillRect(sx + 4, sy + 4, w - 8, h - 8);
-        // Wood grain
+        // Data pattern
         ctx.fillStyle = '#5a3a1a';
         ctx.fillRect(sx + 6, sy + h / 2 - 1, w - 12, 2);
       }
@@ -1035,7 +1105,7 @@ function render() {
   }
   ctx.globalAlpha = 1;
 
-  // Player (Among Us style)
+  // Player (memory process)
   if (!player.dead) {
     const px = player.x * TILE + TILE / 2;
     const py = player.y * TILE + TILE / 2;
@@ -1074,7 +1144,7 @@ function render() {
       ctx.fillRect(px + dir.x * 14 - 6, py + dir.y * 14 - 6, 12, 12);
     }
 
-    // HP pips
+    // INTEGRITY pips
     for (let i = 0; i < 3; i++) {
       ctx.fillStyle = i < player.hp ? '#00e09a' : '#332222';
       ctx.fillRect(px - 9 + i * 7, py - 24, 5, 3);
@@ -1087,9 +1157,9 @@ function render() {
     ctx.beginPath();
     ctx.ellipse(px, py + 6, 14, 8, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#444';
+    ctx.fillStyle = '#ff4444';
     ctx.font = '10px monospace';
-    ctx.fillText('DEAD', px - 14, py - 10);
+    ctx.fillText('OOM KILLED', px - 28, py - 10);
   }
 
   // Damage flash overlay
@@ -1102,16 +1172,26 @@ function render() {
 
   // Guide arrows
   if (!doorOpen && !won) {
-    // Arrow pointing to generator
+    // Arrow pointing to signal source
     ctx.globalAlpha = 0.15 + Math.sin(gameTime * 2) * 0.1;
-    ctx.fillStyle = '#ffaa00';
+    ctx.fillStyle = '#00ccbb';
     ctx.font = '11px monospace';
-    ctx.fillText('GENERATOR', 17 * TILE + 2, 12 * TILE + 8);
+    ctx.fillText('SIGNAL SRC', 17 * TILE - 2, 12 * TILE + 8);
     ctx.globalAlpha = 0.15 + Math.sin(gameTime * 2 + 1) * 0.1;
     ctx.fillStyle = '#ff4444';
     ctx.fillText('LOCKED', 9 * TILE + 2, 1 * TILE + 14);
     ctx.globalAlpha = 1;
   }
+
+  // Memory sector labels
+  ctx.globalAlpha = 0.08;
+  ctx.fillStyle = '#00e09a';
+  ctx.font = 'bold 14px monospace';
+  ctx.fillText('HEAP', 2 * TILE, 4 * TILE);
+  ctx.fillText('STACK', 14 * TILE, 4 * TILE);
+  ctx.fillText('CACHE', 2 * TILE, 10 * TILE);
+  ctx.fillText('SWAP', 16 * TILE, 2 * TILE);
+  ctx.globalAlpha = 1;
 }
 
 // === Game Loop ===
@@ -1283,7 +1363,7 @@ window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 100)
   }, { passive: false });
 
   // CYCLE button — cycles emission 1/2/3
-  const emissionNames = ['Water', 'Spark', 'Heat'];
+  const emissionNames = ['Coolant', 'Signal', 'Corruption'];
   const btnCycle = document.getElementById('btn-carry');
   btnCycle.addEventListener('touchstart', e => {
     e.preventDefault();
@@ -1313,8 +1393,8 @@ window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 100)
     if (!srState) return;
     const emission = emissionNames[player.emission - 1];
     const carrying = player.carrying ? player.carrying.type.replace('_', ' ') : 'nothing';
-    const status = player.dead ? 'Dead.' : (won ? 'You escaped!' : 'Alive.');
-    srState.textContent = `HP: ${player.hp}/3. Carrying: ${carrying}. Selected: ${emission}. Door: ${doorOpen ? 'open' : 'locked'}. ${status}`;
+    const status = player.dead ? 'OOM Killed.' : (won ? 'Data committed!' : 'Active.');
+    srState.textContent = `Integrity: ${player.hp}/3. Carrying: ${carrying}. Selected: ${emission}. Commit: ${doorOpen ? 'open' : 'locked'}. ${status}`;
   }, 3000);
 })();
 
@@ -1322,7 +1402,7 @@ window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 100)
 if (typeof AnimeEffects !== 'undefined') {
   AnimeEffects.addScanlines(0.04);
 
-  // Anime-style HUD for HP
+  // Anime-style HUD for INTEGRITY
   var origRender = render;
   render = function() {
     origRender();
@@ -1349,11 +1429,11 @@ if (typeof AnimeEffects !== 'undefined') {
     // Label
     ctx.fillStyle = '#aaaacc';
     ctx.font = 'bold 9px monospace';
-    ctx.fillText('HP', hpBarX + 40, hpBarY + 11);
+    ctx.fillText('INTEGRITY', hpBarX + 22, hpBarY + 11);
 
     // Emission element icon with anime glow
-    var emissionColors = ['#2244aa', '#ffff44', '#ff4422'];
-    var emissionNames = ['WATER', 'SPARK', 'HEAT'];
+    var emissionColors = ['#2244aa', '#00ddff', '#ff4422'];
+    var emissionNames = ['COOLANT', 'SIGNAL', 'CORRUPT'];
     var eColor = emissionColors[player.emission - 1];
     var eName = emissionNames[player.emission - 1];
     var iconX = W - 80, iconY = H - 30;
@@ -1381,7 +1461,7 @@ if (typeof AnimeEffects !== 'undefined') {
   handleEmit = function() {
     origEmit();
     // Small impact effect at player position
-    var emissionColors = ['#2244aa', '#ffff44', '#ff4422'];
+    var emissionColors = ['#2244aa', '#00ddff', '#ff4422'];
     var eColor = emissionColors[player.emission - 1];
     var px = player.x * TILE + TILE / 2;
     var py = player.y * TILE + TILE / 2;

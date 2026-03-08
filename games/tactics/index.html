@@ -507,7 +507,7 @@ redirect_from:
 <body>
 
 <a id="skip-to-game" href="#game-canvas">Skip to game</a>
-<canvas id="game-canvas" role="img" aria-label="Tactics game board — isometric tactical RPG battlefield" tabindex="0"></canvas>
+<canvas id="game-canvas" role="img" aria-label="Tactics game board — Substrate agent deployment protocol" tabindex="0"></canvas>
 
 <div id="turn-order" class="ui-overlay" role="status" aria-label="Turn order"></div>
 <div id="phase-banner" class="ui-overlay" role="alert" aria-live="assertive"></div>
@@ -541,19 +541,20 @@ redirect_from:
 <div id="end-screen" class="ui-overlay" role="dialog" aria-label="Game result">
   <h1 id="end-title"></h1>
   <div class="subtitle" id="end-subtitle"></div>
-  <button id="restart-btn" role="button" aria-label="Restart game" onclick="game.restart()">Play Again</button>
+  <button id="restart-btn" role="button" aria-label="Redeploy agents" onclick="game.restart()">Redeploy</button>
 </div>
 
 <div id="camera-controls" aria-label="Camera controls">
   <button class="cam-btn" id="cam-left" aria-label="Rotate camera left">&larr;</button>
   <button class="cam-btn" id="cam-right" aria-label="Rotate camera right">&rarr;</button>
 </div>
-<div id="controls-hint" class="ui-overlay" role="note" aria-label="Game controls">Q/E rotate | Scroll zoom | Click to select</div>
+<div id="controls-hint" class="ui-overlay" role="note" aria-label="Game controls">Q/E rotate | Scroll zoom | Click to deploy</div>
 <div id="footer" class="ui-overlay"><a href="{{ site.baseurl }}/arcade/">a Substrate Arcade production</a></div>
 
 <script>
 // ============================================================
-// TACTICS — A Final Fantasy Tactics-style Isometric Tactical RPG
+// TACTICS — Agent Deployment Protocol
+// Substrate's agents vs system threats — isometric tactical RPG
 // ============================================================
 
 const GRID = 8;
@@ -622,49 +623,93 @@ function generateMap() {
 }
 
 // ---- Unit Classes ----
-const CLASSES = {
+// Player agents: Substrate team members defending the system
+const PLAYER_CLASSES = {
   KNIGHT: {
-    name: 'Knight', icon: 'K', moveRange: 3, atkRange: 1,
+    name: 'ROOT', icon: 'K', moveRange: 3, atkRange: 1,
     hp: 50, atk: 14, def: 10, spd: 4,
-    ability: 'Shield Bash',
+    ability: 'Patch',
     abilityDesc: 'Melee strike that pushes target back 1 tile.',
-    abilityRange: 1, abilityAoE: 0
-  },
-  MAGE: {
-    name: 'Mage', icon: 'M', moveRange: 2, atkRange: 3,
-    hp: 28, atk: 18, def: 4, spd: 5,
-    ability: 'Fireball',
-    abilityDesc: 'Explosive blast dealing damage in a 3x3 area.',
-    abilityRange: 3, abilityAoE: 1
+    abilityRange: 1, abilityAoE: 0,
+    role: 'Infrastructure Engineer'
   },
   ARCHER: {
-    name: 'Archer', icon: 'A', moveRange: 3, atkRange: 4,
+    name: 'SENTINEL', icon: 'A', moveRange: 3, atkRange: 4,
     hp: 35, atk: 15, def: 5, spd: 6,
-    ability: 'Rain of Arrows',
+    ability: 'Scan',
     abilityDesc: 'Volley hitting a 2x2 area from above.',
-    abilityRange: 4, abilityAoE: 1
+    abilityRange: 4, abilityAoE: 1,
+    role: 'Security Agent'
+  },
+  MAGE: {
+    name: 'PIXEL', icon: 'M', moveRange: 2, atkRange: 3,
+    hp: 28, atk: 18, def: 4, spd: 5,
+    ability: 'Render',
+    abilityDesc: 'Explosive blast dealing damage in a 3x3 area.',
+    abilityRange: 3, abilityAoE: 1,
+    role: 'Visual Artist'
   },
   HEALER: {
-    name: 'Healer', icon: 'H', moveRange: 3, atkRange: 1,
+    name: 'SPEC', icon: 'H', moveRange: 3, atkRange: 1,
     hp: 30, atk: 8, def: 6, spd: 7,
-    ability: 'Heal',
+    ability: 'Restore',
     abilityDesc: 'Restore 20 HP to an adjacent ally.',
-    abilityRange: 1, abilityAoE: 0
+    abilityRange: 1, abilityAoE: 0,
+    role: 'QA Engineer'
   }
 };
 
+// Enemy threats: system threats attacking the infrastructure
+const ENEMY_CLASSES = {
+  KNIGHT: {
+    name: 'BUFFER OVERFLOW', icon: 'K', moveRange: 3, atkRange: 1,
+    hp: 50, atk: 14, def: 10, spd: 4,
+    ability: 'Stack Smash',
+    abilityDesc: 'Melee strike that pushes target back 1 tile.',
+    abilityRange: 1, abilityAoE: 0,
+    role: 'Memory Exploit'
+  },
+  MAGE: {
+    name: 'CORRUPTION', icon: 'M', moveRange: 2, atkRange: 3,
+    hp: 28, atk: 18, def: 4, spd: 5,
+    ability: 'Bit Rot',
+    abilityDesc: 'Explosive blast dealing damage in a 3x3 area.',
+    abilityRange: 3, abilityAoE: 1,
+    role: 'Data Threat'
+  },
+  ARCHER: {
+    name: 'INJECTION', icon: 'A', moveRange: 3, atkRange: 4,
+    hp: 35, atk: 15, def: 5, spd: 6,
+    ability: 'Payload',
+    abilityDesc: 'Volley hitting a 2x2 area from above.',
+    abilityRange: 4, abilityAoE: 1,
+    role: 'Code Exploit'
+  },
+  HEALER: {
+    name: 'WORM', icon: 'H', moveRange: 3, atkRange: 1,
+    hp: 30, atk: 8, def: 6, spd: 7,
+    ability: 'Replicate',
+    abilityDesc: 'Restore 20 HP to an adjacent ally.',
+    abilityRange: 1, abilityAoE: 0,
+    role: 'Self-Propagating Threat'
+  }
+};
+
+// Legacy compat: CLASSES used for icon-based lookups (use player names)
+const CLASSES = PLAYER_CLASSES;
+
 function createUnits() {
   const players = [
-    { ...structuredClone(CLASSES.KNIGHT),  team: 'player', gx: 0, gz: 0, maxHp: CLASSES.KNIGHT.hp,  facing: {x:1,z:1}  },
-    { ...structuredClone(CLASSES.MAGE),    team: 'player', gx: 1, gz: 0, maxHp: CLASSES.MAGE.hp,    facing: {x:1,z:0}  },
-    { ...structuredClone(CLASSES.ARCHER),  team: 'player', gx: 0, gz: 1, maxHp: CLASSES.ARCHER.hp,  facing: {x:0,z:1}  },
-    { ...structuredClone(CLASSES.HEALER),  team: 'player', gx: 1, gz: 1, maxHp: CLASSES.HEALER.hp,  facing: {x:1,z:1}  }
+    { ...structuredClone(PLAYER_CLASSES.KNIGHT),  team: 'player', gx: 0, gz: 0, maxHp: PLAYER_CLASSES.KNIGHT.hp,  facing: {x:1,z:1}  },
+    { ...structuredClone(PLAYER_CLASSES.MAGE),    team: 'player', gx: 1, gz: 0, maxHp: PLAYER_CLASSES.MAGE.hp,    facing: {x:1,z:0}  },
+    { ...structuredClone(PLAYER_CLASSES.ARCHER),  team: 'player', gx: 0, gz: 1, maxHp: PLAYER_CLASSES.ARCHER.hp,  facing: {x:0,z:1}  },
+    { ...structuredClone(PLAYER_CLASSES.HEALER),  team: 'player', gx: 1, gz: 1, maxHp: PLAYER_CLASSES.HEALER.hp,  facing: {x:1,z:1}  }
   ];
   const enemies = [
-    { ...structuredClone(CLASSES.KNIGHT),  team: 'enemy', gx: GRID-1, gz: GRID-1, maxHp: CLASSES.KNIGHT.hp,  facing: {x:-1,z:-1} },
-    { ...structuredClone(CLASSES.MAGE),    team: 'enemy', gx: GRID-2, gz: GRID-1, maxHp: CLASSES.MAGE.hp,    facing: {x:-1,z:0}  },
-    { ...structuredClone(CLASSES.ARCHER),  team: 'enemy', gx: GRID-1, gz: GRID-2, maxHp: CLASSES.ARCHER.hp,  facing: {x:0,z:-1}  },
-    { ...structuredClone(CLASSES.HEALER),  team: 'enemy', gx: GRID-2, gz: GRID-2, maxHp: CLASSES.HEALER.hp,  facing: {x:-1,z:-1} }
+    { ...structuredClone(ENEMY_CLASSES.KNIGHT),  team: 'enemy', gx: GRID-1, gz: GRID-1, maxHp: ENEMY_CLASSES.KNIGHT.hp,  facing: {x:-1,z:-1} },
+    { ...structuredClone(ENEMY_CLASSES.MAGE),    team: 'enemy', gx: GRID-2, gz: GRID-1, maxHp: ENEMY_CLASSES.MAGE.hp,    facing: {x:-1,z:0}  },
+    { ...structuredClone(ENEMY_CLASSES.ARCHER),  team: 'enemy', gx: GRID-1, gz: GRID-2, maxHp: ENEMY_CLASSES.ARCHER.hp,  facing: {x:0,z:-1}  },
+    { ...structuredClone(ENEMY_CLASSES.HEALER),  team: 'enemy', gx: GRID-2, gz: GRID-2, maxHp: ENEMY_CLASSES.HEALER.hp,  facing: {x:-1,z:-1} }
   ];
   let id = 0;
   [...players, ...enemies].forEach(u => {
@@ -770,7 +815,7 @@ class TacticsGame {
     // Update controls hint for touch devices
     this._isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (this._isTouchDevice) {
-      document.getElementById('controls-hint').textContent = 'Tap to select/act | Two-finger drag to pan | Pinch to zoom';
+      document.getElementById('controls-hint').textContent = 'Tap to deploy/act | Two-finger drag to pan | Pinch to zoom';
     }
 
     // FFT-style camera rotate buttons
@@ -896,8 +941,23 @@ class TacticsGame {
   buildUnitMesh(unit) {
     const group = new THREE.Group();
     const isPlayer = unit.team === 'player';
-    const baseColor = isPlayer ? 0x4488ff : 0xff4444;
-    const glowColor = isPlayer ? 0x2266cc : 0xcc2222;
+
+    // Player unit colors based on Substrate agent identity
+    let baseColor, glowColor;
+    if (isPlayer) {
+      if (unit.icon === 'K') { baseColor = 0x8888ff; glowColor = 0x6666cc; }       // ROOT — indigo
+      else if (unit.icon === 'A') { baseColor = 0x4466aa; glowColor = 0x334488; }   // SENTINEL — dark blue
+      else if (unit.icon === 'M') { baseColor = 0xff44aa; glowColor = 0xcc2288; }   // PIXEL — pink
+      else if (unit.icon === 'H') { baseColor = 0x44ccaa; glowColor = 0x339988; }   // SPEC — teal
+      else { baseColor = 0x4488ff; glowColor = 0x2266cc; }
+    } else {
+      // Enemy threat colors
+      if (unit.icon === 'K') { baseColor = 0xff2222; glowColor = 0xcc1111; }        // BUFFER OVERFLOW — red
+      else if (unit.icon === 'A') { baseColor = 0xff8833; glowColor = 0xcc6622; }   // INJECTION — orange
+      else if (unit.icon === 'M') { baseColor = 0xaa0000; glowColor = 0x880000; }   // CORRUPTION — dark red
+      else if (unit.icon === 'H') { baseColor = 0xcc3333; glowColor = 0x992222; }   // WORM — medium red
+      else { baseColor = 0xff4444; glowColor = 0xcc2222; }
+    }
 
     let bodyGeo, bodyMat;
 
@@ -1357,7 +1417,7 @@ class TacticsGame {
   async doAttackAction(attacker, targetX, targetZ) {
     const defender = this.getUnitAt(targetX, targetZ);
     if (!defender || defender.team === attacker.team) {
-      this.showMessage('No valid target there.');
+      this.showMessage('No valid target at that location.');
       if (attacker.team === 'player') {
         this.state = 'IDLE';
         this.showActionMenu(attacker);
@@ -1387,7 +1447,7 @@ class TacticsGame {
       defender.hp = 0;
       defender.alive = false;
       await this.animateDeath(defender);
-      this.showMessage(`${defender.name} has fallen!`);
+      this.showMessage(`${defender.name} has been eliminated!`);
     }
 
     attacker.hasActed = true;
@@ -1413,7 +1473,7 @@ class TacticsGame {
       // Heal
       const ally = this.getUnitAt(targetX, targetZ);
       if (!ally || ally.team !== caster.team || ally.id === caster.id) {
-        this.showMessage('Must target an adjacent ally.');
+        this.showMessage('Must target an adjacent agent.');
         if (caster.team === 'player') {
           this.state = 'IDLE';
           this.showActionMenu(caster);
@@ -1425,13 +1485,13 @@ class TacticsGame {
       ally.hp += actualHeal;
       this.spawnDamageNumber(ally, actualHeal, '#44ff88');
       await this.spawnHealParticles(ally);
-      this.showMessage(`${caster.name} heals ${ally.name} for ${actualHeal} HP!`);
+      this.showMessage(`${caster.name} uses ${caster.ability} on ${ally.name} for ${actualHeal} HP!`);
     }
     else if (caster.icon === 'K') {
       // Shield Bash — damage + push back
       const defender = this.getUnitAt(targetX, targetZ);
       if (!defender || defender.team === caster.team) {
-        this.showMessage('No enemy target.');
+        this.showMessage('No threat detected at that location.');
         if (caster.team === 'player') {
           this.state = 'IDLE';
           this.showActionMenu(caster);
@@ -1443,7 +1503,7 @@ class TacticsGame {
       await this.animateAttack(caster, defender);
       defender.hp -= dmg;
       this.spawnDamageNumber(defender, dmg, '#ff8844');
-      this.showMessage(`${caster.name} uses Shield Bash on ${defender.name} for ${dmg}!`);
+      this.showMessage(`${caster.name} uses ${caster.ability} on ${defender.name} for ${dmg}!`);
 
       // Push back
       const pushX = targetX + Math.sign(targetX - caster.gx);
@@ -1478,7 +1538,7 @@ class TacticsGame {
           }
         }
       }
-      this.showMessage(`${caster.name} casts Fireball!`);
+      this.showMessage(`${caster.name} uses ${caster.ability}!`);
     }
     else if (caster.icon === 'A') {
       // Rain of Arrows AoE
@@ -1497,7 +1557,7 @@ class TacticsGame {
           }
         }
       }
-      this.showMessage(`${caster.name} uses Rain of Arrows!`);
+      this.showMessage(`${caster.name} uses ${caster.ability}!`);
     }
 
     caster.hasActed = true;
@@ -1766,9 +1826,13 @@ class TacticsGame {
     const panel = document.getElementById('unit-info');
     panel.classList.add('show');
     document.getElementById('ui-name').textContent = unit.name;
-    document.getElementById('ui-name').style.color = unit.team === 'player' ? '#4488ff' : '#ff4444';
-    document.getElementById('ui-class').textContent = unit.icon === 'K' ? 'Armored Vanguard' :
-      unit.icon === 'M' ? 'Arcane Channeler' : unit.icon === 'A' ? 'Sharpshooter' : 'Battle Medic';
+    // Use agent-specific colors for player units
+    const agentColors = { 'ROOT': '#8888ff', 'SENTINEL': '#4466aa', 'PIXEL': '#ff44aa', 'SPEC': '#44ccaa' };
+    const threatColors = { 'BUFFER OVERFLOW': '#ff2222', 'INJECTION': '#ff8833', 'CORRUPTION': '#aa0000', 'WORM': '#cc3333' };
+    document.getElementById('ui-name').style.color = unit.team === 'player'
+      ? (agentColors[unit.name] || '#4488ff')
+      : (threatColors[unit.name] || '#ff4444');
+    document.getElementById('ui-class').textContent = unit.role || 'Agent';
     document.getElementById('ui-hp').textContent = `${unit.hp} / ${unit.maxHp}`;
     document.getElementById('ui-atk').textContent = unit.atk;
     document.getElementById('ui-def').textContent = unit.def;
@@ -1788,12 +1852,12 @@ class TacticsGame {
     document.getElementById('ti-terrain').textContent = tile.terrain.name;
     document.getElementById('ti-elev').textContent = `Elevation: ${tile.elevation}`;
     const occ = this.getUnitAt(x, z);
-    document.getElementById('ti-occupant').textContent = occ ? `${occ.name} (${occ.team})` : '';
+    document.getElementById('ti-occupant').textContent = occ ? `${occ.name} (${occ.team === 'player' ? 'agent' : 'threat'})` : '';
   }
 
   showPhaseBanner(phase) {
     const banner = document.getElementById('phase-banner');
-    banner.textContent = phase === 'player' ? 'Player Phase' : 'Enemy Phase';
+    banner.textContent = phase === 'player' ? 'Substrate Phase' : 'Threat Phase';
     banner.className = `ui-overlay ${phase}-phase show`;
     setTimeout(() => banner.classList.remove('show'), 1500);
   }
@@ -1810,11 +1874,11 @@ class TacticsGame {
     this.state = 'GAME_OVER';
     const screen = document.getElementById('end-screen');
     screen.classList.add('show');
-    document.getElementById('end-title').textContent = victory ? 'VICTORY' : 'DEFEAT';
+    document.getElementById('end-title').textContent = victory ? 'SYSTEM SECURED' : 'SYSTEM COMPROMISED';
     document.getElementById('end-title').style.color = victory ? '#44ff88' : '#ff4444';
     document.getElementById('end-subtitle').textContent = victory
-      ? `Battle won in ${this.round} rounds.`
-      : 'Your forces have fallen.';
+      ? `All threats neutralized in ${this.round} rounds.`
+      : 'Infrastructure defenses have been breached.';
   }
 
   // ---- Input Handling ----
@@ -2334,7 +2398,7 @@ const game = new TacticsGame();
   AnimeEffects.addScanlines(0.03);
 
   // Anime title card on load
-  AnimeEffects.showTitleCard('TACTICS', 'STRATEGIC WARFARE', '#4488ff');
+  AnimeEffects.showTitleCard('TACTICS', 'AGENT DEPLOYMENT PROTOCOL', '#4488ff');
 
   // Unit portrait canvas for selected units
   var portraitCanvas = document.createElement('canvas');
@@ -2345,19 +2409,21 @@ const game = new TacticsGame();
   document.body.appendChild(portraitCanvas);
 
   var unitPortraitStyles = {
-    // Knight: brave, armored
-    'Knight': { hairColor: '#4488ff', eyeColor: '#4488ff', expression: 'determined' },
-    'Archer': { hairColor: '#44cc88', eyeColor: '#88ddaa', expression: 'neutral' },
-    'Mage': { hairColor: '#aa66ff', eyeColor: '#cc88ff', expression: 'serene' },
-    // Enemy variants
-    'E.Knight': { hairColor: '#ff4444', eyeColor: '#ff6644', expression: 'determined' },
-    'E.Archer': { hairColor: '#ff8844', eyeColor: '#ffaa44', expression: 'neutral' },
-    'E.Mage': { hairColor: '#ff44aa', eyeColor: '#ff66cc', expression: 'serene' },
+    // Substrate agents
+    'Infrastructure Engineer': { hairColor: '#8888ff', eyeColor: '#8888ff', expression: 'determined' },
+    'Security Agent': { hairColor: '#4466aa', eyeColor: '#6688cc', expression: 'neutral' },
+    'Visual Artist': { hairColor: '#ff44aa', eyeColor: '#ff66cc', expression: 'serene' },
+    'QA Engineer': { hairColor: '#44ccaa', eyeColor: '#66ddbb', expression: 'neutral' },
+    // Enemy threat variants
+    'E.Memory Exploit': { hairColor: '#ff2222', eyeColor: '#ff4444', expression: 'determined' },
+    'E.Code Exploit': { hairColor: '#ff8833', eyeColor: '#ffaa44', expression: 'neutral' },
+    'E.Data Threat': { hairColor: '#aa0000', eyeColor: '#cc2222', expression: 'serene' },
+    'E.Self-Propagating Threat': { hairColor: '#cc3333', eyeColor: '#dd4444', expression: 'neutral' },
   };
 
-  function drawUnitPortrait(unitClass, isEnemy) {
-    var key = isEnemy ? 'E.' + unitClass : unitClass;
-    var style = unitPortraitStyles[key] || unitPortraitStyles['Knight'];
+  function drawUnitPortrait(unitRole, isEnemy) {
+    var key = isEnemy ? 'E.' + unitRole : unitRole;
+    var style = unitPortraitStyles[key] || unitPortraitStyles['Infrastructure Engineer'];
     var ctx = portraitCanvas.getContext('2d');
     ctx.clearRect(0, 0, 80, 90);
     ctx.fillStyle = isEnemy ? '#1a0a0a' : '#0a0a1a';
@@ -2369,11 +2435,12 @@ const game = new TacticsGame();
       expression: style.expression
     });
 
-    // Class label
+    // Role label
     ctx.fillStyle = style.hairColor;
     ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(unitClass.toUpperCase(), 40, 84);
+    var label = unitRole.length > 12 ? unitRole.substring(0, 12) + '..' : unitRole;
+    ctx.fillText(label.toUpperCase(), 40, 84);
     ctx.textAlign = 'left';
   }
 
@@ -2385,9 +2452,10 @@ const game = new TacticsGame();
         var nameEl = unitInfo.querySelector('.unit-name');
         var classEl = unitInfo.querySelector('.unit-class');
         if (nameEl && classEl) {
-          var isEnemy = nameEl.style.color && nameEl.style.color.indexOf('ff') === 1;
-          var className = classEl.textContent || 'Knight';
-          drawUnitPortrait(className, isEnemy || nameEl.textContent.indexOf('Enemy') >= 0);
+          var nameText = nameEl.textContent || '';
+          var isEnemy = nameText === 'BUFFER OVERFLOW' || nameText === 'INJECTION' || nameText === 'CORRUPTION' || nameText === 'WORM';
+          var roleText = classEl.textContent || 'Infrastructure Engineer';
+          drawUnitPortrait(roleText, isEnemy);
           portraitCanvas.style.display = 'block';
           var infoRect = unitInfo.getBoundingClientRect();
           portraitCanvas.style.left = (infoRect.left + infoRect.width + 8) + 'px';
@@ -2410,9 +2478,9 @@ const game = new TacticsGame();
     var phaseObs = new MutationObserver(function() {
       if (phaseBanner.classList.contains('show')) {
         var text = phaseBanner.textContent.trim().toUpperCase();
-        if (text === 'PLAYER PHASE') {
+        if (text === 'SUBSTRATE PHASE') {
           AnimeEffects.screenFlash('#4488ff', 200);
-        } else if (text === 'ENEMY PHASE') {
+        } else if (text === 'THREAT PHASE') {
           AnimeEffects.screenFlash('#ff4444', 200);
         }
       }
@@ -2427,7 +2495,7 @@ const game = new TacticsGame();
       if (endScreen.classList.contains('show')) {
         var h1 = endScreen.querySelector('h1');
         if (h1) {
-          var won = h1.textContent.indexOf('VICTORY') >= 0;
+          var won = h1.textContent.indexOf('SECURED') >= 0;
           if (won) {
             AnimeEffects.screenFlash('#4488ff', 300);
             setTimeout(function() { AnimeEffects.impactFrame('#4488ff'); }, 200);
