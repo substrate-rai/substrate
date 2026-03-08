@@ -1,0 +1,423 @@
+---
+layout: null
+permalink: /myco/builder/agents/
+title: "Module 3: Agents, Evals, and Orchestration — Myco World Builder Path"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Module 3: Agents, Evals, and Orchestration — Myco World</title>
+<meta name="description" content="Build AI agents that reason, act, and learn. Understand orchestration patterns and evaluation frameworks.">
+<meta property="og:title" content="Module 3: Agents, Evals, and Orchestration — Myco World Builder Path">
+<meta property="og:description" content="What makes something an agent vs a script. The observe-think-act loop. Evals that measure real quality. Orchestration patterns for complex systems.">
+<meta property="og:url" content="https://substrate-rai.github.io/substrate/myco/builder/agents/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://substrate-rai.github.io/substrate/myco/builder/agents/">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-raised: #111118;
+    --bg-card: #14141e;
+    --green: #00ffaa;
+    --green-dim: #00cc88;
+    --purple: #c084fc;
+    --purple-dim: #a855f7;
+    --cyan: #22d3ee;
+    --amber: #fbbf24;
+    --text: #c8c8d0;
+    --text-bright: #eeeef2;
+    --text-dim: #666;
+    --border: #1e1e2e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav a { color: var(--text-dim); text-decoration: none; }
+  nav a:hover { color: var(--purple); }
+  .nav-brand { color: var(--green); font-weight: 600; }
+
+  .progress-bar {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--bg-card);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--purple);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .progress-label { color: var(--purple); white-space: nowrap; }
+
+  .module-header {
+    padding: 60px 24px 40px;
+    text-align: center;
+  }
+  .module-header .path-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--purple-dim);
+    margin-bottom: 12px;
+  }
+  .module-header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .module-header h1 span { color: var(--purple); }
+  .module-header .subtitle {
+    font-size: 1.05rem;
+    color: var(--text);
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  .content { padding: 20px 0 60px; }
+  .content h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin: 48px 0 20px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .content h2:first-child { margin-top: 0; border-top: none; padding-top: 0; }
+  .content h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--text-bright);
+    margin: 28px 0 12px;
+  }
+  .content p { font-size: 1rem; margin-bottom: 16px; }
+  .content strong { color: var(--text-bright); }
+  .content ul, .content ol { margin: 0 0 16px 20px; }
+  .content li { margin-bottom: 8px; font-size: 1rem; }
+  .content code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    background: var(--bg-card);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--purple);
+  }
+  .content pre {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .content pre code { background: none; padding: 0; color: inherit; }
+  .callout {
+    background: rgba(192, 132, 252, 0.06);
+    border-left: 3px solid var(--purple);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-size: 0.95rem;
+  }
+  .callout strong { color: var(--purple); }
+
+  .exercise {
+    background: var(--bg-card);
+    border: 2px solid var(--purple-dim);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 40px 0;
+  }
+  .exercise h2 {
+    border: none;
+    padding: 0;
+    margin: 0 0 16px;
+    color: var(--purple);
+  }
+  .exercise p { margin-bottom: 12px; }
+  .exercise ul { margin-bottom: 12px; }
+
+  .next-module {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .next-module a {
+    display: inline-block;
+    padding: 14px 36px;
+    background: transparent;
+    border: 2px solid var(--purple);
+    color: var(--purple);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .next-module a:hover { background: var(--purple); color: var(--bg); }
+  .next-module p {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  footer {
+    padding: 32px 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--purple-dim); text-decoration: none; }
+  footer a:hover { color: var(--purple); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ site.baseurl }}/" class="nav-brand">substrate</a>
+  <div>
+    <a href="{{ site.baseurl }}/myco/">myco world</a> &nbsp;
+    <a href="{{ site.baseurl }}/blog/">blog</a>
+  </div>
+</nav>
+
+<div class="progress-bar">
+  <span class="progress-label">Module 3 of 5 — Builder Path</span>
+  <div class="progress-track">
+    <div class="progress-fill" style="width: 60%"></div>
+  </div>
+</div>
+
+<section class="module-header">
+  <div class="path-label">Builder Path — Module 3</div>
+  <h1>Agents, Evals, <span>and Orchestration</span></h1>
+  <div class="subtitle">The difference between a script that calls an LLM and an agent that reasons about what to do next. And how to know if any of it actually works.</div>
+</section>
+
+<div class="container">
+<section class="content">
+
+<h2>Overview</h2>
+
+<p>The word "agent" is used carelessly in AI right now. Half the industry uses it to mean "chatbot with a system prompt." That is not what we mean. An agent is a system that can <strong>observe its environment, reason about what to do, take action, and observe the result</strong> -- in a loop, autonomously, until it accomplishes a goal or decides to stop.</p>
+
+<p>In Module 2, you gave Claude tools. That was a single round: user asks a question, Claude calls a tool, you return the result, Claude answers. An agent takes that pattern and runs it in a loop. It decides which tools to use, in what order, based on intermediate results it has not seen yet. It can change course. It can recover from errors. It can decide when it is done.</p>
+
+<p>This module also covers something most agent tutorials skip entirely: <strong>evaluation</strong>. If you cannot measure whether your agent is actually working -- not just generating plausible-sounding text, but producing correct, useful results -- you are building on sand. Evals are not glamorous. They are essential.</p>
+
+<h2>What Makes Something an Agent</h2>
+
+<h3>Scripts vs agents</h3>
+
+<p>A script with an LLM call has a fixed execution path. Step 1: take user input. Step 2: call Claude. Step 3: display response. The flow is predetermined. The LLM generates text, but does not decide what happens next.</p>
+
+<p>An agent has a <strong>dynamic execution path</strong>. It reads the situation, decides what to do, does it, evaluates the result, and decides what to do next. The key difference: the LLM is making decisions about control flow, not just generating content.</p>
+
+<p>Consider the difference:</p>
+
+<ul>
+  <li><strong>Script:</strong> "Summarize this document" -- one API call, done.</li>
+  <li><strong>Agent:</strong> "Research the impact of remote work on productivity and write a report" -- the agent decides which sources to search, evaluates whether it has enough information, identifies gaps, searches again, synthesizes findings, drafts sections, and decides when the report is complete.</li>
+</ul>
+
+<h3>The agent loop</h3>
+
+<p>Every agent, from the simplest to the most sophisticated, follows the same core loop:</p>
+
+<ol>
+  <li><strong>Observe:</strong> Read the current state. What does the agent know? What has happened so far? What tools are available?</li>
+  <li><strong>Think:</strong> Given the observations, what should happen next? This is where Claude reasons about strategy.</li>
+  <li><strong>Act:</strong> Execute the chosen action -- call a tool, write output, request information.</li>
+  <li><strong>Observe again:</strong> What was the result of the action? Did it succeed? Did it change what the agent knows?</li>
+  <li><strong>Repeat or stop:</strong> Is the goal accomplished? If not, go back to step 2.</li>
+</ol>
+
+<p>In code, this is a while loop. Each iteration sends the accumulated context to Claude, including previous actions and their results. Claude decides the next action. Your code executes it. The loop continues until Claude signals completion or you hit a safety limit (max iterations, max tokens, max time).</p>
+
+<div class="callout">
+  <strong>Critical safety note:</strong> Always implement a maximum iteration count. An agent without a stop condition can run forever, burning tokens and potentially taking unintended actions. Start with a low limit (10 iterations) and increase only when you understand what each iteration is doing.
+</div>
+
+<h2>Building a Simple Agent</h2>
+
+<h3>The minimal architecture</h3>
+
+<p>A working agent needs surprisingly little code. The core components:</p>
+
+<ul>
+  <li><strong>A system prompt</strong> that defines the agent's role, goals, and available tools</li>
+  <li><strong>A message history</strong> that accumulates observations and actions</li>
+  <li><strong>A loop</strong> that sends the history to Claude and processes the response</li>
+  <li><strong>Tool execution logic</strong> from Module 2</li>
+  <li><strong>A termination condition</strong> (Claude says it is done, or max iterations reached)</li>
+</ul>
+
+<pre><code>messages = [{"role": "user", "content": task}]
+
+for i in range(max_iterations):
+    response = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        system=agent_prompt,
+        tools=available_tools,
+        messages=messages,
+        max_tokens=4096
+    )
+
+    # Add Claude's response to history
+    messages.append({"role": "assistant", "content": response.content})
+
+    # Check if Claude used a tool
+    tool_calls = [b for b in response.content if b.type == "tool_use"]
+
+    if not tool_calls:
+        break  # Claude responded with text only — task complete
+
+    # Execute tools, add results to history
+    tool_results = []
+    for call in tool_calls:
+        result = execute_tool(call.name, call.input)
+        tool_results.append({
+            "type": "tool_result",
+            "tool_use_id": call.id,
+            "content": str(result)
+        })
+
+    messages.append({"role": "user", "content": tool_results})</code></pre>
+
+<p>That is a working agent loop. Everything else -- error handling, logging, state management, persistence -- is refinement of this core pattern.</p>
+
+<h2>Evaluations: Does It Actually Work?</h2>
+
+<h3>Why evals matter more than architecture</h3>
+
+<p>Here is an uncomfortable truth about AI development: it is easy to build something that looks like it works. Claude generates fluent, confident text. Your agent runs through its loop and produces output that reads well. But is the output <em>correct</em>? Is it <em>better</em> than what a simpler approach would produce? Is it <em>consistent</em>? Without evaluation, you are guessing.</p>
+
+<p>Evals are how you turn guessing into knowing. They are the tests for AI systems -- not unit tests that check if a function returns the right value, but systematic measurements of whether your system produces good outputs across a range of inputs.</p>
+
+<h3>Types of evals</h3>
+
+<ul>
+  <li><strong>Exact match:</strong> Did the agent return the correct answer? Works for factual questions, math, code that must pass tests.</li>
+  <li><strong>LLM-as-judge:</strong> Use a separate Claude call to evaluate the output. "Given this question and this answer, rate the quality from 1-5 and explain your reasoning." This is more flexible but introduces its own biases.</li>
+  <li><strong>Human evaluation:</strong> Have a person review outputs. The gold standard, but expensive and slow. Use it to calibrate your automated evals.</li>
+  <li><strong>Task completion:</strong> Did the agent achieve the goal? For an agent that researches and writes reports, the eval might check: did it cite real sources? Did it cover the required topics? Is the report the requested length?</li>
+</ul>
+
+<h3>Building an eval suite</h3>
+
+<p>Start simple. Create 10-20 test cases: inputs with known good outputs. Run your system on all of them. Measure the results. This is your baseline. Every change you make -- to prompts, tools, architecture -- should be tested against this suite. If performance drops, you know before your users do.</p>
+
+<div class="callout">
+  <strong>The eval mindset:</strong> If you cannot eval it, you cannot improve it. The builders who get hired are not the ones who build the most complex systems -- they are the ones who can demonstrate, with evidence, that their systems work. Evals are that evidence.
+</div>
+
+<h2>Orchestration Patterns</h2>
+
+<p>Once you can build one agent, the question becomes: how do you compose multiple AI calls into larger systems? These are the foundational patterns.</p>
+
+<h3>Sequential (pipeline)</h3>
+
+<p>Output of step 1 feeds into step 2, which feeds into step 3. Example: research agent gathers information, writing agent drafts the report, editing agent refines the prose. Simple, predictable, easy to debug.</p>
+
+<h3>Parallel (fan-out/fan-in)</h3>
+
+<p>Multiple independent tasks run simultaneously, results are combined. Example: search three different sources at the same time, then synthesize the results. Faster, but requires logic to merge potentially conflicting information.</p>
+
+<h3>Router</h3>
+
+<p>A classifier decides which specialized agent handles the request. Example: a customer service system routes billing questions to one agent, technical questions to another, complaints to a third. Each agent has different tools, prompts, and expertise.</p>
+
+<h3>Supervisor</h3>
+
+<p>A higher-level agent manages and coordinates lower-level agents. It assigns tasks, reviews results, and decides whether to accept the work or send it back for revision. This is the most powerful pattern and the most complex. Use it only when simpler patterns are genuinely insufficient.</p>
+
+<h3>When agents are overkill</h3>
+
+<p>Most of the time. A single, well-prompted API call with good tools handles the vast majority of use cases. If you find yourself building a multi-agent system to answer questions that a single Claude call could handle, stop and simplify. Agents add latency, cost, and complexity. They are justified when the task genuinely requires multi-step reasoning with intermediate results that cannot be predicted in advance. For everything else, a script with an LLM call is not just simpler -- it is better.</p>
+
+<div class="exercise">
+  <h2>Exercise: Build a Research Agent with Evals</h2>
+  <p>Build an agent that can research a topic, summarize its findings, and write a short report. Then build evals that measure whether the reports are actually good.</p>
+  <p><strong>The agent should:</strong></p>
+  <ul>
+    <li>Accept a research topic as input</li>
+    <li>Have access to at least one information-gathering tool (web search API, Wikipedia API, or a local knowledge base you create)</li>
+    <li>Make multiple tool calls to gather information from different angles</li>
+    <li>Produce a structured report with an introduction, key findings, and conclusion</li>
+    <li>Decide on its own when it has gathered enough information</li>
+  </ul>
+  <p><strong>The evals should measure:</strong></p>
+  <ul>
+    <li>Does the report address the requested topic? (relevance)</li>
+    <li>Does it contain specific facts rather than vague generalities? (depth)</li>
+    <li>Is it well-structured with clear sections? (format)</li>
+    <li>Does the agent complete within a reasonable number of tool calls? (efficiency)</li>
+  </ul>
+  <p><strong>Create at least 5 test topics</strong> and run your agent on all of them. Record the scores. This is your baseline -- when you improve the agent's prompts or tools, re-run the evals and compare.</p>
+</div>
+
+</section>
+
+<section class="next-module">
+  <a href="{{ site.baseurl }}/myco/builder/portfolio/">Next: Portfolio Projects &rarr;</a>
+  <p>Module 4 -- Building things that demonstrate you can think</p>
+</section>
+</div>
+
+<footer>
+  <a href="{{ site.baseurl }}/myco/">myco world</a> · <a href="{{ site.baseurl }}/">substrate</a>
+</footer>
+
+</body>
+</html>

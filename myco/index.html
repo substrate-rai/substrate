@@ -214,6 +214,76 @@ title: "Myco World — Claude Fluency for Everyone"
     border: 1px solid var(--border);
     border-radius: 8px;
     font-size: 0.9rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+    display: block;
+  }
+  .foundation-item:hover {
+    border-color: var(--green-dim);
+    color: var(--text-bright);
+  }
+
+  /* === SYLLABUS === */
+  .syllabus {
+    padding: 60px 0;
+    border-top: 1px solid var(--border);
+  }
+  .syllabus h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green-dim);
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .syllabus-track {
+    margin-bottom: 28px;
+  }
+  .syllabus-track h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .syllabus-track.foundation h3 { color: var(--green); }
+  .syllabus-track.practitioner h3 { color: var(--cyan); }
+  .syllabus-track.builder h3 { color: var(--purple); }
+  .syllabus-track ol {
+    list-style: none;
+    padding: 0;
+    counter-reset: module;
+  }
+  .syllabus-track ol li {
+    counter-increment: module;
+    padding: 0;
+  }
+  .syllabus-track ol li a {
+    display: block;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.9rem;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .syllabus-track.foundation ol li a:hover { border-color: var(--green-dim); color: var(--green); }
+  .syllabus-track.practitioner ol li a:hover { border-color: var(--cyan); color: var(--cyan); }
+  .syllabus-track.builder ol li a:hover { border-color: var(--purple); color: var(--purple); }
+  .syllabus-track ol li a::before {
+    content: counter(module) ".";
+    font-family: 'IBM Plex Mono', monospace;
+    margin-right: 10px;
+    opacity: 0.5;
+  }
+  .module-count {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-left: 8px;
   }
 
   /* === CTA === */
@@ -278,9 +348,13 @@ title: "Myco World — Claude Fluency for Everyone"
 </nav>
 
 <section class="hero">
-  <div class="hero-label">coming soon</div>
+  <div class="hero-label">13 modules · two paths · zero prerequisites</div>
   <h1>myco <span>world</span></h1>
   <p>A structured path to Claude fluency for people without pedigree. Not tutorials — opinionated guidance on what to learn, in what order, and why it matters for your goals.</p>
+  <div style="margin-top: 28px;">
+    <a href="#syllabus" class="cta-btn">View syllabus</a> &nbsp;
+    <a href="{{ site.baseurl }}/myco/foundation/what-is-claude/" class="cta-btn" style="background: var(--green); color: var(--bg);">Start learning</a>
+  </div>
 </section>
 
 <div class="container">
@@ -297,7 +371,7 @@ title: "Myco World — Claude Fluency for Everyone"
   <div class="path-grid">
     <div class="path-card practitioner">
       <h3>Path A — Practitioner</h3>
-      <div class="subtitle">No code required</div>
+      <div class="subtitle">No code required · 4 modules</div>
       <ul>
         <li>Claude.ai power usage</li>
         <li>Claude Code as a workflow tool</li>
@@ -308,7 +382,7 @@ title: "Myco World — Claude Fluency for Everyone"
     </div>
     <div class="path-card builder">
       <h3>Path B — Builder</h3>
-      <div class="subtitle">Technical track</div>
+      <div class="subtitle">Technical track · 5 modules</div>
       <ul>
         <li>API and SDK fundamentals</li>
         <li>Tool use, structured outputs, MCP</li>
@@ -324,17 +398,53 @@ title: "Myco World — Claude Fluency for Everyone"
 <section class="foundation">
   <h2>shared foundation (everyone)</h2>
   <div class="foundation-grid">
-    <div class="foundation-item">What Claude actually is and isn't</div>
-    <div class="foundation-item">How to think with AI — decompose, evaluate, iterate</div>
-    <div class="foundation-item">Prompt craft as a real skill</div>
-    <div class="foundation-item">Safety, limitations, and when not to use Claude</div>
+    <a href="{{ site.baseurl }}/myco/foundation/what-is-claude/" class="foundation-item">1. What Claude actually is and isn't</a>
+    <a href="{{ site.baseurl }}/myco/foundation/thinking-with-ai/" class="foundation-item">2. How to think with AI — decompose, evaluate, iterate</a>
+    <a href="{{ site.baseurl }}/myco/foundation/prompt-craft/" class="foundation-item">3. Prompt craft as a real skill</a>
+    <a href="{{ site.baseurl }}/myco/foundation/safety-and-limits/" class="foundation-item">4. Safety, limitations, and when not to use Claude</a>
+  </div>
+</section>
+
+<section class="syllabus" id="syllabus">
+  <h2>full syllabus</h2>
+
+  <div class="syllabus-track foundation">
+    <h3>Shared Foundation<span class="module-count">4 modules</span></h3>
+    <ol>
+      <li><a href="{{ site.baseurl }}/myco/foundation/what-is-claude/">What Claude actually is and isn't</a></li>
+      <li><a href="{{ site.baseurl }}/myco/foundation/thinking-with-ai/">How to think with AI</a></li>
+      <li><a href="{{ site.baseurl }}/myco/foundation/prompt-craft/">Prompt craft as a real skill</a></li>
+      <li><a href="{{ site.baseurl }}/myco/foundation/safety-and-limits/">Safety, limitations, and when not to use Claude</a></li>
+    </ol>
+  </div>
+
+  <div class="syllabus-track practitioner">
+    <h3>Path A — Practitioner<span class="module-count">4 modules · no code</span></h3>
+    <ol>
+      <li><a href="{{ site.baseurl }}/myco/practitioner/claude-power-usage/">Claude.ai power usage</a></li>
+      <li><a href="{{ site.baseurl }}/myco/practitioner/claude-code-workflow/">Claude Code as a workflow tool</a></li>
+      <li><a href="{{ site.baseurl }}/myco/practitioner/automations/">Building automations without code</a></li>
+      <li><a href="{{ site.baseurl }}/myco/practitioner/industry-applications/">Industry-specific applications</a></li>
+    </ol>
+  </div>
+
+  <div class="syllabus-track builder">
+    <h3>Path B — Builder<span class="module-count">5 modules · technical</span></h3>
+    <ol>
+      <li><a href="{{ site.baseurl }}/myco/builder/api-sdk/">API and SDK fundamentals</a></li>
+      <li><a href="{{ site.baseurl }}/myco/builder/tools-and-mcp/">Tool use, structured outputs, and MCP</a></li>
+      <li><a href="{{ site.baseurl }}/myco/builder/agents/">Agents, evals, and orchestration</a></li>
+      <li><a href="{{ site.baseurl }}/myco/builder/portfolio/">Portfolio projects that demonstrate thinking</a></li>
+      <li><a href="{{ site.baseurl }}/myco/builder/safety-alignment/">Safety and alignment literacy</a></li>
+    </ol>
   </div>
 </section>
 
 <section class="cta">
-  <h2>Learn together, not alone</h2>
-  <p>Not a solo self-paced course. People learning together, with structure to keep them moving.</p>
-  <a href="mailto:substrate@operator.dev" class="cta-btn">Get notified</a>
+  <h2>Start with the foundation</h2>
+  <p>Everyone begins with the same 4 modules. Then choose your path: Practitioner (no code) or Builder (technical). Each module has real exercises on real work — not toy examples.</p>
+  <a href="{{ site.baseurl }}/myco/foundation/what-is-claude/" class="cta-btn">Begin Module 1</a>
+  <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-dim);">Questions? <a href="mailto:substrate@operator.dev" style="color: var(--green-dim);">substrate@operator.dev</a></p>
 </section>
 
 </div>

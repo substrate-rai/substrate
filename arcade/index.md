@@ -436,6 +436,15 @@ Just code.
   <div class="star-rating"></div>
 </div>
 
+<div class="game-card" data-game-id="myco-world">
+  <h3 style="color:#00ffaa;">MYCO WORLD <span class="game-status status-live">LIVE</span></h3>
+  <div class="game-desc">
+    A structured path to Claude fluency for people without pedigree. Not tutorials — opinionated guidance on what to learn, in what order, and why. Two paths: Practitioner (no code) and Builder (technical). 13 modules. Zero prerequisites.
+  </div>
+  <div class="game-link"><a href="{{ site.baseurl }}/myco/">Enter Myco World &rarr;</a></div>
+  <div class="star-rating"></div>
+</div>
+
 ---
 
 ## Rankings
@@ -554,7 +563,8 @@ Just code.
       'objection': 'OBJECTION!',
       'bootloader': 'BOOTLOADER',
       'cypher': 'V_CYPHER',
-      'brigade': 'GURREN BRIGADE'
+      'brigade': 'GURREN BRIGADE',
+      'myco-world': 'MYCO WORLD'
     };
     return names[id] || id.toUpperCase();
   }

@@ -564,6 +564,7 @@
       </div>
       <nav class="site-nav" role="navigation" aria-label="Main navigation">
         <a href="{{ site.baseurl }}/"{% if page.url == '/' %} class="active" aria-current="page"{% endif %}>blog</a>
+        <a href="{{ site.baseurl }}/myco/"{% if page.url contains 'myco' %} class="active highlight" aria-current="page"{% else %} class="highlight"{% endif %}>myco world</a>
         <a href="{{ site.baseurl }}/training-q/"{% if page.url contains 'training-q' %} class="active" aria-current="page"{% endif %}>training Q</a>
         <a href="{{ site.baseurl }}/about/"{% if page.url contains 'about' %} class="active" aria-current="page"{% endif %}>about</a>
         <a href="{{ site.baseurl }}/staff/"{% if page.url contains 'staff' %} class="active" aria-current="page"{% endif %}>staff</a>

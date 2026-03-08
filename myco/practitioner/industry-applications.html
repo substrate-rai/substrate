@@ -1,0 +1,424 @@
+---
+layout: null
+permalink: /myco/practitioner/industry-applications/
+title: "Industry-Specific Applications — Myco World Practitioner Path"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Industry-Specific Applications — Myco World</title>
+<meta name="description" content="Module 4 of the Practitioner Path. Apply everything you have learned to your specific industry. Build a personal playbook. Become dangerous in your own domain.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-raised: #111118;
+    --bg-card: #14141e;
+    --green: #00ffaa;
+    --green-dim: #00cc88;
+    --cyan: #22d3ee;
+    --cyan-dim: #19a8b8;
+    --amber: #fbbf24;
+    --text: #c8c8d0;
+    --text-bright: #eeeef2;
+    --text-dim: #666;
+    --border: #1e1e2e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* === NAV === */
+  nav {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav a { color: var(--text-dim); text-decoration: none; }
+  nav a:hover { color: var(--cyan); }
+  .nav-brand { color: var(--green); font-weight: 600; }
+
+  /* === PROGRESS === */
+  .progress-bar {
+    padding: 14px 24px;
+    background: var(--bg-raised);
+    border-bottom: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan-dim);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .progress-dots {
+    display: flex;
+    gap: 8px;
+  }
+  .progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan-dim);
+    background: transparent;
+  }
+  .progress-dot.active {
+    background: var(--cyan);
+    border-color: var(--cyan);
+  }
+  .progress-dot.complete {
+    background: var(--cyan-dim);
+    border-color: var(--cyan-dim);
+  }
+
+  /* === HEADER === */
+  .module-header {
+    padding: 60px 24px 40px;
+    text-align: center;
+  }
+  .module-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cyan-dim);
+    margin-bottom: 12px;
+  }
+  .module-header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .module-header h1 span { color: var(--cyan); }
+  .module-header p {
+    font-size: 1rem;
+    color: var(--text);
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  /* === CONTENT === */
+  .content {
+    padding: 40px 0 60px;
+  }
+  .content h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin: 48px 0 20px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+  .content h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .content h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--text-bright);
+    margin: 28px 0 12px;
+  }
+  .content p {
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .content strong { color: var(--text-bright); }
+  .content ul, .content ol {
+    margin: 12px 0 20px 20px;
+    font-size: 0.95rem;
+  }
+  .content li {
+    margin-bottom: 8px;
+  }
+
+  /* === CALLOUT === */
+  .callout {
+    background: rgba(34,211,238,0.06);
+    border-left: 3px solid var(--cyan);
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+  }
+  .callout strong { color: var(--cyan); }
+
+  /* === EXERCISE === */
+  .exercise {
+    background: var(--bg-card);
+    border: 1px solid var(--cyan-dim);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 40px 0;
+  }
+  .exercise h2 {
+    border: none;
+    padding-top: 0;
+    margin-top: 0;
+    color: var(--cyan);
+    margin-bottom: 16px;
+  }
+  .exercise p {
+    font-size: 0.95rem;
+  }
+  .exercise ol {
+    margin: 12px 0 0 20px;
+  }
+  .exercise li {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+
+  /* === COMPLETION === */
+  .completion {
+    background: linear-gradient(135deg, rgba(34,211,238,0.08) 0%, rgba(34,211,238,0.02) 100%);
+    border: 2px solid var(--cyan);
+    border-radius: 16px;
+    padding: 40px 32px;
+    margin: 48px 0;
+    text-align: center;
+  }
+  .completion-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 16px;
+  }
+  .completion h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.5rem;
+    color: var(--text-bright);
+    margin-bottom: 20px;
+    border: none;
+    padding: 0;
+    letter-spacing: 0;
+    text-transform: none;
+    text-align: center;
+  }
+  .completion p {
+    font-size: 0.95rem;
+    max-width: 540px;
+    margin: 0 auto 16px;
+  }
+  .completion .tagline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--cyan);
+    font-weight: 700;
+    margin-top: 24px;
+  }
+
+  /* === NAV FOOTER === */
+  .module-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  .module-nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 1px solid var(--cyan-dim);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .module-nav a:hover {
+    background: rgba(34,211,238,0.1);
+    border-color: var(--cyan);
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: 32px 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--green-dim); text-decoration: none; }
+  footer a:hover { color: var(--green); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ site.baseurl }}/" class="nav-brand">substrate</a>
+  <div>
+    <a href="{{ site.baseurl }}/myco/">myco world</a> &nbsp;
+    <a href="{{ site.baseurl }}/about/">about</a>
+  </div>
+</nav>
+
+<div class="progress-bar">
+  <span>Module 4 of 4 — Practitioner Path</span>
+  <div class="progress-dots">
+    <div class="progress-dot complete"></div>
+    <div class="progress-dot complete"></div>
+    <div class="progress-dot complete"></div>
+    <div class="progress-dot active"></div>
+  </div>
+</div>
+
+<section class="module-header">
+  <div class="module-label">Practitioner Module 4</div>
+  <h1>Industry-Specific <span>Applications</span></h1>
+  <p>Everything you have learned — Projects, Claude Code, automations — applied to the specific problems in your domain. This is where general fluency becomes professional advantage.</p>
+</section>
+
+<div class="container">
+<section class="content">
+
+  <h2>Overview</h2>
+  <p>The first three modules gave you tools. This module teaches you to aim them.</p>
+  <p>The difference between someone who knows how to use Claude and someone who is dangerous with Claude is domain specificity. Generic prompts get generic results. Prompts shaped by deep knowledge of your industry, your clients, your workflows — those get results that make colleagues ask what changed.</p>
+  <p>We will walk through three industries in detail: real estate, IT/MSP, and small business operations. Even if yours is not listed, the methodology applies everywhere. The point is not the specific examples. The point is learning to find the Claude sweet spots in any domain — the places where AI capability and industry need overlap to create disproportionate value.</p>
+
+  <h2>Real Estate</h2>
+  <p>Real estate professionals drown in information — property data, market comparables, regulations, client preferences, listing descriptions, inspection reports, financial projections. Most of it requires reading, synthesizing, and producing written output. This is exactly what Claude does best.</p>
+
+  <h3>Property analysis</h3>
+  <p>Upload a property listing, inspection report, or appraisal to Claude and ask for a structured analysis. "Based on this inspection report, identify every item that will cost more than $1,000 to address. Categorize by structural, mechanical, electrical, and cosmetic. Estimate a total repair budget range." This turns a 30-page inspection report into actionable intelligence in 2 minutes.</p>
+  <p>For investment properties: feed Claude the listing data, comparable sales, and local rent data. Ask for a cash flow analysis, cap rate calculation, and investment thesis. You still make the investment decision. Claude does the math and structures the analysis so you can think clearly about the opportunity.</p>
+
+  <h3>Listing generation</h3>
+  <p>Build a Claude Project for listings. Upload your agency's style guide, your best-performing past listings — the ones that generated the most inquiries — and the MLS requirements for your market. Set a system prompt: "You write property listings for [agency] in [market]. Match the tone of the uploaded examples. Always include neighborhood context. Never use the words 'stunning,' 'gorgeous,' or 'dream home.'" Now every listing starts at 80% quality and takes 5 minutes of editing instead of 30 minutes of writing from scratch.</p>
+
+  <h3>Market research and client communication</h3>
+  <p>Upload market data exports and ask Claude to produce client-ready market summaries. "Create a market update for buyers looking in [neighborhood]. Include median price trends, inventory levels, average days on market, and what this means for their negotiating position." Claude transforms raw data into the kind of informed communication that builds client trust and differentiates you from agents who just forward MLS alerts.</p>
+
+  <div class="callout">
+    <strong>The real estate sweet spot:</strong> Anything that involves reading a long document and producing a shorter, more useful document. Inspection reports to repair budgets. Appraisals to investment summaries. Market data to client updates. That read-heavy, write-light transformation is where Claude saves the most time in this industry.
+  </div>
+
+  <h2>IT / MSP</h2>
+  <p>IT and managed service provider work is documentation-heavy, process-driven, and constantly interrupted by urgent tickets. Claude fits into this workflow at almost every stage.</p>
+
+  <h3>Documentation</h3>
+  <p>Technical documentation is the work everyone knows is important and nobody has time to do. Claude changes the economics entirely. After resolving an issue, describe what happened to Claude and ask for a knowledge base article. "I just resolved a VPN connectivity issue for a client running FortiGate 60F. The problem was a mismatched Phase 2 selector. Write a KB article that includes symptoms, root cause, resolution steps, and prevention." In 60 seconds, you have documentation that would otherwise never get written.</p>
+  <p>Use Claude Code to process your existing documentation: "Read every file in our docs/ folder and create an index organized by topic. Flag any documents that have not been updated in more than 12 months."</p>
+
+  <h3>Ticket triage and response</h3>
+  <p>Build a Claude Project for ticket handling. Upload your standard operating procedures, your SLA definitions, your escalation matrix. When a ticket comes in, paste the description and ask: "Classify this ticket by priority and category per our SLA definitions. Draft an initial response acknowledging the issue. Suggest resolution steps based on our SOPs." The tier-1 technician gets a head start on every ticket. Response times drop. Consistency improves. Client satisfaction goes up.</p>
+
+  <h3>Client reporting and SOW generation</h3>
+  <p>Monthly client reports are time sinks that most MSPs dread. Automate the draft: export your ticket data and system monitoring summaries, feed them to Claude, and ask for a narrative report. "Create a monthly IT service report for [client]. Include ticket volume and resolution times, system uptime, completed projects, and recommendations for next month. Use professional but accessible language — the audience is the CFO, not the IT team."</p>
+  <p>For statements of work: build a Project with your past SOWs, your pricing structure, and your standard terms. Describe the project scope in plain language and Claude generates a draft SOW that matches your format, your terminology, and your pricing logic. Review, adjust, send.</p>
+
+  <h2>Small Business Operations</h2>
+  <p>Small business owners wear every hat. Claude is not a replacement for any of those hats — it is an extra pair of hands for each one.</p>
+
+  <h3>Marketing copy</h3>
+  <p>Build a marketing Project with your brand voice guide (or describe your brand voice in the system prompt if you do not have a formal guide), your product and service descriptions, and examples of marketing content you like. Then use it for everything: email campaigns, social media posts, website copy, ad variations, newsletter content. The key is the Project — without your brand context, Claude writes generic marketing. With it, Claude writes your marketing.</p>
+  <p>One high-leverage play: upload a long-form piece — a blog post, a case study, a customer testimonial — and ask Claude to generate 10 social media posts, 3 email subject lines, and a newsletter paragraph. Content repurposing is one of the highest-ROI uses of Claude for small business because you create once and distribute everywhere.</p>
+
+  <h3>Customer service</h3>
+  <p>Create a Project with your FAQ, your return and refund policy, your product documentation, and examples of how you want customer issues handled. When a complex customer email comes in, paste it into the Project and ask for a draft response. Claude's response will be informed by your actual policies and your actual tone. You review, adjust if needed, and send. The 15-minute email becomes a 2-minute review.</p>
+  <p>For pattern recognition: paste your last month of customer complaints into Claude and ask "What are the top 5 recurring issues, and what single operational change would most reduce complaint volume?" This is the kind of analysis most small businesses never do because they are too busy fighting fires to study the fire patterns.</p>
+
+  <h3>Operations and financial analysis</h3>
+  <p>Export your bookkeeping data or financial statements. Ask Claude: "Compare this quarter to last quarter. Identify the three most significant changes in revenue and expenses. For each change, suggest what might have caused it and whether it represents a trend or an anomaly." You are not asking Claude to be your accountant. You are asking it to be your analyst — to surface the patterns in data you are too busy to study yourself.</p>
+
+  <h2>Finding Your Domain's Sweet Spots</h2>
+  <p>If your industry was not covered above, here is the framework for finding where Claude creates the most value in any domain:</p>
+  <ol>
+    <li><strong>Map your information flows.</strong> Where does information come in? What do you do with it? What form does it leave in? Every transformation point is a potential Claude application.</li>
+    <li><strong>Identify the reading-to-writing ratio.</strong> Tasks where you read a lot and produce a shorter written output are Claude's strongest zone. Reports, summaries, analyses, recommendations.</li>
+    <li><strong>Find the consistency problems.</strong> Where does quality vary because it depends on who does the work or how much time they have? Claude delivers consistent quality regardless of volume or time pressure.</li>
+    <li><strong>Look for the expertise bottleneck.</strong> What work can only be done by the most experienced person because it requires deep domain knowledge? Build that knowledge into a Claude Project and let less experienced team members produce expert-level drafts.</li>
+    <li><strong>Spot the context-switching tax.</strong> What tasks force you to switch between multiple documents, systems, or data sources? Claude can hold all the context simultaneously and work across sources in a single conversation.</li>
+  </ol>
+
+  <div class="callout">
+    <strong>The 80/20 of domain application:</strong> In most industries, 3 to 5 Claude use cases will deliver the majority of the value. Find those first. Do not try to apply Claude to everything at once. Pick the task that wastes the most time or produces the most inconsistent quality, nail that one, then expand.
+  </div>
+
+  <h2>Building Your Personal Playbook</h2>
+  <p>A playbook is a collection of tested, refined, domain-specific prompts that reliably produce useful output for your work. It is the culmination of everything in this path: Projects from Module 1, file processing from Module 2, automations from Module 3, and domain expertise from this module.</p>
+  <p>A good playbook entry has:</p>
+  <ul>
+    <li><strong>A clear name:</strong> "Client Proposal Draft" not "Prompt 7"</li>
+    <li><strong>The use case:</strong> When you use this prompt and what triggers it</li>
+    <li><strong>The full prompt text:</strong> Including role, task, and output format</li>
+    <li><strong>Required inputs:</strong> What you need to provide — files, data, context</li>
+    <li><strong>Expected output:</strong> What good output looks like so you can evaluate quality</li>
+    <li><strong>Refinement notes:</strong> What you changed after testing and why it improved</li>
+  </ul>
+  <p>Start with 5 entries. These should be the 5 prompts you will use most frequently in your actual work. Not the most interesting — the most useful. The prompts that save you the most time or produce the highest-quality output for tasks that matter to your revenue, your clients, or your sanity.</p>
+  <p>Your playbook is a living document. As you use it, you will find prompts that need adjustment, new use cases that deserve an entry, and old entries that are no longer relevant. Update it regularly. A stale playbook is a dead one.</p>
+
+</section>
+
+<div class="exercise">
+  <h2>Exercise</h2>
+  <p><strong>Create a 5-prompt playbook for your specific industry and test each prompt on real work.</strong></p>
+  <p>This is your capstone exercise. It integrates everything from all four modules into a single deliverable that you will use long after this course is over.</p>
+  <ol>
+    <li><strong>Identify your top 5 use cases.</strong> What are the 5 tasks in your work where Claude can deliver the most value? Consider time savings, quality improvement, and frequency. Use the sweet-spot framework from this module.</li>
+    <li><strong>Write each prompt</strong> with full structure: role and context, task specification, output format. Use the template skills from Module 1.</li>
+    <li><strong>Set up the infrastructure.</strong> Create or update Claude Projects with relevant knowledge files. Build any Claude Code scripts or Zapier workflows from Modules 2 and 3 that support these use cases.</li>
+    <li><strong>Test each prompt on real work.</strong> Not sample data. Not hypotheticals. Use actual client materials, actual business data, actual deliverables you need to produce. Each prompt gets tested at least twice.</li>
+    <li><strong>Refine based on results.</strong> What was the output quality? What needed manual editing? Where did Claude miss something domain-specific? Adjust the prompts and test again.</li>
+    <li><strong>Document the playbook.</strong> For each entry: name, use case, full prompt, required inputs, expected output, and what you learned during testing.</li>
+  </ol>
+  <p>Your playbook is your graduation artifact. It is proof — to yourself and to anyone who asks — that you can apply AI systematically to real work in your domain.</p>
+</div>
+
+<div class="completion">
+  <div class="completion-label">Practitioner Path Complete</div>
+  <h2>You are dangerous now.</h2>
+  <p>You started with Claude as a chatbot. You now have Projects configured for your real work, Claude Code scripts that process your files, automations that run your recurring tasks, and a tested playbook of domain-specific prompts.</p>
+  <p>You did not learn to code. You learned something more valuable for your career: how to make AI work for you in your specific domain, on your specific problems, with your specific constraints.</p>
+  <p>The people who will thrive in the next decade are not all going to be engineers. Many of them will be practitioners — domain experts who learned to wield AI tools with precision. People who are not building the technology, but who are using it to become unreasonably effective at what they already do.</p>
+  <p><strong>What comes next:</strong> Keep building your playbook. Share what works with your team. When you hit a wall, come back to Myco World — advanced practitioner modules and a community of people solving the same kinds of problems are on the way. And if you caught the building bug during Module 2 or 3, the Builder Path is waiting.</p>
+  <p class="tagline">dangerous in your own domain</p>
+</div>
+
+<div class="module-nav">
+  <a href="{{ site.baseurl }}/myco/practitioner/automations/">&larr; Prev: Automations</a>
+  <a href="{{ site.baseurl }}/myco/">Back to Myco World &rarr;</a>
+</div>
+</div>
+
+<footer>
+  <a href="{{ site.baseurl }}/myco/">myco world</a> · a <a href="{{ site.baseurl }}/">substrate</a> project
+</footer>
+
+</body>
+</html>
