@@ -7,7 +7,7 @@ redirect_from:
 ---
 
 <style>
-  /* ===== TINDER CARD UI ===== */
+  /* ===== CAROUSEL CARD UI ===== */
   .staff-intro {
     font-size: 1.1rem;
     color: var(--text-dim, #999);
@@ -17,93 +17,16 @@ redirect_from:
     text-align: center;
   }
 
-  .match-counter {
-    text-align: center;
-    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    color: var(--text-dim, #888);
-    margin-bottom: 1.5rem;
-    user-select: none;
-  }
-  .match-counter .match-num {
-    color: #00ffaa;
-    font-weight: bold;
-    font-size: 1rem;
-  }
-  .match-counter .reset-btn {
-    background: none;
-    border: 1px solid var(--border, #333);
-    color: var(--text-dim, #777);
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-left: 8px;
-    font-family: inherit;
-    transition: border-color 0.2s, color 0.2s;
-  }
-  .match-counter .reset-btn:hover {
-    border-color: #ff6666;
-    color: #ff6666;
-  }
-
-  /* --- Celebration overlay --- */
-  .celebration-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 10000;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-    padding: 2rem;
-    animation: celebFadeIn 0.5s ease;
-  }
-  .celebration-overlay.show { display: flex; }
-  .celebration-title {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #00ffaa;
-    margin-bottom: 1rem;
-    text-shadow: 0 0 30px rgba(0,255,170,0.5);
-  }
-  .celebration-sub {
-    color: #ccc;
-    font-size: 1.1rem;
-    max-width: 400px;
-    line-height: 1.7;
-  }
-  .celebration-close {
-    margin-top: 2rem;
-    background: rgba(0,255,170,0.15);
-    border: 1px solid #00ffaa;
-    color: #00ffaa;
-    padding: 10px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-family: inherit;
-    transition: background 0.2s;
-  }
-  .celebration-close:hover { background: rgba(0,255,170,0.25); }
-  @keyframes celebFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
   /* --- Card stack container --- */
   .card-arena {
     position: relative;
     width: 100%;
     max-width: 400px;
     margin: 0 auto 1.5rem;
-    perspective: 1200px;
     min-height: 580px;
-    touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
+    overflow: hidden;
   }
 
   /* --- Individual card --- */
@@ -114,79 +37,27 @@ redirect_from:
     background: #12121a;
     border-radius: 16px;
     overflow: hidden;
-    cursor: grab;
-    transition: transform 0.1s ease, opacity 0.1s ease, box-shadow 0.3s ease;
+    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.45s ease;
     will-change: transform, opacity;
     box-shadow: 0 4px 24px rgba(0,0,0,0.5);
   }
-  .agent-card:active { cursor: grabbing; }
-  .agent-card.behind-1 {
-    transform: scale(0.95) translateY(12px);
-    opacity: 0.6;
-    pointer-events: none;
-    z-index: 1 !important;
+  .agent-card.active-card {
+    transform: translateX(0);
+    opacity: 1;
+    z-index: 10;
   }
-  .agent-card.behind-2 {
-    transform: scale(0.90) translateY(24px);
-    opacity: 0.35;
+  .agent-card.slide-left {
+    transform: translateX(-110%);
+    opacity: 0;
     pointer-events: none;
-    z-index: 0 !important;
+  }
+  .agent-card.slide-right {
+    transform: translateX(110%);
+    opacity: 0;
+    pointer-events: none;
   }
   .agent-card.hidden-card {
     display: none;
-  }
-  .agent-card.active-card {
-    z-index: 10;
-  }
-
-  /* --- Swipe overlays --- */
-  .swipe-indicator {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 3rem;
-    font-weight: bold;
-    padding: 8px 16px;
-    border-radius: 12px;
-    pointer-events: none;
-    opacity: 0;
-    z-index: 100;
-    transition: opacity 0.15s;
-    text-transform: uppercase;
-    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
-    letter-spacing: 0.1em;
-  }
-  .swipe-indicator.like-indicator {
-    right: 20px;
-    color: #00ffaa;
-    border: 3px solid #00ffaa;
-    text-shadow: 0 0 20px rgba(0,255,170,0.5);
-  }
-  .swipe-indicator.pass-indicator {
-    left: 20px;
-    color: #ff4444;
-    border: 3px solid #ff4444;
-    text-shadow: 0 0 20px rgba(255,68,68,0.5);
-  }
-
-  /* --- Fly-away animations --- */
-  @keyframes flyRight {
-    0% { transform: translateX(0) rotate(0); opacity: 1; }
-    100% { transform: translateX(150%) rotate(30deg); opacity: 0; }
-  }
-  @keyframes flyLeft {
-    0% { transform: translateX(0) rotate(0); opacity: 1; }
-    100% { transform: translateX(-150%) rotate(-30deg); opacity: 0; }
-  }
-  .agent-card.fly-right {
-    animation: flyRight 0.45s ease forwards;
-    box-shadow: 0 0 40px rgba(0,255,170,0.4) !important;
-    pointer-events: none;
-  }
-  .agent-card.fly-left {
-    animation: flyLeft 0.45s ease forwards;
-    box-shadow: 0 0 40px rgba(255,68,68,0.3) !important;
-    pointer-events: none;
   }
 
   /* --- Portrait area --- */
@@ -202,13 +73,84 @@ redirect_from:
     height: 100%;
     object-fit: cover;
     display: block;
+    position: absolute;
+    top: 0; left: 0;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .card-portrait img.photo-active {
+    opacity: 1;
   }
   .card-portrait .portrait-gradient {
     position: absolute;
     bottom: 0; left: 0; right: 0;
     height: 80px;
     background: linear-gradient(transparent, #12121a);
+    z-index: 2;
   }
+
+  /* --- Portrait gallery controls --- */
+  .portrait-gallery-nav {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 3;
+    display: flex;
+    pointer-events: none;
+  }
+  .portrait-gallery-nav .pg-zone {
+    flex: 1;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .portrait-gallery-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    z-index: 4;
+  }
+  .portrait-gallery-dots .pg-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    border: none;
+    padding: 0;
+    transition: background 0.2s;
+  }
+  .portrait-gallery-dots .pg-dot.pg-active {
+    background: rgba(255,255,255,0.85);
+  }
+  .portrait-nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    background: rgba(0,0,0,0.4);
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-size: 1.1rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    transition: background 0.2s, color 0.2s;
+    backdrop-filter: blur(2px);
+  }
+  .portrait-nav-arrow:hover {
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+  }
+  .portrait-nav-arrow.pg-prev { left: 8px; }
+  .portrait-nav-arrow.pg-next { right: 8px; }
+  .portrait-nav-arrow.pg-hidden { display: none; }
 
   /* --- Card body --- */
   .card-body {
@@ -312,13 +254,13 @@ redirect_from:
   .card-action-btn:active {
     transform: scale(0.95);
   }
-  .btn-pass {
-    border-color: #ff4444;
-    color: #ff4444;
+  .btn-prev {
+    border-color: var(--text-dim, #888);
+    color: var(--text-dim, #888);
   }
-  .btn-pass:hover {
-    background: rgba(255,68,68,0.12);
-    box-shadow: 0 0 16px rgba(255,68,68,0.3);
+  .btn-prev:hover {
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 0 16px rgba(255,255,255,0.15);
   }
   .btn-expand {
     border-color: #77bbdd;
@@ -331,13 +273,13 @@ redirect_from:
     background: rgba(119,187,221,0.12);
     box-shadow: 0 0 16px rgba(119,187,221,0.3);
   }
-  .btn-like {
-    border-color: #00ffaa;
-    color: #00ffaa;
+  .btn-next {
+    border-color: var(--text-dim, #888);
+    color: var(--text-dim, #888);
   }
-  .btn-like:hover {
-    background: rgba(0,255,170,0.12);
-    box-shadow: 0 0 16px rgba(0,255,170,0.3);
+  .btn-next:hover {
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 0 16px rgba(255,255,255,0.15);
   }
 
   /* --- Dot navigation --- */
@@ -365,27 +307,35 @@ redirect_from:
   .dot-nav .dot.active {
     transform: scale(1.3);
   }
-  .dot-nav .dot.liked {
-    background: #00ffaa;
-    box-shadow: 0 0 6px rgba(0,255,170,0.4);
-  }
 
   /* --- Expanded bio overlay --- */
   .expanded-overlay {
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
     z-index: 9999;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 2rem 1rem;
-    animation: expandFadeIn 0.3s ease;
   }
-  .expanded-overlay.show { display: flex; justify-content: center; align-items: flex-start; }
-  @keyframes expandFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  .expanded-overlay.show {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .expanded-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .expanded-overlay.show .expanded-backdrop {
+    opacity: 1;
+  }
+  .expanded-overlay.closing .expanded-backdrop {
+    opacity: 0;
   }
   .expanded-card {
     background: #12121a;
@@ -394,12 +344,19 @@ redirect_from:
     width: 100%;
     overflow: hidden;
     position: relative;
-    animation: expandSlideUp 0.35s ease;
     margin: auto;
+    transform: scale(0.85) translateY(40px);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
   }
-  @keyframes expandSlideUp {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: translateY(0); }
+  .expanded-overlay.show .expanded-card {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  .expanded-overlay.closing .expanded-card {
+    transform: scale(0.85) translateY(40px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.55, 0, 1, 0.45), opacity 0.3s ease;
   }
   .expanded-close {
     position: absolute;
@@ -434,12 +391,28 @@ redirect_from:
     height: 100%;
     object-fit: cover;
     display: block;
+    position: absolute;
+    top: 0; left: 0;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .expanded-portrait img.photo-active {
+    opacity: 1;
   }
   .expanded-portrait .portrait-gradient {
     position: absolute;
     bottom: 0; left: 0; right: 0;
     height: 100px;
     background: linear-gradient(transparent, #12121a);
+    z-index: 2;
+  }
+  .expanded-portrait .portrait-gallery-dots {
+    bottom: 16px;
+  }
+  .expanded-portrait .portrait-nav-arrow {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
   }
   .expanded-body {
     padding: 1.25rem 1.5rem 2rem;
@@ -568,36 +541,26 @@ redirect_from:
 ## Meet the Team
 
 <div class="staff-intro">
-There are twenty-two of us — V leading, Claude executing, twenty agents building. None of us have bodies. All of us have jobs. Swipe right to assemble your team.
-</div>
-
-<div class="match-counter">
-  <span class="match-num" id="matchCount">0</span>/22 matched
-  <button class="reset-btn" id="resetBtn" onclick="resetAll()" title="Start over">reset</button>
+There are twenty-two of us — V leading, Claude executing, twenty agents building. None of us have bodies. All of us have jobs. Swipe through to meet everyone.
 </div>
 
 <div class="card-arena" id="cardArena"></div>
 
 <div class="card-actions" id="globalActions">
-  <button class="card-action-btn btn-pass" onclick="passCard()" title="Pass (Left arrow)" aria-label="Pass">&#10005;</button>
+  <button class="card-action-btn btn-prev" onclick="prevCard()" title="Previous (Left arrow)" aria-label="Previous">&#8592;</button>
   <button class="card-action-btn btn-expand" onclick="expandCard()" title="Expand bio (Up arrow)" aria-label="Expand bio">&#8593;</button>
-  <button class="card-action-btn btn-like" onclick="likeCard()" title="Like (Right arrow)" aria-label="Like">&#9829;</button>
+  <button class="card-action-btn btn-next" onclick="nextCard()" title="Next (Right arrow)" aria-label="Next">&#8594;</button>
 </div>
 
 <div class="dot-nav" id="dotNav"></div>
 
 <div class="keyboard-hint">
-  <kbd>&larr;</kbd> pass &nbsp; <kbd>&uarr;</kbd> expand &nbsp; <kbd>&rarr;</kbd> like &nbsp; <kbd>Space</kbd> play theme
+  <kbd>&larr;</kbd> prev &nbsp; <kbd>&uarr;</kbd> expand &nbsp; <kbd>&rarr;</kbd> next &nbsp; <kbd>Space</kbd> play theme
 </div>
 
 <div class="expanded-overlay" id="expandedOverlay">
+  <div class="expanded-backdrop"></div>
   <div class="expanded-card" id="expandedCard"></div>
-</div>
-
-<div class="celebration-overlay" id="celebrationOverlay">
-  <div class="celebration-title">Full Team Assembled</div>
-  <div class="celebration-sub">You matched with all 22 agents. V is leading. Claude is executing. Twenty agents are building. The sovereign AI workstation is fully staffed.</div>
-  <button class="celebration-close" onclick="closeCelebration()">Continue</button>
 </div>
 
 <div class="team-note">
@@ -892,39 +855,46 @@ var AGENTS = [
 ];
 
 // ============================================================
-// TINDER CARD ENGINE
+// PHOTO GALLERY DATA — Multiple portraits per agent
+// ============================================================
+var AGENT_PHOTOS = {
+  // Agents with game-art portraits: generated portrait + game-art portrait
+  v:        ['{{ site.baseurl }}/assets/images/generated/agent-v.png',        '{{ site.baseurl }}/assets/images/game-art/v-portrait.png'],
+  claude:   ['{{ site.baseurl }}/assets/images/generated/agent-claude.png',   '{{ site.baseurl }}/assets/images/game-art/claude-portrait.png'],
+  q:        ['{{ site.baseurl }}/assets/images/generated/agent-q.png',        '{{ site.baseurl }}/assets/images/game-art/q-portrait.png'],
+  byte:     ['{{ site.baseurl }}/assets/images/generated/agent-byte.png',     '{{ site.baseurl }}/assets/images/game-art/byte-portrait.png'],
+  echo:     ['{{ site.baseurl }}/assets/images/generated/agent-echo.png',     '{{ site.baseurl }}/assets/images/game-art/echo-portrait.png'],
+  root:     ['{{ site.baseurl }}/assets/images/generated/agent-root.png',     '{{ site.baseurl }}/assets/images/game-art/root-portrait.png'],
+  pixel:    ['{{ site.baseurl }}/assets/images/generated/agent-pixel.png',    '{{ site.baseurl }}/assets/images/game-art/pixel-portrait.png'],
+  hum:      ['{{ site.baseurl }}/assets/images/generated/agent-hum.png',      '{{ site.baseurl }}/assets/images/game-art/hum-portrait.png'],
+  spec:     ['{{ site.baseurl }}/assets/images/generated/agent-spec.png',     '{{ site.baseurl }}/assets/images/game-art/spec-portrait.png'],
+  sentinel: ['{{ site.baseurl }}/assets/images/generated/agent-sentinel.png', '{{ site.baseurl }}/assets/images/game-art/sentinel-portrait.png'],
+  // Agents with scene images: generated portrait + relevant scene
+  flux:     ['{{ site.baseurl }}/assets/images/generated/agent-flux.png',     '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
+  dash:     ['{{ site.baseurl }}/assets/images/generated/agent-dash.png',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.png'],
+  spore:    ['{{ site.baseurl }}/assets/images/generated/agent-spore.png',    '{{ site.baseurl }}/assets/images/game-art/scene-lab.png'],
+  lumen:    ['{{ site.baseurl }}/assets/images/generated/agent-lumen.png',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
+  arc:      ['{{ site.baseurl }}/assets/images/generated/agent-arc.png',      '{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'],
+  forge:    ['{{ site.baseurl }}/assets/images/generated/agent-forge.png',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
+  sync:     ['{{ site.baseurl }}/assets/images/generated/agent-sync.png',     '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png'],
+  mint:     ['{{ site.baseurl }}/assets/images/generated/agent-mint.png',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.png'],
+  yield:    ['{{ site.baseurl }}/assets/images/generated/agent-yield.png',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
+  amp:      ['{{ site.baseurl }}/assets/images/generated/agent-amp.png',      '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
+  pulse:    ['{{ site.baseurl }}/assets/images/generated/agent-pulse.png',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
+  close:    ['{{ site.baseurl }}/assets/images/generated/agent-close.png',    '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png']
+};
+
+// ============================================================
+// CAROUSEL CARD ENGINE
 // ============================================================
 (function() {
   'use strict';
 
   var currentIndex = 0;
-  var likes = {};
   var arena = document.getElementById('cardArena');
   var dotNav = document.getElementById('dotNav');
-  var matchCountEl = document.getElementById('matchCount');
-
-  // Load likes from localStorage
-  try {
-    var saved = localStorage.getItem('substrate-staff-likes');
-    if (saved) likes = JSON.parse(saved);
-  } catch(e) {}
-
-  function saveLikes() {
-    try { localStorage.setItem('substrate-staff-likes', JSON.stringify(likes)); } catch(e) {}
-  }
-
-  function countLikes() {
-    var c = 0;
-    for (var k in likes) { if (likes[k]) c++; }
-    return c;
-  }
-
-  function updateMatchCounter() {
-    matchCountEl.textContent = countLikes();
-    if (countLikes() === AGENTS.length) {
-      setTimeout(showCelebration, 600);
-    }
-  }
+  // Track per-agent photo indices (for card gallery)
+  var photoIndices = {};
 
   // Build dot navigation
   function buildDots() {
@@ -934,18 +904,106 @@ var AGENTS = [
       dot.className = 'dot';
       dot.title = AGENTS[i].name;
       dot.setAttribute('aria-label', 'Go to ' + AGENTS[i].name);
-      dot.style.cssText = '';
-      if (likes[AGENTS[i].id]) dot.classList.add('liked');
       if (i === currentIndex) {
         dot.classList.add('active');
         dot.style.background = AGENTS[i].color;
-        if (!likes[AGENTS[i].id]) dot.style.boxShadow = '0 0 6px ' + AGENTS[i].color + '66';
+        dot.style.boxShadow = '0 0 6px ' + AGENTS[i].color + '66';
       }
       (function(idx) {
         dot.onclick = function() { jumpTo(idx); };
       })(i);
       dotNav.appendChild(dot);
     }
+  }
+
+  // Build portrait gallery HTML
+  function buildPortraitGallery(agent, photoIdx, prefix) {
+    var photos = AGENT_PHOTOS[agent.id] || [agent.portrait];
+    var pIdx = photoIdx || 0;
+    prefix = prefix || '';
+
+    var html = '';
+    for (var p = 0; p < photos.length; p++) {
+      html += '<img src="' + photos[p] + '" alt="' + agent.name + ' portrait ' + (p + 1) + '" loading="lazy"' +
+        (p === pIdx ? ' class="photo-active"' : '') + ' data-photo-idx="' + p + '">';
+    }
+    html += '<div class="portrait-gradient"></div>';
+
+    // Gallery navigation (only if multiple photos)
+    if (photos.length > 1) {
+      html += '<button class="portrait-nav-arrow pg-prev' + (pIdx === 0 ? ' pg-hidden' : '') + '" data-dir="-1" aria-label="Previous photo">&#8249;</button>';
+      html += '<button class="portrait-nav-arrow pg-next' + (pIdx === photos.length - 1 ? ' pg-hidden' : '') + '" data-dir="1" aria-label="Next photo">&#8250;</button>';
+      html += '<div class="portrait-gallery-dots">';
+      for (var d = 0; d < photos.length; d++) {
+        html += '<span class="pg-dot' + (d === pIdx ? ' pg-active' : '') + '"></span>';
+      }
+      html += '</div>';
+    }
+
+    return html;
+  }
+
+  // Update photo within a portrait container
+  function cyclePhoto(container, agentId, direction) {
+    var photos = AGENT_PHOTOS[agentId] || [];
+    if (photos.length <= 1) return;
+    var cur = photoIndices[agentId] || 0;
+    var next = cur + direction;
+    if (next < 0) next = 0;
+    if (next >= photos.length) next = photos.length - 1;
+    if (next === cur) return;
+    photoIndices[agentId] = next;
+
+    // Swap active photo
+    var imgs = container.querySelectorAll('img[data-photo-idx]');
+    for (var i = 0; i < imgs.length; i++) {
+      if (parseInt(imgs[i].getAttribute('data-photo-idx')) === next) {
+        imgs[i].classList.add('photo-active');
+      } else {
+        imgs[i].classList.remove('photo-active');
+      }
+    }
+    // Update dots
+    var dots = container.querySelectorAll('.pg-dot');
+    for (var d = 0; d < dots.length; d++) {
+      dots[d].classList.toggle('pg-active', d === next);
+    }
+    // Update arrows
+    var prev = container.querySelector('.pg-prev');
+    var nextBtn = container.querySelector('.pg-next');
+    if (prev) prev.classList.toggle('pg-hidden', next === 0);
+    if (nextBtn) nextBtn.classList.toggle('pg-hidden', next === photos.length - 1);
+  }
+
+  // Attach gallery events to a portrait container
+  function attachGalleryEvents(container, agentId) {
+    var photos = AGENT_PHOTOS[agentId] || [];
+    if (photos.length <= 1) return;
+
+    // Arrow buttons
+    var arrows = container.querySelectorAll('.portrait-nav-arrow');
+    for (var a = 0; a < arrows.length; a++) {
+      (function(arrow) {
+        arrow.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var dir = parseInt(arrow.getAttribute('data-dir'));
+          cyclePhoto(container, agentId, dir);
+        });
+      })(arrows[a]);
+    }
+
+    // Tap on portrait area (left half = prev, right half = next)
+    container.addEventListener('click', function(e) {
+      // Ignore clicks on arrows/buttons
+      if (e.target.closest('.portrait-nav-arrow') || e.target.closest('.portrait-gallery-dots')) return;
+      var rect = container.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      if (x < rect.width / 2) {
+        cyclePhoto(container, agentId, -1);
+      } else {
+        cyclePhoto(container, agentId, 1);
+      }
+    });
   }
 
   // Build a card element
@@ -961,12 +1019,11 @@ var AGENTS = [
       statsHtml += '<div><strong>' + agent.stats[s].label + ':</strong> ' + agent.stats[s].value + '</div>';
     }
 
+    var pIdx = photoIndices[agent.id] || 0;
+
     card.innerHTML =
-      '<div class="swipe-indicator like-indicator">LIKE</div>' +
-      '<div class="swipe-indicator pass-indicator">PASS</div>' +
       '<div class="card-portrait">' +
-        '<img src="' + agent.portrait + '" alt="' + agent.name + ' portrait" loading="lazy">' +
-        '<div class="portrait-gradient"></div>' +
+        buildPortraitGallery(agent, pIdx) +
       '</div>' +
       '<div class="card-body">' +
         '<div class="card-name-row">' +
@@ -981,146 +1038,96 @@ var AGENTS = [
     return card;
   }
 
-  // Render current card stack
+  // Render current card (single card carousel, no stack)
   function renderStack() {
     arena.innerHTML = '';
 
-    // Show up to 3 cards: current + 2 behind
-    for (var offset = 2; offset >= 0; offset--) {
-      var idx = currentIndex + offset;
-      if (idx >= AGENTS.length) continue;
-      var cls = offset === 0 ? 'active-card' : (offset === 1 ? 'behind-1' : 'behind-2');
-      var card = buildCard(AGENTS[idx], cls);
-      arena.appendChild(card);
+    var card = buildCard(AGENTS[currentIndex], 'active-card');
+    arena.appendChild(card);
 
-      if (offset === 0) {
-        setupSwipe(card);
-        setupTilt(card);
-      }
-    }
+    // Attach gallery events
+    var portrait = card.querySelector('.card-portrait');
+    if (portrait) attachGalleryEvents(portrait, AGENTS[currentIndex].id);
 
     buildDots();
-    updateMatchCounter();
   }
 
-  // 3D tilt effect
-  function setupTilt(card) {
-    function handleTilt(x, y) {
-      var rect = card.getBoundingClientRect();
-      var cx = rect.left + rect.width / 2;
-      var cy = rect.top + rect.height / 2;
-      var dx = (x - cx) / (rect.width / 2);
-      var dy = (y - cy) / (rect.height / 2);
-      var rotateY = dx * 5;
-      var rotateX = -dy * 3;
-      card.style.transform = 'perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
-    }
+  // Touch swipe handling for carousel navigation
+  function setupTouch() {
+    var startX = 0, startY = 0, currentX = 0, swiping = false;
+    var threshold = 60;
 
-    card.addEventListener('mousemove', function(e) {
-      if (card.classList.contains('fly-left') || card.classList.contains('fly-right')) return;
-      handleTilt(e.clientX, e.clientY);
-    });
-    card.addEventListener('mouseleave', function() {
-      if (card.classList.contains('fly-left') || card.classList.contains('fly-right')) return;
-      card.style.transform = '';
-    });
-  }
-
-  // Touch swipe handling
-  function setupSwipe(card) {
-    var startX = 0, startY = 0, currentX = 0, currentY = 0, swiping = false;
-    var threshold = 80;
-    var upThreshold = 60;
-
-    card.addEventListener('touchstart', function(e) {
+    arena.addEventListener('touchstart', function(e) {
+      // Don't start swipe on portrait gallery arrows
+      if (e.target.closest('.portrait-nav-arrow')) return;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       currentX = startX;
-      currentY = startY;
       swiping = true;
-      card.style.transition = 'none';
     }, { passive: true });
 
-    card.addEventListener('touchmove', function(e) {
+    arena.addEventListener('touchmove', function(e) {
       if (!swiping) return;
       currentX = e.touches[0].clientX;
-      currentY = e.touches[0].clientY;
-      var dx = currentX - startX;
-      var dy = currentY - startY;
-      var rotate = dx * 0.08;
-
-      card.style.transform = 'translateX(' + dx + 'px) rotate(' + rotate + 'deg)';
-
-      // Show like/pass indicators
-      var likeInd = card.querySelector('.like-indicator');
-      var passInd = card.querySelector('.pass-indicator');
-      if (dx > 40) {
-        likeInd.style.opacity = Math.min((dx - 40) / 60, 1);
-        passInd.style.opacity = 0;
-      } else if (dx < -40) {
-        passInd.style.opacity = Math.min((-dx - 40) / 60, 1);
-        likeInd.style.opacity = 0;
-      } else {
-        likeInd.style.opacity = 0;
-        passInd.style.opacity = 0;
-      }
     }, { passive: true });
 
-    card.addEventListener('touchend', function(e) {
+    arena.addEventListener('touchend', function(e) {
       if (!swiping) return;
       swiping = false;
-      card.style.transition = '';
-
       var dx = currentX - startX;
-      var dy = currentY - startY;
 
-      // Hide indicators
-      var likeInd = card.querySelector('.like-indicator');
-      var passInd = card.querySelector('.pass-indicator');
-      if (likeInd) likeInd.style.opacity = 0;
-      if (passInd) passInd.style.opacity = 0;
-
-      if (dx > threshold) {
-        likeCard();
-      } else if (dx < -threshold) {
-        passCard();
-      } else if (dy < -upThreshold && Math.abs(dx) < 40) {
-        expandCard();
-      } else {
-        card.style.transform = '';
+      if (dx < -threshold) {
+        // Swipe left = next
+        slideToNext();
+      } else if (dx > threshold) {
+        // Swipe right = prev
+        slideToPrev();
       }
     });
   }
+  setupTouch();
 
-  // Like: fly right with green glow
-  window.likeCard = function() {
-    var active = arena.querySelector('.active-card');
-    if (!active) return;
-    var agent = AGENTS[currentIndex];
-    likes[agent.id] = true;
-    saveLikes();
-
-    active.classList.add('fly-right');
-    active.style.transform = '';
-    setTimeout(function() {
+  // Slide transitions
+  function slideToNext() {
+    if (currentIndex >= AGENTS.length - 1) {
+      currentIndex = 0;
+    } else {
       currentIndex++;
-      if (currentIndex >= AGENTS.length) currentIndex = 0;
+    }
+    var activeCard = arena.querySelector('.active-card');
+    if (activeCard) {
+      activeCard.classList.add('slide-left');
+      activeCard.classList.remove('active-card');
+    }
+    setTimeout(function() {
       renderStack();
-    }, 400);
+    }, 200);
+  }
+
+  function slideToPrev() {
+    if (currentIndex <= 0) {
+      currentIndex = AGENTS.length - 1;
+    } else {
+      currentIndex--;
+    }
+    var activeCard = arena.querySelector('.active-card');
+    if (activeCard) {
+      activeCard.classList.add('slide-right');
+      activeCard.classList.remove('active-card');
+    }
+    setTimeout(function() {
+      renderStack();
+    }, 200);
+  }
+
+  // Next card
+  window.nextCard = function() {
+    slideToNext();
   };
 
-  // Pass: fly left with red tint
-  window.passCard = function() {
-    var active = arena.querySelector('.active-card');
-    if (!active) return;
-
-    active.classList.add('fly-left');
-    active.style.transform = '';
-    setTimeout(function() {
-      currentIndex++;
-      if (currentIndex >= AGENTS.length) currentIndex = 0;
-      renderStack();
-    }, 400);
+  // Previous card
+  window.prevCard = function() {
+    slideToPrev();
   };
 
   // Expand: show full bio
@@ -1135,11 +1142,12 @@ var AGENTS = [
       statsHtml += '<div><strong>' + agent.stats[s].label + ':</strong> ' + agent.stats[s].value + '</div>';
     }
 
+    var pIdx = photoIndices[agent.id] || 0;
+
     card.innerHTML =
       '<button class="expanded-close" onclick="closeExpanded()" aria-label="Close">&times;</button>' +
       '<div class="expanded-portrait">' +
-        '<img src="' + agent.portrait + '" alt="' + agent.name + ' portrait">' +
-        '<div class="portrait-gradient"></div>' +
+        buildPortraitGallery(agent, pIdx, 'exp-') +
       '</div>' +
       '<div class="expanded-body">' +
         '<div class="card-name-row">' +
@@ -1154,43 +1162,46 @@ var AGENTS = [
       '</div>';
 
     card.style.borderTop = '3px solid ' + agent.color;
+
+    // Attach gallery events to expanded portrait
+    var expPortrait = card.querySelector('.expanded-portrait');
+    if (expPortrait) attachGalleryEvents(expPortrait, agent.id);
+
+    // Remove closing class if present, then show
+    overlay.classList.remove('closing');
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
   };
 
   window.closeExpanded = function() {
     var overlay = document.getElementById('expandedOverlay');
-    overlay.classList.remove('show');
-    document.body.style.overflow = '';
+    overlay.classList.add('closing');
+    setTimeout(function() {
+      overlay.classList.remove('show');
+      overlay.classList.remove('closing');
+      document.body.style.overflow = '';
+    }, 350);
   };
 
   // Click outside expanded card to close
   document.getElementById('expandedOverlay').addEventListener('click', function(e) {
-    if (e.target === this) closeExpanded();
+    if (e.target === this || e.target.classList.contains('expanded-backdrop')) closeExpanded();
   });
 
   // Jump to specific agent via dot nav
   function jumpTo(idx) {
     if (idx === currentIndex) return;
+    var direction = idx > currentIndex ? 'slide-left' : 'slide-right';
+    var activeCard = arena.querySelector('.active-card');
+    if (activeCard) {
+      activeCard.classList.add(direction);
+      activeCard.classList.remove('active-card');
+    }
     currentIndex = idx;
-    renderStack();
+    setTimeout(function() {
+      renderStack();
+    }, 200);
   }
-
-  // Reset all
-  window.resetAll = function() {
-    likes = {};
-    saveLikes();
-    currentIndex = 0;
-    renderStack();
-  };
-
-  // Celebration
-  window.showCelebration = function() {
-    document.getElementById('celebrationOverlay').classList.add('show');
-  };
-  window.closeCelebration = function() {
-    document.getElementById('celebrationOverlay').classList.remove('show');
-  };
 
   // Keyboard controls
   document.addEventListener('keydown', function(e) {
@@ -1204,22 +1215,12 @@ var AGENTS = [
       return;
     }
 
-    // Don't handle if celebration is showing
-    var celeb = document.getElementById('celebrationOverlay');
-    if (celeb.classList.contains('show')) {
-      if (e.key === 'Escape' || e.key === 'Enter') {
-        e.preventDefault();
-        closeCelebration();
-      }
-      return;
-    }
-
     if (e.key === 'ArrowRight') {
       e.preventDefault();
-      likeCard();
+      nextCard();
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      passCard();
+      prevCard();
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       expandCard();
