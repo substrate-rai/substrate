@@ -25,9 +25,9 @@ Items are checked when operational and verified.
 
 ## Tier 1: Self-Assessment
 
-- [ ] Mirror system operational (scripts/mirror.py)
-- [ ] Capability inventory auto-generated from repo scan
-- [ ] Gap analysis produces actionable build specs
+- [x] Mirror system operational (scripts/mirror.py)
+- [x] Capability inventory auto-generated from repo scan
+- [x] Gap analysis produces actionable build specs
 - [ ] Build specs can be executed without operator input (scripts/build.py)
 
 ## Tier 2: Self-Modification
