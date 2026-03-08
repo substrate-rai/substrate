@@ -24,6 +24,13 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 OUTPUT_DIR="${REPO_ROOT}/assets/images/generated"
 GPU_SWITCH="${SCRIPT_DIR}/gpu-switch.sh"
 GENERATE_PY="${SCRIPT_DIR}/generate-image.py"
+COMFYUI_DIR="/home/operator/comfyui"
+COMFYUI_PYTHON="${COMFYUI_DIR}/venv/bin/python"
+COMFYUI_URL="http://127.0.0.1:8188"
+COMFYUI_PID=""
+
+# NixOS CUDA + C++ runtime library paths (must match start-comfyui.sh)
+export LD_LIBRARY_PATH="/run/opengl-driver/lib:/nix/store/ihpdbhy4rfxaixiamyb588zfc3vj19al-gcc-15.2.0-lib/lib:/nix/store/m028f6iw72di3mqah6zmfpjx91973bk0-cuda-merged-12.4/lib:/nix/store/drxbq03f66krz302bp077bqf0damsayv-zlib-1.3.1/lib:/nix/store/rla54w2i158xf5i5fla3mwh5760x3pgn-libglvnd-1.7.0/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 DRY_RUN=false
 ONLY=""
@@ -128,6 +135,43 @@ list_images() {
     done
 }
 
+start_comfyui() {
+    if curl -sf "${COMFYUI_URL}/system_stats" -o /dev/null 2>/dev/null; then
+        log "ComfyUI already running"
+        return 0
+    fi
+    log "Starting ComfyUI server..."
+    "$COMFYUI_PYTHON" "${COMFYUI_DIR}/main.py" \
+        --listen 127.0.0.1 --port 8188 --disable-auto-launch \
+        > /tmp/comfyui-visuals.log 2>&1 &
+    COMFYUI_PID=$!
+
+    for i in $(seq 1 60); do
+        if curl -sf "${COMFYUI_URL}/system_stats" -o /dev/null 2>/dev/null; then
+            log "ComfyUI ready (took ${i}s)"
+            return 0
+        fi
+        if ! kill -0 "$COMFYUI_PID" 2>/dev/null; then
+            log "ERROR: ComfyUI died on startup. Log:"
+            tail -30 /tmp/comfyui-visuals.log
+            return 1
+        fi
+        sleep 1
+    done
+    log "ERROR: ComfyUI failed to start in 60s"
+    tail -20 /tmp/comfyui-visuals.log
+    return 1
+}
+
+stop_comfyui() {
+    if [[ -n "$COMFYUI_PID" ]] && kill -0 "$COMFYUI_PID" 2>/dev/null; then
+        log "Stopping ComfyUI (pid $COMFYUI_PID)..."
+        kill "$COMFYUI_PID" 2>/dev/null || true
+        wait "$COMFYUI_PID" 2>/dev/null || true
+        log "ComfyUI stopped"
+    fi
+}
+
 generate_image() {
     local name="$1"
     local prompt="$2"
@@ -148,8 +192,10 @@ generate_image() {
     fi
 
     log "GENERATE  ${name}.png"
-    python3 "$GENERATE_PY" \
+    "$COMFYUI_PYTHON" "$GENERATE_PY" \
         --no-unload \
+        --no-start \
+        --no-stop \
         --output "$outfile" \
         --width 512 \
         --height 512 \
@@ -185,16 +231,28 @@ if $DRY_RUN; then
     echo "Shared negative prompt: ${NEGATIVE}"
 fi
 
+# Ensure cleanup on exit
+cleanup() {
+    stop_comfyui
+}
+trap cleanup EXIT
+
 # Step 1: Free VRAM (unless dry run)
 if ! $DRY_RUN; then
     log "Freeing VRAM for Stable Diffusion..."
     source "$GPU_SWITCH"
     cmd_unload
     cmd_wait_free
-    log "VRAM free — starting generation"
+    log "VRAM free"
+
+    # Step 2: Start ComfyUI
+    if ! start_comfyui; then
+        log "FATAL: Could not start ComfyUI"
+        exit 1
+    fi
 fi
 
-# Step 2: Generate each image
+# Step 3: Generate each image
 failed=0
 generated=0
 skipped=0
@@ -222,9 +280,12 @@ echo ""
 if $DRY_RUN; then
     log "DRY RUN COMPLETE — ${generated} prompts listed"
 else
+    # Step 4: Stop ComfyUI (handled by trap, but explicit is nice)
+    stop_comfyui
+
     log "DONE — generated: ${generated}, skipped: ${skipped}, failed: ${failed}"
 
-    # Step 3: Reload Ollama
+    # Step 5: Reload Ollama
     log "Restoring Ollama..."
     source "$GPU_SWITCH"
     cmd_reload

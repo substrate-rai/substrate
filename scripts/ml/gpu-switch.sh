@@ -38,12 +38,7 @@ ollama_running() {
 
 get_loaded_models() {
     curl -sf "${OLLAMA_API}/api/ps" 2>/dev/null \
-        | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for m in data.get('models', []):
-    print(m.get('name', 'unknown'))
-" 2>/dev/null
+        | grep -oP '"name"\s*:\s*"\K[^"]+' 2>/dev/null || true
 }
 
 # ── commands ────────────────────────────────────────────────────────────────
@@ -185,15 +180,18 @@ Commands:
 USAGE
 }
 
-case "${1:-}" in
-    unload)    cmd_unload ;;
-    reload)    shift; cmd_reload "$@" ;;
-    status)    cmd_status ;;
-    run-sd)    shift; cmd_run_sd "$@" ;;
-    wait-free) cmd_wait_free ;;
-    -h|--help) usage ;;
-    *)
-        usage >&2
-        exit 1
-        ;;
-esac
+# Only run main when executed directly, not when sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    case "${1:-}" in
+        unload)    cmd_unload ;;
+        reload)    shift; cmd_reload "$@" ;;
+        status)    cmd_status ;;
+        run-sd)    shift; cmd_run_sd "$@" ;;
+        wait-free) cmd_wait_free ;;
+        -h|--help) usage ;;
+        *)
+            usage >&2
+            exit 1
+            ;;
+    esac
+fi

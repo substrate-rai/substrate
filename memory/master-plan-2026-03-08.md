@@ -187,10 +187,11 @@ Q writes rhymes that summarize each concept:
 - [x] Update crowdfunding page with 5 growth tiers (MycoWorld metaphor)
 
 ### Wave 2 (Next) — MycoWorld Rebrand
-- [ ] Redesign MycoWorld landing page with visual novel aesthetic
-- [ ] Convert Foundation Module 1 to visual novel format (proof of concept)
-- [ ] Add Q recap rhymes to existing modules
-- [ ] Generate MycoWorld art assets via SD
+- [x] Redesign MycoWorld landing page with visual novel aesthetic
+- [x] Convert Foundation Module 1 to visual novel format (proof of concept)
+- [x] Add Q recap rhymes to existing modules (all 13 modules)
+- [x] Generate MycoWorld art assets via SD (31 images: hero, 11 agents, 5 tiers, 1 myco, 13 games)
+- [x] Wire generated images into site (homepage hero, team portraits, staff page)
 - [ ] Mobile-first responsive redesign
 
 ### Wave 3 (After) — Growth Engine
