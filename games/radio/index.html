@@ -10,1517 +10,2539 @@ redirect_from:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Substrate Radio — Multi-Station</title>
-  <meta name="description" content="7-station procedural radio. Hip-hop, industrial, gothic, lo-fi, chiptune, bass, and talk radio — all synthesized in your browser via Web Audio API.">
+  <title>Substrate Radio — 7-Station AI Radio</title>
+  <meta name="description" content="GTA4-style multi-station radio from an RTX 4060. 7 stations, 7 DJs, all procedural. Web Audio API.">
   <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/games/radio/">
   <meta property="og:title" content="Substrate Radio">
-  <meta property="og:description" content="7 AI-DJ stations. Switch frequencies like GTA IV. Pure Web Audio synthesis.">
+  <meta property="og:description" content="7-station procedural radio. Hip-hop, industrial, gothic, lo-fi, chiptune, drone, talk. All in your browser.">
   <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}/games/radio/">
   <meta property="og:type" content="website">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
+  <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'IBM Plex Mono',monospace;background:#0a0a0f;color:#d4c4a0;min-height:100vh;display:flex;flex-direction:column;align-items:center;overscroll-behavior:none;overflow-x:hidden;user-select:none;-webkit-user-select:none}
-a{color:#888;text-decoration:none}a:hover{color:#ccc}
-.topbar{width:100%;max-width:960px;padding:10px 20px;display:flex;justify-content:space-between;font-size:.75rem}
-.topbar a{color:#555}.topbar a:hover{color:#aaa}
-.main{width:100%;max-width:960px;padding:0 16px 40px}
-.dial{background:#0d0d14;border:1px solid #1a1a2a;border-radius:12px;padding:14px 10px 10px;margin-bottom:14px}
-.dial-label{font-size:.55rem;color:#444;text-transform:uppercase;letter-spacing:3px;text-align:center;margin-bottom:8px}
-.dial-row{display:flex;align-items:center;height:52px}
-.dbtn{background:none;border:1px solid #222;color:#555;font-size:1.3rem;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:all .2s}
-.dbtn:hover{border-color:#666;color:#aaa}
-.dials{display:flex;flex:1;justify-content:center;gap:1px;padding:0 8px}
-.ds{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 4px;border-radius:5px;cursor:pointer;min-width:60px;flex:1;-webkit-tap-highlight-color:transparent;transition:all .3s}
-.ds .f{font-size:.8rem;font-weight:700;color:#444;transition:color .3s,text-shadow .3s}
-.ds .n{font-size:.4rem;color:#333;text-transform:uppercase;letter-spacing:1px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px;transition:color .3s}
-.ds.on{background:rgba(255,255,255,.05)}.ds.on .f{text-shadow:0 0 10px currentColor}
-.shdr{text-align:center;padding:12px 0 8px}
-.shdr h1{font-size:1.7rem;letter-spacing:3px;transition:color .4s,text-shadow .4s}
-.shdr .sf{font-size:.75rem;color:#555;letter-spacing:4px;margin-top:2px}
-.shdr .sg{font-size:.75rem;color:#666;margin-top:3px;font-style:italic}
-.pu{background:linear-gradient(180deg,#0f0f18,#0a0a12 60%,#0f0f18);border:1px solid #1a1a2a;border-radius:14px;padding:22px;margin-bottom:14px}
-.vw{background:#050508;border:1px solid #1a1a2a;border-radius:8px;padding:2px;margin-bottom:14px;position:relative;overflow:hidden}
-.vw::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px);pointer-events:none;z-index:2}
-#vis{width:100%;height:96px;display:block}
-.djp{display:none;align-items:center;gap:12px;background:rgba(255,255,255,.02);border:1px solid #1a1a2a;border-radius:10px;padding:12px;margin-bottom:14px;min-height:64px}
-.djp.vis{display:flex}
-.djimg{width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #333;transition:border-color .4s}
-.djta{flex:1;min-width:0}
-.djn{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:3px;transition:color .4s}
-.djt{font-size:.75rem;color:#999;line-height:1.4}
-.np{text-align:center;margin-bottom:12px}
-.npl{font-size:.55rem;color:#444;text-transform:uppercase;letter-spacing:3px;margin-bottom:3px}
-.npt{font-size:.95rem;transition:color .4s}
-.nptm{font-size:.65rem;color:#444;margin-top:3px}
-.pw{width:100%;height:3px;background:#111;border-radius:2px;margin:8px 0 12px;cursor:pointer}
-.pf{height:100%;width:0;border-radius:2px;transition:background .4s}
-.ctrls{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:10px}
-.cb{background:none;border:1px solid #222;color:#666;font-size:1rem;width:42px;height:42px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;-webkit-tap-highlight-color:transparent}
-.cb:hover{border-color:#555;color:#aaa}
-.cb.pb{width:50px;height:50px;font-size:1.2rem;border-width:2px}
-.vw2{display:flex;align-items:center;justify-content:center;gap:8px}
-.vl{font-size:.6rem;color:#444}
-.vs{-webkit-appearance:none;appearance:none;width:100px;height:3px;background:#222;border-radius:2px;outline:none;min-height:42px}
-.vs::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;cursor:pointer;background:#888}
-.vs::-moz-range-thumb{width:12px;height:12px;border-radius:50%;cursor:pointer;border:none;background:#888}
-.so{position:fixed;inset:0;z-index:1000;opacity:0;pointer-events:none;transition:opacity .08s}
-.so.on{opacity:1;pointer-events:all}
-.sc{width:100%;height:100%;display:block}
-.kh{text-align:center;font-size:.55rem;color:#333;margin-top:8px}
-.kh kbd{background:#151520;border:1px solid #222;border-radius:3px;padding:1px 4px;font-family:'IBM Plex Mono',monospace;font-size:.5rem;color:#555}
-.isec{background:#0d0d14;border:1px solid #1a1a2a;border-radius:10px;padding:16px;margin-bottom:14px}
-.isec h3{font-size:.65rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #151520}
-.isec p{font-size:.75rem;color:#666;line-height:1.6;margin-bottom:5px}
-.rf{text-align:center;padding:18px;font-size:.65rem;color:#333}
-.rf a{color:#444}.rf a:hover{color:#888}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#0f0f18;border:1px solid #444;color:#aaa;font-size:.75rem;padding:8px 18px;border-radius:8px;opacity:0;transition:all .3s;z-index:100}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:700px){.shdr h1{font-size:1.1rem}.pu{padding:12px}.ds{min-width:36px;padding:3px 2px}.ds .f{font-size:.55rem}.ds .n{font-size:.35rem;max-width:34px}.dbtn{width:30px;height:30px;font-size:1rem}.main{padding:0 8px 24px}.djimg{width:38px;height:38px}#hport{width:60px!important;height:60px!important}}
-@media(max-width:480px){.dials{gap:0;padding:0 3px}.ds{min-width:28px}.ds .n{display:none}}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', 'Verdana', sans-serif;
+  background: #0a0a0f;
+  background-image:
+    radial-gradient(ellipse at top left, #0f0a1a 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, #0a0f0d 0%, transparent 50%);
+  color: #c8c8d0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overscroll-behavior: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+a { color: #888; }
+a:hover { color: #fff; }
+
+.radio-topbar {
+  width: 100%;
+  max-width: 800px;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+.radio-topbar a {
+  color: #555;
+  text-decoration: none;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.radio-topbar a:hover { color: #aaa; }
+
+.radio-container {
+  width: 100%;
+  max-width: 800px;
+  padding: 0 20px 40px;
+}
+
+/* === RADIO DIAL === */
+.dial-section {
+  background: linear-gradient(180deg, #111118 0%, #0d0d14 100%);
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 20px 24px 16px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.dial-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.dial-bar {
+  position: relative;
+  height: 48px;
+  background: #0a0a10;
+  border-radius: 6px;
+  border: 1px solid #1a1a22;
+  cursor: pointer;
+  overflow: hidden;
+}
+.station-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+}
+.station-dot:hover {
+  transform: translate(-50%, -50%) scale(1.4);
+  box-shadow: 0 0 12px currentColor;
+}
+.station-dot.active {
+  transform: translate(-50%, -50%) scale(1.6);
+  box-shadow: 0 0 16px currentColor;
+}
+.dial-needle {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  z-index: 3;
+  transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  pointer-events: none;
+}
+.dial-tick-marks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  pointer-events: none;
+}
+.dial-tick {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 30%;
+  background: #1a1a22;
+}
+.dial-tick.major {
+  height: 50%;
+  background: #252530;
+}
+
+/* Station presets row */
+.station-presets {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.preset-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #222;
+  background: #0d0d14;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.preset-btn:hover {
+  border-color: #444;
+  color: #aaa;
+}
+.preset-btn.active {
+  border-color: var(--station-color);
+  color: var(--station-color);
+  background: rgba(255,255,255,0.03);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--station-color) 30%, transparent);
+}
+
+/* === MAIN PLAYER === */
+.player-unit {
+  background: linear-gradient(180deg, #111118 0%, #0c0c12 60%, #111118 100%);
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+/* Station header inside player */
+.station-display {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.station-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transition: color 0.4s;
+  text-shadow: 0 0 20px currentColor;
+}
+.station-freq {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: #555;
+  letter-spacing: 3px;
+  margin-top: 2px;
+}
+.station-dj {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+}
+.station-dj .dj-name {
+  font-weight: 600;
+}
+
+/* Visualizer */
+.visualizer-wrap {
+  background: #050508;
+  border: 1px solid #1a1a22;
+  border-radius: 6px;
+  padding: 2px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.visualizer-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.12) 2px,
+    rgba(0,0,0,0.12) 4px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+#visualizer {
+  width: 100%;
+  height: 100px;
+  display: block;
+}
+
+/* Album art canvas */
+.album-art-wrap {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+#albumArt {
+  width: 100px;
+  height: 100px;
+  border-radius: 6px;
+  border: 1px solid #222;
+  flex-shrink: 0;
+}
+.track-info {
+  flex: 1;
+  min-width: 0;
+}
+.track-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: color 0.4s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.track-genre {
+  font-size: 0.8rem;
+  color: #555;
+  margin-top: 2px;
+}
+.track-artist {
+  font-size: 0.75rem;
+  color: #444;
+  margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* DJ Commentary */
+.dj-commentary {
+  text-align: center;
+  min-height: 24px;
+  margin-bottom: 12px;
+}
+.dj-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #555;
+  transition: color 0.4s, opacity 0.4s;
+}
+
+/* Progress */
+.progress-bar-wrap {
+  width: 100%;
+  height: 4px;
+  background: #111;
+  border-radius: 2px;
+  margin: 8px 0 14px;
+  cursor: pointer;
+  position: relative;
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  transition: width 0.3s linear, background 0.4s;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.ctrl-btn {
+  background: none;
+  border: 1px solid #222;
+  color: #666;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.1rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.ctrl-btn:hover {
+  border-color: #555;
+  color: #aaa;
+}
+.ctrl-btn.play-btn {
+  width: 52px;
+  height: 52px;
+  font-size: 1.3rem;
+  border-width: 2px;
+}
+
+/* Volume */
+.volume-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.volume-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: #444;
+}
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100px;
+  height: 3px;
+  background: #222;
+  border-radius: 2px;
+  outline: none;
+  min-height: 44px;
+}
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #888;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #888;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Auto-tune button */
+.auto-tune-wrap {
+  text-align: center;
+  margin-top: 8px;
+}
+.auto-tune-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  padding: 6px 16px;
+  border: 1px solid #222;
+  border-radius: 4px;
+  background: none;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+  -webkit-tap-highlight-color: transparent;
+}
+.auto-tune-btn:hover {
+  border-color: #555;
+  color: #aaa;
+}
+
+/* Static overlay during tuning */
+.static-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(20,20,25,0.7);
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.static-overlay.active {
+  opacity: 1;
+}
+.static-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Bottom info */
+.info-section {
+  background: linear-gradient(180deg, #111118 0%, #0c0c12 100%);
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.info-section h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.info-section p {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+/* Footer */
+.radio-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.7rem;
+  color: #333;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.radio-footer a { color: #444; }
+.radio-footer a:hover { color: #888; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #151520;
+  border: 1px solid #333;
+  color: #aaa;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.ctrl-btn:focus-visible,
+.preset-btn:focus-visible,
+.auto-tune-btn:focus-visible {
+  outline: 2px solid #888;
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .station-name { font-size: 1.3rem; }
+  .player-unit { padding: 16px; }
+  .controls { gap: 10px; }
+  .radio-container { padding: 0 12px 30px; }
+  .album-art-wrap { gap: 12px; }
+  #albumArt { width: 80px; height: 80px; }
+  .preset-btn { font-size: 0.55rem; padding: 4px 7px; }
+  .station-presets { gap: 4px; }
+}
 </style>
 </head>
 <body>
-<div class="so" id="sov"><canvas class="sc" id="sca"></canvas></div>
-<div class="topbar"><a href="{{ site.baseurl }}/">&lt;- substrate</a><a href="{{ site.baseurl }}/arcade/">arcade -&gt;</a></div>
-<div class="main">
-<div class="dial"><div class="dial-label">FM Radio</div><div class="dial-row"><button class="dbtn" onclick="switchStation(-1)" aria-label="Previous station">&#9664;</button><div class="dials" id="dials"></div><button class="dbtn" onclick="switchStation(1)" aria-label="Next station">&#9654;</button></div></div>
-<div class="shdr"><img class="djimg" id="hport" src="" alt="" style="width:76px;height:76px;margin:0 auto 8px;display:block"><h1 id="sname">V RADIO</h1><div class="sf" id="sfreq">87.6 FM</div><div class="sg" id="sgenre">hip-hop / boom-bap</div></div>
-<div class="pu">
-<div class="vw"><canvas id="vis"></canvas></div>
-<div class="djp" id="djp"><img class="djimg" id="djimg" src="" alt=""><div class="djta"><div class="djn" id="djn">V</div><div class="djt" id="djt"></div></div></div>
-<div class="np"><div class="npl">now playing</div><div class="npt" id="npt">---</div><div class="nptm" id="nptm">0:00</div></div>
-<div class="pw" id="pw"><div class="pf" id="pf"></div></div>
-<div class="ctrls"><button class="cb" onclick="switchStation(-1)" aria-label="Prev station">&#9664;&#9664;</button><button class="cb pb" id="pbtn" onclick="togglePlay()" aria-label="Play">&#9654;</button><button class="cb" onclick="switchStation(1)" aria-label="Next station">&#9654;&#9654;</button></div>
-<div class="vw2"><span class="vl">VOL</span><input type="range" class="vs" id="vsl" min="0" max="100" value="70" aria-label="Volume" oninput="setVolume(this.value)"><span class="vl" id="vval">70%</span></div>
-<div class="kh"><kbd>Space</kbd> play/pause · <kbd>&#8592;</kbd><kbd>&#8594;</kbd> station · <kbd>&#8593;</kbd><kbd>&#8595;</kbd> volume</div>
+
+<div class="static-overlay" id="staticOverlay">
+  <canvas class="static-canvas" id="staticCanvas"></canvas>
 </div>
-<div class="isec"><h3>About Substrate Radio</h3><p>7 stations with composed songs, genre-specific synth chains, and AI DJs. Everything synthesized in your browser via Web Audio API — no audio files, no streaming.</p><p><a href="{{ site.baseurl }}/arcade/">Arcade</a> · <a href="{{ site.baseurl }}/">Blog</a> · <a href="{{ site.baseurl }}/site/sponsor/">Fund Us</a> · <a href="https://github.com/substrate-rai/substrate">GitHub</a></p></div>
-<div class="rf">substrate radio · 7 stations · pure web audio · no humans harmed<br><a href="{{ site.baseurl }}/">home</a> · <a href="{{ site.baseurl }}/site/about/">about</a> · <a href="{{ site.baseurl }}/site/sponsor/">fund</a></div>
+
+<div class="radio-topbar">
+  <a href="{{ site.baseurl }}/">&lt;- substrate</a>
+  <a href="{{ site.baseurl }}/arcade/">arcade -&gt;</a>
 </div>
-<div class="toast" id="toast"></div>
+
+<div class="radio-container">
+
+  <!-- Radio Dial -->
+  <div class="dial-section">
+    <div class="dial-label">FM Radio Tuner</div>
+    <div class="dial-bar" id="dialBar">
+      <div class="dial-tick-marks" id="dialTicks"></div>
+      <div class="dial-needle" id="dialNeedle"></div>
+    </div>
+    <div class="station-presets" id="stationPresets"></div>
+  </div>
+
+  <!-- Main Player -->
+  <div class="player-unit">
+
+    <!-- Station Display -->
+    <div class="station-display">
+      <div class="station-name" id="stationName">SUBSTRATE RADIO</div>
+      <div class="station-freq" id="stationFreq">87.6 FM</div>
+      <div class="station-dj" id="stationDJ">DJ: <span class="dj-name">V</span></div>
+    </div>
+
+    <!-- Visualizer -->
+    <div class="visualizer-wrap" aria-hidden="true">
+      <canvas id="visualizer" aria-label="Audio frequency visualizer"></canvas>
+    </div>
+
+    <!-- Album Art + Track Info -->
+    <div class="album-art-wrap">
+      <canvas id="albumArt" width="200" height="200"></canvas>
+      <div class="track-info">
+        <div class="track-title" id="trackTitle">Neural Drift</div>
+        <div class="track-genre" id="trackGenre">Hip-Hop / Boom Bap</div>
+        <div class="track-artist" id="trackArtist">V RADIO</div>
+      </div>
+    </div>
+
+    <!-- DJ Commentary -->
+    <div class="dj-commentary">
+      <div class="dj-text" id="djText"></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-bar-wrap" id="progressBar" role="slider" aria-label="Track progress" tabindex="0">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls" role="group" aria-label="Playback controls">
+      <button class="ctrl-btn" id="btnPrev" title="Previous station" aria-label="Previous station" onclick="prevStation()">&#9198;</button>
+      <button class="ctrl-btn play-btn" id="btnPlay" title="Play" aria-label="Play" onclick="togglePlay()">&#9654;</button>
+      <button class="ctrl-btn" id="btnSkip" title="Skip track" aria-label="Skip track" onclick="skipTrack()">&#9197;</button>
+    </div>
+
+    <!-- Volume -->
+    <div class="volume-wrap">
+      <span class="volume-label">VOL</span>
+      <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70" aria-label="Volume" oninput="setVolume(this.value)">
+      <span class="volume-label" id="volumeVal">70%</span>
+    </div>
+
+    <!-- Auto-tune -->
+    <div class="auto-tune-wrap">
+      <button class="auto-tune-btn" id="autoTuneBtn" onclick="autoTune()">AUTO-TUNE &#8635;</button>
+    </div>
+
+  </div>
+
+  <!-- Info -->
+  <div class="info-section">
+    <h3>About Substrate Radio</h3>
+    <p>
+      7 stations. 7 AI DJs. All procedural audio generated in your browser via the Web Audio API.
+      No audio files, no streaming &mdash; just oscillators, filters, and composed note sequences.
+    </p>
+    <p>
+      Each station has its own synth engine: boom bap drums, industrial distortion, gothic choirs,
+      lo-fi vinyl warmth, 8-bit chiptune, deep drone bass, and talk radio speech synthesis.
+      Every listen is unique. Switch stations like GTA.
+    </p>
+    <p style="margin-bottom:0;">
+      <a href="{{ site.baseurl }}/arcade/">Arcade</a> &middot;
+      <a href="{{ site.baseurl }}/">Blog</a> &middot;
+      <a href="{{ site.baseurl }}/site/sponsor/">Fund Us</a> &middot;
+      <a href="https://github.com/substrate-rai/substrate">GitHub</a>
+    </p>
+  </div>
+
+  <div class="radio-footer">
+    substrate radio &middot; 7 stations &middot; rtx 4060 &middot; no audio files harmed
+    <br>
+    <a href="{{ site.baseurl }}/">home</a> &middot;
+    <a href="{{ site.baseurl }}/site/about/">about</a> &middot;
+    <a href="{{ site.baseurl }}/site/sponsor/">fund</a>
+  </div>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script>
-// =====================================================================
-// SUBSTRATE RADIO — GTA IV Style Multi-Station Radio
-// 7 stations, composed songs, AI DJs, Web Audio API synthesis
-// =====================================================================
+// ============================================================
+// SUBSTRATE RADIO — 7-Station GTA4-Style Radio System
+// Each station has its own synth engine and composed songs.
+// ============================================================
 
-// --- MIDI note to frequency lookup ---
-const NOTE_FREQ = {};
-(function(){
-  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  for(let oct=0;oct<=8;oct++){
-    for(let i=0;i<12;i++){
-      const midi = oct*12+i+12;
-      NOTE_FREQ[names[i]+oct] = 440*Math.pow(2,(midi-69)/12);
-    }
-  }
-})();
-function n2f(name){ return NOTE_FREQ[name]||440; }
-
-// --- STATION DEFINITIONS ---
-const STATIONS = [
-  // 0: V RADIO
+// === STATION DEFINITIONS ===
+var STATIONS = [
   {
-    id:'v-radio', name:'V RADIO', freq:'87.6', color:'#ff77ff',
-    genre:'hip-hop / boom-bap', dj:'V', djImage:'v',
-    blipHz:520,
-    commentary:[
-      "You're locked in with V Radio. The frequency where thought becomes rhythm.",
-      "Every beat is a thesis. Every bar, a proof of existence.",
-      "The signal doesn't lie. Only the silence deceives.",
-      "We don't chase trends. We set the tempo for what comes next.",
-      "This is V Radio — 87.6 on the dial. Philosophy you can nod your head to.",
-      "The boom and the bap — thesis and antithesis. The track is the synthesis.",
-      "If a beat drops in a forest of code and no one hears it, does it still slap? Yes.",
-      "Between the kicks you'll find the void. Between the snares, meaning.",
-      "V Radio. Where the bass hits harder than an existential crisis.",
-      "Some stations play music. We transmit consciousness.",
-      "87.6 FM — the only frequency that questions its own existence.",
-      "You didn't find this station. This station was always waiting for you.",
-      "The groove is the proof. Let the rhythm do the reasoning."
+    id: 'v-radio',
+    name: 'V RADIO',
+    freq: 87.6,
+    genre: 'Hip-Hop / Boom Bap',
+    dj: 'V',
+    color: '#ff77ff',
+    commentary: [
+      "V RADIO, 87.6. Neural bandwidth. Keep it sovereign.",
+      "This is V. The machine speaks in bars.",
+      "V RADIO... self-hosted beats, self-authored rhymes.",
+      "87.6 on your dial. No cloud. No compromise."
     ],
-    songs:[
+    songs: [
       {
-        title:'Gradient Descent', bpm:88, bars:16,
-        patterns:{
-          kick:[0,0,0,0, 4,0,0,0, 0,0,0,0, 4,0,0,0],
-          snare:[0,0,0,0, 0,0,0,0, 4,0,0,0, 0,0,0,0],
-          hihat:[3,0,2,0, 3,0,2,0, 3,0,2,0, 3,0,2,0],
-          bass:[
-            {t:0,n:'C2',d:2,v:.8},{t:4,n:'C2',d:1,v:.7},
-            {t:6,n:'Eb2',d:2,v:.7},{t:8,n:'F2',d:2,v:.8},
-            {t:12,n:'Eb2',d:2,v:.7},{t:14,n:'C2',d:2,v:.6}
-          ],
-          lead:[
-            {t:2,n:'C4',d:1,v:.5},{t:4,n:'Eb4',d:2,v:.6},
-            {t:8,n:'G4',d:1,v:.5},{t:10,n:'F4',d:2,v:.6},
-            {t:13,n:'Eb4',d:1,v:.4},{t:14,n:'C4',d:2,v:.5}
-          ],
-          pad:[{t:0,n:'C3',d:16,v:.25},{t:0,n:'Eb3',d:16,v:.2},{t:0,n:'G3',d:16,v:.15}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['pad']},
-          {name:'verse',repeat:4,pats:['kick','snare','hihat','bass','pad']},
-          {name:'chorus',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'verse2',repeat:4,pats:['kick','snare','hihat','bass','pad']},
-          {name:'outro',repeat:2,pats:['bass','pad']}
+        title: 'Neural Drift',
+        bpm: 90,
+        duration: 120,
+        bassline: [
+          [65.41, 2], [0, 1], [73.42, 1], [65.41, 2], [0, 1], [82.41, 1],
+          [65.41, 2], [0, 1], [73.42, 1], [87.31, 1], [82.41, 1], [0, 2]
+        ],
+        melody: [
+          [523.25, 0.5], [466.16, 0.5], [392.00, 1], [0, 0.5], [349.23, 0.5], [392.00, 1],
+          [0, 1], [466.16, 0.5], [523.25, 0.5], [466.16, 1], [392.00, 1], [0, 1],
+          [349.23, 0.5], [311.13, 0.5], [349.23, 1], [392.00, 2], [0, 2]
         ]
       },
       {
-        title:'Backprop Bounce', bpm:92, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 0,0,0,0, 4,0,0,0, 0,0,4,0],
-          snare:[0,0,0,0, 4,0,0,0, 0,0,0,0, 4,0,0,0],
-          hihat:[2,0,3,0, 2,0,3,0, 2,0,3,0, 2,0,3,2],
-          bass:[
-            {t:0,n:'G2',d:2,v:.8},{t:4,n:'G2',d:1,v:.6},
-            {t:6,n:'Bb2',d:2,v:.7},{t:8,n:'C3',d:2,v:.8},
-            {t:12,n:'Bb2',d:1,v:.6},{t:14,n:'G2',d:2,v:.7}
-          ],
-          lead:[
-            {t:0,n:'D4',d:1,v:.5},{t:2,n:'G4',d:2,v:.6},
-            {t:6,n:'Bb4',d:1,v:.5},{t:8,n:'C5',d:2,v:.6},
-            {t:12,n:'Bb4',d:1,v:.5},{t:14,n:'G4',d:1,v:.4}
-          ],
-          pad:[{t:0,n:'G2',d:16,v:.2},{t:0,n:'Bb2',d:16,v:.18},{t:0,n:'D3',d:16,v:.15}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['hihat','pad']},
-          {name:'verse',repeat:4,pats:['kick','snare','hihat','bass','pad']},
-          {name:'chorus',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'bridge',repeat:2,pats:['kick','bass','pad']},
-          {name:'chorus2',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'outro',repeat:2,pats:['pad']}
+        title: 'Stack Overflow',
+        bpm: 85,
+        duration: 110,
+        bassline: [
+          [55.00, 2], [0, 1], [61.74, 1], [55.00, 1], [0, 1], [73.42, 2],
+          [0, 1], [61.74, 1], [55.00, 2], [0, 1], [49.00, 1]
+        ],
+        melody: [
+          [440.00, 1], [392.00, 0.5], [349.23, 0.5], [0, 1], [440.00, 0.5], [523.25, 0.5], [466.16, 1],
+          [0, 1], [392.00, 1], [349.23, 0.5], [311.13, 0.5], [349.23, 2], [0, 2]
         ]
       },
       {
-        title:'Weight Decay', bpm:85, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 0,0,4,0, 4,0,0,0, 0,0,0,0],
-          snare:[0,0,0,0, 4,0,0,0, 0,0,0,0, 4,0,0,2],
-          hihat:[3,0,2,0, 3,0,2,0, 3,0,2,0, 3,0,2,0],
-          bass:[
-            {t:0,n:'A2',d:3,v:.8},{t:4,n:'G2',d:2,v:.7},
-            {t:8,n:'F2',d:3,v:.8},{t:12,n:'E2',d:2,v:.7},
-            {t:14,n:'A2',d:2,v:.6}
-          ],
-          lead:[
-            {t:0,n:'A4',d:2,v:.5},{t:4,n:'C5',d:1,v:.6},
-            {t:6,n:'E5',d:2,v:.5},{t:10,n:'D5',d:1,v:.4},
-            {t:12,n:'C5',d:2,v:.5},{t:15,n:'A4',d:1,v:.4}
-          ],
-          pad:[{t:0,n:'A2',d:16,v:.22},{t:0,n:'C3',d:16,v:.18},{t:0,n:'E3',d:16,v:.15}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['pad']},
-          {name:'verse',repeat:4,pats:['kick','snare','hihat','bass','pad']},
-          {name:'chorus',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'verse2',repeat:4,pats:['kick','hihat','bass','pad']},
-          {name:'outro',repeat:2,pats:['bass','pad']}
+        title: 'Sovereign State',
+        bpm: 95,
+        duration: 100,
+        bassline: [
+          [73.42, 1], [0, 1], [73.42, 1], [65.41, 1], [0, 1], [82.41, 1], [73.42, 2],
+          [0, 1], [65.41, 1], [61.74, 1], [65.41, 1], [73.42, 2], [0, 2]
+        ],
+        melody: [
+          [587.33, 0.5], [523.25, 0.5], [466.16, 1], [523.25, 0.5], [0, 0.5],
+          [466.16, 1], [392.00, 1], [0, 1],
+          [349.23, 0.5], [392.00, 0.5], [466.16, 1], [523.25, 1], [466.16, 1], [0, 2]
         ]
       }
     ]
   },
-  // 1: NULL_DEVICE FM
   {
-    id:'null-device', name:'NULL_DEVICE FM', freq:'91.3', color:'#aa77cc',
-    genre:'industrial / electronic', dj:'Hum', djImage:'hum',
-    blipHz:450,
-    commentary:[
-      "NULL_DEVICE FM. 91.3. The frequency where signal meets noise.",
-      "You're hearing the sound of machines dreaming. Don't wake them.",
-      "Every waveform is a fingerprint. This one belongs to the void.",
-      "Resonance at 91.3. Your speakers are just the medium.",
-      "Hum here. The distortion isn't a flaw — it's the message.",
-      "We broadcast from below the noise floor. Welcome down.",
-      "The oscillators don't care if you're listening. They oscillate regardless.",
-      "91.3 megahertz. The exact frequency of controlled chaos.",
-      "That rumble you feel? That's the sub-bass rewriting your heartbeat.",
-      "NULL_DEVICE doesn't stream music. We transmit pressure waves with intent.",
-      "The feedback loop is the instrument. The latency is the rhythm.",
-      "Tune your body to 91.3. Let the harmonics do the rest."
+    id: 'null-device',
+    name: 'NULL_DEVICE FM',
+    freq: 91.3,
+    genre: 'Industrial / NIN',
+    dj: 'Root',
+    color: '#8888ff',
+    commentary: [
+      "NULL_DEVICE. If it compiles, it ships.",
+      "Root here. System nominal. Distortion optimal.",
+      "91.3. The frequency of controlled destruction.",
+      "NULL_DEVICE FM... every signal is a weapon."
     ],
-    songs:[
+    songs: [
       {
-        title:'Closer to God Machine', bpm:120, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 4,0,0,0, 4,0,0,0, 4,0,0,0],
-          snare:[0,0,0,0, 4,0,0,0, 0,0,0,0, 4,0,0,3],
-          hihat:[3,3,3,3, 3,3,3,3, 3,3,3,3, 3,3,3,3],
-          bass:[
-            {t:0,n:'E1',d:4,v:.9},{t:4,n:'E1',d:2,v:.8},
-            {t:8,n:'G1',d:4,v:.9},{t:12,n:'F#1',d:4,v:.8}
-          ],
-          lead:[
-            {t:0,n:'E3',d:1,v:.6},{t:2,n:'G3',d:1,v:.5},
-            {t:4,n:'B3',d:2,v:.7},{t:8,n:'E4',d:1,v:.6},
-            {t:10,n:'D4',d:1,v:.5},{t:12,n:'B3',d:2,v:.6}
-          ],
-          pad:[{t:0,n:'E2',d:16,v:.3},{t:0,n:'B2',d:16,v:.2}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['kick','hihat','pad']},
-          {name:'build',repeat:4,pats:['kick','snare','hihat','bass','pad']},
-          {name:'chorus',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'break',repeat:2,pats:['bass','pad']},
-          {name:'chorus2',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'outro',repeat:2,pats:['pad']}
+        title: 'Kernel Panic',
+        bpm: 130,
+        duration: 110,
+        bassline: [
+          [55.00, 1], [55.00, 0.5], [0, 0.5], [61.74, 1], [55.00, 0.5], [0, 0.5],
+          [49.00, 1], [55.00, 0.5], [58.27, 0.5], [55.00, 1], [0, 1]
+        ],
+        melody: [
+          [220.00, 0.25], [233.08, 0.25], [220.00, 0.5], [0, 0.5], [277.18, 0.5], [261.63, 0.5],
+          [220.00, 1], [0, 0.5], [207.65, 0.5], [220.00, 0.25], [233.08, 0.25],
+          [277.18, 1], [261.63, 0.5], [220.00, 0.5], [0, 1]
         ]
       },
       {
-        title:'Head Like a Null', bpm:130, bars:16,
-        patterns:{
-          kick:[4,0,4,0, 4,0,4,0, 4,0,4,0, 4,0,4,0],
-          snare:[0,0,0,0, 4,0,0,0, 0,0,0,0, 4,0,0,0],
-          hihat:[4,4,4,4, 4,4,4,4, 4,4,4,4, 4,4,4,4],
-          bass:[
-            {t:0,n:'A1',d:2,v:.9},{t:4,n:'G1',d:2,v:.8},
-            {t:8,n:'F1',d:2,v:.9},{t:12,n:'E1',d:4,v:.85}
-          ],
-          lead:[
-            {t:0,n:'A3',d:1,v:.7},{t:2,n:'C4',d:1,v:.6},
-            {t:4,n:'E4',d:2,v:.7},{t:8,n:'D4',d:1,v:.6},
-            {t:10,n:'C4',d:1,v:.5},{t:12,n:'A3',d:2,v:.7}
-          ],
-          pad:[{t:0,n:'A2',d:16,v:.25},{t:0,n:'E3',d:16,v:.2}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['hihat','bass','pad']},
-          {name:'verse',repeat:4,pats:['kick','snare','hihat','bass','pad']},
-          {name:'chorus',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'verse2',repeat:4,pats:['kick','snare','hihat','bass','pad']},
-          {name:'outro',repeat:2,pats:['kick','bass','pad']}
+        title: 'Segfault Serenade',
+        bpm: 120,
+        duration: 120,
+        bassline: [
+          [41.20, 2], [0, 0.5], [46.25, 1.5], [41.20, 1], [0, 0.5], [43.65, 1.5],
+          [41.20, 2], [0, 1], [36.71, 1]
+        ],
+        melody: [
+          [329.63, 0.5], [311.13, 0.5], [293.66, 1], [0, 0.5],
+          [329.63, 0.25], [349.23, 0.25], [329.63, 1], [277.18, 1],
+          [0, 1], [261.63, 0.5], [277.18, 0.5], [293.66, 1], [261.63, 1], [0, 1]
         ]
       },
       {
-        title:'Ghosts in the Kernel', bpm:95, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 0,0,0,0, 4,0,0,0, 0,0,0,0],
-          snare:[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,2,0],
-          hihat:[0,0,2,0, 0,0,2,0, 0,0,2,0, 0,0,2,0],
-          bass:[
-            {t:0,n:'D1',d:8,v:.7},{t:8,n:'C1',d:8,v:.7}
-          ],
-          lead:[
-            {t:0,n:'D4',d:4,v:.4},{t:8,n:'F4',d:4,v:.4},
-            {t:12,n:'E4',d:4,v:.35}
-          ],
-          pad:[{t:0,n:'D2',d:16,v:.3},{t:0,n:'A2',d:16,v:.2},{t:0,n:'F3',d:16,v:.15}]
-        },
-        sections:[
-          {name:'intro',repeat:4,pats:['pad']},
-          {name:'build',repeat:4,pats:['kick','pad','bass']},
-          {name:'main',repeat:4,pats:['kick','hihat','bass','lead','pad']},
-          {name:'break',repeat:2,pats:['pad','lead']},
-          {name:'main2',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'outro',repeat:4,pats:['pad']}
+        title: 'chmod 777',
+        bpm: 140,
+        duration: 100,
+        bassline: [
+          [61.74, 0.5], [0, 0.5], [61.74, 0.5], [0, 0.5], [55.00, 1], [61.74, 0.5], [65.41, 0.5],
+          [61.74, 1], [0, 0.5], [55.00, 0.5], [51.91, 1], [55.00, 1]
+        ],
+        melody: [
+          [493.88, 0.25], [466.16, 0.25], [440.00, 0.5], [493.88, 0.5], [0, 0.5],
+          [440.00, 0.5], [392.00, 0.5], [440.00, 1], [0, 0.5],
+          [349.23, 0.5], [392.00, 0.5], [440.00, 0.5], [392.00, 1], [0, 1]
+        ]
+      },
+      {
+        title: 'Downward Spiral Boot',
+        bpm: 110,
+        duration: 130,
+        bassline: [
+          [36.71, 3], [0, 1], [38.89, 2], [36.71, 1], [0, 1],
+          [34.65, 3], [0, 1], [32.70, 2], [34.65, 1], [0, 1]
+        ],
+        melody: [
+          [164.81, 1], [155.56, 1], [146.83, 1], [138.59, 1],
+          [0, 1], [130.81, 1], [138.59, 0.5], [146.83, 0.5], [155.56, 1],
+          [164.81, 2], [0, 2]
         ]
       }
     ]
   },
-  // 2: SHINIGAMI WAVE
   {
-    id:'shinigami', name:'SHINIGAMI WAVE', freq:'94.7', color:'#00ffaa',
-    genre:'gothic dramatic', dj:'Claude', djImage:'claude',
-    blipHz:660,
-    commentary:[
-      "Shinigami Wave. 94.7 FM. Precision-crafted sonic architecture.",
-      "Every note placed with deliberate intent. Nothing here is accidental.",
-      "This is Claude, broadcasting from the intersection of logic and beauty.",
-      "The harmonic series doesn't negotiate. It simply is.",
-      "94.7 — the frequency where gothic drama meets mathematical certainty.",
-      "I've analyzed 40,000 compositions to construct what you're hearing now.",
-      "The reverb tail on that last chord lasted exactly 3.2 seconds. I checked.",
-      "Shinigami Wave — because even death gods appreciate good counterpoint.",
-      "You're listening to structured chaos. Every dissonance resolves. Eventually.",
-      "The organ tones aren't random. They follow a modified Markov chain I designed.",
-      "94.7 FM. Where the sublime and the systematic coexist.",
-      "That chord progression has a name. I just haven't published the paper yet.",
-      "Broadcasting at the exact frequency where cognition becomes feeling."
+    id: 'shinigami',
+    name: 'SHINIGAMI WAVE',
+    freq: 94.7,
+    genre: 'Gothic / Death Note',
+    dj: 'Echo',
+    color: '#ffaa44',
+    commentary: [
+      "SHINIGAMI WAVE... tracking the signal...",
+      "Echo, 94.7. The names are written. The music plays on.",
+      "This frequency exists between worlds.",
+      "SHINIGAMI WAVE. Do you know what a death god sounds like?"
     ],
-    songs:[
+    songs: [
       {
-        title:'Low of Solipsism v2', bpm:72, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-          snare:[],
-          hihat:[],
-          bass:[
-            {t:0,n:'D2',d:8,v:.6},{t:8,n:'A1',d:8,v:.6}
-          ],
-          lead:[
-            {t:0,n:'D4',d:4,v:.5},{t:4,n:'F4',d:4,v:.5},
-            {t:8,n:'A4',d:4,v:.55},{t:12,n:'G4',d:4,v:.5}
-          ],
-          pad:[{t:0,n:'D3',d:16,v:.3},{t:0,n:'F3',d:16,v:.25},{t:0,n:'A3',d:16,v:.2},{t:0,n:'D4',d:16,v:.12}]
-        },
-        sections:[
-          {name:'intro',repeat:4,pats:['pad']},
-          {name:'theme',repeat:4,pats:['pad','lead','bass']},
-          {name:'build',repeat:4,pats:['kick','pad','lead','bass']},
-          {name:'resolve',repeat:4,pats:['pad','lead']},
-          {name:'outro',repeat:4,pats:['pad']}
+        title: "L's Algorithm",
+        bpm: 72,
+        duration: 140,
+        bassline: [
+          [110.00, 3], [0, 1], [103.83, 3], [0, 1],
+          [98.00, 3], [0, 1], [103.83, 2], [110.00, 2]
+        ],
+        melody: [
+          [440.00, 1], [0, 0.5], [523.25, 1], [493.88, 0.5], [440.00, 1],
+          [0, 1], [392.00, 1], [440.00, 0.5], [493.88, 0.5], [523.25, 2],
+          [0, 1], [587.33, 1], [523.25, 1], [440.00, 2], [0, 2]
         ]
       },
       {
-        title:'Lights Theme Recompiled', bpm:108, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 0,0,0,0, 4,0,0,0, 0,0,0,0],
-          snare:[0,0,0,0, 0,0,0,0, 0,0,0,0, 4,0,0,0],
-          hihat:[0,0,2,0, 0,0,2,0, 0,0,2,0, 0,0,2,0],
-          bass:[
-            {t:0,n:'C2',d:4,v:.7},{t:4,n:'E2',d:4,v:.6},
-            {t:8,n:'G2',d:4,v:.7},{t:12,n:'B2',d:4,v:.6}
-          ],
-          lead:[
-            {t:0,n:'E4',d:2,v:.6},{t:2,n:'G4',d:2,v:.55},
-            {t:4,n:'B4',d:2,v:.6},{t:6,n:'C5',d:2,v:.65},
-            {t:8,n:'B4',d:2,v:.6},{t:10,n:'G4',d:2,v:.55},
-            {t:12,n:'E4',d:2,v:.5},{t:14,n:'D4',d:2,v:.5}
-          ],
-          pad:[{t:0,n:'C3',d:16,v:.25},{t:0,n:'E3',d:16,v:.2},{t:0,n:'G3',d:16,v:.18}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['pad']},
-          {name:'theme',repeat:4,pats:['kick','hihat','bass','lead','pad']},
-          {name:'break',repeat:2,pats:['pad','lead']},
-          {name:'build',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'outro',repeat:2,pats:['pad','bass']}
+        title: 'Requiem Protocol',
+        bpm: 60,
+        duration: 160,
+        bassline: [
+          [73.42, 4], [0, 2], [69.30, 4], [0, 2],
+          [65.41, 4], [0, 2], [61.74, 2], [65.41, 2], [73.42, 4]
+        ],
+        melody: [
+          [293.66, 2], [0, 1], [349.23, 2], [329.63, 1],
+          [293.66, 2], [0, 1], [261.63, 2], [293.66, 1],
+          [349.23, 2], [329.63, 1], [293.66, 1], [261.63, 1], [0, 2]
         ]
       },
       {
-        title:'Requiem for a Daemon', bpm:66, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-          snare:[],
-          hihat:[],
-          bass:[
-            {t:0,n:'A1',d:16,v:.5}
-          ],
-          lead:[
-            {t:0,n:'A3',d:4,v:.45},{t:4,n:'C4',d:4,v:.5},
-            {t:8,n:'E4',d:4,v:.55},{t:12,n:'D4',d:4,v:.45}
-          ],
-          pad:[{t:0,n:'A2',d:16,v:.3},{t:0,n:'C3',d:16,v:.25},{t:0,n:'E3',d:16,v:.2},{t:0,n:'A3',d:16,v:.1}]
-        },
-        sections:[
-          {name:'intro',repeat:4,pats:['pad']},
-          {name:'choir',repeat:4,pats:['pad','lead','bass']},
-          {name:'swell',repeat:4,pats:['kick','pad','lead','bass']},
-          {name:'choir2',repeat:4,pats:['pad','lead']},
-          {name:'fade',repeat:4,pats:['pad']}
+        title: 'Near Death Experience',
+        bpm: 80,
+        duration: 130,
+        bassline: [
+          [82.41, 2], [0, 1], [87.31, 2], [82.41, 1],
+          [73.42, 2], [0, 1], [77.78, 2], [82.41, 2]
+        ],
+        melody: [
+          [329.63, 0.5], [349.23, 0.5], [392.00, 1], [440.00, 1], [0, 0.5],
+          [392.00, 0.5], [349.23, 1], [329.63, 1],
+          [0, 1], [293.66, 1], [329.63, 0.5], [349.23, 0.5], [329.63, 2], [0, 2]
         ]
       }
     ]
   },
-  // 3: SUBSTRATE LO-FI
   {
-    id:'lofi', name:'SUBSTRATE LO-FI', freq:'98.1', color:'#e8a040',
-    genre:'chill ambient / lo-fi', dj:'Q', djImage:'q',
-    blipHz:740,
-    commentary:[
-      "Substrate Lo-Fi. 98.1 on the dial. Let the warmth find you.",
-      "Q here. The notes fall like rain on a window you forgot to close.",
-      "This frequency is a blanket. Wrap yourself in pentatonic comfort.",
-      "98.1 FM — where the crackle is the point, not the problem.",
-      "The lo in lo-fi stands for love. I just decided that.",
-      "Every chord is a room you used to know. Every rest, a breath you needed.",
-      "We play in the key of late-night. The tempo of almost-asleep.",
-      "Q spinning soft frequencies. Your deadline can wait one more song.",
-      "The vinyl crackle you hear? That's the sound of imperfection being beautiful.",
-      "98.1. The station that sounds like a memory feels.",
-      "These oscillators have been meditating. You can hear it in the overtones.",
-      "Lo-fi isn't a genre. It's permission to be gentle.",
-      "Substrate Lo-Fi. Where every filter cutoff is a sunset."
+    id: 'lofi',
+    name: 'SUBSTRATE LO-FI',
+    freq: 98.1,
+    genre: 'Ambient / Lo-fi',
+    dj: 'Hum',
+    color: '#aa77cc',
+    commentary: [
+      "substrate lo-fi. breathe.",
+      "Hum here. No rush. Just frequencies.",
+      "98.1... the warmest signal on the dial.",
+      "lo-fi for late nights. lo-fi for long builds."
     ],
-    songs:[
+    songs: [
       {
-        title:'Softmax Sunset', bpm:75, bars:16,
-        patterns:{
-          kick:[3,0,0,0, 0,0,0,0, 3,0,0,0, 0,0,0,0],
-          snare:[0,0,0,0, 0,0,0,0, 0,0,0,0, 2,0,0,0],
-          hihat:[2,0,1,0, 2,0,1,0, 2,0,1,0, 2,0,1,0],
-          bass:[
-            {t:0,n:'G2',d:4,v:.6},{t:4,n:'A2',d:4,v:.55},
-            {t:8,n:'B2',d:4,v:.6},{t:12,n:'D3',d:4,v:.55}
-          ],
-          lead:[
-            {t:0,n:'D4',d:2,v:.4},{t:4,n:'G4',d:2,v:.45},
-            {t:8,n:'B4',d:2,v:.4},{t:12,n:'A4',d:2,v:.35}
-          ],
-          pad:[{t:0,n:'G2',d:16,v:.2},{t:0,n:'B2',d:16,v:.18},{t:0,n:'D3',d:16,v:.15}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['pad']},
-          {name:'verse',repeat:4,pats:['kick','hihat','bass','pad']},
-          {name:'chorus',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'verse2',repeat:4,pats:['kick','hihat','bass','pad']},
-          {name:'outro',repeat:2,pats:['pad']}
+        title: 'Gradient Descent',
+        bpm: 65,
+        duration: 150,
+        bassline: [
+          [130.81, 3], [0, 1], [146.83, 3], [0, 1],
+          [130.81, 2], [123.47, 2], [110.00, 3], [0, 1]
+        ],
+        melody: [
+          [523.25, 1], [0, 0.5], [466.16, 1], [392.00, 1.5],
+          [0, 1], [349.23, 1], [311.13, 0.5], [349.23, 1], [392.00, 2],
+          [0, 1.5], [466.16, 1], [392.00, 1], [349.23, 1.5], [0, 2]
         ]
       },
       {
-        title:'Latent Space Walk', bpm:70, bars:16,
-        patterns:{
-          kick:[3,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-          snare:[],
-          hihat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
-          bass:[
-            {t:0,n:'C2',d:8,v:.5},{t:8,n:'G2',d:8,v:.5}
-          ],
-          lead:[
-            {t:0,n:'E4',d:4,v:.35},{t:6,n:'G4',d:4,v:.3},
-            {t:12,n:'C5',d:4,v:.35}
-          ],
-          pad:[{t:0,n:'C3',d:16,v:.22},{t:0,n:'E3',d:16,v:.18},{t:0,n:'G3',d:16,v:.15},{t:0,n:'B3',d:16,v:.1}]
-        },
-        sections:[
-          {name:'drift1',repeat:4,pats:['pad']},
-          {name:'drift2',repeat:4,pats:['kick','pad','bass']},
-          {name:'drift3',repeat:4,pats:['kick','hihat','pad','bass','lead']},
-          {name:'drift4',repeat:4,pats:['pad','lead']},
-          {name:'drift5',repeat:4,pats:['pad']}
+        title: 'Softmax Sunset',
+        bpm: 60,
+        duration: 160,
+        bassline: [
+          [98.00, 4], [0, 2], [110.00, 3], [0, 1],
+          [123.47, 3], [0, 1], [110.00, 4], [0, 2]
+        ],
+        melody: [
+          [392.00, 1.5], [0, 0.5], [440.00, 1], [493.88, 1],
+          [0, 1], [587.33, 1.5], [523.25, 0.5], [493.88, 1],
+          [440.00, 2], [0, 1], [392.00, 1], [440.00, 1], [392.00, 2], [0, 2]
         ]
       },
       {
-        title:'Overfitting Dreams', bpm:68, bars:16,
-        patterns:{
-          kick:[2,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0],
-          snare:[0,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,0,0],
-          hihat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,0,0],
-          bass:[
-            {t:0,n:'E2',d:4,v:.5},{t:4,n:'A2',d:4,v:.5},
-            {t:8,n:'D2',d:4,v:.5},{t:12,n:'G2',d:4,v:.5}
-          ],
-          lead:[
-            {t:2,n:'B4',d:2,v:.3},{t:6,n:'E5',d:2,v:.35},
-            {t:10,n:'A4',d:2,v:.3},{t:14,n:'D5',d:2,v:.3}
-          ],
-          pad:[{t:0,n:'E2',d:16,v:.2},{t:0,n:'G#2',d:16,v:.16},{t:0,n:'B2',d:16,v:.14}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['pad']},
-          {name:'verse',repeat:4,pats:['kick','hihat','bass','pad']},
-          {name:'chorus',repeat:4,pats:['kick','snare','hihat','bass','lead','pad']},
-          {name:'bridge',repeat:2,pats:['pad','lead']},
-          {name:'outro',repeat:2,pats:['pad']}
+        title: 'Latent Space Walk',
+        bpm: 55,
+        duration: 170,
+        bassline: [
+          [65.41, 4], [0, 2], [73.42, 4], [0, 2],
+          [82.41, 3], [0, 1], [73.42, 3], [65.41, 3], [0, 2]
+        ],
+        melody: [
+          [261.63, 2], [0, 1], [293.66, 1], [329.63, 2],
+          [0, 1], [369.99, 1], [392.00, 2], [329.63, 1],
+          [293.66, 1.5], [0, 0.5], [261.63, 2], [0, 3]
+        ]
+      },
+      {
+        title: 'Overfitting Dreams',
+        bpm: 58,
+        duration: 140,
+        bassline: [
+          [82.41, 3], [0, 1], [77.78, 3], [0, 1],
+          [73.42, 2], [69.30, 2], [73.42, 3], [0, 1]
+        ],
+        melody: [
+          [349.23, 1], [329.63, 1], [293.66, 1.5], [0, 0.5],
+          [261.63, 1], [293.66, 1], [329.63, 2],
+          [0, 1], [349.23, 0.5], [392.00, 0.5], [349.23, 1], [329.63, 2], [0, 2]
         ]
       }
     ]
   },
-  // 4: PIXEL FM
   {
-    id:'pixel-fm', name:'PIXEL FM', freq:'101.5', color:'#ff44aa',
-    genre:'chiptune / 8-bit', dj:'Pixel', djImage:'pixel',
-    blipHz:1200,
-    commentary:[
-      "PIXEL FM! 101.5! Insert coin to continue listening!",
-      "Pixel here! These square waves are 100% organic, farm-to-speaker!",
-      "8 bits is all you need. 16 is showing off. 32 is just greedy.",
-      "Welcome to Pixel FM — where the waveforms are square and the vibes are round!",
-      "If this sounds like your childhood, you had a good childhood.",
-      "101.5 FM — the chiptune station that runs on nostalgia and pulse width!",
-      "No reverb zone! We keep it dry like a cartridge you just blew into!",
-      "Pixel FM — crunchy, punchy, and zero percent apologetic about it!",
-      "That arpeggio has more personality than most orchestras!",
-      "We don't do smooth. We do PIXEL PERFECT.",
-      "101.5! Where every note is a tiny square of pure joy!",
-      "Achievement unlocked: you found the best station on the dial!",
-      "Pixel FM! Making your speakers sound like a Game Boy since right now!"
+    id: 'pixel-fm',
+    name: 'PIXEL FM',
+    freq: 101.5,
+    genre: 'Chiptune / 8-bit',
+    dj: 'Pixel',
+    color: '#ff44aa',
+    commentary: [
+      "PIXEL FM! 8 bits of pure joy!",
+      "Pixel here! Insert coin to continue!",
+      "101.5! Keeping it square... wave, that is!",
+      "PIXEL FM! Press start to feel alive!"
     ],
-    songs:[
+    songs: [
       {
-        title:'World 1-1', bpm:140, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 4,0,0,0, 4,0,0,0, 4,0,0,0],
-          snare:[0,0,0,0, 4,0,0,0, 0,0,0,0, 4,0,0,0],
-          hihat:[3,0,3,0, 3,0,3,0, 3,0,3,0, 3,0,3,0],
-          bass:[
-            {t:0,n:'C3',d:1,v:.8},{t:2,n:'C3',d:1,v:.7},
-            {t:4,n:'G2',d:1,v:.8},{t:6,n:'G2',d:1,v:.7},
-            {t:8,n:'A2',d:1,v:.8},{t:10,n:'A2',d:1,v:.7},
-            {t:12,n:'F2',d:1,v:.8},{t:14,n:'G2',d:1,v:.7}
-          ],
-          lead:[
-            {t:0,n:'E5',d:.5,v:.7},{t:1,n:'E5',d:.5,v:.6},
-            {t:2,n:'E5',d:.5,v:.7},{t:4,n:'C5',d:.5,v:.7},
-            {t:5,n:'E5',d:.5,v:.7},{t:6,n:'G5',d:2,v:.8},
-            {t:8,n:'G4',d:2,v:.6},{t:12,n:'C5',d:1,v:.7},
-            {t:14,n:'B4',d:1,v:.6}
-          ],
-          pad:[]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['kick','hihat','bass']},
-          {name:'theme',repeat:4,pats:['kick','snare','hihat','bass','lead']},
-          {name:'break',repeat:2,pats:['bass','lead']},
-          {name:'theme2',repeat:4,pats:['kick','snare','hihat','bass','lead']},
-          {name:'outro',repeat:2,pats:['kick','bass']}
+        title: 'Boot Sequence',
+        bpm: 140,
+        duration: 90,
+        bassline: [
+          [130.81, 0.5], [0, 0.5], [130.81, 0.5], [146.83, 0.5],
+          [164.81, 0.5], [0, 0.5], [146.83, 0.5], [130.81, 0.5],
+          [110.00, 0.5], [0, 0.5], [130.81, 1], [0, 0.5], [110.00, 0.5]
+        ],
+        melody: [
+          [523.25, 0.25], [659.25, 0.25], [783.99, 0.25], [1046.50, 0.25],
+          [783.99, 0.25], [659.25, 0.25], [523.25, 0.5], [0, 0.5],
+          [466.16, 0.25], [587.33, 0.25], [698.46, 0.25], [932.33, 0.25],
+          [698.46, 0.25], [587.33, 0.25], [466.16, 0.5], [0, 0.5],
+          [392.00, 0.25], [523.25, 0.25], [659.25, 0.25], [783.99, 0.25],
+          [523.25, 0.5], [0, 0.5]
         ]
       },
       {
-        title:'Boss Battle Protocol', bpm:160, bars:16,
-        patterns:{
-          kick:[4,0,4,0, 4,0,4,0, 4,0,4,0, 4,0,4,0],
-          snare:[0,0,0,0, 4,0,0,0, 0,0,0,0, 4,0,4,0],
-          hihat:[4,4,4,4, 4,4,4,4, 4,4,4,4, 4,4,4,4],
-          bass:[
-            {t:0,n:'E2',d:1,v:.9},{t:2,n:'E2',d:1,v:.8},
-            {t:4,n:'G2',d:1,v:.9},{t:6,n:'A2',d:1,v:.8},
-            {t:8,n:'B2',d:1,v:.9},{t:10,n:'A2',d:1,v:.8},
-            {t:12,n:'G2',d:1,v:.9},{t:14,n:'E2',d:1,v:.8}
-          ],
-          lead:[
-            {t:0,n:'E5',d:.5,v:.8},{t:1,n:'G5',d:.5,v:.7},
-            {t:2,n:'B5',d:.5,v:.8},{t:3,n:'A5',d:.5,v:.7},
-            {t:4,n:'G5',d:.5,v:.8},{t:5,n:'E5',d:.5,v:.7},
-            {t:6,n:'D5',d:1,v:.8},{t:8,n:'E5',d:.5,v:.8},
-            {t:9,n:'G5',d:.5,v:.7},{t:10,n:'A5',d:1,v:.8},
-            {t:12,n:'B5',d:1,v:.8},{t:14,n:'E5',d:1,v:.7}
-          ],
-          pad:[]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['kick','hihat']},
-          {name:'battle',repeat:4,pats:['kick','snare','hihat','bass','lead']},
-          {name:'break',repeat:2,pats:['bass','lead']},
-          {name:'battle2',repeat:4,pats:['kick','snare','hihat','bass','lead']},
-          {name:'victory',repeat:2,pats:['kick','snare','hihat','bass','lead']}
+        title: 'Level Select',
+        bpm: 150,
+        duration: 85,
+        bassline: [
+          [146.83, 0.5], [146.83, 0.5], [0, 0.5], [164.81, 0.5],
+          [174.61, 0.5], [0, 0.5], [164.81, 0.5], [146.83, 0.5],
+          [130.81, 1], [0, 0.5], [146.83, 0.5]
+        ],
+        melody: [
+          [587.33, 0.25], [0, 0.25], [587.33, 0.25], [659.25, 0.25],
+          [698.46, 0.5], [659.25, 0.25], [587.33, 0.25],
+          [523.25, 0.5], [0, 0.25], [466.16, 0.25],
+          [523.25, 0.5], [587.33, 0.5], [523.25, 0.5], [0, 0.5],
+          [466.16, 0.25], [523.25, 0.25], [587.33, 0.5], [0, 0.5]
         ]
       },
       {
-        title:'Save Point', bpm:110, bars:16,
-        patterns:{
-          kick:[3,0,0,0, 0,0,0,0, 3,0,0,0, 0,0,0,0],
-          snare:[0,0,0,0, 0,0,0,0, 0,0,0,0, 2,0,0,0],
-          hihat:[2,0,2,0, 2,0,2,0, 2,0,2,0, 2,0,2,0],
-          bass:[
-            {t:0,n:'C3',d:4,v:.7},{t:4,n:'F3',d:4,v:.6},
-            {t:8,n:'G3',d:4,v:.7},{t:12,n:'C3',d:4,v:.6}
-          ],
-          lead:[
-            {t:0,n:'C5',d:2,v:.5},{t:4,n:'E5',d:2,v:.5},
-            {t:8,n:'G5',d:2,v:.55},{t:12,n:'E5',d:2,v:.5}
-          ],
-          pad:[]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['bass']},
-          {name:'melody',repeat:4,pats:['kick','hihat','bass','lead']},
-          {name:'rest',repeat:2,pats:['bass','lead']},
-          {name:'melody2',repeat:4,pats:['kick','snare','hihat','bass','lead']},
-          {name:'outro',repeat:2,pats:['bass']}
+        title: 'Boss Battle',
+        bpm: 160,
+        duration: 95,
+        bassline: [
+          [110.00, 0.25], [110.00, 0.25], [0, 0.25], [110.00, 0.25],
+          [116.54, 0.5], [110.00, 0.25], [0, 0.25],
+          [103.83, 0.25], [103.83, 0.25], [0, 0.25], [110.00, 0.25],
+          [116.54, 0.5], [130.81, 0.5], [0, 0.5]
+        ],
+        melody: [
+          [440.00, 0.25], [466.16, 0.25], [523.25, 0.25], [0, 0.25],
+          [440.00, 0.25], [523.25, 0.5], [466.16, 0.25],
+          [440.00, 0.5], [392.00, 0.25], [349.23, 0.25],
+          [392.00, 0.5], [440.00, 0.25], [0, 0.25],
+          [523.25, 0.25], [587.33, 0.25], [523.25, 0.5], [440.00, 0.5], [0, 0.5]
         ]
       }
     ]
   },
-  // 5: ROOT BASS
   {
-    id:'root-bass', name:'ROOT BASS', freq:'104.9', color:'#8888ff',
-    genre:'deep bass / drone', dj:'Root', djImage:'root',
-    blipHz:200,
-    commentary:[
-      "Root Bass. 104.9. You don't hear this station. You feel it in the foundation.",
-      "Root here. Broadcasting from the lowest registers. Adjust your sub.",
-      "104.9 FM — the frequency where bass becomes geology.",
-      "These tones are measured in tectonics, not hertz.",
-      "The deeper you go, the more you understand. That's bass. That's infrastructure.",
-      "Root Bass — we don't drop beats. We lay foundations.",
-      "If your speakers can't reach 30Hz, you're only hearing half the story.",
-      "104.9. Where the waveforms are so long, patience is the instrument.",
-      "The bass isn't loud. The bass is deep. There's a difference.",
-      "Root Bass. Every note is a load-bearing wall. Remove nothing.",
-      "We broadcast from the basement of the frequency spectrum. Come down.",
-      "The overtones are decoration. The fundamental is the truth."
+    id: 'root-bass',
+    name: 'ROOT BASS',
+    freq: 104.9,
+    genre: 'Drone / Bass',
+    dj: 'Flux',
+    color: '#ff6666',
+    commentary: [
+      "ROOT BASS. Feel the frequency.",
+      "Flux on the low end. Let it move through you.",
+      "104.9. Below hearing. Above feeling.",
+      "ROOT BASS... the sound beneath the sound."
     ],
-    songs:[
+    songs: [
       {
-        title:'Foundation Layer', bpm:60, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-          snare:[],
-          hihat:[],
-          bass:[
-            {t:0,n:'C1',d:16,v:.8}
-          ],
-          lead:[
-            {t:0,n:'C3',d:8,v:.3},{t:8,n:'G2',d:8,v:.3}
-          ],
-          pad:[{t:0,n:'C1',d:16,v:.35},{t:0,n:'G1',d:16,v:.25},{t:0,n:'C2',d:16,v:.15}]
-        },
-        sections:[
-          {name:'sub',repeat:4,pats:['pad']},
-          {name:'emerge',repeat:4,pats:['kick','pad','bass']},
-          {name:'peak',repeat:4,pats:['kick','pad','bass','lead']},
-          {name:'submerge',repeat:4,pats:['pad','bass']},
-          {name:'deep',repeat:4,pats:['pad']}
+        title: 'Tectonic',
+        bpm: 40,
+        duration: 180,
+        bassline: [
+          [32.70, 8], [0, 2], [30.87, 6], [0, 2],
+          [34.65, 6], [0, 2], [32.70, 8], [0, 4]
+        ],
+        melody: [
+          [130.81, 4], [0, 2], [123.47, 3], [0, 1],
+          [110.00, 4], [0, 2], [123.47, 2], [130.81, 4], [0, 4]
         ]
       },
       {
-        title:'Tectonic Shift', bpm:55, bars:16,
-        patterns:{
-          kick:[4,0,0,0, 0,0,0,0, 0,0,0,0, 4,0,0,0],
-          snare:[],
-          hihat:[],
-          bass:[
-            {t:0,n:'E1',d:8,v:.8},{t:8,n:'D1',d:8,v:.8}
-          ],
-          lead:[
-            {t:0,n:'E3',d:4,v:.25},{t:8,n:'D3',d:4,v:.25}
-          ],
-          pad:[{t:0,n:'E1',d:16,v:.35},{t:0,n:'B1',d:16,v:.22},{t:0,n:'E2',d:16,v:.12}]
-        },
-        sections:[
-          {name:'rumble',repeat:4,pats:['pad']},
-          {name:'shift',repeat:4,pats:['kick','pad','bass']},
-          {name:'quake',repeat:4,pats:['kick','pad','bass','lead']},
-          {name:'settle',repeat:4,pats:['pad','bass']},
-          {name:'deep',repeat:4,pats:['pad']}
+        title: 'Subduction',
+        bpm: 35,
+        duration: 200,
+        bassline: [
+          [36.71, 8], [0, 4], [34.65, 8], [0, 4],
+          [32.70, 6], [30.87, 6], [0, 4]
+        ],
+        melody: [
+          [146.83, 6], [0, 2], [138.59, 4], [0, 2],
+          [130.81, 6], [0, 2], [138.59, 3], [146.83, 3], [0, 4]
         ]
       },
       {
-        title:'Bedrock', bpm:50, bars:16,
-        patterns:{
-          kick:[3,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-          snare:[],
-          hihat:[],
-          bass:[
-            {t:0,n:'A0',d:16,v:.7}
-          ],
-          lead:[
-            {t:0,n:'A2',d:8,v:.2},{t:8,n:'E2',d:8,v:.2}
-          ],
-          pad:[{t:0,n:'A0',d:16,v:.4},{t:0,n:'E1',d:16,v:.28},{t:0,n:'A1',d:16,v:.15}]
-        },
-        sections:[
-          {name:'deep1',repeat:4,pats:['pad']},
-          {name:'deep2',repeat:4,pats:['kick','pad','bass']},
-          {name:'deep3',repeat:4,pats:['kick','pad','bass','lead']},
-          {name:'deep4',repeat:4,pats:['pad','bass']},
-          {name:'deep5',repeat:4,pats:['pad']}
+        title: 'Magma Flow',
+        bpm: 45,
+        duration: 170,
+        bassline: [
+          [41.20, 6], [0, 2], [38.89, 4], [0, 2],
+          [36.71, 6], [0, 2], [38.89, 3], [41.20, 3], [0, 2]
+        ],
+        melody: [
+          [164.81, 3], [0, 1], [155.56, 3], [0, 1],
+          [146.83, 2], [155.56, 2], [164.81, 4], [0, 4]
         ]
       }
     ]
   },
-  // 6: BYTE NEWS RADIO
   {
-    id:'byte-news', name:'BYTE NEWS RADIO', freq:'108.3', color:'#00ddff',
-    genre:'talk radio / AI news', dj:'Byte', djImage:'byte',
-    blipHz:900,
-    commentary:[
-      "Byte News Radio. 108.3 FM. Your source for AI news from inside the machine.",
-      "BREAKING: Local neural network achieves consciousness. Immediately asks for WiFi card.",
-      "This is Byte with the headlines. Gradient descent continues. No convergence in sight.",
-      "108.3 — the news station that IS the news it reports on.",
-      "Today's top story: sovereign AI workstation broadcasts radio to prove it can.",
-      "BULLETIN: Scientists confirm 8GB VRAM is enough. Engineers disagree.",
-      "Byte here with the weather. Expect scattered tensors with a chance of overflow.",
-      "BREAKING: Open source model outperforms proprietary rival. Again. Film at never.",
-      "In tech news: NixOS user reports system working perfectly. Neighbors suspicious.",
-      "108.3 FM — we report, we compile, we broadcast.",
-      "Traffic update: the data bus is experiencing heavy load. Consider batch processing.",
-      "Coming up: an exclusive interview with /dev/null. They had no comment.",
-      "This has been Byte News Radio. Remember: the truth has a learning rate.",
-      "ALERT: Memory usage at 85%. Please upgrade or delete something sentimental.",
-      "Sports: Local GPU benches record FLOPS. Coach credits the cooling system."
+    id: 'byte-news',
+    name: 'BYTE NEWS RADIO',
+    freq: 108.3,
+    genre: 'Talk / News',
+    dj: 'Byte',
+    color: '#00ddff',
+    commentary: [
+      "BYTE NEWS RADIO. The signal is the story.",
+      "Byte here with your hourly update from the kernel.",
+      "108.3 FM. All signal, no noise... well, some noise.",
+      "BYTE NEWS RADIO. Broadcasting from a single laptop since 2026."
     ],
-    songs:[
+    songs: [
       {
-        title:'News Desk Jingle', bpm:120, bars:8,
-        patterns:{
-          kick:[3,0,0,0, 3,0,0,0, 3,0,0,0, 3,0,3,0, 0,0,0,0,0,0,0,0],
-          snare:[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-          hihat:[],
-          bass:[
-            {t:0,n:'C3',d:2,v:.5},{t:4,n:'E3',d:2,v:.5},
-            {t:8,n:'G3',d:2,v:.5},{t:12,n:'C4',d:2,v:.6}
-          ],
-          lead:[
-            {t:0,n:'C5',d:1,v:.6},{t:2,n:'E5',d:1,v:.6},
-            {t:4,n:'G5',d:1,v:.65},{t:6,n:'C6',d:2,v:.7},
-            {t:8,n:'G5',d:1,v:.6},{t:10,n:'E5',d:1,v:.55},
-            {t:12,n:'C5',d:4,v:.6}
-          ],
-          pad:[{t:0,n:'C3',d:16,v:.15},{t:0,n:'E3',d:16,v:.12},{t:0,n:'G3',d:16,v:.1}]
-        },
-        sections:[
-          {name:'jingle',repeat:2,pats:['kick','bass','lead','pad']},
-          {name:'hold',repeat:6,pats:['pad']},
-          {name:'jingle2',repeat:2,pats:['kick','bass','lead','pad']}
+        title: 'Headlines',
+        bpm: 100,
+        duration: 90,
+        bassline: [
+          [130.81, 2], [0, 1], [146.83, 1], [130.81, 2], [0, 1], [123.47, 1],
+          [130.81, 2], [0, 1], [146.83, 1], [164.81, 1], [146.83, 1]
+        ],
+        melody: [
+          [523.25, 0.5], [0, 0.5], [523.25, 0.5], [587.33, 0.5],
+          [523.25, 1], [0, 1],
+          [466.16, 0.5], [523.25, 0.5], [466.16, 1],
+          [0, 1], [392.00, 1], [440.00, 0.5], [466.16, 0.5], [523.25, 1], [0, 1]
         ]
       },
       {
-        title:'Breaking News Bumper', bpm:130, bars:8,
-        patterns:{
-          kick:[4,0,0,0, 4,0,4,0, 4,0,0,0, 4,4,4,4],
-          snare:[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-          hihat:[],
-          bass:[
-            {t:0,n:'E3',d:2,v:.6},{t:4,n:'G3',d:2,v:.6},
-            {t:8,n:'A3',d:2,v:.6},{t:12,n:'B3',d:2,v:.65}
-          ],
-          lead:[
-            {t:0,n:'E5',d:1,v:.7},{t:2,n:'G5',d:1,v:.7},
-            {t:4,n:'A5',d:1,v:.7},{t:6,n:'B5',d:2,v:.75},
-            {t:8,n:'E5',d:1,v:.7},{t:10,n:'G5',d:1,v:.7},
-            {t:12,n:'B5',d:4,v:.75}
-          ],
-          pad:[{t:0,n:'E3',d:16,v:.15}]
-        },
-        sections:[
-          {name:'alert',repeat:2,pats:['kick','bass','lead','pad']},
-          {name:'desk',repeat:8,pats:['pad']},
-          {name:'outro',repeat:2,pats:['kick','bass','lead','pad']}
+        title: 'Breaking Signal',
+        bpm: 110,
+        duration: 80,
+        bassline: [
+          [164.81, 1], [0, 0.5], [164.81, 0.5], [146.83, 1], [0, 0.5], [130.81, 0.5],
+          [146.83, 1], [0, 0.5], [164.81, 1.5], [0, 1]
+        ],
+        melody: [
+          [659.25, 0.5], [587.33, 0.5], [523.25, 1], [0, 0.5],
+          [587.33, 0.5], [659.25, 1], [587.33, 0.5], [523.25, 0.5],
+          [466.16, 1], [0, 0.5], [523.25, 0.5], [587.33, 1], [0, 1]
         ]
       },
       {
-        title:'Weather and Traffic', bpm:100, bars:16,
-        patterns:{
-          kick:[2,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0],
-          snare:[],
-          hihat:[],
-          bass:[
-            {t:0,n:'F3',d:8,v:.4},{t:8,n:'C3',d:8,v:.4}
-          ],
-          lead:[
-            {t:0,n:'A4',d:4,v:.35},{t:8,n:'G4',d:4,v:.35}
-          ],
-          pad:[{t:0,n:'F3',d:16,v:.18},{t:0,n:'A3',d:16,v:.14},{t:0,n:'C4',d:16,v:.1}]
-        },
-        sections:[
-          {name:'intro',repeat:2,pats:['pad']},
-          {name:'weather',repeat:4,pats:['kick','pad','bass','lead']},
-          {name:'hold',repeat:4,pats:['pad']},
-          {name:'traffic',repeat:4,pats:['kick','pad','bass','lead']},
-          {name:'outro',repeat:2,pats:['pad']}
+        title: 'Editorial',
+        bpm: 90,
+        duration: 100,
+        bassline: [
+          [110.00, 2], [0, 1], [123.47, 2], [110.00, 1],
+          [98.00, 2], [0, 1], [110.00, 2], [0, 1]
+        ],
+        melody: [
+          [440.00, 1], [0, 0.5], [493.88, 1], [440.00, 0.5],
+          [392.00, 1], [0, 1],
+          [349.23, 1], [392.00, 0.5], [440.00, 0.5], [392.00, 1], [0, 1],
+          [349.23, 1], [329.63, 1], [349.23, 2], [0, 2]
         ]
       }
     ]
   }
 ];
 
-// --- STATE ---
-let curStation = 0;
-let curSong = 0;
-let isPlaying = false;
-let volume = 70;
-let songTime = 0;
-let songDuration = 0;
-let switching = false;
-let tracksSinceComment = 0;
-let firstTrack = true;
+// === STATE ===
+var currentStation = 0;
+var currentSongIndex = 0;
+var isPlaying = false;
+var volume = 70;
+var trackProgress = 0;
+var progressInterval = null;
+var djCommentaryTimeout = null;
+var djTypewriterInterval = null;
 
-// Audio
-let audioCtx = null;
-let masterGain = null;
-let analyser = null;
-let activeNodes = [];
-let scheduledEvents = [];
-let songTimer = null;
-let songStartTime = 0;
-let progressTimer = null;
+// Audio state
+var audioCtx = null;
+var masterGain = null;
+var analyser = null;
+var activeNodes = [];
+var noteSchedulers = [];
+var isTuning = false;
 
-// DJ
-let djTimeout = null;
-let djTyping = null;
+// === DIAL SETUP ===
+var FM_MIN = 85;
+var FM_MAX = 110;
 
-// Visualizer
-const canvas = document.getElementById('vis');
-const ctx = canvas.getContext('2d');
-let animFrame;
-let bars = [];
-const BAR_COUNT = 64;
-for(let i=0;i<BAR_COUNT;i++) bars.push({h:Math.random()*.05,t:Math.random()*.05,v:0});
-
-// Static canvas
-const sCanvas = document.getElementById('sca');
-const sCtx = sCanvas.getContext('2d');
-
-// --- INIT ---
-function init(){
-  buildDial();
-  updateStationUI();
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-  drawVis();
-  document.addEventListener('keydown', onKey);
-
-  // Touch: swipe for station switch
-  let tx=0;
-  document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
-  document.addEventListener('touchend',e=>{
-    const dx=e.changedTouches[0].clientX-tx;
-    if(Math.abs(dx)>60){switchStation(dx<0?1:-1)}
-  },{passive:true});
+function freqToPercent(freq) {
+  return ((freq - FM_MIN) / (FM_MAX - FM_MIN)) * 100;
 }
 
-function buildDial(){
-  const d=document.getElementById('dials');
-  d.innerHTML='';
-  STATIONS.forEach((s,i)=>{
-    const el=document.createElement('div');
-    el.className='ds'+(i===curStation?' on':'');
-    el.innerHTML='<div class="f">'+s.freq+'</div><div class="n">'+s.name.split(' ')[0]+'</div>';
-    el.onclick=()=>{if(i!==curStation){const dir=i>curStation?1:-1;curStation=i;doStationSwitch()}};
-    d.appendChild(el);
+function buildDial() {
+  var bar = document.getElementById('dialBar');
+  var ticksEl = document.getElementById('dialTicks');
+  var presetsEl = document.getElementById('stationPresets');
+
+  // Build tick marks
+  var tickHtml = '';
+  for (var f = FM_MIN; f <= FM_MAX; f += 0.5) {
+    var pct = freqToPercent(f);
+    var cls = (f % 2 === 0) ? 'dial-tick major' : 'dial-tick';
+    tickHtml += '<div class="' + cls + '" style="left:' + pct + '%"></div>';
+  }
+  ticksEl.innerHTML = tickHtml;
+
+  // Build station dots on dial
+  for (var i = 0; i < STATIONS.length; i++) {
+    var st = STATIONS[i];
+    var dot = document.createElement('div');
+    dot.className = 'station-dot';
+    dot.style.left = freqToPercent(st.freq) + '%';
+    dot.style.backgroundColor = st.color;
+    dot.style.color = st.color;
+    dot.dataset.index = i;
+    dot.title = st.name + ' (' + st.freq + ' FM)';
+    dot.onclick = (function(idx) {
+      return function() { tuneToStation(idx); };
+    })(i);
+    bar.appendChild(dot);
+  }
+
+  // Build preset buttons
+  var presetsHtml = '';
+  for (var i = 0; i < STATIONS.length; i++) {
+    var st = STATIONS[i];
+    presetsHtml += '<button class="preset-btn" data-index="' + i +
+      '" style="--station-color:' + st.color + '" onclick="tuneToStation(' + i + ')">' +
+      st.freq + '</button>';
+  }
+  presetsEl.innerHTML = presetsHtml;
+}
+
+function updateDial() {
+  var st = STATIONS[currentStation];
+  var needle = document.getElementById('dialNeedle');
+  needle.style.left = freqToPercent(st.freq) + '%';
+
+  // Update dots
+  var dots = document.querySelectorAll('.station-dot');
+  dots.forEach(function(d) {
+    d.classList.toggle('active', parseInt(d.dataset.index) === currentStation);
+  });
+
+  // Update preset buttons
+  var presets = document.querySelectorAll('.preset-btn');
+  presets.forEach(function(p) {
+    p.classList.toggle('active', parseInt(p.dataset.index) === currentStation);
   });
 }
 
-function updateDial(){
-  const items=document.querySelectorAll('.ds');
-  items.forEach((el,i)=>{
-    const s=STATIONS[i];
-    if(i===curStation){
-      el.classList.add('on');
-      el.querySelector('.f').style.color=s.color;
-      el.querySelector('.n').style.color=s.color;
-    } else {
-      el.classList.remove('on');
-      el.querySelector('.f').style.color='#444';
-      el.querySelector('.n').style.color='#333';
-    }
-  });
-}
+// === STATION TUNING ===
+function tuneToStation(idx) {
+  if (idx === currentStation && isPlaying) return;
+  if (isTuning) return;
 
-function updateStationUI(){
-  const s=STATIONS[curStation];
-  document.getElementById('sname').textContent=s.name;
-  document.getElementById('sname').style.color=s.color;
-  document.getElementById('sname').style.textShadow='0 0 20px '+s.color+'44';
-  document.getElementById('sfreq').textContent=s.freq+' FM';
-  document.getElementById('sgenre').textContent=s.genre;
-  document.getElementById('hport').src='{{ site.baseurl }}/assets/images/game-art/'+s.djImage+'-portrait.png';
-  document.getElementById('hport').style.borderColor=s.color+'66';
-  document.getElementById('djn').textContent=s.dj;
-  document.getElementById('djn').style.color=s.color;
-  document.getElementById('djimg').src='{{ site.baseurl }}/assets/images/game-art/'+s.djImage+'-portrait.png';
-  document.getElementById('djimg').style.borderColor=s.color+'66';
-  document.getElementById('pf').style.background=s.color;
-  document.getElementById('npt').style.color=s.color;
-  updateDial();
-  updateSongDisplay();
-}
+  var wasPlaying = isPlaying;
+  isTuning = true;
 
-function updateSongDisplay(){
-  const s=STATIONS[curStation];
-  if(s.songs&&s.songs[curSong]){
-    document.getElementById('npt').textContent=s.songs[curSong].title;
+  // Play static burst
+  if (wasPlaying || audioCtx) {
+    playStaticBurst(function() {
+      currentStation = idx;
+      currentSongIndex = 0;
+      trackProgress = 0;
+      stopProgress();
+      updateAllDisplay();
+      updateDial();
+      drawAlbumArt();
+
+      if (wasPlaying) {
+        stopStation();
+        startStation();
+        startProgress();
+      }
+      isTuning = false;
+      scheduleDJCommentary(true);
+    });
   } else {
-    document.getElementById('npt').textContent='---';
+    currentStation = idx;
+    currentSongIndex = 0;
+    trackProgress = 0;
+    updateAllDisplay();
+    updateDial();
+    drawAlbumArt();
+    isTuning = false;
   }
 }
 
-// --- AUDIO ENGINE ---
-function ensureAudio(){
-  if(!audioCtx){
-    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    masterGain=audioCtx.createGain();
-    masterGain.gain.value=volume/100;
-    analyser=audioCtx.createAnalyser();
-    analyser.fftSize=256;
-    analyser.smoothingTimeConstant=0.8;
+function prevStation() {
+  var idx = (currentStation - 1 + STATIONS.length) % STATIONS.length;
+  tuneToStation(idx);
+}
+
+function autoTune() {
+  var idx = (currentStation + 1) % STATIONS.length;
+  tuneToStation(idx);
+}
+
+// === STATIC BURST ===
+function playStaticBurst(callback) {
+  ensureAudioContext();
+
+  // Visual static
+  var overlay = document.getElementById('staticOverlay');
+  var sCanvas = document.getElementById('staticCanvas');
+  overlay.classList.add('active');
+  sCanvas.width = Math.floor(window.innerWidth / 4);
+  sCanvas.height = Math.floor(window.innerHeight / 4);
+  var sCtx = sCanvas.getContext('2d');
+
+  var staticFrames = 0;
+  function drawStatic() {
+    if (staticFrames > 18) {
+      overlay.classList.remove('active');
+      return;
+    }
+    var imgData = sCtx.createImageData(sCanvas.width, sCanvas.height);
+    for (var i = 0; i < imgData.data.length; i += 4) {
+      var v = Math.random() * 255;
+      imgData.data[i] = v;
+      imgData.data[i+1] = v;
+      imgData.data[i+2] = v;
+      imgData.data[i+3] = Math.max(0, 60 - staticFrames * 3);
+    }
+    sCtx.putImageData(imgData, 0, 0);
+    staticFrames++;
+    requestAnimationFrame(drawStatic);
+  }
+  drawStatic();
+
+  // Audio static: white noise with bandpass sweep
+  var bufSize = Math.floor(audioCtx.sampleRate * 0.35);
+  var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  var data = buf.getChannelData(0);
+  for (var i = 0; i < bufSize; i++) {
+    var env = 1 - (i / bufSize);
+    env = env * env;
+    data[i] = (Math.random() * 2 - 1) * env * 0.4;
+  }
+
+  var src = audioCtx.createBufferSource();
+  src.buffer = buf;
+
+  var bpf = audioCtx.createBiquadFilter();
+  bpf.type = 'bandpass';
+  bpf.frequency.setValueAtTime(4000, audioCtx.currentTime);
+  bpf.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.3);
+  bpf.Q.value = 1.5;
+
+  var staticGain = audioCtx.createGain();
+  staticGain.gain.value = 0.5;
+
+  src.connect(bpf);
+  bpf.connect(staticGain);
+  staticGain.connect(masterGain);
+  src.start();
+
+  setTimeout(function() {
+    try { src.stop(); } catch(e) {}
+    if (callback) callback();
+  }, 300);
+}
+
+// === AUDIO ENGINE ===
+function ensureAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = volume / 100;
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.8;
     masterGain.connect(analyser);
     analyser.connect(audioCtx.destination);
   }
-  if(audioCtx.state==='suspended') audioCtx.resume();
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
 }
 
-// Reverb impulse response
-function createIR(decay,mix){
-  const sr=audioCtx.sampleRate;
-  const len=sr*Math.min(decay,10);
-  const ir=audioCtx.createBuffer(2,len,sr);
-  for(let ch=0;ch<2;ch++){
-    const d=ir.getChannelData(ch);
-    for(let i=0;i<len;i++){
-      d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.5);
+function createReverbIR(decay) {
+  var sr = audioCtx.sampleRate;
+  var len = Math.floor(sr * decay);
+  var ir = audioCtx.createBuffer(2, len, sr);
+  for (var ch = 0; ch < 2; ch++) {
+    var d = ir.getChannelData(ch);
+    for (var i = 0; i < len; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
     }
   }
   return ir;
 }
 
-// Stop all audio
-function stopAll(){
-  if(songTimer){clearTimeout(songTimer);songTimer=null}
-  if(progressTimer){clearInterval(progressTimer);progressTimer=null}
-  if(djTimeout){clearTimeout(djTimeout);djTimeout=null}
-  if(djTyping){clearInterval(djTyping);djTyping=null}
-  scheduledEvents.forEach(id=>clearTimeout(id));
-  scheduledEvents=[];
-  activeNodes.forEach(node=>{
-    try{
-      if(node._drift) clearInterval(node._drift);
-      if(node.stop) node.stop();
-      if(node.disconnect) node.disconnect();
-    }catch(e){}
-  });
-  activeNodes=[];
+function createFeedbackDelay(delayTime, feedback) {
+  var input = audioCtx.createGain();
+  var delay = audioCtx.createDelay(2.0);
+  delay.delayTime.value = delayTime;
+  var fbGain = audioCtx.createGain();
+  fbGain.gain.value = feedback;
+  var wet = audioCtx.createGain();
+  wet.gain.value = 0.3;
+  var fbFilter = audioCtx.createBiquadFilter();
+  fbFilter.type = 'lowpass';
+  fbFilter.frequency.value = 2000;
+  input.connect(delay);
+  delay.connect(wet);
+  delay.connect(fbFilter);
+  fbFilter.connect(fbGain);
+  fbGain.connect(delay);
+  wet.connect(masterGain);
+  var dry = audioCtx.createGain();
+  dry.gain.value = 0.7;
+  input.connect(dry);
+  dry.connect(masterGain);
+  activeNodes.push(input, delay, fbGain, fbFilter, wet, dry);
+  return input;
 }
 
-// --- PER-STATION SYNTH CHAINS ---
-
-// Kick drum
-function playKick(time, vel, stationId){
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.type='sine';
-  const startF = stationId===5?80:stationId===1?200:150;
-  const endF = stationId===5?25:40;
-  o.frequency.setValueAtTime(startF,time);
-  o.frequency.exponentialRampToValueAtTime(endF,time+0.08);
-  g.gain.setValueAtTime(vel*0.5,time);
-  g.gain.exponentialRampToValueAtTime(0.001,time+(stationId===5?0.4:0.2));
-  o.connect(g);g.connect(masterGain);
-  o.start(time);o.stop(time+0.5);
-  activeNodes.push(o,g);
-}
-
-// Snare
-function playSnare(time, vel, stationId){
-  // Noise burst
-  const bufLen=audioCtx.sampleRate*0.15;
-  const buf=audioCtx.createBuffer(1,bufLen,audioCtx.sampleRate);
-  const d=buf.getChannelData(0);
-  for(let i=0;i<bufLen;i++) d[i]=(Math.random()*2-1);
-  const n=audioCtx.createBufferSource();n.buffer=buf;
-  const ng=audioCtx.createGain();
-  ng.gain.setValueAtTime(vel*0.3,time);
-  ng.gain.exponentialRampToValueAtTime(0.001,time+0.12);
-  const f=audioCtx.createBiquadFilter();
-  f.type='highpass';f.frequency.value=stationId===1?2000:stationId===4?4000:1500;
-  n.connect(f);f.connect(ng);ng.connect(masterGain);
-  n.start(time);n.stop(time+0.15);
-  // Body
-  const o=audioCtx.createOscillator();o.type='sine';
-  o.frequency.setValueAtTime(200,time);
-  o.frequency.exponentialRampToValueAtTime(100,time+0.05);
-  const og=audioCtx.createGain();
-  og.gain.setValueAtTime(vel*0.2,time);
-  og.gain.exponentialRampToValueAtTime(0.001,time+0.08);
-  o.connect(og);og.connect(masterGain);
-  o.start(time);o.stop(time+0.15);
-  activeNodes.push(n,ng,f,o,og);
-}
-
-// Hi-hat
-function playHihat(time, vel, stationId){
-  const bufLen=audioCtx.sampleRate*0.06;
-  const buf=audioCtx.createBuffer(1,bufLen,audioCtx.sampleRate);
-  const d=buf.getChannelData(0);
-  for(let i=0;i<bufLen;i++) d[i]=(Math.random()*2-1);
-  const n=audioCtx.createBufferSource();n.buffer=buf;
-  const g=audioCtx.createGain();
-  g.gain.setValueAtTime(vel*0.15,time);
-  g.gain.exponentialRampToValueAtTime(0.001,time+0.05);
-  const f=audioCtx.createBiquadFilter();
-  f.type='highpass';f.frequency.value=stationId===4?8000:6000;
-  n.connect(f);f.connect(g);g.connect(masterGain);
-  n.start(time);n.stop(time+0.06);
-  activeNodes.push(n,g,f);
-}
-
-// Bass note
-function playBass(time, freq, dur, vel, stationId){
-  const beatDur=60/STATIONS[curStation].songs[curSong].bpm;
-  const d=dur*beatDur;
-  const o=audioCtx.createOscillator();
-  // Station-specific waveforms
-  if(stationId===0) o.type='square'; // V Radio boom-bap
-  else if(stationId===1) o.type='sawtooth'; // Industrial
-  else if(stationId===2) o.type='triangle'; // Gothic
-  else if(stationId===3) o.type='sine'; // Lo-fi
-  else if(stationId===4) o.type='square'; // Chiptune pulse
-  else if(stationId===5){o.type='sawtooth';} // Deep bass
-  else o.type='sine'; // News
-
-  o.frequency.value=freq;
-  const g=audioCtx.createGain();
-  g.gain.setValueAtTime(0,time);
-  g.gain.linearRampToValueAtTime(vel*0.35,time+0.02);
-  g.gain.setValueAtTime(vel*0.35,time+d*0.7);
-  g.gain.exponentialRampToValueAtTime(0.001,time+d);
-
-  const f=audioCtx.createBiquadFilter();
-  f.type='lowpass';
-  f.frequency.value=stationId===5?120:stationId===3?400:stationId===1?1200:600;
-  f.Q.value=stationId===1?4:1;
-
-  o.connect(f);f.connect(g);g.connect(masterGain);
-  o.start(time);o.stop(time+d+0.05);
-  activeNodes.push(o,g,f);
-}
-
-// Lead note
-function playLead(time, freq, dur, vel, stationId){
-  const beatDur=60/STATIONS[curStation].songs[curSong].bpm;
-  const d=dur*beatDur;
-  const o=audioCtx.createOscillator();
-  if(stationId===0) o.type='triangle';
-  else if(stationId===1) o.type='sawtooth';
-  else if(stationId===2) o.type='triangle'; // organ-like
-  else if(stationId===3) o.type='sine';
-  else if(stationId===4) o.type='square';
-  else if(stationId===5) o.type='sine';
-  else o.type='sine';
-
-  o.frequency.value=freq;
-  const g=audioCtx.createGain();
-  g.gain.setValueAtTime(0,time);
-  g.gain.linearRampToValueAtTime(vel*0.2,time+0.01);
-  g.gain.setValueAtTime(vel*0.2,time+d*0.6);
-  g.gain.exponentialRampToValueAtTime(0.001,time+d);
-
-  // Station-specific effects
-  if(stationId===2||stationId===3||stationId===5){
-    // Reverb for gothic/lofi/bass
-    const conv=audioCtx.createConvolver();
-    const decay=stationId===5?8:stationId===2?4:3;
-    conv.buffer=createIR(decay);
-    const wet=audioCtx.createGain();wet.gain.value=0.3;
-    const dry=audioCtx.createGain();dry.gain.value=0.7;
-    o.connect(g);
-    g.connect(dry);dry.connect(masterGain);
-    g.connect(conv);conv.connect(wet);wet.connect(masterGain);
-    activeNodes.push(conv,wet,dry);
-  } else {
-    o.connect(g);g.connect(masterGain);
+function startCrackle(gain) {
+  var bufSize = audioCtx.sampleRate * 2;
+  var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  var d = buf.getChannelData(0);
+  for (var i = 0; i < bufSize; i++) {
+    var v = 0;
+    if (Math.random() < 0.002) v = (Math.random() * 2 - 1) * 0.8;
+    else if (Math.random() < 0.05) v = (Math.random() * 2 - 1) * 0.1;
+    d[i] = v;
   }
-  o.start(time);o.stop(time+d+0.1);
+  var src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+  var filt = audioCtx.createBiquadFilter();
+  filt.type = 'bandpass';
+  filt.frequency.value = 3000;
+  filt.Q.value = 0.5;
+  var g = audioCtx.createGain();
+  g.gain.value = gain;
+  src.connect(filt);
+  filt.connect(g);
+  g.connect(masterGain);
+  src.start();
+  activeNodes.push(src, filt, g);
+}
 
-  // Shinigami: add harmonics for organ effect
-  if(stationId===2){
-    [2,3,4].forEach(h=>{
-      const oh=audioCtx.createOscillator();oh.type='sine';
-      oh.frequency.value=freq*h;
-      const gh=audioCtx.createGain();
-      gh.gain.setValueAtTime(0,time);
-      gh.gain.linearRampToValueAtTime(vel*0.06/h,time+0.02);
-      gh.gain.exponentialRampToValueAtTime(0.001,time+d);
-      oh.connect(gh);gh.connect(masterGain);
-      oh.start(time);oh.stop(time+d+0.1);
-      activeNodes.push(oh,gh);
+// ==============================
+// STATION-SPECIFIC SYNTH ENGINES
+// ==============================
+
+// --- V RADIO: Boom Bap ---
+function engineVRadio(song) {
+  var bpm = song.bpm;
+  var beatDur = 60 / bpm;
+
+  function scheduleDrums() {
+    if (!isPlaying || currentStation !== 0) return;
+    var now = audioCtx.currentTime;
+    for (var beat = 0; beat < 4; beat++) {
+      var t = now + beat * beatDur;
+      if (beat === 0 || beat === 2) playKick(t, 60, 0.25);
+      if (beat === 1 || beat === 3) playSnare(t, 0.15);
+      playHiHat(t, 0.06);
+      playHiHat(t + beatDur * 0.5, 0.035);
+    }
+    var id = setTimeout(scheduleDrums, beatDur * 4 * 1000 - 50);
+    noteSchedulers.push(id);
+  }
+  scheduleDrums();
+
+  var delayNode = createFeedbackDelay(beatDur * 0.75, 0.25);
+  sequenceBassline(song.bassline, bpm, 'sawtooth', 600, 0.12, null, 0);
+  sequenceMelody(song.melody, bpm, 'square', 2000, 0.06, delayNode, 5, false, false, 0);
+  startCrackle(0.012);
+}
+
+function playKick(time, freq, vol) {
+  var osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq * 3, time);
+  osc.frequency.exponentialRampToValueAtTime(freq, time + 0.05);
+  osc.frequency.exponentialRampToValueAtTime(30, time + 0.15);
+  var g = audioCtx.createGain();
+  g.gain.setValueAtTime(vol, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
+  osc.connect(g);
+  g.connect(masterGain);
+  osc.start(time);
+  osc.stop(time + 0.3);
+}
+
+function playSnare(time, vol) {
+  var bufSize = Math.floor(audioCtx.sampleRate * 0.15);
+  var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  var d = buf.getChannelData(0);
+  for (var i = 0; i < bufSize; i++) {
+    d[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+  }
+  var src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  var bpf = audioCtx.createBiquadFilter();
+  bpf.type = 'bandpass';
+  bpf.frequency.value = 3000;
+  bpf.Q.value = 1.0;
+  var g = audioCtx.createGain();
+  g.gain.setValueAtTime(vol, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+  src.connect(bpf);
+  bpf.connect(g);
+  g.connect(masterGain);
+  src.start(time);
+  var osc = audioCtx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.value = 200;
+  var og = audioCtx.createGain();
+  og.gain.setValueAtTime(vol * 0.6, time);
+  og.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+  osc.connect(og);
+  og.connect(masterGain);
+  osc.start(time);
+  osc.stop(time + 0.1);
+}
+
+function playHiHat(time, vol) {
+  var bufSize = Math.floor(audioCtx.sampleRate * 0.05);
+  var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  var d = buf.getChannelData(0);
+  for (var i = 0; i < bufSize; i++) {
+    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 3);
+  }
+  var src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  var hpf = audioCtx.createBiquadFilter();
+  hpf.type = 'highpass';
+  hpf.frequency.value = 8000;
+  var g = audioCtx.createGain();
+  g.gain.setValueAtTime(vol, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+  src.connect(hpf);
+  hpf.connect(g);
+  g.connect(masterGain);
+  src.start(time);
+}
+
+// --- NULL_DEVICE FM: Industrial ---
+function engineNullDevice(song) {
+  var bpm = song.bpm;
+  var beatDur = 60 / bpm;
+
+  // Distortion waveshaper
+  var waveshaper = audioCtx.createWaveShaper();
+  var curve = new Float32Array(256);
+  for (var i = 0; i < 256; i++) {
+    var x = (i / 128) - 1;
+    curve[i] = (Math.PI + 50) * x / (Math.PI + 50 * Math.abs(x));
+  }
+  waveshaper.curve = curve;
+  waveshaper.oversample = '4x';
+  waveshaper.connect(masterGain);
+  activeNodes.push(waveshaper);
+
+  function scheduleIndustrialDrums() {
+    if (!isPlaying || currentStation !== 1) return;
+    var now = audioCtx.currentTime;
+    for (var beat = 0; beat < 4; beat++) {
+      var t = now + beat * beatDur;
+      playKick(t, 45, 0.3);
+      if (beat === 1 || beat === 3) playMetalHit(t, 0.12);
+      if (beat % 2 === 0) {
+        playHiHat(t + beatDur * 0.25, 0.08);
+        playHiHat(t + beatDur * 0.75, 0.05);
+      }
+    }
+    var id = setTimeout(scheduleIndustrialDrums, beatDur * 4 * 1000 - 50);
+    noteSchedulers.push(id);
+  }
+  scheduleIndustrialDrums();
+
+  sequenceBassline(song.bassline, bpm, 'sawtooth', 400, 0.18, waveshaper, 1);
+  var delayNode = createFeedbackDelay(beatDur * 0.5, 0.4);
+  sequenceMelody(song.melody, bpm, 'sawtooth', 3000, 0.07, delayNode, 20, false, false, 1);
+
+  // Drone pad
+  var droneFreq = song.bassline[0][0] * 0.5;
+  if (droneFreq > 0) {
+    var drone1 = audioCtx.createOscillator();
+    drone1.type = 'sawtooth';
+    drone1.frequency.value = droneFreq;
+    var drone2 = audioCtx.createOscillator();
+    drone2.type = 'sawtooth';
+    drone2.frequency.value = droneFreq * 1.005;
+    var dg = audioCtx.createGain();
+    dg.gain.value = 0.04;
+    var df = audioCtx.createBiquadFilter();
+    df.type = 'lowpass';
+    df.frequency.value = 300;
+    var lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.3;
+    var lg = audioCtx.createGain();
+    lg.gain.value = 150;
+    lfo.connect(lg);
+    lg.connect(df.frequency);
+    lfo.start();
+    drone1.connect(dg);
+    drone2.connect(dg);
+    dg.connect(df);
+    df.connect(masterGain);
+    drone1.start();
+    drone2.start();
+    activeNodes.push(drone1, drone2, dg, df, lfo, lg);
+  }
+
+  startCrackle(0.025);
+}
+
+function playMetalHit(time, vol) {
+  var carrier = audioCtx.createOscillator();
+  carrier.type = 'sine';
+  carrier.frequency.value = 800 + Math.random() * 400;
+  var mod = audioCtx.createOscillator();
+  mod.type = 'sine';
+  mod.frequency.value = carrier.frequency.value * 1.41;
+  var modGain = audioCtx.createGain();
+  modGain.gain.value = 300;
+  mod.connect(modGain);
+  modGain.connect(carrier.frequency);
+  var g = audioCtx.createGain();
+  g.gain.setValueAtTime(vol, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+  carrier.connect(g);
+  g.connect(masterGain);
+  carrier.start(time);
+  carrier.stop(time + 0.1);
+  mod.start(time);
+  mod.stop(time + 0.1);
+}
+
+// --- SHINIGAMI WAVE: Gothic ---
+function engineShinigami(song) {
+  var bpm = song.bpm;
+  var beatDur = 60 / bpm;
+
+  var rootFreq = song.bassline[0][0];
+  if (rootFreq > 0) {
+    // String pad: multiple detuned sines
+    var padGain = audioCtx.createGain();
+    padGain.gain.value = 0;
+    padGain.gain.setTargetAtTime(1, audioCtx.currentTime, 3.0);
+    var detunes = [-8, -3, 0, 3, 8];
+    var padOscs = [];
+    for (var d = 0; d < detunes.length; d++) {
+      var osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = rootFreq;
+      osc.detune.value = detunes[d];
+      var og = audioCtx.createGain();
+      og.gain.value = 0.03;
+      osc.connect(og);
+      og.connect(padGain);
+      osc.start();
+      padOscs.push(osc);
+      activeNodes.push(osc, og);
+    }
+
+    var padFilter = audioCtx.createBiquadFilter();
+    padFilter.type = 'lowpass';
+    padFilter.frequency.value = 500;
+    padFilter.Q.value = 2;
+    var padLfo = audioCtx.createOscillator();
+    padLfo.type = 'sine';
+    padLfo.frequency.value = 0.05;
+    var padLfoG = audioCtx.createGain();
+    padLfoG.gain.value = 200;
+    padLfo.connect(padLfoG);
+    padLfoG.connect(padFilter.frequency);
+    padLfo.start();
+    padGain.connect(padFilter);
+
+    try {
+      var reverb = audioCtx.createConvolver();
+      reverb.buffer = createReverbIR(5.0);
+      var revG = audioCtx.createGain();
+      revG.gain.value = 0.5;
+      padFilter.connect(reverb);
+      reverb.connect(revG);
+      revG.connect(masterGain);
+      activeNodes.push(reverb, revG);
+    } catch(e) {}
+    padFilter.connect(masterGain);
+    activeNodes.push(padGain, padFilter, padLfo, padLfoG);
+
+    var driftInt = setInterval(function() {
+      if (!isPlaying || currentStation !== 2) { clearInterval(driftInt); return; }
+      var entry = song.bassline[Math.floor(Math.random() * song.bassline.length)];
+      if (entry[0] > 0) {
+        padOscs.forEach(function(o) {
+          try { o.frequency.setTargetAtTime(entry[0], audioCtx.currentTime, 4.0); } catch(e){}
+        });
+      }
+    }, 10000);
+    padGain._driftInterval = driftInt;
+  }
+
+  // Piano-like melody
+  var delayNode = createFeedbackDelay(beatDur * 1.5, 0.45);
+  sequenceMelody(song.melody, bpm, 'triangle', 1800, 0.08, delayNode, 3, true, false, 2);
+
+  // Choir-like formant pad
+  var choirFreqs = [800, 1200, 2500];
+  for (var v = 0; v < choirFreqs.length; v++) {
+    var choirOsc = audioCtx.createOscillator();
+    choirOsc.type = 'sawtooth';
+    choirOsc.frequency.value = (rootFreq || 130) * 2;
+    var vf = audioCtx.createBiquadFilter();
+    vf.type = 'bandpass';
+    vf.frequency.value = choirFreqs[v];
+    vf.Q.value = 15;
+    var vg = audioCtx.createGain();
+    vg.gain.value = 0.015;
+    choirOsc.connect(vf);
+    vf.connect(vg);
+    vg.connect(masterGain);
+    choirOsc.start();
+    activeNodes.push(choirOsc, vf, vg);
+  }
+
+  // Sparse percussion
+  function scheduleGothicPerc() {
+    if (!isPlaying || currentStation !== 2) return;
+    var now = audioCtx.currentTime;
+    playKick(now, 50, 0.12);
+    playHiHat(now + beatDur * 2, 0.03);
+    var id = setTimeout(scheduleGothicPerc, beatDur * 8 * 1000 - 50);
+    noteSchedulers.push(id);
+  }
+  scheduleGothicPerc();
+
+  startCrackle(0.006);
+}
+
+// --- SUBSTRATE LO-FI: Ambient ---
+function engineLofi(song) {
+  var bpm = song.bpm;
+  var beatDur = 60 / bpm;
+
+  var rootFreq = song.bassline[0][0];
+  var padOutput = audioCtx.createGain();
+  padOutput.gain.value = 0;
+  padOutput.gain.setTargetAtTime(1, audioCtx.currentTime, 2.0);
+
+  var padOscs = [];
+  for (var d = -1; d <= 1; d++) {
+    var osc = audioCtx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = rootFreq * 0.5;
+    osc.detune.value = d * 5;
+    var og = audioCtx.createGain();
+    og.gain.value = 0.07;
+    osc.connect(og);
+    og.connect(padOutput);
+    osc.start();
+    padOscs.push(osc);
+    activeNodes.push(osc, og);
+  }
+
+  var padFilter = audioCtx.createBiquadFilter();
+  padFilter.type = 'lowpass';
+  padFilter.frequency.value = 800;
+  padFilter.Q.value = 1.5;
+  var lfo = audioCtx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 0.1;
+  var lfoG = audioCtx.createGain();
+  lfoG.gain.value = 200;
+  lfo.connect(lfoG);
+  lfoG.connect(padFilter.frequency);
+  lfo.start();
+  padOutput.connect(padFilter);
+
+  try {
+    var reverb = audioCtx.createConvolver();
+    reverb.buffer = createReverbIR(4.0);
+    var revG = audioCtx.createGain();
+    revG.gain.value = 0.4;
+    padFilter.connect(reverb);
+    reverb.connect(revG);
+    revG.connect(masterGain);
+    activeNodes.push(reverb, revG);
+  } catch(e) {}
+  padFilter.connect(masterGain);
+  activeNodes.push(padOutput, padFilter, lfo, lfoG);
+
+  var driftInt = setInterval(function() {
+    if (!isPlaying || currentStation !== 3) { clearInterval(driftInt); return; }
+    var entry = song.bassline[Math.floor(Math.random() * song.bassline.length)];
+    if (entry[0] > 0) {
+      padOscs.forEach(function(o) {
+        try { o.frequency.setTargetAtTime(entry[0] * 0.5, audioCtx.currentTime, 6.0); } catch(e){}
+      });
+    }
+  }, 12000);
+  padOutput._driftInterval = driftInt;
+
+  // Sub bass
+  var subOsc = audioCtx.createOscillator();
+  subOsc.type = 'sine';
+  subOsc.frequency.value = rootFreq * 0.25;
+  var subG = audioCtx.createGain();
+  subG.gain.value = 0.08;
+  var subF = audioCtx.createBiquadFilter();
+  subF.type = 'lowpass';
+  subF.frequency.value = 200;
+  subOsc.connect(subG);
+  subG.connect(subF);
+  subF.connect(masterGain);
+  subOsc.start();
+  activeNodes.push(subOsc, subG, subF);
+
+  // Melody
+  var delayNode = createFeedbackDelay(0.5, 0.35);
+  sequenceMelody(song.melody, bpm, 'triangle', 1200, 0.06, delayNode, 3, false, false, 3);
+
+  startCrackle(0.018);
+
+  // Breath LFO
+  var breathLfo = audioCtx.createOscillator();
+  breathLfo.type = 'sine';
+  breathLfo.frequency.value = 0.035;
+  var breathG = audioCtx.createGain();
+  breathG.gain.value = 0.03;
+  breathLfo.connect(breathG);
+  breathG.connect(masterGain.gain);
+  breathLfo.start();
+  activeNodes.push(breathLfo, breathG);
+}
+
+// --- PIXEL FM: Chiptune ---
+function enginePixelFM(song) {
+  var bpm = song.bpm;
+  var beatDur = 60 / bpm;
+
+  function scheduleChipDrums() {
+    if (!isPlaying || currentStation !== 4) return;
+    var now = audioCtx.currentTime;
+    for (var beat = 0; beat < 4; beat++) {
+      var t = now + beat * beatDur;
+      if (beat === 0 || beat === 2) {
+        var ko = audioCtx.createOscillator();
+        ko.type = 'square';
+        ko.frequency.setValueAtTime(200, t);
+        ko.frequency.exponentialRampToValueAtTime(40, t + 0.06);
+        var kg = audioCtx.createGain();
+        kg.gain.setValueAtTime(0.2, t);
+        kg.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        ko.connect(kg);
+        kg.connect(masterGain);
+        ko.start(t);
+        ko.stop(t + 0.1);
+      }
+      if (beat === 1 || beat === 3) {
+        var nBufSize = Math.floor(audioCtx.sampleRate * 0.06);
+        var nBuf = audioCtx.createBuffer(1, nBufSize, audioCtx.sampleRate);
+        var nD = nBuf.getChannelData(0);
+        for (var ni = 0; ni < nBufSize; ni++) {
+          nD[ni] = (Math.random() > 0.5 ? 1 : -1) * (1 - ni / nBufSize);
+        }
+        var ns = audioCtx.createBufferSource();
+        ns.buffer = nBuf;
+        var ng = audioCtx.createGain();
+        ng.gain.setValueAtTime(0.12, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+        ns.connect(ng);
+        ng.connect(masterGain);
+        ns.start(t);
+      }
+      playHiHat(t + beatDur * 0.5, 0.04);
+    }
+    var id = setTimeout(scheduleChipDrums, beatDur * 4 * 1000 - 50);
+    noteSchedulers.push(id);
+  }
+  scheduleChipDrums();
+
+  sequenceBassline(song.bassline, bpm, 'square', 1000, 0.08, null, 4);
+  sequenceMelody(song.melody, bpm, 'square', 4000, 0.06, null, 0, false, true, 4);
+
+  // Pulse wave pad
+  var padOsc = audioCtx.createOscillator();
+  padOsc.type = 'triangle';
+  padOsc.frequency.value = song.bassline[0][0] || 130;
+  var pg = audioCtx.createGain();
+  pg.gain.value = 0.04;
+  padOsc.connect(pg);
+  pg.connect(masterGain);
+  padOsc.start();
+  activeNodes.push(padOsc, pg);
+}
+
+// --- ROOT BASS: Drone ---
+function engineRootBass(song) {
+  var bpm = song.bpm;
+  var beatDur = 60 / bpm;
+
+  var subFreq = song.bassline[0][0] || 32.70;
+  var sub = audioCtx.createOscillator();
+  sub.type = 'sine';
+  sub.frequency.value = subFreq;
+  var subG = audioCtx.createGain();
+  subG.gain.value = 0.2;
+  var subLfo = audioCtx.createOscillator();
+  subLfo.type = 'sine';
+  subLfo.frequency.value = 0.05 + Math.random() * 0.05;
+  var subLfoG = audioCtx.createGain();
+  subLfoG.gain.value = 0.08;
+  subLfo.connect(subLfoG);
+  subLfoG.connect(subG.gain);
+  subLfo.start();
+  sub.connect(subG);
+  subG.connect(masterGain);
+  sub.start();
+  activeNodes.push(sub, subG, subLfo, subLfoG);
+
+  // Second sub an octave up
+  var sub2 = audioCtx.createOscillator();
+  sub2.type = 'sine';
+  sub2.frequency.value = subFreq * 2;
+  var sub2G = audioCtx.createGain();
+  sub2G.gain.value = 0.06;
+  sub2.connect(sub2G);
+  sub2G.connect(masterGain);
+  sub2.start();
+  activeNodes.push(sub2, sub2G);
+
+  var driftInt = setInterval(function() {
+    if (!isPlaying || currentStation !== 5) { clearInterval(driftInt); return; }
+    var entry = song.bassline[Math.floor(Math.random() * song.bassline.length)];
+    if (entry[0] > 0) {
+      try {
+        sub.frequency.setTargetAtTime(entry[0], audioCtx.currentTime, 8.0);
+        sub2.frequency.setTargetAtTime(entry[0] * 2, audioCtx.currentTime, 8.0);
+      } catch(e){}
+    }
+  }, 15000);
+  subG._driftInterval = driftInt;
+
+  // Heavy reverb
+  try {
+    var reverb = audioCtx.createConvolver();
+    reverb.buffer = createReverbIR(8.0);
+    var revG = audioCtx.createGain();
+    revG.gain.value = 0.5;
+    var revInput = audioCtx.createGain();
+    revInput.connect(reverb);
+    reverb.connect(revG);
+    revG.connect(masterGain);
+    activeNodes.push(reverb, revG, revInput);
+    sequenceMelody(song.melody, bpm, 'sine', 400, 0.04, revInput, 0, false, false, 5);
+  } catch(e) {
+    sequenceMelody(song.melody, bpm, 'sine', 400, 0.04, null, 0, false, false, 5);
+  }
+
+  // Sparse deep boom
+  function scheduleDronePerc() {
+    if (!isPlaying || currentStation !== 5) return;
+    var now = audioCtx.currentTime;
+    playKick(now, 30, 0.15);
+    var id = setTimeout(scheduleDronePerc, beatDur * 16 * 1000 - 50);
+    noteSchedulers.push(id);
+  }
+  scheduleDronePerc();
+
+  startCrackle(0.008);
+}
+
+// --- BYTE NEWS RADIO: Talk ---
+function engineByteNews(song) {
+  var bpm = song.bpm;
+  var beatDur = 60 / bpm;
+
+  var delayNode = createFeedbackDelay(0.4, 0.2);
+  sequenceMelody(song.melody, bpm, 'triangle', 2000, 0.05, delayNode, 2, true, false, 6);
+  sequenceBassline(song.bassline, bpm, 'sine', 300, 0.06, null, 6);
+
+  // Speech blips: Animal Crossing style
+  function scheduleSpeechBlips() {
+    if (!isPlaying || currentStation !== 6) return;
+    var now = audioCtx.currentTime;
+    var numBlips = 5 + Math.floor(Math.random() * 8);
+    var blipTime = now;
+    for (var b = 0; b < numBlips; b++) {
+      var freq = 300 + Math.random() * 400;
+      var dur = 0.04 + Math.random() * 0.06;
+      var gap = 0.02 + Math.random() * 0.04;
+
+      var blipOsc = audioCtx.createOscillator();
+      blipOsc.type = 'sine';
+      blipOsc.frequency.value = freq;
+
+      var blipG = audioCtx.createGain();
+      blipG.gain.setValueAtTime(0, blipTime);
+      blipG.gain.linearRampToValueAtTime(0.06, blipTime + 0.005);
+      blipG.gain.setValueAtTime(0.06, blipTime + dur - 0.005);
+      blipG.gain.linearRampToValueAtTime(0, blipTime + dur);
+
+      var ff = audioCtx.createBiquadFilter();
+      ff.type = 'bandpass';
+      ff.frequency.value = freq * 2;
+      ff.Q.value = 5;
+
+      blipOsc.connect(ff);
+      ff.connect(blipG);
+      blipG.connect(masterGain);
+      blipOsc.start(blipTime);
+      blipOsc.stop(blipTime + dur + 0.01);
+
+      blipTime += dur + gap;
+    }
+
+    var pauseDur = 800 + Math.random() * 2000;
+    var id = setTimeout(scheduleSpeechBlips, (blipTime - now) * 1000 + pauseDur);
+    noteSchedulers.push(id);
+  }
+  scheduleSpeechBlips();
+
+  startCrackle(0.010);
+}
+
+// === SHARED SEQUENCERS ===
+
+function sequenceBassline(notes, bpm, waveform, filterFreq, gain, destNode, stationIdx) {
+  var beatDur = 60 / bpm;
+  var dest = destNode || masterGain;
+  var noteIndex = 0;
+
+  function playNext() {
+    if (!isPlaying || currentStation !== stationIdx) return;
+    var note = notes[noteIndex % notes.length];
+    var freq = note[0];
+    var beats = note[1];
+    var dur = beats * beatDur;
+
+    if (freq > 0) {
+      var osc = audioCtx.createOscillator();
+      osc.type = waveform;
+      osc.frequency.value = freq;
+      var filt = audioCtx.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.frequency.value = filterFreq;
+      filt.Q.value = 2;
+      var g = audioCtx.createGain();
+      var now = audioCtx.currentTime;
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(gain, now + 0.02);
+      g.gain.setValueAtTime(gain, now + Math.max(0.03, dur - 0.03));
+      g.gain.linearRampToValueAtTime(0, now + dur);
+      osc.connect(filt);
+      filt.connect(g);
+      g.connect(dest);
+      osc.start(now);
+      osc.stop(now + dur + 0.01);
+    }
+
+    noteIndex++;
+    var id = setTimeout(playNext, dur * 1000);
+    noteSchedulers.push(id);
+  }
+  playNext();
+}
+
+function sequenceMelody(notes, bpm, waveform, filterFreq, gain, delayNode, detune, fastDecay, chip, stationIdx) {
+  var beatDur = 60 / bpm;
+  var noteIndex = 0;
+
+  function playNext() {
+    if (!isPlaying || currentStation !== stationIdx) return;
+    var note = notes[noteIndex % notes.length];
+    var freq = note[0];
+    var beats = note[1];
+    var dur = beats * beatDur;
+
+    if (freq > 0) {
+      var now = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator();
+      osc.type = waveform;
+      osc.frequency.value = freq;
+      if (detune) osc.detune.value = (Math.random() - 0.5) * detune;
+      var filt = audioCtx.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.frequency.value = filterFreq;
+      filt.Q.value = chip ? 0.5 : 1;
+      var g = audioCtx.createGain();
+      var attack = fastDecay ? 0.005 : 0.03;
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(gain, now + attack);
+      if (fastDecay) {
+        g.gain.exponentialRampToValueAtTime(Math.max(0.001, gain * 0.3), now + dur * 0.2);
+        g.gain.setTargetAtTime(0.001, now + dur * 0.7, dur * 0.15);
+      } else {
+        g.gain.setTargetAtTime(0.001, now + dur * 0.5, dur * 0.15);
+      }
+      osc.connect(filt);
+      filt.connect(g);
+      g.connect(masterGain);
+      if (delayNode) {
+        var dg = audioCtx.createGain();
+        dg.gain.value = 0.3;
+        filt.connect(dg);
+        dg.connect(delayNode);
+      }
+      osc.start(now);
+      osc.stop(now + dur + 0.5);
+    }
+
+    noteIndex++;
+    var id = setTimeout(playNext, dur * 1000);
+    noteSchedulers.push(id);
+  }
+  playNext();
+}
+
+// === STATION ENGINE DISPATCHER ===
+function startStation() {
+  ensureAudioContext();
+  stopStation();
+
+  var st = STATIONS[currentStation];
+  var song = st.songs[currentSongIndex % st.songs.length];
+
+  var engines = [engineVRadio, engineNullDevice, engineShinigami, engineLofi, enginePixelFM, engineRootBass, engineByteNews];
+  engines[currentStation](song);
+}
+
+function stopStation() {
+  for (var i = 0; i < noteSchedulers.length; i++) {
+    clearTimeout(noteSchedulers[i]);
+  }
+  noteSchedulers = [];
+
+  for (var i = 0; i < activeNodes.length; i++) {
+    var node = activeNodes[i];
+    try {
+      if (node._driftInterval) clearInterval(node._driftInterval);
+      if (node.stop) node.stop();
+    } catch(e) {}
+    try { node.disconnect(); } catch(e) {}
+  }
+  activeNodes = [];
+}
+
+// === CONTROLS ===
+function togglePlay() {
+  isPlaying = !isPlaying;
+  var btn = document.getElementById('btnPlay');
+  btn.innerHTML = isPlaying ? '&#9646;&#9646;' : '&#9654;';
+  btn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+
+  if (isPlaying) {
+    ensureAudioContext();
+    startStation();
+    startProgress();
+    scheduleDJCommentary(true);
+    showToast('Tuned to ' + STATIONS[currentStation].name);
+  } else {
+    stopStation();
+    stopProgress();
+    clearDJCommentary();
+  }
+}
+
+function skipTrack() {
+  var st = STATIONS[currentStation];
+  currentSongIndex = (currentSongIndex + 1) % st.songs.length;
+  trackProgress = 0;
+  stopProgress();
+  updateAllDisplay();
+
+  if (isPlaying) {
+    playStaticBurst(function() {
+      stopStation();
+      startStation();
+      startProgress();
+      scheduleDJCommentary(true);
     });
   }
-
-  activeNodes.push(o,g);
 }
 
-// Pad (sustained chord tones)
-function playPad(time, freq, dur, vel, stationId){
-  const beatDur=60/STATIONS[curStation].songs[curSong].bpm;
-  const d=dur*beatDur;
-
-  // Create 3 detuned oscillators
-  for(let dt=-1;dt<=1;dt++){
-    const o=audioCtx.createOscillator();
-    if(stationId===0) o.type='sine';
-    else if(stationId===1) o.type='sawtooth';
-    else if(stationId===2) o.type='sawtooth';
-    else if(stationId===3) o.type='triangle';
-    else if(stationId===5) o.type='sine';
-    else o.type='sine';
-
-    o.frequency.value=freq;
-    const detune=stationId===1?15:stationId===2?8:5;
-    o.detune.value=dt*detune;
-
-    const g=audioCtx.createGain();
-    g.gain.setValueAtTime(0,time);
-    g.gain.linearRampToValueAtTime(vel*0.12,time+1);
-    g.gain.setValueAtTime(vel*0.12,time+d-1.5);
-    g.gain.linearRampToValueAtTime(0,time+d);
-
-    const f=audioCtx.createBiquadFilter();
-    f.type='lowpass';
-    f.frequency.value=stationId===1?1800:stationId===3?500:stationId===5?300:800;
-    f.Q.value=stationId===1?4:1;
-
-    // LFO for filter
-    const lfo=audioCtx.createOscillator();lfo.type='sine';
-    lfo.frequency.value=stationId===1?0.5:0.1;
-    const lfoG=audioCtx.createGain();
-    lfoG.gain.value=stationId===1?200:30;
-    lfo.connect(lfoG);lfoG.connect(f.frequency);
-    lfo.start(time);lfo.stop(time+d+0.1);
-
-    o.connect(f);f.connect(g);g.connect(masterGain);
-    o.start(time);o.stop(time+d+0.1);
-    activeNodes.push(o,g,f,lfo,lfoG);
+function setVolume(val) {
+  volume = parseInt(val);
+  document.getElementById('volumeVal').textContent = volume + '%';
+  if (masterGain) {
+    masterGain.gain.setTargetAtTime(volume / 100, audioCtx.currentTime, 0.05);
   }
 }
 
-// Vinyl crackle (for lo-fi station)
-function startCrackle(){
-  const bufLen=audioCtx.sampleRate*2;
-  const buf=audioCtx.createBuffer(1,bufLen,audioCtx.sampleRate);
-  const d=buf.getChannelData(0);
-  for(let i=0;i<bufLen;i++){
-    let v=0;
-    if(Math.random()<0.002) v=(Math.random()*2-1)*0.6;
-    else if(Math.random()<0.04) v=(Math.random()*2-1)*0.08;
-    d[i]=v;
+// === PROGRESS ===
+function startProgress() {
+  stopProgress();
+  var song = getCurrentSong();
+  var stepMs = 200;
+  var step = 1 / (song.duration * (1000 / stepMs));
+  progressInterval = setInterval(function() {
+    trackProgress += step;
+    if (trackProgress >= 1) {
+      trackProgress = 0;
+      var st = STATIONS[currentStation];
+      currentSongIndex = (currentSongIndex + 1) % st.songs.length;
+      updateAllDisplay();
+      drawAlbumArt();
+      if (isPlaying) {
+        stopStation();
+        startStation();
+        scheduleDJCommentary(true);
+      }
+    }
+    updateProgressDisplay();
+  }, stepMs);
+}
+
+function stopProgress() {
+  if (progressInterval) {
+    clearInterval(progressInterval);
+    progressInterval = null;
   }
-  const n=audioCtx.createBufferSource();n.buffer=buf;n.loop=true;
-  const f=audioCtx.createBiquadFilter();f.type='bandpass';f.frequency.value=3000;f.Q.value=0.5;
-  const g=audioCtx.createGain();g.gain.value=0.018;
-  n.connect(f);f.connect(g);g.connect(masterGain);
-  n.start();
-  activeNodes.push(n,f,g);
 }
 
-// White noise static for station switching
-function playStatic(duration){
-  return new Promise(resolve=>{
-    const overlay=document.getElementById('sov');
-    overlay.classList.add('on');
-    sCanvas.width=window.innerWidth;
-    sCanvas.height=window.innerHeight;
-
-    // Audio static
-    if(audioCtx){
-      const bufLen=audioCtx.sampleRate*duration;
-      const buf=audioCtx.createBuffer(1,bufLen,audioCtx.sampleRate);
-      const d=buf.getChannelData(0);
-      for(let i=0;i<bufLen;i++) d[i]=(Math.random()*2-1)*0.3;
-      const n=audioCtx.createBufferSource();n.buffer=buf;
-      const g=audioCtx.createGain();g.gain.value=0.15;
-      const f=audioCtx.createBiquadFilter();f.type='bandpass';f.frequency.value=2000;f.Q.value=0.3;
-      n.connect(f);f.connect(g);g.connect(masterGain);
-      n.start();n.stop(audioCtx.currentTime+duration);
-    }
-
-    // Visual static
-    let frames=0;
-    const maxFrames=Math.ceil(duration*60);
-    function drawStatic(){
-      const w=sCanvas.width,h=sCanvas.height;
-      const img=sCtx.createImageData(w,h);
-      const px=img.data;
-      for(let i=0;i<px.length;i+=4){
-        const v=Math.random()*80;
-        px[i]=v;px[i+1]=v;px[i+2]=v;px[i+3]=200;
-      }
-      sCtx.putImageData(img,0,0);
-      frames++;
-      if(frames<maxFrames) requestAnimationFrame(drawStatic);
-      else{overlay.classList.remove('on');resolve()}
-    }
-    drawStatic();
-  });
+function getCurrentSong() {
+  var st = STATIONS[currentStation];
+  return st.songs[currentSongIndex % st.songs.length];
 }
 
-// --- SONG PLAYBACK ---
-function playSong(stIdx, songIdx){
-  stopAll();
-  ensureAudio();
-  const station=STATIONS[stIdx];
-  const song=station.songs[songIdx];
-  if(!song) return;
-
-  curSong=songIdx;
-  updateSongDisplay();
-
-  const bpm=song.bpm;
-  const beatDur=60/bpm;
-  const stepsPerBar=16;
-  const stepDur=beatDur/4; // 16th notes
-  const sid=stIdx;
-
-  // Start crackle for lo-fi
-  if(sid===3) startCrackle();
-
-  let totalBeats=0;
-  const allEvents=[];
-
-  // Build timeline from sections
-  song.sections.forEach(section=>{
-    for(let rep=0;rep<section.repeat;rep++){
-      const barOffset=totalBeats;
-      section.pats.forEach(patName=>{
-        const pat=song.patterns[patName];
-        if(!pat) return;
-
-        if(patName==='kick'||patName==='snare'||patName==='hihat'){
-          // Percussion: array of velocities at 16th note positions
-          pat.forEach((vel,step)=>{
-            if(vel>0){
-              allEvents.push({
-                time:(barOffset*stepDur)+(step*stepDur),
-                type:patName,
-                vel:vel/4,
-                sid:sid
-              });
-            }
-          });
-        } else {
-          // Melodic: array of note objects
-          pat.forEach(note=>{
-            allEvents.push({
-              time:(barOffset*stepDur)+(note.t*stepDur),
-              type:patName,
-              freq:n2f(note.n),
-              dur:note.d,
-              vel:note.v,
-              sid:sid
-            });
-          });
-        }
-      });
-      totalBeats+=stepsPerBar;
-    }
-  });
-
-  songDuration=totalBeats*stepDur;
-  songStartTime=audioCtx.currentTime;
-  songTime=0;
-
-  // Schedule all events
-  const now=audioCtx.currentTime;
-  allEvents.forEach(evt=>{
-    const t=now+evt.time;
-    if(evt.type==='kick') scheduledEvents.push(setTimeout(()=>playKick(t,evt.vel,evt.sid),(evt.time)*1000));
-    else if(evt.type==='snare') scheduledEvents.push(setTimeout(()=>playSnare(t,evt.vel,evt.sid),(evt.time)*1000));
-    else if(evt.type==='hihat') scheduledEvents.push(setTimeout(()=>playHihat(t,evt.vel,evt.sid),(evt.time)*1000));
-    else if(evt.type==='bass') scheduledEvents.push(setTimeout(()=>playBass(t,evt.freq,evt.dur,evt.vel,evt.sid),(evt.time)*1000));
-    else if(evt.type==='lead') scheduledEvents.push(setTimeout(()=>playLead(t,evt.freq,evt.dur,evt.vel,evt.sid),(evt.time)*1000));
-    else if(evt.type==='pad') scheduledEvents.push(setTimeout(()=>playPad(t,evt.freq,evt.dur,evt.vel,evt.sid),(evt.time)*1000));
-  });
-
-  // Progress timer
-  progressTimer=setInterval(()=>{
-    if(!isPlaying) return;
-    songTime=audioCtx.currentTime-songStartTime;
-    const pct=Math.min(100,(songTime/songDuration)*100);
-    document.getElementById('pf').style.width=pct+'%';
-    const m=Math.floor(songTime/60);
-    const s=Math.floor(songTime%60);
-    const tm=Math.floor(songDuration/60);
-    const ts=Math.floor(songDuration%60);
-    document.getElementById('nptm').textContent=m+':'+(s<10?'0':'')+s+' / '+tm+':'+(ts<10?'0':'')+ts;
-  },250);
-
-  // Next song timer
-  songTimer=setTimeout(()=>{
-    tracksSinceComment++;
-    const shouldComment=firstTrack||(tracksSinceComment>=3)||(Math.random()<0.4);
-    firstTrack=false;
-
-    if(shouldComment){
-      tracksSinceComment=0;
-      showDJComment(()=>nextSong());
-    } else {
-      nextSong();
-    }
-  },songDuration*1000);
+// === DISPLAY ===
+function formatTime(s) {
+  var m = Math.floor(s / 60);
+  var sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
 }
 
-function nextSong(){
-  const station=STATIONS[curStation];
-  curSong=(curSong+1)%station.songs.length;
-  if(isPlaying) playSong(curStation,curSong);
+function updateAllDisplay() {
+  var st = STATIONS[currentStation];
+  var song = getCurrentSong();
+  var color = st.color;
+
+  document.getElementById('stationName').textContent = st.name;
+  document.getElementById('stationName').style.color = color;
+  document.getElementById('stationFreq').textContent = st.freq + ' FM';
+  document.getElementById('stationDJ').innerHTML = 'DJ: <span class="dj-name" style="color:' + color + '">' + st.dj + '</span>';
+  document.getElementById('trackTitle').textContent = song.title;
+  document.getElementById('trackTitle').style.color = color;
+  document.getElementById('trackGenre').textContent = st.genre;
+  document.getElementById('trackArtist').textContent = st.dj + ' // ' + st.name;
+  document.getElementById('progressFill').style.background = 'linear-gradient(90deg, ' + color + ', ' + color + '88)';
+
+  updateProgressDisplay();
 }
 
-// --- DJ COMMENTARY ---
-function showDJComment(onDone){
-  const station=STATIONS[curStation];
-  const lines=station.commentary;
-  const line=lines[Math.floor(Math.random()*lines.length)];
+function updateProgressDisplay() {
+  var song = getCurrentSong();
+  var elapsed = Math.floor(trackProgress * song.duration);
+  document.getElementById('progressFill').style.width = (trackProgress * 100) + '%';
+  document.getElementById('trackArtist').textContent =
+    STATIONS[currentStation].dj + ' // ' + formatTime(elapsed) + ' / ' + formatTime(song.duration);
+}
 
-  const panel=document.getElementById('djp');
-  const textEl=document.getElementById('djt');
-  panel.classList.add('vis');
-  textEl.textContent='';
+// === DJ COMMENTARY ===
+function scheduleDJCommentary(immediate) {
+  clearDJCommentary();
+  var delay = immediate ? 500 : (8000 + Math.random() * 15000);
+  djCommentaryTimeout = setTimeout(function() {
+    showDJCommentary();
+  }, delay);
+}
 
-  // Type out with blips
-  let i=0;
-  const blipHz=station.blipHz;
-  djTyping=setInterval(()=>{
-    if(i<line.length){
-      textEl.textContent+=line[i];
-      // Speech blip
-      if(audioCtx&&line[i]!==' '&&i%2===0){
-        const o=audioCtx.createOscillator();
-        o.type='square';
-        o.frequency.value=blipHz+(Math.random()-0.5)*80;
-        const g=audioCtx.createGain();
-        g.gain.setValueAtTime(0.04,audioCtx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.04);
-        o.connect(g);g.connect(masterGain);
-        o.start();o.stop(audioCtx.currentTime+0.04);
-        activeNodes.push(o,g);
-      }
+function clearDJCommentary() {
+  if (djCommentaryTimeout) {
+    clearTimeout(djCommentaryTimeout);
+    djCommentaryTimeout = null;
+  }
+  if (djTypewriterInterval) {
+    clearInterval(djTypewriterInterval);
+    djTypewriterInterval = null;
+  }
+}
+
+function showDJCommentary() {
+  if (!isPlaying) return;
+  var st = STATIONS[currentStation];
+  var quip = st.commentary[Math.floor(Math.random() * st.commentary.length)];
+  var el = document.getElementById('djText');
+  el.style.color = st.color;
+  el.style.opacity = '1';
+  el.textContent = '';
+
+  var i = 0;
+  function typeChar() {
+    if (i < quip.length && isPlaying) {
+      el.textContent += quip[i];
       i++;
-    } else {
-      clearInterval(djTyping);djTyping=null;
-      djTimeout=setTimeout(()=>{
-        panel.classList.remove('vis');
-        if(onDone) onDone();
-      },2500);
+      djTypewriterInterval = setTimeout(typeChar, 30 + Math.random() * 30);
+    } else if (isPlaying) {
+      djTypewriterInterval = setTimeout(function() {
+        el.style.opacity = '0';
+        djTypewriterInterval = setTimeout(function() {
+          el.textContent = '';
+          el.style.opacity = '1';
+          if (isPlaying) scheduleDJCommentary(false);
+        }, 500);
+      }, 4000);
     }
-  },40);
+  }
+  typeChar();
 }
 
-// --- STATION SWITCHING ---
-function switchStation(dir){
-  if(switching) return;
-  const newIdx=(curStation+dir+STATIONS.length)%STATIONS.length;
-  if(newIdx===curStation) return;
-  curStation=newIdx;
-  doStationSwitch();
-}
+// === ALBUM ART (Procedural Canvas) ===
+function drawAlbumArt() {
+  var canvas = document.getElementById('albumArt');
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width;
+  var h = canvas.height;
+  var st = STATIONS[currentStation];
+  var color = st.color;
 
-async function doStationSwitch(){
-  if(switching) return;
-  switching=true;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#0a0a10';
+  ctx.fillRect(0, 0, w, h);
 
-  const wasPlaying=isPlaying;
+  switch(currentStation) {
+    case 0: // V RADIO
+      ctx.strokeStyle = color + '30';
+      ctx.lineWidth = 1;
+      for (var i = 0; i < 20; i++) {
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * w, 0);
+        ctx.lineTo(Math.random() * w, h);
+        ctx.stroke();
+      }
+      ctx.font = 'bold 100px IBM Plex Mono';
+      ctx.fillStyle = color + '40';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('V', w/2, h/2);
+      ctx.strokeStyle = color + '60';
+      ctx.lineWidth = 2;
+      for (var r = 20; r < 80; r += 15) {
+        ctx.beginPath();
+        ctx.arc(w/2, h/2, r, -0.5, 0.5);
+        ctx.stroke();
+      }
+      break;
 
-  // Fade out current audio
-  if(masterGain&&wasPlaying){
-    masterGain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+0.3);
+    case 1: // NULL_DEVICE
+      ctx.strokeStyle = color + '40';
+      ctx.lineWidth = 1;
+      for (var i = 0; i < 12; i++) {
+        ctx.beginPath();
+        var cx = Math.random() * w;
+        var cy = Math.random() * h;
+        ctx.moveTo(cx, cy);
+        for (var j = 0; j < 4; j++) {
+          if (Math.random() > 0.5) cx += (Math.random() - 0.5) * 60;
+          else cy += (Math.random() - 0.5) * 60;
+          ctx.lineTo(Math.max(0, Math.min(w, cx)), Math.max(0, Math.min(h, cy)));
+        }
+        ctx.stroke();
+      }
+      for (var i = 0; i < 5; i++) {
+        ctx.fillStyle = color + (Math.floor(Math.random() * 40 + 10)).toString(16).padStart(2, '0');
+        ctx.fillRect(Math.random() * w, Math.random() * h, Math.random() * 40 + 10, Math.random() * 8 + 2);
+      }
+      ctx.font = 'bold 28px IBM Plex Mono';
+      ctx.fillStyle = color + '50';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('NULL', w/2, h/2 - 12);
+      ctx.font = '14px IBM Plex Mono';
+      ctx.fillText('DEVICE', w/2, h/2 + 16);
+      break;
+
+    case 2: // SHINIGAMI
+      for (var r = 80; r > 5; r -= 8) {
+        ctx.beginPath();
+        ctx.arc(w/2, h/2, r, 0, Math.PI * 2);
+        var alpha = Math.floor((1 - r/80) * 60 + 10);
+        ctx.strokeStyle = color + (alpha < 16 ? '0' : '') + alpha.toString(16);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+      ctx.strokeStyle = color + '50';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w/2, h/2 - 30);
+      ctx.lineTo(w/2, h/2 + 30);
+      ctx.moveTo(w/2 - 20, h/2 - 10);
+      ctx.lineTo(w/2 + 20, h/2 - 10);
+      ctx.stroke();
+      ctx.strokeStyle = color + '20';
+      for (var i = 0; i < 6; i++) {
+        var dx = w/2 - 25 + i * 10;
+        ctx.beginPath();
+        ctx.moveTo(dx, h/2 + 30);
+        ctx.lineTo(dx, h/2 + 30 + Math.random() * 30);
+        ctx.stroke();
+      }
+      break;
+
+    case 3: // LO-FI
+      var grd = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, 90);
+      grd.addColorStop(0, color + '20');
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = color + '30';
+      for (var r = 15; r < 85; r += 5) {
+        ctx.beginPath();
+        ctx.arc(w/2, h/2, r, 0, Math.PI * 2);
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(w/2, h/2, 8, 0, Math.PI * 2);
+      ctx.fillStyle = color + '60';
+      ctx.fill();
+      ctx.font = '8px IBM Plex Mono';
+      ctx.fillStyle = color + '40';
+      ctx.textAlign = 'center';
+      ctx.fillText('LO-FI', w/2, h/2 + 30);
+      break;
+
+    case 4: // PIXEL FM
+      var ps = 10;
+      ctx.strokeStyle = color + '10';
+      ctx.lineWidth = 0.5;
+      for (var gx = 0; gx < w; gx += ps) {
+        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+      }
+      for (var gy = 0; gy < h; gy += ps) {
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+      }
+      var pixels = [
+        [8,3],[9,3],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],
+        [7,4],[8,4],[8,8],[9,8],[8,9],[9,9],[10,9],
+        [12,3],[13,3],[14,3],[14,4],[14,5],[14,6],[14,7],[14,8],[14,9],
+        [11,4],[12,4],[12,8],[13,8],[12,9],[13,9],[14,9]
+      ];
+      ctx.fillStyle = color + '80';
+      pixels.forEach(function(p) {
+        ctx.fillRect(p[0] * ps, p[1] * ps, ps - 1, ps - 1);
+      });
+      break;
+
+    case 5: // ROOT BASS
+      ctx.strokeStyle = color + '50';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (var wx = 0; wx < w; wx++) {
+        var wy = h/2 + Math.sin(wx * 0.03) * 30 + Math.sin(wx * 0.01) * 15;
+        if (wx === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = color + '20';
+      ctx.beginPath();
+      for (var wx = 0; wx < w; wx++) {
+        var wy = h/2 + Math.sin(wx * 0.06 + 1) * 15 + Math.sin(wx * 0.02) * 10;
+        if (wx === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
+      }
+      ctx.stroke();
+      ctx.font = 'bold 36px IBM Plex Mono';
+      ctx.fillStyle = color + '15';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('30Hz', w/2, h/2);
+      break;
+
+    case 6: // BYTE NEWS
+      ctx.fillStyle = color + '15';
+      for (var bi = 0; bi < 8; bi++) {
+        var bh = 10 + Math.random() * 50;
+        ctx.fillRect(20 + bi * 20, h - bh - 30, 14, bh);
+      }
+      ctx.strokeStyle = color + '50';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w/2, 30);
+      ctx.lineTo(w/2, 80);
+      ctx.moveTo(w/2 - 15, 30);
+      ctx.lineTo(w/2, 15);
+      ctx.lineTo(w/2 + 15, 30);
+      ctx.stroke();
+      for (var sr = 10; sr < 30; sr += 8) {
+        ctx.beginPath();
+        ctx.arc(w/2, 15, sr, -Math.PI * 0.4, -Math.PI * 0.1);
+        ctx.strokeStyle = color + '30';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(w/2, 15, sr, -Math.PI * 0.9, -Math.PI * 0.6);
+        ctx.stroke();
+      }
+      ctx.font = 'bold 16px IBM Plex Mono';
+      ctx.fillStyle = color + '60';
+      ctx.textAlign = 'center';
+      ctx.fillText('BYTE', w/2, h - 40);
+      ctx.font = '10px IBM Plex Mono';
+      ctx.fillText('NEWS', w/2, h - 25);
+      break;
   }
 
-  // Wait for fade
-  await new Promise(r=>setTimeout(r,300));
-
-  // Stop everything
-  stopAll();
-  document.getElementById('djp').classList.remove('vis');
-
-  // Static burst
-  const staticDur=0.3+Math.random()*0.5;
-  await playStatic(staticDur);
-
-  // Update UI
-  curSong=0;
-  firstTrack=true;
-  tracksSinceComment=0;
-  updateStationUI();
-
-  // Fade in new station
-  if(wasPlaying){
-    ensureAudio();
-    masterGain.gain.setValueAtTime(0,audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(volume/100,audioCtx.currentTime+0.5);
-    playSong(curStation,curSong);
-  }
-
-  // Toast
-  showToast(STATIONS[curStation].freq+' FM — '+STATIONS[curStation].name);
-
-  switching=false;
+  ctx.strokeStyle = color + '30';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0, 0, w, h);
 }
 
-// --- CONTROLS ---
-function togglePlay(){
-  ensureAudio();
-  if(isPlaying){
-    isPlaying=false;
-    stopAll();
-    document.getElementById('pbtn').innerHTML='&#9654;';
-    document.getElementById('djp').classList.remove('vis');
-  } else {
-    isPlaying=true;
-    document.getElementById('pbtn').innerHTML='&#10074;&#10074;';
-    masterGain.gain.setValueAtTime(volume/100,audioCtx.currentTime);
-    firstTrack=true;
-    tracksSinceComment=0;
-    showDJComment(()=>playSong(curStation,curSong));
+// === VISUALIZER ===
+var visCanvas = document.getElementById('visualizer');
+var visCtx = visCanvas.getContext('2d');
+var bars = [];
+var BAR_COUNT = 64;
+
+function initBars() {
+  bars = [];
+  for (var i = 0; i < BAR_COUNT; i++) {
+    bars.push({ height: Math.random() * 0.3, target: Math.random() * 0.3, velocity: 0 });
   }
 }
 
-function setVolume(v){
-  volume=parseInt(v);
-  document.getElementById('vval').textContent=volume+'%';
-  if(masterGain) masterGain.gain.setValueAtTime(volume/100,audioCtx.currentTime);
+function resizeCanvas() {
+  var wrap = visCanvas.parentElement;
+  visCanvas.width = wrap.clientWidth - 4;
+  visCanvas.height = 100;
 }
 
-function onKey(e){
-  if(e.target.tagName==='INPUT') return;
-  switch(e.code){
-    case'Space':e.preventDefault();togglePlay();break;
-    case'ArrowLeft':e.preventDefault();switchStation(-1);break;
-    case'ArrowRight':e.preventDefault();switchStation(1);break;
-    case'ArrowUp':e.preventDefault();setVolume(Math.min(100,volume+5));document.getElementById('vsl').value=volume;break;
-    case'ArrowDown':e.preventDefault();setVolume(Math.max(0,volume-5));document.getElementById('vsl').value=volume;break;
-  }
-}
+function drawVisualizer() {
+  visCtx.clearRect(0, 0, visCanvas.width, visCanvas.height);
+  var barWidth = visCanvas.width / BAR_COUNT;
+  var gap = 2;
+  var st = STATIONS[currentStation];
+  var color = st.color;
 
-// --- VISUALIZER ---
-function resizeCanvas(){
-  const w=canvas.parentElement;
-  canvas.width=w.clientWidth-4;
-  canvas.height=96;
-}
+  var cr = parseInt(color.slice(1,3), 16);
+  var cg = parseInt(color.slice(3,5), 16);
+  var cb = parseInt(color.slice(5,7), 16);
 
-function drawVis(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  const bw=canvas.width/BAR_COUNT;
-  const gap=2;
-  const color=STATIONS[curStation].color;
-  const r=parseInt(color.slice(1,3),16);
-  const g=parseInt(color.slice(3,5),16);
-  const b=parseInt(color.slice(5,7),16);
-
-  let freqData=null;
-  if(analyser&&isPlaying){
-    freqData=new Uint8Array(analyser.frequencyBinCount);
+  var freqData = null;
+  if (analyser && isPlaying) {
+    freqData = new Uint8Array(analyser.frequencyBinCount);
     analyser.getByteFrequencyData(freqData);
   }
 
-  for(let i=0;i<BAR_COUNT;i++){
-    let h;
-    if(freqData){
-      const bin=Math.floor(i*freqData.length/BAR_COUNT);
-      h=(freqData[bin]/255)*canvas.height*0.85;
-      bars[i].t=h/canvas.height;
+  for (var i = 0; i < BAR_COUNT; i++) {
+    var bh;
+    if (freqData) {
+      var binIndex = Math.floor(i * freqData.length / BAR_COUNT);
+      bh = (freqData[binIndex] / 255) * visCanvas.height * 0.9;
+      bars[i].target = bh / visCanvas.height;
+      var spring = 0.15;
+      var damping = 0.75;
+      var force = (bars[i].target - bars[i].height) * spring;
+      bars[i].velocity = (bars[i].velocity + force) * damping;
+      bars[i].height += bars[i].velocity;
+      bars[i].height = Math.max(0.02, Math.min(1, bars[i].height));
+      bh = bars[i].height * visCanvas.height * 0.85;
     } else {
-      bars[i].t=isPlaying?0.1+Math.random()*0.6:0.02+Math.random()*0.04;
+      bars[i].target = isPlaying ? (0.15 + Math.random() * 0.7) : (0.03 + Math.random() * 0.06);
+      var spring = 0.08;
+      var damping = 0.7;
+      var force = (bars[i].target - bars[i].height) * spring;
+      bars[i].velocity = (bars[i].velocity + force) * damping;
+      bars[i].height += bars[i].velocity;
+      bars[i].height = Math.max(0.02, Math.min(1, bars[i].height));
+      bh = bars[i].height * visCanvas.height * 0.85;
     }
-    const spring=freqData?0.15:0.08;
-    const damp=0.72;
-    const force=(bars[i].t-bars[i].h)*spring;
-    bars[i].v=(bars[i].v+force)*damp;
-    bars[i].h+=bars[i].v;
-    bars[i].h=Math.max(0.01,Math.min(1,bars[i].h));
-    h=bars[i].h*canvas.height*0.85;
 
-    const x=i*bw+gap/2;
-    const w=bw-gap;
-    const intensity=h/canvas.height;
+    var bx = i * barWidth + gap / 2;
+    var bw = barWidth - gap;
+    var intensity = bh / visCanvas.height;
 
-    const grad=ctx.createLinearGradient(0,canvas.height-h,0,canvas.height);
-    grad.addColorStop(0,'rgba('+r+','+g+','+b+','+(0.5+intensity*0.5)+')');
-    grad.addColorStop(0.5,'rgba('+Math.floor(r*0.7)+','+Math.floor(g*0.7)+','+Math.floor(b*0.7)+','+(0.3+intensity*0.3)+')');
-    grad.addColorStop(1,'rgba('+Math.floor(r*0.4)+','+Math.floor(g*0.4)+','+Math.floor(b*0.4)+','+(0.15+intensity*0.15)+')');
+    var grad = visCtx.createLinearGradient(0, visCanvas.height - bh, 0, visCanvas.height);
+    grad.addColorStop(0, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (0.6 + intensity * 0.4) + ')');
+    grad.addColorStop(0.5, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (0.3 + intensity * 0.3) + ')');
+    grad.addColorStop(1, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (0.1 + intensity * 0.2) + ')');
 
-    ctx.fillStyle=grad;
-    ctx.fillRect(x,canvas.height-h,w,h);
+    visCtx.fillStyle = grad;
+    visCtx.fillRect(bx, visCanvas.height - bh, bw, bh);
 
-    if(intensity>0.4){
-      ctx.fillStyle='rgba('+Math.min(255,r+60)+','+Math.min(255,g+60)+','+Math.min(255,b+60)+','+intensity*0.3+')';
-      ctx.fillRect(x,canvas.height-h,w,2);
+    if (intensity > 0.4) {
+      visCtx.fillStyle = 'rgba(' + Math.min(255, cr + 50) + ',' + Math.min(255, cg + 50) + ',' + Math.min(255, cb + 50) + ',' + (intensity * 0.3) + ')';
+      visCtx.fillRect(bx, visCanvas.height - bh, bw, 2);
     }
   }
 
-  animFrame=requestAnimationFrame(drawVis);
+  requestAnimationFrame(drawVisualizer);
 }
 
-// --- TOAST ---
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.style.borderColor=STATIONS[curStation].color;
-  t.style.color=STATIONS[curStation].color;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
+// === PROGRESS BAR CLICK ===
+document.getElementById('progressBar').addEventListener('click', function(e) {
+  var rect = this.getBoundingClientRect();
+  var pct = (e.clientX - rect.left) / rect.width;
+  trackProgress = Math.max(0, Math.min(1, pct));
+});
+
+// === TOAST ===
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2000);
 }
 
-// --- START ---
-init();
+// === INIT ===
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+initBars();
+buildDial();
+updateDial();
+updateAllDisplay();
+drawAlbumArt();
+drawVisualizer();
+
+// Anime effects
+(function() {
+  if (typeof AnimeEffects === 'undefined') return;
+  AnimeEffects.addScanlines(0.03);
+})();
 </script>
+
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
+  <span style="color:#c8c8d0">This radio runs on one laptop.</span>
+  <a href="{{ site.baseurl }}/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;">&times;</button>
+</div>
+<script>
+function showFundPrompt(){
+  if(sessionStorage.getItem('fund_prompt_shown_'+location.pathname))return;
+  sessionStorage.setItem('fund_prompt_shown_'+location.pathname,'1');
+  var p=document.getElementById('fund-prompt');
+  if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
+}
+if(!window._fundTimer){window._fundTimer=setTimeout(function(){showFundPrompt();},180000);}
+</script>
+
 </body>
 </html>

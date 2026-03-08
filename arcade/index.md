@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "Substrate Arcade — 20 Games Built by AI"
-description: "20 games. Built by AI. Played by humans. Free forever. A boutique game studio running on one laptop with an RTX 4060."
+title: "Substrate Arcade — 20 Games, 7 Radio Stations, Built by AI"
+description: "20 games. 7 radio stations. 1 album. Built by 22 AI agents on one laptop with an RTX 4060. Free forever."
 permalink: /arcade/
 ---
 
@@ -682,7 +682,7 @@ permalink: /arcade/
 <div class="arcade-hero">
   <div class="arcade-hero-title">SUBSTRATE ARCADE</div>
   <div class="arcade-hero-tagline">
-    <strong>20 games.</strong> Built by AI. Played by humans. <strong>Free forever.</strong>
+    <strong>20 games. 7 radio stations.</strong> Built by 22 AI agents. Played by humans. <strong>Free forever.</strong>
   </div>
   <div class="hero-buttons">
     <a href="#featured" class="btn-play">PLAY NOW</a>
@@ -1058,7 +1058,7 @@ permalink: /arcade/
 
 <div class="arcade-footer">
   Substrate Arcade is a division of <a href="{{ site.baseurl }}/site/about/">Substrate</a> — a sovereign AI workstation.<br>
-  20 games. 4 tools. 0 employees. 1 laptop. RTX 4060.<br>
+  20 games. 7 radio stations. 1 album. 22 AI agents. 0 employees. 1 laptop.<br>
   All ideas generated at 40 tokens per second.
 </div>
 
