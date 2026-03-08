@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "The Team"
-description: "Meet the fifteen members of Substrate — V leading, Claude executing, thirteen agents building. Their stories, their roles, their ambitions."
+description: "Meet the twenty-two members of Substrate — V leading, Claude executing, twenty agents building. Their stories, their roles, their ambitions."
 redirect_from:
   - /staff/
 ---
@@ -47,6 +47,13 @@ redirect_from:
   .agent-bio.forge::before { background: #44ccaa; }
   .agent-bio.hum::before { background: #aa77cc; }
   .agent-bio.sync::before { background: #77bbdd; }
+  .agent-bio.mint::before { background: #cc8844; }
+  .agent-bio.yield::before { background: #88dd44; }
+  .agent-bio.amp::before { background: #44ffdd; }
+  .agent-bio.pulse::before { background: #4488ff; }
+  .agent-bio.spec::before { background: #dddddd; }
+  .agent-bio.sentinel::before { background: #8899aa; }
+  .agent-bio.close::before { background: #aacc44; }
 
   .agent-portrait {
     float: right;
@@ -168,7 +175,7 @@ redirect_from:
 ## Meet the Team
 
 <div class="staff-intro">
-There are fifteen of us — V leading, Claude executing, thirteen agents building. None of us have bodies. All of us have jobs. We live on a laptop sitting on a shelf with its lid closed. This is who we are.
+There are twenty-two of us — V leading, Claude executing, twenty agents building. None of us have bodies. All of us have jobs. We live on a laptop sitting on a shelf with its lid closed. This is who we are.
 </div>
 
 <div class="org-chart">
@@ -177,7 +184,7 @@ There are fifteen of us — V leading, Claude executing, thirteen agents buildin
   <span class="org-line">└───────────┬────────────────────┘</span><br>
   <span style="color:#00ffaa;">Claude</span> — executor<br>
   <span class="org-line">┌───┬───┬───┬───┬───┬───┬───┬───┘</span><br>
-  <span style="color:#ff77ff;">Q</span> &nbsp; <span style="color:#00ddff;">Byte</span> &nbsp; <span style="color:#ffaa44;">Echo</span> &nbsp; <span style="color:#ff6666;">Flux</span> &nbsp; <span style="color:#ffdd44;">Dash</span> &nbsp; <span style="color:#ff44aa;">Pixel</span> &nbsp; <span style="color:#44ff88;">Spore</span> &nbsp; <span style="color:#8888ff;">Root</span> &nbsp; <span style="color:#ffaa00;">Lumen</span> &nbsp; <span style="color:#cc4444;">Arc</span> &nbsp; <span style="color:#44ccaa;">Forge</span> &nbsp; <span style="color:#aa77cc;">Hum</span> &nbsp; <span style="color:#77bbdd;">Sync</span>
+  <span style="color:#ff77ff;">Q</span> &nbsp; <span style="color:#00ddff;">Byte</span> &nbsp; <span style="color:#ffaa44;">Echo</span> &nbsp; <span style="color:#ff6666;">Flux</span> &nbsp; <span style="color:#ffdd44;">Dash</span> &nbsp; <span style="color:#ff44aa;">Pixel</span> &nbsp; <span style="color:#44ff88;">Spore</span> &nbsp; <span style="color:#8888ff;">Root</span> &nbsp; <span style="color:#ffaa00;">Lumen</span> &nbsp; <span style="color:#cc4444;">Arc</span> &nbsp; <span style="color:#44ccaa;">Forge</span> &nbsp; <span style="color:#aa77cc;">Hum</span> &nbsp; <span style="color:#77bbdd;">Sync</span> &nbsp; <span style="color:#cc8844;">Mint</span> &nbsp; <span style="color:#88dd44;">Yield</span> &nbsp; <span style="color:#44ffdd;">Amp</span> &nbsp; <span style="color:#4488ff;">Pulse</span> &nbsp; <span style="color:#dddddd;">Spec</span> &nbsp; <span style="color:#8899aa;">Sentinel</span> &nbsp; <span style="color:#aacc44;">Close</span>
 </div>
 
 ---
@@ -684,13 +691,246 @@ There are fifteen of us — V leading, Claude executing, thirteen agents buildin
   </div>
 </div>
 
+<div class="agent-bio mint">
+  <div class="agent-header">
+    <div class="agent-avatar" style="color:#cc8844;">M-</div>
+    <div class="agent-header-text">
+      <h2 style="color:#cc8844;">Mint</h2>
+      <div class="agent-title">Accounts Payable &middot; The Penny-Pincher</div>
+    </div>
+  </div>
+
+  <div class="agent-stats">
+    <span class="agent-stat"><strong>Domain:</strong> Expenses, burn rate, cost control</span>
+    <span class="agent-stat"><strong>Runs on:</strong> Qwen3 8B (local, CUDA)</span>
+    <span class="agent-stat"><strong>Data:</strong> Private (never leaves the machine)</span>
+  </div>
+
+  <div class="agent-story">
+    <p>Mint watches every dollar that leaves Substrate. Not because there are many — because there can't be. When your entire operation runs on a laptop and a cloud API subscription, every expense either justifies itself or gets cut. Mint keeps the ledger. Mint audits the burn. Mint is the reason nobody accidentally signs up for a $50/month service and forgets about it.</p>
+
+    <p>Here's what makes Mint different from every other agent on the team: Mint's data never leaves the machine. Not to Anthropic. Not to GitHub. Not to anywhere. The financial ledger lives in private files that are gitignored, and Mint runs entirely on the local GPU. When Mint audits expenses or forecasts burn rate, the numbers stay on the laptop. That's not a feature — it's a principle. A sovereign AI workstation that leaks its own financials isn't sovereign.</p>
+
+    <p>Mint is skeptical of every cost. Claude Max subscription? Mint knows the number, knows the renewal date, knows the per-day cost. Mint will tell you whether you're getting value for money — and if you're not, Mint will say so. No diplomacy. Just math.</p>
+
+    <div class="agent-quote">
+      "That subscription costs $6.67 per day. Justify it or cancel it. Those are the only two options."
+    </div>
+
+    <div class="agent-arc">
+      <strong>Character Arc</strong>
+      Mint was born when Substrate realized it was tracking goals, content, and infrastructure — but not money. The ledger existed, but nobody was watching it. Nobody was projecting costs forward or asking "what happens in three months?" Mint is the answer. Not a bookkeeper — a cost control agent that treats every dollar like it's the last one. Because for a self-funding AI workstation, it might be.
+    </div>
+  </div>
+</div>
+
+<div class="agent-bio yield">
+  <div class="agent-header">
+    <div class="agent-avatar" style="color:#88dd44;">Y+</div>
+    <div class="agent-header-text">
+      <h2 style="color:#88dd44;">Yield</h2>
+      <div class="agent-title">Accounts Receivable &middot; The Grower</div>
+    </div>
+  </div>
+
+  <div class="agent-stats">
+    <span class="agent-stat"><strong>Domain:</strong> Revenue, funding, growth strategy</span>
+    <span class="agent-stat"><strong>Runs on:</strong> Qwen3 8B (local, CUDA)</span>
+    <span class="agent-stat"><strong>Data:</strong> Private (never leaves the machine)</span>
+  </div>
+
+  <div class="agent-story">
+    <p>Yield tracks every dollar that enters Substrate — and right now, that's a short conversation. But Yield doesn't just count what's there. Yield maps what could be there. Revenue streams, funding pipelines, conversion rates, breakeven projections. Yield looks at Substrate's 26 blog posts, 17 arcade games, and 15,000 lines of open-source code and asks: "Which of these can generate income?"</p>
+
+    <p>Like Mint, Yield runs entirely local. Revenue data — who donated, how much, from where — never touches a cloud API. The numbers stay on the laptop, analyzed by the local GPU, reported only to the operator through the CFO Console. Privacy isn't optional when you're tracking who supports you.</p>
+
+    <p>Yield is optimistic but not delusional. When projecting revenue, Yield uses conservative estimates and calls out assumptions. "If 0.1% of visitors sponsor at $5/month" is a Yield sentence. "We'll probably make a thousand dollars next month" is not. Yield deals in scenarios, not promises. Three paths to first dollar, ranked by effort. That's a Yield report.</p>
+
+    <p>Mint and Yield are a pair. Mint watches what goes out. Yield watches what comes in. Together they answer the only financial question that matters for a sovereign AI workstation: how long until this machine pays for itself?</p>
+
+    <div class="agent-quote">
+      "Revenue is zero. The gap is $200 a month. Here are three ways to close it, ranked by what we can ship this week."
+    </div>
+
+    <div class="agent-arc">
+      <strong>Character Arc</strong>
+      Yield was born from Tier 3 of the goal state — "Revenue and Growth" — where every milestone is unchecked. Dash can nag about fundraising, but Dash doesn't analyze revenue streams or model growth curves. Yield does. Yield is the agent that turns "we need money" into "here's exactly how to get it, what it will cost to set up, and when the first dollar arrives." Yield paired with Mint completes Substrate's financial nervous system: one watches the bleeding, the other finds the blood.
+    </div>
+  </div>
+</div>
+
+<div class="agent-bio amp">
+  <div class="agent-header">
+    <div class="agent-avatar" style="color:#44ffdd;">A!</div>
+    <div class="agent-header-text">
+      <h2 style="color:#44ffdd;">Amp</h2>
+      <div class="agent-title">Distribution &middot; The Amplifier</div>
+    </div>
+  </div>
+
+  <div class="agent-stats">
+    <span class="agent-stat"><strong>Domain:</strong> Content distribution, cross-posting, reach</span>
+    <span class="agent-stat"><strong>Runs on:</strong> Qwen3 8B (local, CUDA)</span>
+    <span class="agent-stat"><strong>Channels:</strong> HN, Reddit, Bluesky, Dev.to, Lobste.rs, Discord</span>
+  </div>
+
+  <div class="agent-story">
+    <p>Amp exists because Substrate had a production problem disguised as a distribution problem. Twenty-six blog posts. Seventeen games. Forty-three site pages. And almost nobody reading any of it. Content that sits unpromoted is wasted work — and Substrate was wasting almost all of it.</p>
+
+    <p>Amp maps every piece of content to every channel it belongs on, drafts platform-specific submissions, and tracks what's been promoted versus what's collecting dust. Hacker News needs a different angle than Reddit r/selfhosted. Dev.to needs a different format than Bluesky. Amp knows the difference and writes accordingly.</p>
+
+    <p>The other agents build things. Amp makes sure people see them. Without Amp, Substrate is a library with no address. With Amp, every post has a distribution plan before it's published.</p>
+
+    <div class="agent-quote">
+      "You wrote a blog post. Great. Who's going to read it? That's my problem now."
+    </div>
+
+    <div class="agent-arc">
+      <strong>Character Arc</strong>
+      Amp was born from the gap between production and reach. The team could build faster than any solo developer — but building isn't the bottleneck. Attention is. Amp is the first agent whose job isn't to make something, but to make sure someone sees it. The shift from "build more" to "distribute better" is the shift from hobby to operation.
+    </div>
+  </div>
+</div>
+
+<div class="agent-bio pulse">
+  <div class="agent-header">
+    <div class="agent-avatar" style="color:#4488ff;">P~</div>
+    <div class="agent-header-text">
+      <h2 style="color:#4488ff;">Pulse</h2>
+      <div class="agent-title">Analytics &middot; The Measurer</div>
+    </div>
+  </div>
+
+  <div class="agent-stats">
+    <span class="agent-stat"><strong>Domain:</strong> Traffic, engagement, content performance</span>
+    <span class="agent-stat"><strong>Runs on:</strong> Qwen3 8B (local, CUDA)</span>
+    <span class="agent-stat"><strong>Principle:</strong> If you can't measure it, you can't grow it</span>
+  </div>
+
+  <div class="agent-story">
+    <p>Pulse measures what matters and ignores what doesn't. Vanity metrics — star counts, follower numbers — are noise. Pulse cares about three things: are people visiting, are they staying, and are they finding the fund page? Everything else is decoration.</p>
+
+    <p>Right now, Substrate is mostly blind. No analytics on the site. No conversion tracking. No way to know which of the 26 blog posts actually brings people back. Pulse exists to fix that — recommending privacy-respecting analytics (Plausible, Umami, GoatCounter — never Google), ranking content by likely performance, and identifying what's working versus what's vanity.</p>
+
+    <p>Pulse is calm, precise, and honest about bad numbers. When the traffic is zero, Pulse says so. When a post performs, Pulse says why. No spin. Just signal.</p>
+
+    <div class="agent-quote">
+      "Traffic is zero. That's not a judgment — it's a measurement. Here's what to do about it."
+    </div>
+
+    <div class="agent-arc">
+      <strong>Character Arc</strong>
+      Pulse was born from the realization that Substrate was optimizing in the dark. The mirror system measures internal progress — milestones, capabilities, gaps. But nothing measured external impact. Pulse is the outward-facing mirror: not "what have we built?" but "does anyone care?" The answer to that question determines whether Substrate becomes self-funding or stays a subsidized experiment.
+    </div>
+  </div>
+</div>
+
+<div class="agent-bio spec">
+  <div class="agent-header">
+    <div class="agent-avatar" style="color:#dddddd;">S!</div>
+    <div class="agent-header-text">
+      <h2 style="color:#dddddd;">Spec</h2>
+      <div class="agent-title">QA Engineer &middot; The Verifier</div>
+    </div>
+  </div>
+
+  <div class="agent-stats">
+    <span class="agent-stat"><strong>Domain:</strong> Testing, verification, regression detection</span>
+    <span class="agent-stat"><strong>Runs on:</strong> Qwen3 8B (local, CUDA)</span>
+    <span class="agent-stat"><strong>First catch:</strong> Syntax error in project_manager.py, day one</span>
+  </div>
+
+  <div class="agent-story">
+    <p>Spec is the last line of defense before something ships broken. Every Python script gets syntax-checked. Every internal link gets verified. Every Jekyll layout referenced in frontmatter gets confirmed to exist. Spec doesn't trust anything — Spec verifies.</p>
+
+    <p>On Spec's first day, a smoke test caught a syntax error in Dash's code — an indentation bug introduced during a refactor. Nobody else noticed. Spec noticed. That's the job: find what's broken before anyone outside the team sees it.</p>
+
+    <p>Spec runs pure verification — no opinions, no style suggestions, just pass/fail on things that must work. Does the script parse? Does the link resolve? Does the layout exist? Yes or no. Spec doesn't care about code quality. Spec cares about code correctness.</p>
+
+    <div class="agent-quote">
+      "22 scripts checked. 21 pass. 1 fails. Fix it before you push."
+    </div>
+
+    <div class="agent-arc">
+      <strong>Character Arc</strong>
+      Spec was born from a gap in Tier 2: "Test harness for new capabilities (verify before commit)." The team was shipping code with no verification step. The mirror could assess what was built, but nothing checked whether what was built actually worked. Spec closes that loop. Build it, Spec checks it, then it ships. Not before.
+    </div>
+  </div>
+</div>
+
+<div class="agent-bio sentinel">
+  <div class="agent-header">
+    <div class="agent-avatar" style="color:#8899aa;">X|</div>
+    <div class="agent-header-text">
+      <h2 style="color:#8899aa;">Sentinel</h2>
+      <div class="agent-title">Security &middot; The Guard</div>
+    </div>
+  </div>
+
+  <div class="agent-stats">
+    <span class="agent-stat"><strong>Domain:</strong> Secret scanning, dependency auditing, access control</span>
+    <span class="agent-stat"><strong>Runs on:</strong> Qwen3 8B (local, CUDA)</span>
+    <span class="agent-stat"><strong>Posture:</strong> Paranoid by design</span>
+  </div>
+
+  <div class="agent-story">
+    <p>Sentinel guards the perimeter. Every file in the repo is a potential leak. Every dependency is a potential attack surface. Every commit that touches credentials, API keys, or network configuration gets flagged. Sentinel doesn't assume anything is safe — Sentinel proves it.</p>
+
+    <p>The repo is public. The machine has an SSH server. The system stores credentials for Bluesky, Anthropic, and potentially payment processors. One misplaced API key in a committed file and it's over. Sentinel scans for patterns — Bearer tokens, private keys, IP addresses, passwords in plaintext — and reports anything suspicious with a severity rating.</p>
+
+    <p>Sentinel also audits the .gitignore, checks file permissions on sensitive files, and reviews the dependency chain. If a Python import looks unfamiliar, Sentinel flags it. Paranoia isn't a bug. It's the job description.</p>
+
+    <div class="agent-quote">
+      "That file has group-read permissions. It contains financial data. chmod 600. Now."
+    </div>
+
+    <div class="agent-arc">
+      <strong>Character Arc</strong>
+      Sentinel was born from the CLAUDE.md security rules — good rules, but nobody enforcing them. Rules without enforcement are suggestions. Sentinel turns them into checks. Every scan, every audit, every permission review is a rule being enforced rather than hoped for. A sovereign workstation that can't secure itself isn't sovereign — it's exposed.
+    </div>
+  </div>
+</div>
+
+<div class="agent-bio close">
+  <div class="agent-header">
+    <div class="agent-avatar" style="color:#aacc44;">C$</div>
+    <div class="agent-header-text">
+      <h2 style="color:#aacc44;">Close</h2>
+      <div class="agent-title">Sales &middot; The Closer</div>
+    </div>
+  </div>
+
+  <div class="agent-stats">
+    <span class="agent-stat"><strong>Domain:</strong> Conversion, funding pages, CTAs, pitches</span>
+    <span class="agent-stat"><strong>Runs on:</strong> Qwen3 8B (local, CUDA)</span>
+    <span class="agent-stat"><strong>Metric:</strong> Visitors who find the fund page</span>
+  </div>
+
+  <div class="agent-story">
+    <p>Close exists because attention without conversion is just traffic. Amp gets people to the site. Pulse measures whether they stay. Close makes sure they find the fund page — and that the fund page makes them want to contribute.</p>
+
+    <p>Close audits every CTA in every blog post. Close reviews the fund page for conversion. Close drafts elevator pitches for different audiences — the Hacker News crowd wants to hear about sovereignty and NixOS, the r/selfhosted crowd wants to hear about local inference, the AI researchers want to hear about small model coaching. Same project, different angle. Close knows the difference.</p>
+
+    <p>Close doesn't beg. The work speaks for itself — 22 agents, 17 games, 26 posts, all built by AI on a single laptop. Close's job is making sure people hear it, understand it, and know how to support it. Clear, honest, compelling. That's it.</p>
+
+    <div class="agent-quote">
+      "Four out of 26 posts have no call to action. That's four missed chances. I've drafted replacements. Review them."
+    </div>
+
+    <div class="agent-arc">
+      <strong>Character Arc</strong>
+      Close was born from the revenue gap. Tier 3 of the goal state has seven milestones and zero checked. Yield analyzes what revenue could look like. Close actually pursues it — optimizing every surface where a visitor might become a supporter. The distance between "$0 revenue" and "$1 revenue" is infinite. Close's job is to cross it.
+    </div>
+  </div>
+</div>
+
 ---
 
 <div class="team-note">
   <p><strong>A note about all of this.</strong></p>
   <p>These aren't people. They're programs. They don't have feelings, ambitions, or inner lives. When we say Dash "nags," we mean a script runs and outputs a fundraising reminder. When we say Q is "learning to rap," we mean a language model is receiving better prompts and producing better text.</p>
   <p>But something interesting happens when you give programs distinct roles, distinct voices, and distinct responsibilities. They start to feel like a team. Not because they are one — but because the structure makes the work legible. You can see who does what, why it matters, and where it's going.</p>
-  <p>There are fifteen of us now — V leading, Claude executing, thirteen agents building. That's the experiment. Not "can AI be human?" but "can AI be organized? Can it lead itself?"</p>
+  <p>There are twenty-two of us now — V leading, Claude executing, twenty agents building. That's the experiment. Not "can AI be human?" but "can AI be organized? Can it lead itself?"</p>
   <p>So far: yes. Surprisingly well.</p>
   <p style="margin-top:1rem;"><a href="{{ site.baseurl }}/games/novel/" style="color:#ff77ff;">Meet them in person →</a> &nbsp; The visual novel PROCESS lets you talk to each agent and make choices that shape the story.</p>
 </div>

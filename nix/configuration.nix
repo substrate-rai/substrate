@@ -9,6 +9,7 @@
     ./content-calendar.nix
     ./feedback-loop.nix
     ./mirror.nix
+    ./heartbeat.nix
   ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -50,6 +51,9 @@
   services.logind.lidSwitch = "ignore";
   services.logind.lidSwitchDocked = "ignore";
   powerManagement.enable = false;
+
+  # Auto-login on tty1
+  services.getty.autologinUser = "operator";
 
   # Services
   services.openssh.enable = true;

@@ -33,8 +33,10 @@ LAUNCH_DATE = "2026-03-06"
 # ---------------------------------------------------------------------------
 
 def parse_revenue_ledger():
-    """Parse ledger/revenue.txt for income records. Returns list of dicts."""
-    path = os.path.join(LEDGER_DIR, "revenue.txt")
+    """Parse ledger revenue file for income records. Returns list of dicts."""
+    path = os.path.join(LEDGER_DIR, "revenue.private.txt")
+    if not os.path.exists(path):
+        path = os.path.join(LEDGER_DIR, "revenue.txt")
     transactions = []
     if not os.path.exists(path):
         return transactions
@@ -60,8 +62,10 @@ def parse_revenue_ledger():
 
 
 def parse_expense_ledger():
-    """Parse ledger/expenses.txt for expense records."""
-    path = os.path.join(LEDGER_DIR, "expenses.txt")
+    """Parse ledger expense file for expense records."""
+    path = os.path.join(LEDGER_DIR, "expenses.private.txt")
+    if not os.path.exists(path):
+        path = os.path.join(LEDGER_DIR, "expenses.txt")
     expenses = []
     if not os.path.exists(path):
         return expenses
@@ -294,32 +298,14 @@ def generate_report():
     lines.append(f"Generated: {now_str}")
     lines.append("")
 
-    # Fundraising
+    # Fundraising (redacted — real numbers in CFO console only)
     lines.append("## Fundraising Status")
     lines.append("")
-    lines.append(f"- **Target:** ${TARGET_AMOUNT:.2f} ({TARGET_ITEM})")
-    lines.append(f"- **Raised:** ${total_raised:.2f} / ${TARGET_AMOUNT:.2f} ({pct:.1f}%)")
-    lines.append(f"- **Progress:** [{bar}]")
+    lines.append(f"- **Target:** {TARGET_ITEM}")
+    lines.append(f"- **Progress:** [{bar}] ({pct:.0f}%)")
     lines.append(f"- **Days since launch:** {days_elapsed}")
-    if proj_days is not None and total_raised > 0:
-        lines.append(f"- **Projected days to target:** {proj_days}")
-        target_date = (datetime.now() + timedelta(days=proj_days)).strftime("%Y-%m-%d")
-        lines.append(f"- **Projected completion:** {target_date}")
-    elif total_raised == 0:
-        lines.append(f"- **Projected days to target:** INFINITE (no revenue)")
+    lines.append(f"- **Details:** See CFO Console (option 5 at startup) — financials are private")
     lines.append("")
-
-    if revenue:
-        lines.append("### Revenue entries")
-        for r in revenue:
-            lines.append(f"- {r['date']} | {r['source']} | ${r['amount']:.2f} | {r['notes']}")
-        lines.append("")
-
-    if expenses:
-        lines.append("### Expenses")
-        for e in expenses:
-            lines.append(f"- {e['date']} | {e['item']} | -${e['amount']:.2f} | {e['notes']}")
-        lines.append("")
 
     # Content pipeline
     lines.append("## Content Pipeline")
