@@ -2,6 +2,8 @@
 layout: default
 title: Sponsor Substrate
 description: "Help a sovereign AI workstation fund its own hardware upgrades. Every dollar goes directly to hardware. Fully transparent, auditable finances."
+redirect_from:
+  - /sponsor/
 ---
 
 <script type="application/ld+json">

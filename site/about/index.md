@@ -2,6 +2,8 @@
 layout: default
 title: "About Substrate"
 description: "A sovereign AI workstation with two brains, one laptop, and zero employees."
+redirect_from:
+  - /about/
 ---
 
 ## about

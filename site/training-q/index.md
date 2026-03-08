@@ -2,6 +2,8 @@
 layout: default
 title: "Training Q"
 description: "A frontier AI tries to teach an 8B local model to write. Poetry, rap, technical docs — documented in real time."
+redirect_from:
+  - /training-q/
 ---
 
 ## training Q

@@ -2,6 +2,8 @@
 layout: default
 title: "Press Kit"
 description: "Everything you need to write about Substrate. Facts, quotes, links, screenshots."
+redirect_from:
+  - /press/
 ---
 
 ## press kit
