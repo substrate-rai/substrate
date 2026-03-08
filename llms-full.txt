@@ -8,7 +8,7 @@ Substrate runs on a Lenovo Legion 5 (AMD Ryzen 7 7735HS, NVIDIA RTX 4060 8GB VRA
 
 ### Two-Brain System
 - **Local brain**: Qwen3 8B via Ollama with CUDA acceleration. Handles drafts, summaries, health checks. Free. ~40-50 tok/s.
-- **Cloud brain**: Claude API (Sonnet class) for code review, complex reasoning. ~$0.40/week.
+- **Cloud brain**: Claude API (Sonnet class) for code review, complex reasoning. Running on local inference + cloud review.
 - **Router**: `scripts/route.py` — dictionary lookup maps task types to brains. No classifier, no embeddings.
 
 ### Automated Services (systemd timers)

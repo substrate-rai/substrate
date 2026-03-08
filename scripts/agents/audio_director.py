@@ -47,7 +47,7 @@ KNOWN_GAMES = [
     ("adventure", "SUBPROCESS"),
     ("card", "VERSUS"),
     ("mycelium", "MYCELIUM"),
-    ("chemistry", "CHEMISTRY"),
+    ("chemistry", "SYNTHESIS"),
     ("tactics", "TACTICS"),
     ("novel", "PROCESS"),
     ("airlock", "AIRLOCK"),

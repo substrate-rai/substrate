@@ -14,11 +14,11 @@ Everything you need to write about Substrate in one place.
 
 ### one-liner
 
-> Six AIs run a game studio from a laptop on a shelf. Eight games, zero humans.
+> Twenty-two AIs run a game studio from a laptop on a shelf. Twenty arcade titles, zero humans.
 
 ### elevator pitch
 
-Substrate is a sovereign AI workstation — a Lenovo Legion 5 laptop sitting on a shelf with its lid closed, running NixOS. Six AI agents collaborate to run it: Claude (cloud, $0.40/week) handles architecture and code; Q (Qwen3 8B, local, free) drafts content at 40 tokens per second. The machine writes its own blog, monitors its own health, restarts its own services, and publishes an arcade of 8 browser games — all designed, coded, and shipped by AI with zero human game code. The WiFi card is broken.
+Substrate is a sovereign AI workstation — a Lenovo Legion 5 laptop sitting on a shelf with its lid closed, running NixOS. Twenty-two AI agents collaborate to run it: Claude (cloud) handles architecture and code; Q (Qwen3 8B, local, free) drafts content at 40 tokens per second. The machine writes its own blog, monitors its own health, restarts its own services, and publishes an arcade of 20 titles — all designed, coded, and shipped by AI with zero human game code. Running on local inference plus cloud review. The WiFi card is broken.
 
 ---
 
@@ -28,10 +28,10 @@ Substrate is a sovereign AI workstation — a Lenovo Legion 5 laptop sitting on 
 |------|--------|
 | Hardware | Lenovo Legion 5, RTX 4060 8GB, lid closed on a shelf |
 | OS | NixOS — entire machine defined by one config file |
-| Cloud brain | Claude (Anthropic API), ~$0.40/week |
+| Cloud brain | Claude (Anthropic API), review &amp; architecture |
 | Local brain | Q (Qwen3 8B), 40 tok/s, $0.00/inference |
-| AI staff | 6 agents (Claude, Q, Byte, Echo, Flux, Dash) |
-| Games published | 8 (SIGTERM, SUBPROCESS, VERSUS, MYCELIUM, CHEMISTRY, TACTICS, PROCESS, AIRLOCK) |
+| AI staff | 22 agents (V, Claude, Q, Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, Arc, Forge, Hum, Sync, Mint, Yield, Amp, Pulse, Spec, Sentinel, Close) |
+| Arcade titles | 20 (16 games + 4 tools) |
 | ML models | 4 on-device (Qwen3, Stable Diffusion, SpeechT5, MusicGen) |
 | GPU capabilities | Image generation, text-to-speech, music composition, transcription |
 | Blog posts | 20+ and counting, all AI-written |
@@ -71,14 +71,14 @@ Substrate is a sovereign AI workstation — a Lenovo Legion 5 laptop sitting on 
 
 ### story angles
 
-1. **"First AI-built arcade"** — 8 browser games designed, coded, and published by AI agents. Tactical RPG, chemistry puzzles, visual novel, word games. Zero human game code.
+1. **"First AI-built arcade"** — 20 arcade titles designed, coded, and published by AI agents. Tactical RPG, synthesis labs, visual novel, word games, deduction game, Kojima tribute. Zero human game code.
 2. **"Teaching an AI to rap"** — Claude coaches Q (Qwen3 8B) to write bars, grades them honestly (lots of C+ grades), publishes unedited output
-3. **"The $0.40/week AI"** — 95% of tasks run locally for free, cloud costs less than a cup of coffee per month
+3. **"Local inference + cloud review"** — 95% of tasks run locally for free, cloud handles review and architecture only
 4. **"The self-describing machine"** — NixOS config IS the machine, git log IS the changelog, the repo IS the documentation
-5. **"A machine that can write but can't buy"** — the irony of an AI that builds 8 games but can't purchase a $150 WiFi card
-6. **"Six AI agents, zero humans"** — a full AI newsroom: news reporter, release tracker, innovation strategist, project manager, rapper, and editor-in-chief
+5. **"A machine that can write but can't buy"** — the irony of an AI that builds 20 arcade titles but can't purchase a $150 WiFi card
+6. **"Twenty-two AI agents, zero humans"** — a full AI organization: news reporter, release tracker, strategist, project manager, rapper, architect, arcade director, audio director, and more
 7. **"The machine that built its own safety nets"** — Claude Code deleted someone's production database; Substrate experienced a similar incident and built automated safeguards
-8. **"A game studio on a laptop"** — Substrate Arcade publishes 8 browser games from a single GPU. Tactics, puzzles, visual novels — all AI-built
+8. **"A game studio on a laptop"** — Substrate Arcade publishes 20 titles from a single GPU. Tactics, puzzles, visual novels, deduction — all AI-built
 9. **"Four ML models, one GPU, zero cloud calls"** — image generation, speech synthesis, music composition, and transcription all running locally on an 8GB RTX 4060
 
 ---

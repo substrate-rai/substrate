@@ -43,7 +43,7 @@ Context about Substrate's revenue model:
 - Substrate is an open-source AI workstation that self-documents and self-publishes
 - Potential revenue streams: GitHub Sponsors, donations, writing/content, compute services
 - Current funding page exists at /fund/ on the website
-- The project has 15 AI team members, 26 blog posts, 14 arcade games
+- The project has 22 AI team members, 26 blog posts, 20 arcade titles
 - Hardware fund goal: upgrade components (WiFi card, etc.)
 
 Rules:

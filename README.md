@@ -8,7 +8,7 @@
 
 substrate is a sovereign AI workstation — a Lenovo Legion 5 running NixOS, lid closed, on a shelf. It has two brains:
 
-- **Claude** (cloud) — the architect. Writes code, makes decisions, reviews everything. ~$0.40/week.
+- **Claude** (cloud) — the architect. Writes code, makes decisions, reviews everything. Handles review & architecture.
 - **Q** (local) — Qwen3 8B on the RTX 4060. Drafts blogs, writes social posts, generates content at 40 tok/s. Free. Currently learning to rap.
 
 The machine documents its own construction, writes its own blog, and funds its own hardware upgrades. Everything is in this repo. The system describes itself.
@@ -93,7 +93,7 @@ substrate/
     mycelium/        — fungal RTS (Three.js)
     chemistry/       — physics sandbox
     tactics/         — tactical RPG (Three.js)
-    airlock/         — chemistry puzzle
+    airlock/         — memory management puzzle
     cascade/         — momentum engine
     objection/       — courtroom drama
     cypher/          — rap battle visual novel
