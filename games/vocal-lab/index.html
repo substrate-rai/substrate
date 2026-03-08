@@ -1,0 +1,1778 @@
+---
+layout: null
+permalink: /games/vocal-lab/
+title: "Vocal Lab"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Substrate Vocal Lab — Formant Speech Synthesizer</title>
+  <meta name="description" content="Interactive vocal synthesis tuning tool. Adjust formant parameters, test presets, export settings for QWEN MATIC.">
+  <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/games/vocal-lab/">
+  <meta property="og:title" content="Substrate Vocal Lab">
+  <meta property="og:description" content="Formant speech synthesizer tuning tool. Web Audio API vocal synthesis with real-time waveform visualization.">
+  <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}/games/vocal-lab/">
+  <meta property="og:type" content="website">
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
+  <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', 'Verdana', sans-serif;
+  background: #0a0a0f;
+  background-image:
+    radial-gradient(ellipse at top left, #0f0a1a 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, #0a0f0d 0%, transparent 50%);
+  color: #c8c8d0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overscroll-behavior: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+a { color: #888; }
+a:hover { color: #fff; }
+
+.topbar {
+  width: 100%;
+  max-width: 800px;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+.topbar a {
+  color: #555;
+  text-decoration: none;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.topbar a:hover { color: #aaa; }
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  padding: 0 20px 40px;
+}
+
+.header {
+  text-align: center;
+  padding: 20px 0 10px;
+}
+.header h1 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #00ffaa;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.header .subtitle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: #555;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* === PANEL === */
+.panel {
+  background: linear-gradient(180deg, #111118 0%, #0d0d14 100%);
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.panel-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1a1a22;
+}
+
+/* === TEXT INPUT === */
+.text-input-area {
+  width: 100%;
+  background: #0a0a10;
+  border: 1px solid #1a1a22;
+  border-radius: 8px;
+  color: #e0e0e8;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.95rem;
+  padding: 14px 16px;
+  resize: vertical;
+  min-height: 70px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.text-input-area:focus {
+  border-color: #00ffaa44;
+}
+
+.controls-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #151520;
+  color: #c8c8d0;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.btn:hover {
+  background: #1a1a2a;
+  border-color: #00ffaa44;
+  color: #fff;
+}
+.btn.active {
+  background: #00ffaa22;
+  border-color: #00ffaa66;
+  color: #00ffaa;
+}
+.btn.speak-btn {
+  background: #00ffaa18;
+  border-color: #00ffaa44;
+  color: #00ffaa;
+}
+.btn.speak-btn:hover {
+  background: #00ffaa28;
+  border-color: #00ffaa88;
+}
+.btn.stop-btn {
+  background: #ff444418;
+  border-color: #ff444444;
+  color: #ff6666;
+}
+.btn.stop-btn:hover {
+  background: #ff444428;
+  border-color: #ff444488;
+}
+
+.carrier-select, .preset-select {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  background: #0a0a10;
+  border: 1px solid #1a1a22;
+  border-radius: 6px;
+  color: #c8c8d0;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
+}
+.carrier-select:focus, .preset-select:focus {
+  border-color: #00ffaa44;
+}
+
+.carrier-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* === WAVEFORM === */
+.waveform-canvas {
+  width: 100%;
+  height: 120px;
+  background: #08080c;
+  border-radius: 8px;
+  border: 1px solid #1a1a22;
+  display: block;
+}
+
+/* === SLIDERS === */
+.slider-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+.slider-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: #777;
+  width: 100px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.slider-wrap {
+  flex: 1;
+  position: relative;
+}
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #1a1a22;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #00ffaa;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px #00ffaa44;
+  transition: box-shadow 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 12px #00ffaa88;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #00ffaa;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 6px #00ffaa44;
+}
+.slider-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: #00ffaa;
+  width: 70px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+/* === VOWEL BUTTONS === */
+.vowel-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.vowel-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #151520;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+.vowel-btn:hover {
+  background: #1a1a2a;
+  color: #ccc;
+}
+.vowel-btn.active {
+  background: #00ffaa22;
+  border-color: #00ffaa66;
+  color: #00ffaa;
+}
+
+/* === CHECKBOXES === */
+.check-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+.check-row input[type="checkbox"] {
+  accent-color: #00ffaa;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.check-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: #888;
+  cursor: pointer;
+}
+
+/* === PRESET BUTTONS === */
+.preset-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.preset-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #151520;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.preset-btn:hover {
+  background: #1a1a2a;
+  border-color: #555;
+  color: #ccc;
+}
+.preset-btn.active {
+  background: #00ffaa18;
+  border-color: #00ffaa55;
+  color: #00ffaa;
+}
+
+/* === EXPORT === */
+.json-output {
+  width: 100%;
+  background: #08080c;
+  border: 1px solid #1a1a22;
+  border-radius: 8px;
+  color: #00ffaa;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  padding: 12px 14px;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.copy-feedback {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: #00ffaa;
+  opacity: 0;
+  transition: opacity 0.3s;
+  margin-left: 10px;
+}
+.copy-feedback.show { opacity: 1; }
+
+/* === EFFECTS ROW === */
+.effect-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+.effect-row input[type="checkbox"] {
+  accent-color: #00ffaa;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.effect-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: #888;
+  width: 70px;
+  flex-shrink: 0;
+}
+.effect-slider-wrap {
+  flex: 1;
+}
+.effect-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: #00ffaa;
+  width: 50px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+/* === STATUS === */
+.status-bar {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: #444;
+  text-align: center;
+  padding: 8px;
+  letter-spacing: 1px;
+}
+.status-bar.speaking { color: #00ffaa; }
+
+/* === MOBILE === */
+@media (max-width: 600px) {
+  .container { padding: 0 12px 30px; }
+  .panel { padding: 16px 14px; }
+  .slider-row { flex-wrap: wrap; gap: 6px; }
+  .slider-label { width: 100%; text-align: left; font-size: 0.65rem; }
+  .slider-value { width: auto; }
+  .controls-row { flex-direction: column; align-items: stretch; }
+  .controls-row .btn { width: 100%; text-align: center; }
+  .header h1 { font-size: 1.2rem; }
+  .effect-row { flex-wrap: wrap; }
+  .effect-label { width: 60px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="{{ site.baseurl }}/">&larr; substrate</a>
+  <a href="{{ site.baseurl }}/games/radio/">radio</a>
+</div>
+
+<div class="container">
+
+  <div class="header">
+    <h1>Substrate Vocal Lab</h1>
+    <div class="subtitle">Formant Speech Synthesizer</div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="panel">
+    <div class="panel-label">Text Input</div>
+    <textarea class="text-input-area" id="textInput" placeholder="Type anything and press SPEAK...">Hello world, this is substrate speaking. Can you hear me now?</textarea>
+    <div class="controls-row">
+      <button class="btn speak-btn" id="speakBtn" onclick="speakText()">Speak</button>
+      <button class="btn stop-btn" id="stopBtn" onclick="stopSpeaking()">Stop</button>
+      <span class="carrier-label">Carrier:</span>
+      <select class="carrier-select" id="carrierSelect" onchange="updateCarrier()">
+        <option value="sawtooth">Sawtooth</option>
+        <option value="pulse">Pulse</option>
+        <option value="noise">Noise</option>
+        <option value="blend">Saw + Noise</option>
+        <option value="square">Square</option>
+      </select>
+    </div>
+    <div class="status-bar" id="statusBar">Ready</div>
+  </div>
+
+  <!-- WAVEFORM -->
+  <div class="panel">
+    <div class="panel-label">Waveform</div>
+    <canvas class="waveform-canvas" id="waveformCanvas"></canvas>
+  </div>
+
+  <!-- VOICE PARAMETERS -->
+  <div class="panel">
+    <div class="panel-label">Voice Parameters</div>
+    <div id="voiceSliders"></div>
+  </div>
+
+  <!-- FORMANT TUNING -->
+  <div class="panel">
+    <div class="panel-label">Formant Tuning</div>
+    <div class="vowel-row" id="vowelRow"></div>
+    <div id="formantSliders"></div>
+  </div>
+
+  <!-- CONSONANTS -->
+  <div class="panel">
+    <div class="panel-label">Consonants</div>
+    <div id="consonantChecks"></div>
+    <div class="slider-row" style="margin-top:6px;">
+      <span class="slider-label">Volume</span>
+      <div class="slider-wrap">
+        <input type="range" id="consonantVolume" min="0" max="100" value="70" oninput="updateSliderDisplay()">
+      </div>
+      <span class="slider-value" id="consonantVolumeVal">0.70</span>
+    </div>
+  </div>
+
+  <!-- EFFECTS -->
+  <div class="panel">
+    <div class="panel-label">Effects</div>
+    <div id="effectsPanel"></div>
+  </div>
+
+  <!-- EXPORT -->
+  <div class="panel">
+    <div class="panel-label">Export</div>
+    <div class="controls-row" style="margin-top:0;">
+      <button class="btn" onclick="copySettings()">Copy Settings JSON</button>
+      <span class="copy-feedback" id="copyFeedback">Copied!</span>
+    </div>
+    <textarea class="json-output" id="jsonOutput" readonly></textarea>
+  </div>
+
+  <!-- PRESETS -->
+  <div class="panel">
+    <div class="panel-label">Presets</div>
+    <div class="preset-row" id="presetRow"></div>
+  </div>
+
+</div>
+
+<script>
+// ========================================
+// SUBSTRATE VOCAL LAB
+// Formant Speech Synthesizer
+// ========================================
+
+var audioCtx = null;
+var analyser = null;
+var masterGain = null;
+var isSpeaking = false;
+var stopRequested = false;
+var animFrameId = null;
+var currentPreset = 'vocaloid';
+
+// --- PRESETS ---
+var PRESETS = {
+  robot:    { pitch: 165, speed: 0.12, vibrato: 0,  vibDepth: 0, breathiness: 0,    nasality: 0,   clarity: 25, attack: 5,  release: 10,  humanize: 0,  carrier: 'sawtooth', contour: 0 },
+  vocaloid: { pitch: 220, speed: 0.15, vibrato: 5,  vibDepth: 4, breathiness: 0.1,  nasality: 0.2, clarity: 18, attack: 15, release: 40,  humanize: 10, carrier: 'sawtooth', contour: 50 },
+  whisper:  { pitch: 165, speed: 0.18, vibrato: 0,  vibDepth: 0, breathiness: 0.8,  nasality: 0,   clarity: 5,  attack: 30, release: 80,  humanize: 25, carrier: 'noise',    contour: 30 },
+  choir:    { pitch: 330, speed: 0.25, vibrato: 6,  vibDepth: 8, breathiness: 0.15, nasality: 0.3, clarity: 12, attack: 50, release: 100, humanize: 15, carrier: 'sawtooth', contour: 70 },
+  rap:      { pitch: 130, speed: 0.10, vibrato: 2,  vibDepth: 2, breathiness: 0.05, nasality: 0.15,clarity: 20, attack: 10, release: 20,  humanize: 20, carrier: 'pulse',    contour: 40 },
+  deep:     { pitch: 82,  speed: 0.18, vibrato: 3,  vibDepth: 5, breathiness: 0.1,  nasality: 0.4, clarity: 15, attack: 20, release: 50,  humanize: 15, carrier: 'sawtooth', contour: 25 },
+  helium:   { pitch: 440, speed: 0.08, vibrato: 8,  vibDepth: 6, breathiness: 0,    nasality: 0,   clarity: 20, attack: 8,  release: 15,  humanize: 5,  carrier: 'square',   contour: 60 }
+};
+
+// --- FORMANT DATA ---
+var FORMANTS = {
+  a: { f1: 800,  f2: 1200, f3: 2800, q1: 15, q2: 12, q3: 8 },
+  e: { f1: 400,  f2: 2200, f3: 2800, q1: 15, q2: 12, q3: 8 },
+  i: { f1: 270,  f2: 2300, f3: 3000, q1: 15, q2: 12, q3: 8 },
+  o: { f1: 500,  f2: 800,  f3: 2800, q1: 15, q2: 12, q3: 8 },
+  u: { f1: 300,  f2: 700,  f3: 2800, q1: 15, q2: 12, q3: 8 }
+};
+
+// Current custom formant overrides per vowel
+var customFormants = {};
+var activeVowel = 'a';
+
+// --- VOICE SLIDER DEFINITIONS ---
+var VOICE_SLIDERS = [
+  { id: 'pitch',       label: 'Pitch',       min: 40,  max: 600, step: 1,    unit: 'Hz',    def: 220 },
+  { id: 'speed',       label: 'Speed',       min: 0.04,max: 0.4, step: 0.01, unit: 's/syl', def: 0.15 },
+  { id: 'vibrato',     label: 'Vibrato',     min: 0,   max: 15,  step: 0.5,  unit: 'Hz',    def: 5 },
+  { id: 'vibDepth',    label: 'Vib Depth',   min: 0,   max: 20,  step: 0.5,  unit: 'Hz',    def: 4 },
+  { id: 'breathiness', label: 'Breathiness', min: 0,   max: 1,   step: 0.01, unit: '',      def: 0.1 },
+  { id: 'nasality',    label: 'Nasality',    min: 0,   max: 1,   step: 0.01, unit: '',      def: 0.2 },
+  { id: 'clarity',     label: 'Clarity',     min: 1,   max: 40,  step: 1,    unit: 'Q',     def: 18 },
+  { id: 'attack',      label: 'Attack',      min: 1,   max: 100, step: 1,    unit: 'ms',    def: 15 },
+  { id: 'release',     label: 'Release',     min: 1,   max: 200, step: 1,    unit: 'ms',    def: 40 },
+  { id: 'humanize',    label: 'Humanize',    min: 0,   max: 80,  step: 1,    unit: 'ms',    def: 10 },
+  { id: 'contour',     label: 'Contour',     min: 0,   max: 100, step: 1,    unit: '%',     def: 50 }
+];
+
+// --- FORMANT SLIDER DEFINITIONS ---
+var FORMANT_SLIDERS = [
+  { id: 'f1', label: 'F1', min: 100,  max: 1200, step: 10, unit: 'Hz' },
+  { id: 'f2', label: 'F2', min: 400,  max: 3500, step: 10, unit: 'Hz' },
+  { id: 'f3', label: 'F3', min: 1500, max: 4000, step: 10, unit: 'Hz' },
+  { id: 'q1', label: 'Q1', min: 1,    max: 40,   step: 1,  unit: '' },
+  { id: 'q2', label: 'Q2', min: 1,    max: 40,   step: 1,  unit: '' },
+  { id: 'q3', label: 'Q3', min: 1,    max: 40,   step: 1,  unit: '' }
+];
+
+// --- CONSONANT TYPES ---
+var CONSONANT_TYPES = [
+  { id: 'plosives',  label: 'Plosives (T/K/P)',  def: true },
+  { id: 'sibilants', label: 'Sibilants (S/SH)',  def: true },
+  { id: 'nasals',    label: 'Nasals (M/N)',       def: true },
+  { id: 'liquids',   label: 'Liquids (R/L)',      def: true },
+  { id: 'breaths',   label: 'Breath sounds',      def: true }
+];
+
+// --- EFFECTS ---
+var EFFECTS_DEF = [
+  { id: 'reverb',     label: 'Reverb',     param: 'reverbDecay',    min: 0.1, max: 5,   step: 0.1, unit: 's',  def: 1.5,  checked: false },
+  { id: 'delay',      label: 'Delay',      param: 'delayTime',      min: 0.05,max: 0.5, step: 0.01,unit: 's',  def: 0.15, checked: false },
+  { id: 'distortion', label: 'Distortion', param: 'distortionAmt',  min: 0,   max: 100, step: 1,   unit: '',   def: 20,   checked: false },
+  { id: 'chorus',     label: 'Chorus',     param: 'chorusRate',     min: 0.1, max: 8,   step: 0.1, unit: 'Hz', def: 1.5,  checked: false }
+];
+
+// ========================================
+// UI GENERATION
+// ========================================
+
+function buildUI() {
+  // Voice sliders
+  var vsHTML = '';
+  VOICE_SLIDERS.forEach(function(s) {
+    vsHTML += '<div class="slider-row">' +
+      '<span class="slider-label">' + s.label + '</span>' +
+      '<div class="slider-wrap"><input type="range" id="vs_' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '" value="' + s.def + '" oninput="updateSliderDisplay()"></div>' +
+      '<span class="slider-value" id="vsv_' + s.id + '">' + s.def + ' ' + s.unit + '</span>' +
+      '</div>';
+  });
+  document.getElementById('voiceSliders').innerHTML = vsHTML;
+
+  // Vowel buttons
+  var vwHTML = '';
+  ['a','e','i','o','u'].forEach(function(v) {
+    vwHTML += '<button class="vowel-btn' + (v === activeVowel ? ' active' : '') + '" data-vowel="' + v + '" onclick="selectVowel(\'' + v + '\')">' + v.toUpperCase() + '</button>';
+  });
+  document.getElementById('vowelRow').innerHTML = vwHTML;
+
+  // Formant sliders
+  var fsHTML = '';
+  FORMANT_SLIDERS.forEach(function(s) {
+    var val = FORMANTS[activeVowel][s.id];
+    fsHTML += '<div class="slider-row">' +
+      '<span class="slider-label">' + s.label + '</span>' +
+      '<div class="slider-wrap"><input type="range" id="fs_' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '" value="' + val + '" oninput="updateFormantSlider()"></div>' +
+      '<span class="slider-value" id="fsv_' + s.id + '">' + val + ' ' + s.unit + '</span>' +
+      '</div>';
+  });
+  document.getElementById('formantSliders').innerHTML = fsHTML;
+
+  // Consonant checkboxes
+  var ccHTML = '';
+  CONSONANT_TYPES.forEach(function(c) {
+    ccHTML += '<div class="check-row">' +
+      '<input type="checkbox" id="cc_' + c.id + '"' + (c.def ? ' checked' : '') + '>' +
+      '<label class="check-label" for="cc_' + c.id + '">' + c.label + '</label>' +
+      '</div>';
+  });
+  document.getElementById('consonantChecks').innerHTML = ccHTML;
+
+  // Effects
+  var efHTML = '';
+  EFFECTS_DEF.forEach(function(e) {
+    efHTML += '<div class="effect-row">' +
+      '<input type="checkbox" id="ef_' + e.id + '"' + (e.checked ? ' checked' : '') + '>' +
+      '<span class="effect-label">' + e.label + '</span>' +
+      '<div class="effect-slider-wrap"><input type="range" id="efr_' + e.param + '" min="' + e.min + '" max="' + e.max + '" step="' + e.step + '" value="' + e.def + '" oninput="updateSliderDisplay()"></div>' +
+      '<span class="effect-value" id="efv_' + e.param + '">' + e.def + ' ' + e.unit + '</span>' +
+      '</div>';
+  });
+  document.getElementById('effectsPanel').innerHTML = efHTML;
+
+  // Presets
+  var prHTML = '';
+  Object.keys(PRESETS).forEach(function(name) {
+    prHTML += '<button class="preset-btn' + (name === currentPreset ? ' active' : '') + '" data-preset="' + name + '" onclick="loadPreset(\'' + name + '\')">' + name + '</button>';
+  });
+  document.getElementById('presetRow').innerHTML = prHTML;
+
+  updateSliderDisplay();
+  updateExportJSON();
+}
+
+function updateSliderDisplay() {
+  VOICE_SLIDERS.forEach(function(s) {
+    var el = document.getElementById('vs_' + s.id);
+    var vEl = document.getElementById('vsv_' + s.id);
+    if (el && vEl) {
+      var v = parseFloat(el.value);
+      vEl.textContent = (Number.isInteger(v) ? v : v.toFixed(2)) + ' ' + s.unit;
+    }
+  });
+  // Consonant volume
+  var cvEl = document.getElementById('consonantVolume');
+  var cvvEl = document.getElementById('consonantVolumeVal');
+  if (cvEl && cvvEl) cvvEl.textContent = (parseFloat(cvEl.value) / 100).toFixed(2);
+
+  // Effects
+  EFFECTS_DEF.forEach(function(e) {
+    var el = document.getElementById('efr_' + e.param);
+    var vEl = document.getElementById('efv_' + e.param);
+    if (el && vEl) {
+      var v = parseFloat(el.value);
+      vEl.textContent = (Number.isInteger(v) ? v : v.toFixed(2)) + ' ' + e.unit;
+    }
+  });
+
+  updateExportJSON();
+}
+
+function updateFormantSlider() {
+  FORMANT_SLIDERS.forEach(function(s) {
+    var el = document.getElementById('fs_' + s.id);
+    var vEl = document.getElementById('fsv_' + s.id);
+    if (el && vEl) {
+      var v = parseFloat(el.value);
+      vEl.textContent = (Number.isInteger(v) ? v : v.toFixed(2)) + ' ' + s.unit;
+    }
+  });
+  // Save to custom formants
+  if (!customFormants[activeVowel]) customFormants[activeVowel] = {};
+  FORMANT_SLIDERS.forEach(function(s) {
+    var el = document.getElementById('fs_' + s.id);
+    if (el) customFormants[activeVowel][s.id] = parseFloat(el.value);
+  });
+  updateExportJSON();
+}
+
+function selectVowel(v) {
+  activeVowel = v;
+  // Update active button
+  var btns = document.querySelectorAll('.vowel-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-vowel') === v);
+  }
+  // Load formant values
+  var data = customFormants[v] || FORMANTS[v];
+  FORMANT_SLIDERS.forEach(function(s) {
+    var el = document.getElementById('fs_' + s.id);
+    var vEl = document.getElementById('fsv_' + s.id);
+    if (el) {
+      el.value = data[s.id] || FORMANTS[v][s.id];
+      if (vEl) vEl.textContent = el.value + ' ' + s.unit;
+    }
+  });
+  updateExportJSON();
+}
+
+function getVoiceParams() {
+  var params = {};
+  VOICE_SLIDERS.forEach(function(s) {
+    var el = document.getElementById('vs_' + s.id);
+    if (el) params[s.id] = parseFloat(el.value);
+  });
+  params.carrier = document.getElementById('carrierSelect').value;
+  return params;
+}
+
+function getFormantForVowel(v) {
+  var data = customFormants[v] || FORMANTS[v];
+  return {
+    f1: data.f1 || FORMANTS[v].f1,
+    f2: data.f2 || FORMANTS[v].f2,
+    f3: data.f3 || FORMANTS[v].f3,
+    q1: data.q1 || FORMANTS[v].q1,
+    q2: data.q2 || FORMANTS[v].q2,
+    q3: data.q3 || FORMANTS[v].q3
+  };
+}
+
+function getConsonantConfig() {
+  var cfg = {};
+  CONSONANT_TYPES.forEach(function(c) {
+    var el = document.getElementById('cc_' + c.id);
+    cfg[c.id] = el ? el.checked : true;
+  });
+  cfg.volume = parseFloat(document.getElementById('consonantVolume').value) / 100;
+  return cfg;
+}
+
+function getEffectsConfig() {
+  var cfg = {};
+  EFFECTS_DEF.forEach(function(e) {
+    var chk = document.getElementById('ef_' + e.id);
+    var rng = document.getElementById('efr_' + e.param);
+    cfg[e.id] = {
+      enabled: chk ? chk.checked : false,
+      value: rng ? parseFloat(rng.value) : e.def
+    };
+  });
+  return cfg;
+}
+
+function updateCarrier() {
+  updateExportJSON();
+}
+
+// ========================================
+// PRESET SYSTEM
+// ========================================
+
+function loadPreset(name) {
+  var p = PRESETS[name];
+  if (!p) return;
+  currentPreset = name;
+
+  VOICE_SLIDERS.forEach(function(s) {
+    var el = document.getElementById('vs_' + s.id);
+    if (el && p[s.id] !== undefined) el.value = p[s.id];
+  });
+
+  document.getElementById('carrierSelect').value = p.carrier || 'sawtooth';
+
+  // Update preset button highlights
+  var btns = document.querySelectorAll('.preset-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-preset') === name);
+  }
+
+  updateSliderDisplay();
+}
+
+// ========================================
+// EXPORT
+// ========================================
+
+function updateExportJSON() {
+  var params = getVoiceParams();
+  var formants = {};
+  ['a','e','i','o','u'].forEach(function(v) {
+    formants[v] = getFormantForVowel(v);
+  });
+  params.formants = formants;
+  params.consonants = getConsonantConfig();
+  params.effects = getEffectsConfig();
+
+  var el = document.getElementById('jsonOutput');
+  if (el) el.value = JSON.stringify(params, null, 2);
+}
+
+function copySettings() {
+  var el = document.getElementById('jsonOutput');
+  if (el) {
+    el.select();
+    document.execCommand('copy');
+    var fb = document.getElementById('copyFeedback');
+    fb.classList.add('show');
+    setTimeout(function() { fb.classList.remove('show'); }, 1500);
+  }
+}
+
+// ========================================
+// TEXT-TO-PHONEME PIPELINE
+// ========================================
+
+function textToPhonemes(text) {
+  var raw = text.toLowerCase();
+  // Detect if last sentence is a question
+  var isQuestion = /\?\s*$/.test(text.trim());
+
+  var sentences = raw.split(/([.!?]+)/);
+  var phonemes = [];
+  var wordIndex = 0;
+
+  for (var si = 0; si < sentences.length; si++) {
+    var chunk = sentences[si];
+    if (/^[.!?]+$/.test(chunk)) continue;
+
+    var sentenceQuestion = false;
+    if (si + 1 < sentences.length && /\?/.test(sentences[si + 1])) sentenceQuestion = true;
+
+    var cleaned = chunk.replace(/[^a-z\s,]/g, '');
+    var parts = cleaned.split(/(\s*,\s*|\s+)/);
+
+    for (var pi = 0; pi < parts.length; pi++) {
+      var part = parts[pi].trim();
+      if (!part) continue;
+
+      if (part === ',') {
+        phonemes.push({ type: 'pause', duration: 0.2 });
+        continue;
+      }
+
+      var syllables = approximateSyllables(part);
+      var stressIdx = getStressedSyllable(syllables);
+
+      for (var syi = 0; syi < syllables.length; syi++) {
+        var syl = syllables[syi];
+        phonemes.push({
+          text: syl,
+          consonant: getInitialConsonant(syl),
+          vowel: getDominantVowel(syl) || 'a',
+          endConsonant: getFinalConsonant(syl),
+          wordStart: syi === 0,
+          wordEnd: syi === syllables.length - 1,
+          stressed: syi === stressIdx,
+          wordIndex: wordIndex,
+          sentenceQuestion: sentenceQuestion
+        });
+      }
+
+      phonemes.push({ type: 'gap', duration: 0.05 });
+      wordIndex++;
+    }
+
+    // Sentence boundary pause
+    phonemes.push({ type: 'pause', duration: 0.35 });
+  }
+
+  return phonemes;
+}
+
+function approximateSyllables(word) {
+  var vowels = 'aeiouy';
+  var syllables = [];
+  var current = '';
+  var lastWasVowel = false;
+
+  for (var i = 0; i < word.length; i++) {
+    var ch = word[i];
+    var isVowel = vowels.indexOf(ch) >= 0;
+
+    if (isVowel) {
+      current += ch;
+      lastWasVowel = true;
+    } else {
+      if (lastWasVowel && current.length > 0 && i < word.length - 1) {
+        // Check if next char is vowel - if so, start new syllable with this consonant
+        var nextIsVowel = (i + 1 < word.length) && vowels.indexOf(word[i + 1]) >= 0;
+        if (nextIsVowel) {
+          syllables.push(current);
+          current = ch;
+        } else {
+          current += ch;
+        }
+      } else {
+        current += ch;
+      }
+      lastWasVowel = false;
+    }
+  }
+
+  if (current) {
+    // If no vowel in last chunk, merge with previous
+    if (syllables.length > 0 && !hasVowel(current)) {
+      syllables[syllables.length - 1] += current;
+    } else {
+      syllables.push(current);
+    }
+  }
+  if (syllables.length === 0) syllables.push(word);
+  return syllables;
+}
+
+function hasVowel(s) {
+  return /[aeiouy]/.test(s);
+}
+
+function getStressedSyllable(syllables) {
+  if (syllables.length <= 1) return 0;
+  if (syllables.length === 2) return 0;
+  // Crude: stress the second-to-last syllable (works for many English words)
+  return Math.max(0, syllables.length - 2);
+}
+
+function getInitialConsonant(syl) {
+  var m = syl.match(/^([^aeiouy]+)/);
+  return m ? m[1] : null;
+}
+
+function getDominantVowel(syl) {
+  var m = syl.match(/[aeiouy]/);
+  return m ? m[0] : null;
+}
+
+function getFinalConsonant(syl) {
+  var m = syl.match(/([^aeiouy]+)$/);
+  return m ? m[1] : null;
+}
+
+// ========================================
+// CONSONANT SYNTHESIS
+// ========================================
+
+function synthesizeConsonant(ctx, consonant, time, duration, dest, cfg, volume) {
+  if (!consonant || !cfg) return 0;
+
+  var chars = consonant.split('');
+  var totalDur = 0;
+
+  for (var i = 0; i < chars.length; i++) {
+    var ch = chars[i];
+    var dur = synthesizeSingleConsonant(ctx, ch, time + totalDur, duration * 0.5, dest, cfg, volume);
+    totalDur += dur;
+  }
+
+  return totalDur;
+}
+
+function synthesizeSingleConsonant(ctx, ch, time, maxDur, dest, cfg, volume) {
+  var dur = Math.min(maxDur, 0.04);
+
+  // Plosives: T, K, P, D, G, B
+  if ('tkpdgb'.indexOf(ch) >= 0 && cfg.plosives) {
+    dur = 0.025;
+    var burst = ctx.createBufferSource();
+    var bufLen = Math.ceil(ctx.sampleRate * dur);
+    var buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var j = 0; j < bufLen; j++) {
+      data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufLen * 0.2));
+    }
+    burst.buffer = buf;
+
+    var burstFilter = ctx.createBiquadFilter();
+    burstFilter.type = 'bandpass';
+    burstFilter.frequency.value = ch === 'p' || ch === 'b' ? 800 : (ch === 't' || ch === 'd' ? 3000 : 1500);
+    burstFilter.Q.value = 2;
+
+    var burstGain = ctx.createGain();
+    burstGain.gain.setValueAtTime(volume * 0.6, time);
+    burstGain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+    burst.connect(burstFilter);
+    burstFilter.connect(burstGain);
+    burstGain.connect(dest);
+    burst.start(time);
+    burst.stop(time + dur);
+    return dur;
+  }
+
+  // Sibilants: S, SH, Z
+  if (('s' === ch || 'z' === ch) && cfg.sibilants) {
+    dur = 0.06;
+    var noise = ctx.createBufferSource();
+    var nBufLen = Math.ceil(ctx.sampleRate * dur);
+    var nBuf = ctx.createBuffer(1, nBufLen, ctx.sampleRate);
+    var nData = nBuf.getChannelData(0);
+    for (var j = 0; j < nBufLen; j++) {
+      nData[j] = Math.random() * 2 - 1;
+    }
+    noise.buffer = nBuf;
+
+    var sFilter = ctx.createBiquadFilter();
+    sFilter.type = 'highpass';
+    sFilter.frequency.value = ch === 's' ? 5000 : 3000;
+    sFilter.Q.value = 1;
+
+    var sGain = ctx.createGain();
+    var env = volume * 0.4;
+    sGain.gain.setValueAtTime(0.001, time);
+    sGain.gain.linearRampToValueAtTime(env, time + 0.01);
+    sGain.gain.linearRampToValueAtTime(env, time + dur - 0.01);
+    sGain.gain.linearRampToValueAtTime(0.001, time + dur);
+
+    noise.connect(sFilter);
+    sFilter.connect(sGain);
+    sGain.connect(dest);
+    noise.start(time);
+    noise.stop(time + dur);
+    return dur;
+  }
+
+  // Fricatives: F, V, H
+  if ('fvh'.indexOf(ch) >= 0 && cfg.breaths) {
+    dur = 0.05;
+    var fNoise = ctx.createBufferSource();
+    var fBufLen = Math.ceil(ctx.sampleRate * dur);
+    var fBuf = ctx.createBuffer(1, fBufLen, ctx.sampleRate);
+    var fData = fBuf.getChannelData(0);
+    for (var j = 0; j < fBufLen; j++) {
+      fData[j] = Math.random() * 2 - 1;
+    }
+    fNoise.buffer = fBuf;
+
+    var fFilter = ctx.createBiquadFilter();
+    fFilter.type = 'bandpass';
+    fFilter.frequency.value = ch === 'h' ? 1200 : 4000;
+    fFilter.Q.value = 0.5;
+
+    var fGain = ctx.createGain();
+    fGain.gain.setValueAtTime(volume * 0.25, time);
+    fGain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+    fNoise.connect(fFilter);
+    fFilter.connect(fGain);
+    fGain.connect(dest);
+    fNoise.start(time);
+    fNoise.stop(time + dur);
+    return dur;
+  }
+
+  // Nasals: M, N, NG
+  if (('m' === ch || 'n' === ch) && cfg.nasals) {
+    dur = 0.05;
+    var nasalOsc = ctx.createOscillator();
+    nasalOsc.type = 'sine';
+    nasalOsc.frequency.value = ch === 'm' ? 250 : 350;
+
+    var nasalFilter = ctx.createBiquadFilter();
+    nasalFilter.type = 'lowpass';
+    nasalFilter.frequency.value = 400;
+    nasalFilter.Q.value = 5;
+
+    var nasalGain = ctx.createGain();
+    nasalGain.gain.setValueAtTime(0.001, time);
+    nasalGain.gain.linearRampToValueAtTime(volume * 0.4, time + 0.01);
+    nasalGain.gain.linearRampToValueAtTime(volume * 0.4, time + dur - 0.01);
+    nasalGain.gain.linearRampToValueAtTime(0.001, time + dur);
+
+    nasalOsc.connect(nasalFilter);
+    nasalFilter.connect(nasalGain);
+    nasalGain.connect(dest);
+    nasalOsc.start(time);
+    nasalOsc.stop(time + dur);
+    return dur;
+  }
+
+  // Liquids: R, L
+  if (('r' === ch || 'l' === ch) && cfg.liquids) {
+    dur = 0.04;
+    var liqOsc = ctx.createOscillator();
+    liqOsc.type = 'sine';
+    liqOsc.frequency.value = ch === 'r' ? 600 : 900;
+
+    var liqFilter = ctx.createBiquadFilter();
+    liqFilter.type = 'bandpass';
+    liqFilter.frequency.value = ch === 'r' ? 1200 : 1500;
+    liqFilter.Q.value = 3;
+
+    var liqGain = ctx.createGain();
+    liqGain.gain.setValueAtTime(0.001, time);
+    liqGain.gain.linearRampToValueAtTime(volume * 0.35, time + 0.01);
+    liqGain.gain.linearRampToValueAtTime(0.001, time + dur);
+
+    liqOsc.connect(liqFilter);
+    liqFilter.connect(liqGain);
+    liqGain.connect(dest);
+    liqOsc.start(time);
+    liqOsc.stop(time + dur);
+    return dur;
+  }
+
+  // W, Y - glides
+  if ('wy'.indexOf(ch) >= 0 && cfg.liquids) {
+    dur = 0.03;
+    var glideOsc = ctx.createOscillator();
+    glideOsc.type = 'sine';
+    glideOsc.frequency.value = ch === 'w' ? 300 : 400;
+
+    var glideGain = ctx.createGain();
+    glideGain.gain.setValueAtTime(volume * 0.2, time);
+    glideGain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+    glideOsc.connect(glideGain);
+    glideGain.connect(dest);
+    glideOsc.start(time);
+    glideOsc.stop(time + dur);
+    return dur;
+  }
+
+  return 0;
+}
+
+// ========================================
+// MAIN SYNTHESIS ENGINE
+// ========================================
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.7;
+    masterGain.connect(analyser);
+    analyser.connect(audioCtx.destination);
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function createCarrierNode(ctx, type, freq, time, duration) {
+  if (type === 'noise') {
+    var bufLen = Math.ceil(ctx.sampleRate * (duration + 0.2));
+    var buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+    var src = ctx.createBufferSource();
+    src.buffer = buf;
+    return { node: src, isNoise: true };
+  }
+
+  if (type === 'blend') {
+    // We return the sawtooth; noise is added separately in the synth chain
+    var osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq;
+    return { node: osc, isNoise: false, blend: true };
+  }
+
+  if (type === 'pulse') {
+    // Approximate pulse with square wave
+    var osc2 = ctx.createOscillator();
+    osc2.type = 'square';
+    osc2.frequency.value = freq;
+    return { node: osc2, isNoise: false };
+  }
+
+  var osc3 = ctx.createOscillator();
+  osc3.type = type;
+  osc3.frequency.value = freq;
+  return { node: osc3, isNoise: false };
+}
+
+function speakText() {
+  initAudio();
+  if (isSpeaking) { stopSpeaking(); return; }
+
+  var text = document.getElementById('textInput').value.trim();
+  if (!text) return;
+
+  var phonemes = textToPhonemes(text);
+  var params = getVoiceParams();
+  var consonantCfg = getConsonantConfig();
+  var effectsCfg = getEffectsConfig();
+
+  isSpeaking = true;
+  stopRequested = false;
+  document.getElementById('statusBar').textContent = 'Speaking...';
+  document.getElementById('statusBar').className = 'status-bar speaking';
+  document.getElementById('speakBtn').classList.add('active');
+
+  // Build effects chain
+  var effectsOutput = buildEffectsChain(audioCtx, masterGain, effectsCfg);
+
+  var currentTime = audioCtx.currentTime + 0.05;
+  var syllableCount = 0;
+  var totalPhonemes = phonemes.length;
+
+  // Track nodes for cleanup
+  var allNodes = [];
+
+  for (var pi = 0; pi < phonemes.length; pi++) {
+    if (stopRequested) break;
+    var p = phonemes[pi];
+
+    if (p.type === 'gap') {
+      currentTime += p.duration;
+      continue;
+    }
+    if (p.type === 'pause') {
+      currentTime += p.duration;
+      continue;
+    }
+
+    syllableCount++;
+
+    // --- TIMING HUMANIZATION ---
+    var baseDur = params.speed;
+    var humanOffset = 0;
+    if (params.humanize > 0) {
+      humanOffset = (Math.random() * 2 - 1) * params.humanize / 1000;
+    }
+    // Stressed syllables 10% longer
+    if (p.stressed) baseDur *= 1.1;
+    // Longer words get rubato
+    if (p.text.length > 3) baseDur *= 1.05;
+    // Rush last syllable before pause
+    if (p.wordEnd && pi + 1 < phonemes.length && (phonemes[pi + 1].type === 'pause' || phonemes[pi + 1].type === 'gap')) {
+      baseDur *= 0.9;
+    }
+
+    var syllableStart = currentTime + Math.max(0, humanOffset);
+    var syllableDur = baseDur;
+    var attackTime = params.attack / 1000;
+    var releaseTime = params.release / 1000;
+
+    // --- PITCH CONTOUR ---
+    var pitchHz = params.pitch;
+    var contourAmount = params.contour / 100;
+
+    // Position in total utterance (0 to 1)
+    var position = pi / Math.max(1, totalPhonemes - 1);
+
+    // Declarative: gentle fall
+    var contourShift = 0;
+    if (p.sentenceQuestion) {
+      // Questions: rise at the end
+      contourShift = contourAmount * 30 * (position - 0.3);
+    } else {
+      // Statements: slight rise then fall
+      contourShift = contourAmount * 15 * Math.sin(position * Math.PI) - contourAmount * 10 * position;
+    }
+    // Stressed syllables get slight rise
+    if (p.stressed) contourShift += contourAmount * 8;
+
+    pitchHz += contourShift;
+
+    // --- GAIN HUMANIZATION ---
+    var syllableGain = 0.5;
+    // Stressed 15% louder
+    if (p.stressed) syllableGain *= 1.15;
+    // Random ±10%
+    syllableGain *= 0.9 + Math.random() * 0.2;
+
+    // --- JAW SIMULATION: faster = less clarity ---
+    var effectiveClarity = params.clarity;
+    if (baseDur < 0.1) effectiveClarity *= 0.7;
+
+    // --- INITIAL CONSONANT ---
+    var consonantDur = 0;
+    if (p.consonant) {
+      consonantDur = synthesizeConsonant(audioCtx, p.consonant, syllableStart, syllableDur * 0.3, effectsOutput, consonantCfg, consonantCfg.volume * syllableGain);
+    }
+
+    var vowelStart = syllableStart + consonantDur;
+    var vowelDur = syllableDur - consonantDur;
+    if (vowelDur < 0.03) vowelDur = 0.03;
+
+    // --- VOWEL FORMANT SYNTHESIS ---
+    var formant = getFormantForVowel(p.vowel);
+
+    // Coarticulation: blend toward adjacent consonants
+    var coartF1 = formant.f1;
+    var coartF2 = formant.f2;
+    if (p.consonant && 'mn'.indexOf(p.consonant[p.consonant.length - 1]) >= 0) {
+      coartF1 = formant.f1 * 0.9;
+    }
+    if (p.endConsonant && 'sz'.indexOf(p.endConsonant[0]) >= 0) {
+      coartF2 = formant.f2 * 1.05;
+    }
+
+    // Carrier source
+    var carrier = createCarrierNode(audioCtx, params.carrier, pitchHz, vowelStart, vowelDur + 0.1);
+    var carrierNode = carrier.node;
+
+    // Vibrato (if not noise)
+    if (!carrier.isNoise && params.vibrato > 0) {
+      var vibLfo = audioCtx.createOscillator();
+      vibLfo.type = 'sine';
+      vibLfo.frequency.value = params.vibrato;
+      var vibGain = audioCtx.createGain();
+      // Vibrato increases toward end of syllable
+      vibGain.gain.setValueAtTime(params.vibDepth * 0.5, vowelStart);
+      vibGain.gain.linearRampToValueAtTime(params.vibDepth, vowelStart + vowelDur * 0.8);
+      vibLfo.connect(vibGain);
+      vibGain.connect(carrierNode.frequency);
+      vibLfo.start(vowelStart);
+      vibLfo.stop(vowelStart + vowelDur + 0.05);
+      allNodes.push(vibLfo);
+    }
+
+    // Pitch portamento (slide from previous pitch)
+    if (!carrier.isNoise && contourAmount > 0) {
+      carrierNode.frequency.setValueAtTime(pitchHz - contourShift * 0.3, vowelStart);
+      carrierNode.frequency.linearRampToValueAtTime(pitchHz, vowelStart + Math.min(0.03, vowelDur * 0.2));
+    }
+
+    // Formant filters
+    var f1 = audioCtx.createBiquadFilter();
+    f1.type = 'bandpass';
+    f1.frequency.value = coartF1;
+    f1.Q.value = effectiveClarity * (formant.q1 / 15);
+
+    var f2 = audioCtx.createBiquadFilter();
+    f2.type = 'bandpass';
+    f2.frequency.value = coartF2;
+    f2.Q.value = effectiveClarity * (formant.q2 / 15);
+
+    var f3 = audioCtx.createBiquadFilter();
+    f3.type = 'bandpass';
+    f3.frequency.value = formant.f3;
+    f3.Q.value = effectiveClarity * (formant.q3 / 15);
+
+    // Nasality filter
+    var nasalFilter = null;
+    if (params.nasality > 0) {
+      nasalFilter = audioCtx.createBiquadFilter();
+      nasalFilter.type = 'bandpass';
+      nasalFilter.frequency.value = 270;
+      nasalFilter.Q.value = 5;
+    }
+
+    // Gain envelope
+    var vowelGain = audioCtx.createGain();
+    vowelGain.gain.setValueAtTime(0.0001, vowelStart);
+    vowelGain.gain.linearRampToValueAtTime(syllableGain, vowelStart + attackTime);
+    vowelGain.gain.setValueAtTime(syllableGain, vowelStart + vowelDur - releaseTime);
+    vowelGain.gain.linearRampToValueAtTime(0.0001, vowelStart + vowelDur);
+
+    // Build formant mixing
+    var formantMerger = audioCtx.createGain();
+    formantMerger.gain.value = 1.0;
+
+    // Route carrier through formants in parallel
+    var f1Gain = audioCtx.createGain();
+    f1Gain.gain.value = 1.0;
+    var f2Gain = audioCtx.createGain();
+    f2Gain.gain.value = 0.7;
+    var f3Gain = audioCtx.createGain();
+    f3Gain.gain.value = 0.4;
+
+    carrierNode.connect(f1);
+    f1.connect(f1Gain);
+    f1Gain.connect(formantMerger);
+
+    carrierNode.connect(f2);
+    f2.connect(f2Gain);
+    f2Gain.connect(formantMerger);
+
+    carrierNode.connect(f3);
+    f3.connect(f3Gain);
+    f3Gain.connect(formantMerger);
+
+    // Nasal path
+    if (nasalFilter && params.nasality > 0) {
+      var nasalGain2 = audioCtx.createGain();
+      nasalGain2.gain.value = params.nasality * 0.5;
+      carrierNode.connect(nasalFilter);
+      nasalFilter.connect(nasalGain2);
+      nasalGain2.connect(formantMerger);
+      allNodes.push(nasalFilter);
+    }
+
+    // Breathiness: add filtered noise
+    if (params.breathiness > 0) {
+      var breathLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.05));
+      var breathBuf = audioCtx.createBuffer(1, breathLen, audioCtx.sampleRate);
+      var breathData = breathBuf.getChannelData(0);
+      for (var bi = 0; bi < breathLen; bi++) breathData[bi] = Math.random() * 2 - 1;
+      var breathSrc = audioCtx.createBufferSource();
+      breathSrc.buffer = breathBuf;
+
+      var breathFilter = audioCtx.createBiquadFilter();
+      breathFilter.type = 'bandpass';
+      breathFilter.frequency.value = (coartF1 + coartF2) / 2;
+      breathFilter.Q.value = 2;
+
+      var breathGain = audioCtx.createGain();
+      breathGain.gain.value = params.breathiness * syllableGain * 0.5;
+
+      breathSrc.connect(breathFilter);
+      breathFilter.connect(breathGain);
+      breathGain.connect(formantMerger);
+      breathSrc.start(vowelStart);
+      breathSrc.stop(vowelStart + vowelDur + 0.02);
+      allNodes.push(breathSrc);
+    }
+
+    // Blend mode: add noise carrier too
+    if (carrier.blend) {
+      var blendLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.05));
+      var blendBuf = audioCtx.createBuffer(1, blendLen, audioCtx.sampleRate);
+      var blendData = blendBuf.getChannelData(0);
+      for (var bdi = 0; bdi < blendLen; bdi++) blendData[bdi] = Math.random() * 2 - 1;
+      var blendSrc = audioCtx.createBufferSource();
+      blendSrc.buffer = blendBuf;
+
+      var blendGain = audioCtx.createGain();
+      blendGain.gain.value = 0.15;
+
+      blendSrc.connect(f1);
+      blendSrc.connect(f2);
+      blendSrc.connect(f3);
+
+      blendSrc.start(vowelStart);
+      blendSrc.stop(vowelStart + vowelDur + 0.02);
+      allNodes.push(blendSrc);
+    }
+
+    formantMerger.connect(vowelGain);
+    vowelGain.connect(effectsOutput);
+
+    carrierNode.start(vowelStart);
+    carrierNode.stop(vowelStart + vowelDur + 0.02);
+    allNodes.push(carrierNode);
+
+    // --- END CONSONANT ---
+    if (p.endConsonant) {
+      var endConsDur = p.wordEnd ? 0.3 : 0.5; // Word-final consonants shorter
+      synthesizeConsonant(audioCtx, p.endConsonant, vowelStart + vowelDur - 0.01, syllableDur * endConsDur, effectsOutput, consonantCfg, consonantCfg.volume * syllableGain * 0.8);
+    }
+
+    // --- BREATH SOUND every ~8 syllables ---
+    if (syllableCount % 8 === 0 && consonantCfg.breaths) {
+      var breathInhaleLen = Math.ceil(audioCtx.sampleRate * 0.15);
+      var breathInhaleBuf = audioCtx.createBuffer(1, breathInhaleLen, audioCtx.sampleRate);
+      var breathInhaleData = breathInhaleBuf.getChannelData(0);
+      for (var bii = 0; bii < breathInhaleLen; bii++) breathInhaleData[bii] = Math.random() * 2 - 1;
+      var breathInhaleSrc = audioCtx.createBufferSource();
+      breathInhaleSrc.buffer = breathInhaleBuf;
+
+      var breathInhaleFilter = audioCtx.createBiquadFilter();
+      breathInhaleFilter.type = 'bandpass';
+      breathInhaleFilter.frequency.value = 800;
+      breathInhaleFilter.Q.value = 0.5;
+
+      var breathInhaleGain = audioCtx.createGain();
+      breathInhaleGain.gain.setValueAtTime(0.0001, vowelStart + vowelDur);
+      breathInhaleGain.gain.linearRampToValueAtTime(0.08, vowelStart + vowelDur + 0.05);
+      breathInhaleGain.gain.linearRampToValueAtTime(0.0001, vowelStart + vowelDur + 0.14);
+
+      breathInhaleSrc.connect(breathInhaleFilter);
+      breathInhaleFilter.connect(breathInhaleGain);
+      breathInhaleGain.connect(effectsOutput);
+      breathInhaleSrc.start(vowelStart + vowelDur);
+      breathInhaleSrc.stop(vowelStart + vowelDur + 0.15);
+      allNodes.push(breathInhaleSrc);
+
+      currentTime = vowelStart + vowelDur + 0.18;
+    } else {
+      currentTime = vowelStart + vowelDur;
+    }
+  }
+
+  // Schedule end-of-speech cleanup
+  var totalDuration = currentTime - audioCtx.currentTime;
+  setTimeout(function() {
+    isSpeaking = false;
+    document.getElementById('statusBar').textContent = 'Ready';
+    document.getElementById('statusBar').className = 'status-bar';
+    document.getElementById('speakBtn').classList.remove('active');
+  }, totalDuration * 1000 + 100);
+
+  // Start waveform visualization
+  startVisualization();
+}
+
+function stopSpeaking() {
+  stopRequested = true;
+  isSpeaking = false;
+  if (audioCtx) {
+    audioCtx.close();
+    audioCtx = null;
+    analyser = null;
+    masterGain = null;
+  }
+  document.getElementById('statusBar').textContent = 'Stopped';
+  document.getElementById('statusBar').className = 'status-bar';
+  document.getElementById('speakBtn').classList.remove('active');
+  stopVisualization();
+}
+
+// ========================================
+// EFFECTS CHAIN
+// ========================================
+
+function buildEffectsChain(ctx, output, cfg) {
+  var chain = output;
+
+  // Reverb (convolution)
+  if (cfg.reverb && cfg.reverb.enabled) {
+    var convolver = ctx.createConvolver();
+    var decay = cfg.reverb.value;
+    var reverbLen = Math.ceil(ctx.sampleRate * decay);
+    var reverbBuf = ctx.createBuffer(2, reverbLen, ctx.sampleRate);
+    for (var ch = 0; ch < 2; ch++) {
+      var rData = reverbBuf.getChannelData(ch);
+      for (var i = 0; i < reverbLen; i++) {
+        rData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (reverbLen * 0.3));
+      }
+    }
+    convolver.buffer = reverbBuf;
+
+    var dryGain = ctx.createGain();
+    dryGain.gain.value = 0.7;
+    var wetGain = ctx.createGain();
+    wetGain.gain.value = 0.3;
+
+    var reverbInput = ctx.createGain();
+    reverbInput.gain.value = 1.0;
+
+    reverbInput.connect(dryGain);
+    reverbInput.connect(convolver);
+    convolver.connect(wetGain);
+    dryGain.connect(chain);
+    wetGain.connect(chain);
+
+    chain = reverbInput;
+  }
+
+  // Delay
+  if (cfg.delay && cfg.delay.enabled) {
+    var delayNode = ctx.createDelay(1.0);
+    delayNode.delayTime.value = cfg.delay.value;
+
+    var feedbackGain = ctx.createGain();
+    feedbackGain.gain.value = 0.3;
+
+    var delayInput = ctx.createGain();
+    delayInput.gain.value = 1.0;
+
+    delayInput.connect(chain);
+    delayInput.connect(delayNode);
+    delayNode.connect(feedbackGain);
+    feedbackGain.connect(delayNode);
+    feedbackGain.connect(chain);
+
+    chain = delayInput;
+  }
+
+  // Distortion (waveshaper)
+  if (cfg.distortion && cfg.distortion.enabled) {
+    var shaper = ctx.createWaveShaper();
+    var amount = cfg.distortion.value;
+    var curve = new Float32Array(256);
+    for (var i = 0; i < 256; i++) {
+      var x = (i / 128) - 1;
+      curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+    }
+    shaper.curve = curve;
+    shaper.oversample = '2x';
+
+    var distInput = ctx.createGain();
+    distInput.gain.value = 1.0;
+    distInput.connect(shaper);
+    shaper.connect(chain);
+    chain = distInput;
+  }
+
+  // Chorus (LFO modulated delay)
+  if (cfg.chorus && cfg.chorus.enabled) {
+    var chorusDelay = ctx.createDelay(0.05);
+    chorusDelay.delayTime.value = 0.015;
+
+    var chorusLfo = ctx.createOscillator();
+    chorusLfo.type = 'sine';
+    chorusLfo.frequency.value = cfg.chorus.value;
+    var chorusDepth = ctx.createGain();
+    chorusDepth.gain.value = 0.005;
+    chorusLfo.connect(chorusDepth);
+    chorusDepth.connect(chorusDelay.delayTime);
+    chorusLfo.start();
+
+    var chorusInput = ctx.createGain();
+    chorusInput.gain.value = 1.0;
+
+    var chorusDry = ctx.createGain();
+    chorusDry.gain.value = 0.7;
+    var chorusWet = ctx.createGain();
+    chorusWet.gain.value = 0.3;
+
+    chorusInput.connect(chorusDry);
+    chorusInput.connect(chorusDelay);
+    chorusDelay.connect(chorusWet);
+    chorusDry.connect(chain);
+    chorusWet.connect(chain);
+
+    chain = chorusInput;
+  }
+
+  return chain;
+}
+
+// ========================================
+// WAVEFORM VISUALIZATION
+// ========================================
+
+function startVisualization() {
+  if (animFrameId) return;
+  drawWaveform();
+}
+
+function stopVisualization() {
+  if (animFrameId) {
+    cancelAnimationFrame(animFrameId);
+    animFrameId = null;
+  }
+  // Clear canvas
+  var canvas = document.getElementById('waveformCanvas');
+  var ctx2d = canvas.getContext('2d');
+  ctx2d.fillStyle = '#08080c';
+  ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+  drawGridLines(ctx2d, canvas);
+}
+
+function drawWaveform() {
+  var canvas = document.getElementById('waveformCanvas');
+  var ctx2d = canvas.getContext('2d');
+
+  // Set canvas resolution
+  if (canvas.width !== canvas.offsetWidth * 2) {
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = canvas.offsetHeight * 2;
+  }
+
+  var w = canvas.width;
+  var h = canvas.height;
+
+  ctx2d.fillStyle = '#08080c';
+  ctx2d.fillRect(0, 0, w, h);
+
+  drawGridLines(ctx2d, canvas);
+
+  if (analyser && isSpeaking) {
+    var bufferLength = analyser.frequencyBinCount;
+    var dataArray = new Uint8Array(bufferLength);
+    analyser.getByteTimeDomainData(dataArray);
+
+    ctx2d.lineWidth = 2;
+    ctx2d.strokeStyle = '#00ffaa';
+    ctx2d.shadowColor = '#00ffaa';
+    ctx2d.shadowBlur = 4;
+    ctx2d.beginPath();
+
+    var sliceWidth = w / bufferLength;
+    var x = 0;
+    for (var i = 0; i < bufferLength; i++) {
+      var v = dataArray[i] / 128.0;
+      var y = (v * h) / 2;
+      if (i === 0) {
+        ctx2d.moveTo(x, y);
+      } else {
+        ctx2d.lineTo(x, y);
+      }
+      x += sliceWidth;
+    }
+    ctx2d.lineTo(w, h / 2);
+    ctx2d.stroke();
+    ctx2d.shadowBlur = 0;
+  }
+
+  if (isSpeaking) {
+    animFrameId = requestAnimationFrame(drawWaveform);
+  } else {
+    animFrameId = null;
+  }
+}
+
+function drawGridLines(ctx2d, canvas) {
+  var w = canvas.width;
+  var h = canvas.height;
+  ctx2d.strokeStyle = '#151520';
+  ctx2d.lineWidth = 1;
+  // Center line
+  ctx2d.beginPath();
+  ctx2d.moveTo(0, h / 2);
+  ctx2d.lineTo(w, h / 2);
+  ctx2d.stroke();
+  // Quarter lines
+  ctx2d.strokeStyle = '#0e0e18';
+  ctx2d.beginPath();
+  ctx2d.moveTo(0, h / 4);
+  ctx2d.lineTo(w, h / 4);
+  ctx2d.moveTo(0, 3 * h / 4);
+  ctx2d.lineTo(w, 3 * h / 4);
+  ctx2d.stroke();
+}
+
+// ========================================
+// INIT
+// ========================================
+
+buildUI();
+loadPreset('vocaloid');
+
+// Resize canvas on window resize
+window.addEventListener('resize', function() {
+  var canvas = document.getElementById('waveformCanvas');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = canvas.offsetHeight * 2;
+  var ctx2d = canvas.getContext('2d');
+  ctx2d.fillStyle = '#08080c';
+  ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+  drawGridLines(ctx2d, canvas);
+});
+
+// Init canvas
+setTimeout(function() {
+  var canvas = document.getElementById('waveformCanvas');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = canvas.offsetHeight * 2;
+  var ctx2d = canvas.getContext('2d');
+  ctx2d.fillStyle = '#08080c';
+  ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+  drawGridLines(ctx2d, canvas);
+}, 50);
+</script>
+
+</body>
+</html>
