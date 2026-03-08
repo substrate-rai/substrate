@@ -1062,9 +1062,6 @@ permalink: /arcade/
   All ideas generated at 40 tokens per second.
 </div>
 
-<!-- Ko-fi Widget -->
-<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-
 <!-- Ko-fi Floating Button -->
 <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js' onerror=""></script>
 <script>
@@ -1352,20 +1349,15 @@ permalink: /arcade/
   }
 
   // --- Ko-fi CTA widget ---
+  // NOTE: kofiwidget2.draw() uses document.write() which blanks the page
+  // when called after DOMContentLoaded. Use a manual button instead.
   function initKofiWidget() {
     try {
-      if (typeof kofiwidget2 !== 'undefined') {
-        kofiwidget2.init('Fund the Arcade', '#00e09a', 'substrate');
-        var widgetContainer = document.getElementById('fund-kofi-widget');
-        if (widgetContainer) {
-          kofiwidget2.draw();
-          var widget = document.querySelector('.kofi-button');
-          if (widget && widgetContainer) {
-            widgetContainer.appendChild(widget);
-          }
-        }
+      var widgetContainer = document.getElementById('fund-kofi-widget');
+      if (widgetContainer) {
+        widgetContainer.innerHTML = '<a href="https://ko-fi.com/substrate" target="_blank" rel="noopener" style="display:inline-block;padding:12px 28px;background:#00e09a;color:#000;font-family:var(--mono);font-weight:700;font-size:0.85rem;border-radius:6px;text-decoration:none;letter-spacing:0.05em;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'">&#9749; Fund the Arcade</a>';
       }
-    } catch(e) { /* Ko-fi widget may not load on all environments */ }
+    } catch(e) {}
   }
 
   // --- Init ---
