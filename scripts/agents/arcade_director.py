@@ -41,6 +41,7 @@ KNOWN_GAMES = [
     ("radio", "RADIO", "Music player"),
     ("album", "ALBUM", "Album viewer"),
     ("myco", "MYCOWORLD", "Educational VN"),
+    ("signal", "SIGNAL", "AI deduction game"),
 ]
 
 
