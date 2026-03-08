@@ -1327,5 +1327,184 @@ function showFundPrompt(){
   if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
 }
 </script>
+
+<!-- Procedural Music: Organic ambient, bioluminescent, nature sounds -->
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid rgba(0,255,170,0.2);color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<script>
+(function(){
+var musicPlaying = false;
+var audioCtx = null;
+var musicNodes = [];
+var musicTimers = [];
+var MUSIC_KEY = 'mycelium_music_on';
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function startMusic() {
+  var ctx = getCtx();
+  var now = ctx.currentTime;
+  var master = ctx.createGain();
+  master.gain.setValueAtTime(0.12, now);
+  master.connect(ctx.destination);
+  musicNodes.push(master);
+
+  // Deep earth drone — E1 + B1 (perfect fifth, organic)
+  var earthDrone = ctx.createOscillator();
+  earthDrone.type = 'sine';
+  earthDrone.frequency.setValueAtTime(41.2, now); // E1
+  var edg = ctx.createGain();
+  edg.gain.setValueAtTime(0.12, now);
+  earthDrone.connect(edg);
+  edg.connect(master);
+  earthDrone.start(now);
+  musicNodes.push(earthDrone, edg);
+
+  var earthDrone2 = ctx.createOscillator();
+  earthDrone2.type = 'sine';
+  earthDrone2.frequency.setValueAtTime(61.7, now); // B1
+  var edg2 = ctx.createGain();
+  edg2.gain.setValueAtTime(0.08, now);
+  earthDrone2.connect(edg2);
+  edg2.connect(master);
+  earthDrone2.start(now);
+  musicNodes.push(earthDrone2, edg2);
+
+  // Breathing LFO on drones
+  var breathLfo = ctx.createOscillator();
+  breathLfo.type = 'sine';
+  breathLfo.frequency.setValueAtTime(0.06, now);
+  var breathGain = ctx.createGain();
+  breathGain.gain.setValueAtTime(0.03, now);
+  breathLfo.connect(breathGain);
+  breathGain.connect(edg.gain);
+  breathLfo.start(now);
+  musicNodes.push(breathLfo, breathGain);
+
+  // Bioluminescent sparkles — random high harmonics
+  function sparkle() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var pentatonic = [329.6, 392.0, 440.0, 523.3, 587.3, 659.3, 784.0]; // E-minor pentatonic extended
+    var note = pentatonic[Math.floor(Math.random() * pentatonic.length)];
+    var octave = Math.random() > 0.5 ? 2 : 1;
+    var osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(note * octave, t);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.04, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + 1.5);
+    musicTimers.push(setTimeout(sparkle, 400 + Math.random() * 800));
+  }
+  musicTimers.push(setTimeout(sparkle, 500));
+
+  // Mycelium growth sounds — low frequency sweeps
+  function growthPulse() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(82.4, t); // E2
+    osc.frequency.linearRampToValueAtTime(123.5, t + 2); // B2
+    var g = c.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.06, t + 0.5);
+    g.gain.linearRampToValueAtTime(0.06, t + 1.5);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + 2.5);
+    musicTimers.push(setTimeout(growthPulse, 3000 + Math.random() * 3000));
+  }
+  musicTimers.push(setTimeout(growthPulse, 2000));
+
+  // Gentle wind — filtered noise
+  var windBufLen = ctx.sampleRate * 4;
+  var windBuf = ctx.createBuffer(1, windBufLen, ctx.sampleRate);
+  var windData = windBuf.getChannelData(0);
+  for (var i = 0; i < windBufLen; i++) windData[i] = Math.random() * 2 - 1;
+  var wind = ctx.createBufferSource();
+  wind.buffer = windBuf;
+  wind.loop = true;
+  var windFilter = ctx.createBiquadFilter();
+  windFilter.type = 'bandpass';
+  windFilter.frequency.setValueAtTime(400, now);
+  windFilter.Q.setValueAtTime(0.5, now);
+  var windLfo = ctx.createOscillator();
+  windLfo.type = 'sine';
+  windLfo.frequency.setValueAtTime(0.05, now);
+  var windLfoG = ctx.createGain();
+  windLfoG.gain.setValueAtTime(200, now);
+  windLfo.connect(windLfoG);
+  windLfoG.connect(windFilter.frequency);
+  windLfo.start(now);
+  var windGain = ctx.createGain();
+  windGain.gain.setValueAtTime(0.02, now);
+  wind.connect(windFilter);
+  windFilter.connect(windGain);
+  windGain.connect(master);
+  wind.start(now);
+  musicNodes.push(wind, windFilter, windGain, windLfo, windLfoG);
+
+  // Spore chime melody — pentatonic, very slow
+  var sporeNotes = [329.6, 392.0, 440.0, 523.3, 587.3]; // Em pentatonic
+  var sporeIdx = 0;
+  function sporeChime() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var note = sporeNotes[sporeIdx % sporeNotes.length];
+    // Play two notes (root + fifth)
+    [note, note * 1.5].forEach(function(f, fi) {
+      var osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, t + fi * 0.15);
+      var g = c.createGain();
+      g.gain.setValueAtTime(0.035, t + fi * 0.15);
+      g.gain.exponentialRampToValueAtTime(0.001, t + fi * 0.15 + 2);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(t + fi * 0.15);
+      osc.stop(t + fi * 0.15 + 2);
+    });
+    sporeIdx++;
+    musicTimers.push(setTimeout(sporeChime, 2000 + Math.random() * 2000));
+  }
+  musicTimers.push(setTimeout(sporeChime, 1000));
+
+  musicPlaying = true;
+  document.getElementById('music-toggle').textContent = '\u266B ON';
+  try { localStorage.setItem(MUSIC_KEY, '1'); } catch(e) {}
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  musicTimers.forEach(function(t) { clearTimeout(t); });
+  musicTimers = [];
+  musicNodes.forEach(function(n) {
+    try { if (n.stop) n.stop(); } catch(e) {}
+    try { if (n.disconnect) n.disconnect(); } catch(e) {}
+  });
+  musicNodes = [];
+  document.getElementById('music-toggle').textContent = '\u266B OFF';
+  try { localStorage.setItem(MUSIC_KEY, '0'); } catch(e) {}
+}
+
+window.toggleMusic = function() {
+  if (!musicPlaying) startMusic();
+  else stopMusic();
+};
+})();
+</script>
 </body>
 </html>

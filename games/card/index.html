@@ -187,5 +187,154 @@ redirect_from:
       document.getElementById('fill').style.width = '0%';
     }, 500);
   </script>
+
+<!-- Procedural Music: Smooth jazz-like, piano arpeggios, relaxed -->
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'Courier New',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<script>
+(function(){
+var musicPlaying = false;
+var audioCtx = null;
+var musicNodes = [];
+var musicTimers = [];
+var MUSIC_KEY = 'card_music_on';
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function startMusic() {
+  var ctx = getCtx();
+  var now = ctx.currentTime;
+  var master = ctx.createGain();
+  master.gain.setValueAtTime(0.12, now);
+  master.connect(ctx.destination);
+  musicNodes.push(master);
+
+  var bpm = 72;
+  var beatLen = 60 / bpm;
+  var beat = 0;
+
+  // Cmaj7 - Dm7 - Em7 - Fmaj7 - G7 chord progression (jazz standard)
+  var chords = [
+    [130.8, 164.8, 196.0, 246.9], // Cmaj7: C3 E3 G3 B3
+    [146.8, 174.6, 220.0, 261.6], // Dm7: D3 F3 A3 C4
+    [164.8, 196.0, 246.9, 293.7], // Em7: E3 G3 B3 D4
+    [174.6, 220.0, 261.6, 329.6], // Fmaj7: F3 A3 C4 E4
+    [196.0, 246.9, 293.7, 349.2]  // G7: G3 B3 D4 F4
+  ];
+
+  // Piano arpeggio melody
+  function pianoNote(freq, time, dur, vol) {
+    var c = getCtx();
+    var osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, time);
+    var osc2 = c.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(freq * 2, time);
+    var g = c.createGain();
+    g.gain.setValueAtTime(vol || 0.06, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + dur);
+    var g2 = c.createGain();
+    g2.gain.setValueAtTime((vol || 0.06) * 0.3, time);
+    g2.gain.exponentialRampToValueAtTime(0.001, time + dur * 0.7);
+    osc.connect(g);
+    osc2.connect(g2);
+    g.connect(master);
+    g2.connect(master);
+    osc.start(time);
+    osc.stop(time + dur);
+    osc2.start(time);
+    osc2.stop(time + dur);
+  }
+
+  function jazzLoop() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var chordIdx = Math.floor(beat / 4) % chords.length;
+    var chord = chords[chordIdx];
+    var beatInBar = beat % 4;
+
+    // Walking bass on every beat
+    var bassNote = chord[beatInBar % chord.length] / 2;
+    var bassOsc = c.createOscillator();
+    bassOsc.type = 'triangle';
+    bassOsc.frequency.setValueAtTime(bassNote, t);
+    var bassGain = c.createGain();
+    bassGain.gain.setValueAtTime(0.1, t);
+    bassGain.gain.exponentialRampToValueAtTime(0.001, t + beatLen * 0.85);
+    bassOsc.connect(bassGain);
+    bassGain.connect(master);
+    bassOsc.start(t);
+    bassOsc.stop(t + beatLen);
+
+    // Piano chord on beats 1 and 3 with swing
+    if (beatInBar === 0 || beatInBar === 2) {
+      chord.forEach(function(f, i) {
+        pianoNote(f * 2, t + i * 0.03, beatLen * 1.2, 0.04);
+      });
+    }
+
+    // Melody phrase every 4 beats
+    if (beatInBar === 0 && Math.random() > 0.3) {
+      var melNotes = [chord[2] * 2, chord[3] * 2, chord[1] * 2, chord[0] * 2];
+      melNotes.forEach(function(f, i) {
+        pianoNote(f, t + i * beatLen * 0.5 + 0.1, beatLen * 0.6, 0.05);
+      });
+    }
+
+    // Gentle brush percussion (noise)
+    if (beatInBar === 1 || beatInBar === 3) {
+      var bufLen = c.sampleRate * 0.06;
+      var buf = c.createBuffer(1, bufLen, c.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufLen; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufLen * 0.3));
+      }
+      var brush = c.createBufferSource();
+      brush.buffer = buf;
+      var brushFilter = c.createBiquadFilter();
+      brushFilter.type = 'highpass';
+      brushFilter.frequency.setValueAtTime(3000, t);
+      var brushGain = c.createGain();
+      brushGain.gain.setValueAtTime(0.04, t);
+      brush.connect(brushFilter);
+      brushFilter.connect(brushGain);
+      brushGain.connect(master);
+      brush.start(t);
+    }
+
+    beat++;
+    musicTimers.push(setTimeout(jazzLoop, beatLen * 1000));
+  }
+  jazzLoop();
+
+  musicPlaying = true;
+  document.getElementById('music-toggle').textContent = '\u266B ON';
+  try { localStorage.setItem(MUSIC_KEY, '1'); } catch(e) {}
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  musicTimers.forEach(function(t) { clearTimeout(t); });
+  musicTimers = [];
+  musicNodes.forEach(function(n) {
+    try { if (n.stop) n.stop(); } catch(e) {}
+    try { if (n.disconnect) n.disconnect(); } catch(e) {}
+  });
+  musicNodes = [];
+  document.getElementById('music-toggle').textContent = '\u266B OFF';
+  try { localStorage.setItem(MUSIC_KEY, '0'); } catch(e) {}
+}
+
+window.toggleMusic = function() {
+  if (!musicPlaying) startMusic();
+  else stopMusic();
+};
+})();
+</script>
 </body>
 </html>

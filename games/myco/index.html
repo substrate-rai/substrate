@@ -1039,5 +1039,174 @@ redirect_from:
 })();
 </script>
 
+<!-- Procedural Music: Organic spore sounds, earthy ambient, mycology -->
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid rgba(0,255,170,0.15);color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<script>
+(function(){
+var musicPlaying = false;
+var audioCtx = null;
+var musicNodes = [];
+var musicTimers = [];
+var MUSIC_KEY = 'myco_music_on';
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function startMusic() {
+  var ctx = getCtx();
+  var now = ctx.currentTime;
+  var master = ctx.createGain();
+  master.gain.setValueAtTime(0.11, now);
+  master.connect(ctx.destination);
+  musicNodes.push(master);
+
+  // Warm root tone — G1 + D2 (perfect fifth)
+  var root = ctx.createOscillator();
+  root.type = 'sine';
+  root.frequency.setValueAtTime(49.0, now); // G1
+  var rootG = ctx.createGain();
+  rootG.gain.setValueAtTime(0.1, now);
+  root.connect(rootG);
+  rootG.connect(master);
+  root.start(now);
+  musicNodes.push(root, rootG);
+
+  var fifth = ctx.createOscillator();
+  fifth.type = 'sine';
+  fifth.frequency.setValueAtTime(73.4, now); // D2
+  var fifthG = ctx.createGain();
+  fifthG.gain.setValueAtTime(0.06, now);
+  fifth.connect(fifthG);
+  fifthG.connect(master);
+  fifth.start(now);
+  musicNodes.push(fifth, fifthG);
+
+  // Gentle breathing modulation
+  var breathLfo = ctx.createOscillator();
+  breathLfo.type = 'sine';
+  breathLfo.frequency.setValueAtTime(0.1, now);
+  var breathMod = ctx.createGain();
+  breathMod.gain.setValueAtTime(0.03, now);
+  breathLfo.connect(breathMod);
+  breathMod.connect(rootG.gain);
+  breathLfo.start(now);
+  musicNodes.push(breathLfo, breathMod);
+
+  // Spore dispersal — tiny pops that drift upward
+  function sporePop() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var baseFreq = 300 + Math.random() * 400;
+    var osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(baseFreq, t);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 2.5, t + 0.8);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.03, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + 0.8);
+    musicTimers.push(setTimeout(sporePop, 500 + Math.random() * 1500));
+  }
+  musicTimers.push(setTimeout(sporePop, 800));
+
+  // Earthy pad — G major pentatonic tones slowly shifting
+  var earthTones = [98.0, 110.0, 123.5, 146.8, 164.8]; // G2 A2 B2 D3 E3
+  var earthIdx = 0;
+  function earthPad() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var note = earthTones[earthIdx % earthTones.length];
+    var osc = c.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(note, t);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.05, t + 1);
+    g.gain.linearRampToValueAtTime(0.05, t + 3);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 4.5);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + 4.5);
+    earthIdx++;
+    musicTimers.push(setTimeout(earthPad, 3000 + Math.random() * 2000));
+  }
+  musicTimers.push(setTimeout(earthPad, 1000));
+
+  // Forest floor texture — very soft filtered noise
+  var forestBufLen = ctx.sampleRate * 3;
+  var forestBuf = ctx.createBuffer(1, forestBufLen, ctx.sampleRate);
+  var fd = forestBuf.getChannelData(0);
+  for (var i = 0; i < forestBufLen; i++) fd[i] = Math.random() * 2 - 1;
+  var forest = ctx.createBufferSource();
+  forest.buffer = forestBuf;
+  forest.loop = true;
+  var forestFilter = ctx.createBiquadFilter();
+  forestFilter.type = 'bandpass';
+  forestFilter.frequency.setValueAtTime(300, now);
+  forestFilter.Q.setValueAtTime(0.3, now);
+  var forestGain = ctx.createGain();
+  forestGain.gain.setValueAtTime(0.015, now);
+  forest.connect(forestFilter);
+  forestFilter.connect(forestGain);
+  forestGain.connect(master);
+  forest.start(now);
+  musicNodes.push(forest, forestFilter, forestGain);
+
+  // Mycelium network pulse — low sine that slowly modulates
+  function networkPulse() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var notes = [98.0, 73.4, 82.4, 98.0]; // G2 D2 E2 G2
+    notes.forEach(function(f, i) {
+      var osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, t + i * 1.5);
+      var g = c.createGain();
+      g.gain.setValueAtTime(0.06, t + i * 1.5);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 1.5 + 1.4);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(t + i * 1.5);
+      osc.stop(t + i * 1.5 + 1.5);
+    });
+    musicTimers.push(setTimeout(networkPulse, 8000 + Math.random() * 4000));
+  }
+  musicTimers.push(setTimeout(networkPulse, 3000));
+
+  musicPlaying = true;
+  document.getElementById('music-toggle').textContent = '\u266B ON';
+  try { localStorage.setItem(MUSIC_KEY, '1'); } catch(e) {}
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  musicTimers.forEach(function(t) { clearTimeout(t); });
+  musicTimers = [];
+  musicNodes.forEach(function(n) {
+    try { if (n.stop) n.stop(); } catch(e) {}
+    try { if (n.disconnect) n.disconnect(); } catch(e) {}
+  });
+  musicNodes = [];
+  document.getElementById('music-toggle').textContent = '\u266B OFF';
+  try { localStorage.setItem(MUSIC_KEY, '0'); } catch(e) {}
+}
+
+window.toggleMusic = function() {
+  if (!musicPlaying) startMusic();
+  else stopMusic();
+};
+})();
+</script>
+
 </body>
 </html>

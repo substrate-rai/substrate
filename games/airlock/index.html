@@ -1494,5 +1494,176 @@ function showFundPrompt(){
   if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
 }
 </script>
+
+<!-- Procedural Music: Tense ambient, low drones, airlock hiss, metallic reverb -->
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<script>
+(function(){
+var musicPlaying = false;
+var audioCtx = null;
+var musicNodes = [];
+var musicTimers = [];
+var MUSIC_KEY = 'airlock_music_on';
+
+function getCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function startMusic() {
+  var ctx = getCtx();
+  var now = ctx.currentTime;
+  var master = ctx.createGain();
+  master.gain.setValueAtTime(0.12, now);
+  master.connect(ctx.destination);
+  musicNodes.push(master);
+
+  // Deep drone bass (C1 ~32Hz)
+  var drone1 = ctx.createOscillator();
+  drone1.type = 'sine';
+  drone1.frequency.setValueAtTime(32.7, now);
+  var droneGain1 = ctx.createGain();
+  droneGain1.gain.setValueAtTime(0.18, now);
+  drone1.connect(droneGain1);
+  droneGain1.connect(master);
+  drone1.start(now);
+  musicNodes.push(drone1, droneGain1);
+
+  // Second drone a tritone above for tension (F#1 ~46Hz)
+  var drone2 = ctx.createOscillator();
+  drone2.type = 'sine';
+  drone2.frequency.setValueAtTime(46.25, now);
+  var droneGain2 = ctx.createGain();
+  droneGain2.gain.setValueAtTime(0.1, now);
+  drone2.connect(droneGain2);
+  droneGain2.connect(master);
+  drone2.start(now);
+  musicNodes.push(drone2, droneGain2);
+
+  // Metallic reverb pad — filtered sawtooth
+  var pad = ctx.createOscillator();
+  pad.type = 'sawtooth';
+  pad.frequency.setValueAtTime(65.4, now);
+  var padFilter = ctx.createBiquadFilter();
+  padFilter.type = 'lowpass';
+  padFilter.frequency.setValueAtTime(200, now);
+  padFilter.Q.setValueAtTime(8, now);
+  var padGain = ctx.createGain();
+  padGain.gain.setValueAtTime(0.06, now);
+  pad.connect(padFilter);
+  padFilter.connect(padGain);
+  padGain.connect(master);
+  pad.start(now);
+  musicNodes.push(pad, padFilter, padGain);
+
+  // Slow LFO modulating the filter for breathing effect
+  var lfo = ctx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.setValueAtTime(0.08, now);
+  var lfoGain = ctx.createGain();
+  lfoGain.gain.setValueAtTime(150, now);
+  lfo.connect(lfoGain);
+  lfoGain.connect(padFilter.frequency);
+  lfo.start(now);
+  musicNodes.push(lfo, lfoGain);
+
+  // Airlock hiss — periodic filtered noise bursts
+  function hissBurst() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var bufLen = c.sampleRate * 2;
+    var buf = c.createBuffer(1, bufLen, c.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var i = 0; i < bufLen; i++) {
+      data[i] = (Math.random() * 2 - 1);
+    }
+    var src = c.createBufferSource();
+    src.buffer = buf;
+    var hissFilter = c.createBiquadFilter();
+    hissFilter.type = 'bandpass';
+    hissFilter.frequency.setValueAtTime(3000 + Math.random() * 2000, t);
+    hissFilter.Q.setValueAtTime(2, t);
+    var hissGain = c.createGain();
+    hissGain.gain.setValueAtTime(0, t);
+    hissGain.gain.linearRampToValueAtTime(0.04, t + 0.3);
+    hissGain.gain.linearRampToValueAtTime(0, t + 1.8);
+    src.connect(hissFilter);
+    hissFilter.connect(hissGain);
+    hissGain.connect(master);
+    src.start(t);
+    src.stop(t + 2);
+    musicTimers.push(setTimeout(hissBurst, 4000 + Math.random() * 6000));
+  }
+  musicTimers.push(setTimeout(hissBurst, 2000));
+
+  // Metallic ping — occasional high sine with fast decay
+  function metalPing() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var freqs = [1200, 1800, 2400, 3200, 880];
+    var f = freqs[Math.floor(Math.random() * freqs.length)];
+    var osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(f, t);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.03, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + 1.5);
+    musicTimers.push(setTimeout(metalPing, 3000 + Math.random() * 5000));
+  }
+  musicTimers.push(setTimeout(metalPing, 1000));
+
+  // Sub-bass pulse
+  function subPulse() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(24, t);
+    osc.frequency.linearRampToValueAtTime(18, t + 3);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.15, t);
+    g.gain.linearRampToValueAtTime(0, t + 3);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + 3);
+    musicTimers.push(setTimeout(subPulse, 8000 + Math.random() * 4000));
+  }
+  musicTimers.push(setTimeout(subPulse, 5000));
+
+  musicPlaying = true;
+  document.getElementById('music-toggle').textContent = '\u266B ON';
+  try { localStorage.setItem(MUSIC_KEY, '1'); } catch(e) {}
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  musicTimers.forEach(function(t) { clearTimeout(t); });
+  musicTimers = [];
+  musicNodes.forEach(function(n) {
+    try { if (n.stop) n.stop(); } catch(e) {}
+    try { if (n.disconnect) n.disconnect(); } catch(e) {}
+  });
+  musicNodes = [];
+  document.getElementById('music-toggle').textContent = '\u266B OFF';
+  try { localStorage.setItem(MUSIC_KEY, '0'); } catch(e) {}
+}
+
+window.toggleMusic = function() {
+  if (!musicPlaying) startMusic();
+  else stopMusic();
+};
+})();
+</script>
 </body>
 </html>

@@ -1341,5 +1341,193 @@ function showFundPrompt(){
   if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
 }
 </script>
+
+<!-- Procedural Music: Building tension, escalating arpeggios -->
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<script>
+(function(){
+var musicPlaying = false;
+var audioCtx = null;
+var musicNodes = [];
+var musicTimers = [];
+var MUSIC_KEY = 'cascade_music_on';
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function startMusic() {
+  var ctx = getCtx();
+  var now = ctx.currentTime;
+  var master = ctx.createGain();
+  master.gain.setValueAtTime(0.13, now);
+  master.connect(ctx.destination);
+  musicNodes.push(master);
+
+  // Pulsing bass — Am feel
+  var bassDrone = ctx.createOscillator();
+  bassDrone.type = 'triangle';
+  bassDrone.frequency.setValueAtTime(55, now); // A1
+  var bassDroneGain = ctx.createGain();
+  bassDroneGain.gain.setValueAtTime(0.1, now);
+  bassDrone.connect(bassDroneGain);
+  bassDroneGain.connect(master);
+  bassDrone.start(now);
+  musicNodes.push(bassDrone, bassDroneGain);
+
+  // LFO on bass for pulsing
+  var bassLfo = ctx.createOscillator();
+  bassLfo.type = 'sine';
+  bassLfo.frequency.setValueAtTime(2, now);
+  var bassLfoGain = ctx.createGain();
+  bassLfoGain.gain.setValueAtTime(0.04, now);
+  bassLfo.connect(bassLfoGain);
+  bassLfoGain.connect(bassDroneGain.gain);
+  bassLfo.start(now);
+  musicNodes.push(bassLfo, bassLfoGain);
+
+  // Escalating arpeggio — gets faster over 16 bars then resets
+  var arpNotes = [220, 261.6, 329.6, 392, 440, 523.3, 659.3, 784]; // A3 C4 E4 G4 A4 C5 E5 G5
+  var arpIdx = 0;
+  var arpSpeed = 250; // ms between notes
+  var arpCycle = 0;
+
+  function arpNote() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var freq = arpNotes[arpIdx % arpNotes.length];
+
+    var osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t);
+    var g = c.createGain();
+    var vol = 0.04 + (arpCycle / 64) * 0.04;
+    g.gain.setValueAtTime(Math.min(vol, 0.08), t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + arpSpeed / 1000 * 0.9);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + arpSpeed / 1000);
+
+    // Second voice an octave up at lower volume
+    if (arpCycle > 16) {
+      var osc2 = c.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(freq * 2, t);
+      var g2 = c.createGain();
+      g2.gain.setValueAtTime(0.025, t);
+      g2.gain.exponentialRampToValueAtTime(0.001, t + arpSpeed / 1000 * 0.8);
+      osc2.connect(g2);
+      g2.connect(master);
+      osc2.start(t);
+      osc2.stop(t + arpSpeed / 1000);
+    }
+
+    arpIdx++;
+    arpCycle++;
+
+    // Speed up gradually, reset at peak
+    if (arpCycle >= 64) {
+      arpCycle = 0;
+      arpSpeed = 250;
+      arpIdx = 0;
+    } else {
+      arpSpeed = Math.max(80, 250 - arpCycle * 2.5);
+    }
+
+    musicTimers.push(setTimeout(arpNote, arpSpeed));
+  }
+  musicTimers.push(setTimeout(arpNote, 500));
+
+  // Cascade shimmer — periodic ascending tone clusters
+  function cascadeShimmer() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var baseFreq = 400 + Math.random() * 200;
+    for (var i = 0; i < 6; i++) {
+      var osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(baseFreq + i * 80, t + i * 0.08);
+      var g = c.createGain();
+      g.gain.setValueAtTime(0.03, t + i * 0.08);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.08 + 0.6);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(t + i * 0.08);
+      osc.stop(t + i * 0.08 + 0.6);
+    }
+    musicTimers.push(setTimeout(cascadeShimmer, 4000 + Math.random() * 4000));
+  }
+  musicTimers.push(setTimeout(cascadeShimmer, 2000));
+
+  // Percussion pulse
+  var percBeat = 0;
+  function percLoop() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    // Kick
+    if (percBeat % 4 === 0) {
+      var kick = c.createOscillator();
+      kick.type = 'sine';
+      kick.frequency.setValueAtTime(80, t);
+      kick.frequency.exponentialRampToValueAtTime(30, t + 0.1);
+      var kg = c.createGain();
+      kg.gain.setValueAtTime(0.12, t);
+      kg.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      kick.connect(kg);
+      kg.connect(master);
+      kick.start(t);
+      kick.stop(t + 0.15);
+    }
+    // Hi-hat
+    var bufLen = c.sampleRate * 0.03;
+    var buf = c.createBuffer(1, bufLen, c.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufLen * 0.15));
+    var hh = c.createBufferSource();
+    hh.buffer = buf;
+    var hhf = c.createBiquadFilter();
+    hhf.type = 'highpass';
+    hhf.frequency.setValueAtTime(6000, t);
+    var hhg = c.createGain();
+    hhg.gain.setValueAtTime(0.04, t);
+    hh.connect(hhf);
+    hhf.connect(hhg);
+    hhg.connect(master);
+    hh.start(t);
+    percBeat++;
+    musicTimers.push(setTimeout(percLoop, 250));
+  }
+  musicTimers.push(setTimeout(percLoop, 300));
+
+  musicPlaying = true;
+  document.getElementById('music-toggle').textContent = '\u266B ON';
+  try { localStorage.setItem(MUSIC_KEY, '1'); } catch(e) {}
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  musicTimers.forEach(function(t) { clearTimeout(t); });
+  musicTimers = [];
+  musicNodes.forEach(function(n) {
+    try { if (n.stop) n.stop(); } catch(e) {}
+    try { if (n.disconnect) n.disconnect(); } catch(e) {}
+  });
+  musicNodes = [];
+  document.getElementById('music-toggle').textContent = '\u266B OFF';
+  try { localStorage.setItem(MUSIC_KEY, '0'); } catch(e) {}
+}
+
+window.toggleMusic = function() {
+  if (!musicPlaying) startMusic();
+  else stopMusic();
+};
+})();
+</script>
 </body>
 </html>

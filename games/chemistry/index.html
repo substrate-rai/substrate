@@ -1556,5 +1556,171 @@ function showFundPrompt(){
   if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
 }
 </script>
+
+<!-- Procedural Music: Bubbling sounds, experimental, glitchy -->
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<script>
+(function(){
+var musicPlaying = false;
+var audioCtx = null;
+var musicNodes = [];
+var musicTimers = [];
+var MUSIC_KEY = 'chemistry_music_on';
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function startMusic() {
+  var ctx = getCtx();
+  var now = ctx.currentTime;
+  var master = ctx.createGain();
+  master.gain.setValueAtTime(0.12, now);
+  master.connect(ctx.destination);
+  musicNodes.push(master);
+
+  // Ambient lab drone — whole tone scale feel (C, D, E, F#)
+  var droneFreqs = [65.4, 73.4]; // C2, D2
+  droneFreqs.forEach(function(f) {
+    var osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(f, now);
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(0.08, now);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(now);
+    musicNodes.push(osc, g);
+  });
+
+  // Bubbling — random short sine pops at varying pitches
+  function bubble() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var count = 1 + Math.floor(Math.random() * 3);
+    for (var i = 0; i < count; i++) {
+      var delay = Math.random() * 0.3;
+      var freq = 600 + Math.random() * 2000;
+      var osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + delay);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + delay + 0.08);
+      var g = c.createGain();
+      g.gain.setValueAtTime(0.04, t + delay);
+      g.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.1);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(t + delay);
+      osc.stop(t + delay + 0.12);
+    }
+    musicTimers.push(setTimeout(bubble, 200 + Math.random() * 600));
+  }
+  musicTimers.push(setTimeout(bubble, 300));
+
+  // Glitchy digital artifacts — square wave bursts
+  function glitch() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var steps = 2 + Math.floor(Math.random() * 4);
+    for (var i = 0; i < steps; i++) {
+      var osc = c.createOscillator();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(100 + Math.random() * 800, t + i * 0.04);
+      var g = c.createGain();
+      g.gain.setValueAtTime(0.025, t + i * 0.04);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.04 + 0.03);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(t + i * 0.04);
+      osc.stop(t + i * 0.04 + 0.04);
+    }
+    musicTimers.push(setTimeout(glitch, 2000 + Math.random() * 4000));
+  }
+  musicTimers.push(setTimeout(glitch, 1500));
+
+  // Chemical reaction melody — whole tone scale arpeggios
+  var wholeTone = [261.6, 293.7, 329.6, 370.0, 415.3, 466.2]; // C D E F# G# A#
+  var melStep = 0;
+  function labMelody() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var note = wholeTone[melStep % wholeTone.length];
+    var osc = c.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(note, t);
+    var filter = c.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(note * 2, t);
+    filter.Q.setValueAtTime(4, t);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.05, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    osc.connect(filter);
+    filter.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + 0.6);
+    melStep++;
+    if (melStep % 6 === 0) melStep += Math.floor(Math.random() * 3); // skip around
+    musicTimers.push(setTimeout(labMelody, 500 + Math.random() * 300));
+  }
+  musicTimers.push(setTimeout(labMelody, 800));
+
+  // Low resonant sweep — periodic filter sweep
+  function filterSweep() {
+    if (!musicPlaying) return;
+    var c = getCtx();
+    var t = c.currentTime;
+    var osc = c.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(55, t);
+    var filter = c.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(100, t);
+    filter.frequency.exponentialRampToValueAtTime(2000, t + 2);
+    filter.frequency.exponentialRampToValueAtTime(100, t + 4);
+    filter.Q.setValueAtTime(12, t);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.04, t);
+    g.gain.linearRampToValueAtTime(0.06, t + 2);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 4);
+    osc.connect(filter);
+    filter.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + 4);
+    musicTimers.push(setTimeout(filterSweep, 8000 + Math.random() * 4000));
+  }
+  musicTimers.push(setTimeout(filterSweep, 3000));
+
+  musicPlaying = true;
+  document.getElementById('music-toggle').textContent = '\u266B ON';
+  try { localStorage.setItem(MUSIC_KEY, '1'); } catch(e) {}
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  musicTimers.forEach(function(t) { clearTimeout(t); });
+  musicTimers = [];
+  musicNodes.forEach(function(n) {
+    try { if (n.stop) n.stop(); } catch(e) {}
+    try { if (n.disconnect) n.disconnect(); } catch(e) {}
+  });
+  musicNodes = [];
+  document.getElementById('music-toggle').textContent = '\u266B OFF';
+  try { localStorage.setItem(MUSIC_KEY, '0'); } catch(e) {}
+}
+
+window.toggleMusic = function() {
+  if (!musicPlaying) startMusic();
+  else stopMusic();
+};
+})();
+</script>
 </body>
 </html>
