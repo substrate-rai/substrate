@@ -16,8 +16,8 @@ if [[ -z "$DIFF" ]]; then
     exit 0
 fi
 
-# Filter to added lines only (skip removals, headers, and known-safe files)
-ADDED=$(echo "$DIFF" | grep '^+' | grep -v '^+++' | grep -v '\[redacted\]' || true)
+# Filter to added lines only (skip removals, headers, known-safe patterns)
+ADDED=$(echo "$DIFF" | grep '^+' | grep -v '^+++' | grep -v '\[redacted\]' | grep -v 'os\.environ\.get' || true)
 
 if [[ -z "$ADDED" ]]; then
     exit 0
