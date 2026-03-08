@@ -15,7 +15,10 @@ Agents run in order:
     6. Root  (infra_engineer.py)      — monitor infrastructure health
     7. Lumen (educator.py)            — maintain curriculum content
     8. Arc   (arcade_director.py)     — review arcade game quality
-    9. Dash  (project_manager.py)     — generate project status report
+    9. Forge (site_engineer.py)       — monitor site health and links
+   10. Hum   (audio_director.py)     — scan arcade audio coverage
+   11. Sync  (comms_director.py)     — check narrative consistency
+   12. Dash  (project_manager.py)     — generate project status report
 
 Output: memory/briefings/YYYY-MM-DD.md
 """
@@ -40,6 +43,9 @@ AGENTS = [
     ("Root", "R/", "infra_engineer.py", "Infrastructure Engineer"),
     ("Lumen", "L.", "educator.py", "Educator"),
     ("Arc", "A^", "arcade_director.py", "Arcade Director"),
+    ("Forge", "F/", "site_engineer.py", "Site Engineer"),
+    ("Hum", "H~", "audio_director.py", "Audio Director"),
+    ("Sync", "S=", "comms_director.py", "Communications Director"),
     ("Dash", "D!", "project_manager.py", "Project Manager"),
 ]
 
