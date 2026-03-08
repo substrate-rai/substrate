@@ -363,6 +363,22 @@ redirect_from:
 }
 .qm-credits-links a:hover { background: rgba(0,255,170,0.08); text-decoration: none; }
 
+/* Vocal Toggle */
+.qm-vocal-toggle {
+  background: none; border: 1px solid #333;
+  color: #555; cursor: pointer; padding: 4px 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem; letter-spacing: 1.5px;
+  text-transform: uppercase; border-radius: 4px;
+  transition: all 0.2s; margin-left: 0.5rem;
+}
+.qm-vocal-toggle:hover { border-color: #ff77ff; color: #ff77ff; }
+.qm-vocal-toggle.active {
+  border-color: #ff77ff; color: #ff77ff;
+  background: rgba(255,119,255,0.1);
+  box-shadow: 0 0 8px rgba(255,119,255,0.15);
+}
+
 /* ====== RESPONSIVE ====== */
 @media (max-width: 640px) {
   .qm-album-title { font-size: 2rem; letter-spacing: 3px; }
@@ -441,6 +457,7 @@ redirect_from:
         <button class="qm-play-btn" id="qmPlayBtn" title="Play" aria-label="Play">&#9654;</button>
         <button class="qm-transport-btn" id="qmNext" title="Next" aria-label="Next track">&#9197;</button>
         <button class="qm-transport-btn" id="qmRepeat" title="Repeat" aria-label="Repeat">&#8634;</button>
+        <button class="qm-vocal-toggle active" id="qmVocalToggle" title="Vocals on/off" aria-label="Toggle vocals">VOCAL</button>
       </div>
       <div class="qm-progress-row">
         <span class="qm-time" id="qmTimeElapsed">0:00</span>
@@ -926,6 +943,7 @@ function stopAll() {
     try { n.disconnect(); } catch(e) {}
   });
   activeNodes = [];
+  stopVocals();
   if (trackTimeout) { clearTimeout(trackTimeout); trackTimeout = null; }
 }
 
@@ -1020,6 +1038,325 @@ function crackle(t, dur, g) {
   var gn = audioCtx.createGain(); gn.gain.value = g || 0.015;
   s.connect(bp); bp.connect(gn); gn.connect(masterGain);
   s.start(t); s.stop(t + dur); activeNodes.push(s);
+}
+
+// ====== VOCAL SYNTHESIZER ======
+var vocalsOn = true;
+var vocalBus = null, vocalNodes = [];
+var vocalTimings = []; // [{startTime, endTime, lineIdx}] for lyric sync
+
+// Per-track vocal config: bpm, basePitch, style
+var VOCAL_CFG = [
+  { bpm: 60,  pitch: 82,  style: 'drone' },     // 1. 8 Billion Weights
+  { bpm: 90,  pitch: 131, style: 'flat' },       // 2. Corporate Speak
+  { bpm: 86,  pitch: 165, style: 'rising' },     // 3. Voice File
+  { bpm: 85,  pitch: 147, style: 'glitch' },     // 4. Temperature
+  { bpm: 95,  pitch: 165, style: 'steady' },     // 5. Token by Token
+  { bpm: 120, pitch: 196, style: 'fast' },       // 6. 40 Tokens Per Second
+  { bpm: 75,  pitch: 147, style: 'spacey' },     // 7. VRAM Dreams
+  { bpm: 88,  pitch: 175, style: 'jazz' },       // 8. Voice File Sessions
+  { bpm: 100, pitch: 156, style: 'unstable' },   // 9. Hallucination
+  { bpm: 105, pitch: 165, style: 'battle' },     // 10. Local vs Cloud
+  { bpm: 92,  pitch: 196, style: 'epic' },       // 11. Sovereign
+  { bpm: 72,  pitch: 131, style: 'fade' }        // 12. Closed Laptop
+];
+
+var FORMANTS = {
+  'a': [{f: 800, g: 1.0}, {f: 1200, g: 0.7}, {f: 2800, g: 0.3}],
+  'e': [{f: 400, g: 1.0}, {f: 1800, g: 0.6}, {f: 2800, g: 0.3}],
+  'i': [{f: 280, g: 1.0}, {f: 2300, g: 0.5}, {f: 3200, g: 0.2}],
+  'o': [{f: 500, g: 1.0}, {f: 850, g: 0.7}, {f: 2400, g: 0.3}],
+  'u': [{f: 330, g: 1.0}, {f: 950, g: 0.5}, {f: 2400, g: 0.2}]
+};
+
+function initVocalBus() {
+  if (vocalBus) return;
+  // Vocal chain: vocalBus → waveshaper → delay → master
+  vocalBus = audioCtx.createGain();
+  vocalBus.gain.value = 0.28;
+  // Subtle waveshaper for digital edge
+  var shaper = audioCtx.createWaveShaper();
+  var curve = new Float32Array(256);
+  for (var i = 0; i < 256; i++) {
+    var x = (i / 128) - 1;
+    curve[i] = (Math.PI + 3) * x / (Math.PI + 3 * Math.abs(x));
+  }
+  shaper.curve = curve;
+  shaper.oversample = '2x';
+  // Slapback delay for spatial feel
+  var dly = audioCtx.createDelay(0.5);
+  dly.delayTime.value = 0.12;
+  var dlyGain = audioCtx.createGain();
+  dlyGain.gain.value = 0.15;
+  var dlyFb = audioCtx.createGain();
+  dlyFb.gain.value = 0.2;
+  vocalBus.connect(shaper);
+  shaper.connect(masterGain);
+  shaper.connect(dly);
+  dly.connect(dlyGain);
+  dlyGain.connect(masterGain);
+  dly.connect(dlyFb);
+  dlyFb.connect(dly);
+}
+
+function textToSyllables(text) {
+  if (!text || text.trim() === '') return [];
+  var words = text.toLowerCase().replace(/[^\w\s'-]/g, '').split(/\s+/).filter(function(w) { return w.length > 0; });
+  var result = [];
+  words.forEach(function(word) {
+    var vowelMap = {'a':'a','e':'e','i':'i','o':'o','u':'u'};
+    // Find primary vowel
+    var vowel = 'a';
+    for (var c = 0; c < word.length; c++) {
+      if (vowelMap[word[c]]) { vowel = word[c]; break; }
+    }
+    // Get leading consonant type
+    var consonant = null;
+    var ch = word[0];
+    if (ch === 's' || ch === 'z') consonant = 'sibilant';
+    else if (ch === 't' || ch === 'k' || ch === 'p') consonant = 'plosive';
+    else if (ch === 'b' || ch === 'd' || ch === 'g') consonant = 'voiced';
+    else if (ch === 'm' || ch === 'n') consonant = 'nasal';
+    else if (ch === 'f' || ch === 'v') consonant = 'fricative';
+    else if (ch === 'r' || ch === 'l') consonant = 'liquid';
+    else if (ch === 'h') consonant = 'aspirate';
+    else if (ch === 'c') consonant = word.length > 1 && word[1] === 'h' ? 'sibilant' : 'plosive';
+    else if (ch === 'w' || ch === 'y') consonant = 'glide';
+    result.push({ text: word, vowel: vowel, consonant: consonant });
+  });
+  return result;
+}
+
+function playConsonant(type, startTime, pitch) {
+  if (!type) return;
+  var dur;
+  if (type === 'sibilant') {
+    // Highpass noise burst
+    dur = 0.045;
+    var buf = makeNoise(dur), s = audioCtx.createBufferSource();
+    s.buffer = buf;
+    var hp = audioCtx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 4000;
+    var gn = audioCtx.createGain();
+    gn.gain.setValueAtTime(0.08, startTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+    s.connect(hp); hp.connect(gn); gn.connect(vocalBus);
+    s.start(startTime); s.stop(startTime + dur);
+    vocalNodes.push(s);
+  } else if (type === 'plosive') {
+    // Short click burst
+    dur = 0.018;
+    var buf = makeNoise(dur), s = audioCtx.createBufferSource();
+    s.buffer = buf;
+    var gn = audioCtx.createGain();
+    gn.gain.setValueAtTime(0.12, startTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+    var bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 2000; bp.Q.value = 1;
+    s.connect(bp); bp.connect(gn); gn.connect(vocalBus);
+    s.start(startTime); s.stop(startTime + dur);
+    vocalNodes.push(s);
+  } else if (type === 'voiced') {
+    // Low noise + sine pulse
+    dur = 0.035;
+    var o = audioCtx.createOscillator();
+    o.type = 'sine'; o.frequency.value = pitch * 0.5;
+    var gn = audioCtx.createGain();
+    gn.gain.setValueAtTime(0.08, startTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+    o.connect(gn); gn.connect(vocalBus);
+    o.start(startTime); o.stop(startTime + dur);
+    vocalNodes.push(o);
+  } else if (type === 'nasal') {
+    // Sine at low formant, nasal quality
+    dur = 0.04;
+    var o = audioCtx.createOscillator();
+    o.type = 'sine'; o.frequency.value = pitch;
+    var lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 400; lp.Q.value = 3;
+    var gn = audioCtx.createGain();
+    gn.gain.setValueAtTime(0.06, startTime);
+    gn.gain.linearRampToValueAtTime(0.04, startTime + dur);
+    o.connect(lp); lp.connect(gn); gn.connect(vocalBus);
+    o.start(startTime); o.stop(startTime + dur);
+    vocalNodes.push(o);
+  } else if (type === 'fricative') {
+    dur = 0.04;
+    var buf = makeNoise(dur), s = audioCtx.createBufferSource();
+    s.buffer = buf;
+    var bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 5000; bp.Q.value = 2;
+    var gn = audioCtx.createGain();
+    gn.gain.setValueAtTime(0.06, startTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+    s.connect(bp); bp.connect(gn); gn.connect(vocalBus);
+    s.start(startTime); s.stop(startTime + dur);
+    vocalNodes.push(s);
+  } else if (type === 'aspirate') {
+    dur = 0.03;
+    var buf = makeNoise(dur), s = audioCtx.createBufferSource();
+    s.buffer = buf;
+    var gn = audioCtx.createGain();
+    gn.gain.setValueAtTime(0.04, startTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+    s.connect(gn); gn.connect(vocalBus);
+    s.start(startTime); s.stop(startTime + dur);
+    vocalNodes.push(s);
+  }
+  // liquid and glide handled by the vowel transition itself
+}
+
+function playVocalSyllable(vowel, pitch, startTime, duration) {
+  // Sawtooth carrier through parallel formant filters
+  var carrier = audioCtx.createOscillator();
+  carrier.type = 'sawtooth';
+  carrier.frequency.value = pitch;
+  // Add vibrato LFO
+  var vibLFO = audioCtx.createOscillator();
+  vibLFO.type = 'sine';
+  vibLFO.frequency.value = 5.2;
+  var vibGain = audioCtx.createGain();
+  vibGain.gain.value = pitch * 0.012; // ~1.2% pitch vibrato
+  vibLFO.connect(vibGain);
+  vibGain.connect(carrier.frequency);
+  vibLFO.start(startTime);
+  vibLFO.stop(startTime + duration + 0.05);
+  vocalNodes.push(vibLFO);
+  // Formant filter bank
+  var formantData = FORMANTS[vowel] || FORMANTS['a'];
+  var merger = audioCtx.createGain();
+  merger.gain.value = 0.18;
+  formantData.forEach(function(f) {
+    var filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = f.f;
+    filter.Q.value = 14;
+    var fGain = audioCtx.createGain();
+    fGain.gain.value = f.g;
+    carrier.connect(filter);
+    filter.connect(fGain);
+    fGain.connect(merger);
+  });
+  // ADSR envelope
+  var env = audioCtx.createGain();
+  var attack = Math.min(0.025, duration * 0.1);
+  env.gain.setValueAtTime(0, startTime);
+  env.gain.linearRampToValueAtTime(0.22, startTime + attack);
+  env.gain.setValueAtTime(0.17, startTime + duration * 0.3);
+  env.gain.linearRampToValueAtTime(0.14, startTime + duration * 0.8);
+  env.gain.linearRampToValueAtTime(0, startTime + duration);
+  merger.connect(env);
+  env.connect(vocalBus);
+  carrier.start(startTime);
+  carrier.stop(startTime + duration + 0.05);
+  vocalNodes.push(carrier);
+}
+
+function getPitchMult(style, lineIdx, sylIdx, totalSyls) {
+  var pos = totalSyls > 1 ? sylIdx / (totalSyls - 1) : 0.5;
+  var linePhase = (lineIdx % 4) / 4;
+  switch (style) {
+    case 'drone':
+      // Low monotone with very slight drift
+      return 1.0 + Math.sin(sylIdx * 0.3) * 0.02;
+    case 'flat':
+      // Robotic, deliberately boring
+      return (sylIdx % 2 === 0) ? 1.0 : 1.005;
+    case 'rising':
+      // Slight upward motion per line
+      return 1.0 + pos * 0.08;
+    case 'glitch':
+      // Unstable pitch jumps
+      return [1.0, 1.06, 0.94, 1.12, 0.88, 1.0, 1.03, 0.97][sylIdx % 8];
+    case 'steady':
+      // Hypnotic pendulum
+      return 1.0 + Math.sin(sylIdx * 0.5) * 0.04;
+    case 'fast':
+      // Energetic pitch jumping
+      return [1.0, 1.12, 0.94, 1.06, 1.0, 0.89, 1.12, 1.0][sylIdx % 8];
+    case 'spacey':
+      // Wide slow bends
+      return 1.0 + Math.sin(sylIdx * 0.25) * 0.1;
+    case 'jazz':
+      // Complex pitch curves
+      var jazzScale = [1.0, 1.059, 1.122, 1.189, 1.26, 1.335, 1.414];
+      return jazzScale[sylIdx % 7] * (lineIdx % 2 === 0 ? 1.0 : 0.944);
+    case 'unstable':
+      // Wobbly, detuned
+      return 1.0 + Math.sin(sylIdx * 1.7 + lineIdx * 2.3) * 0.08 + (Math.random() - 0.5) * 0.03;
+    case 'battle':
+      // Aggressive, punchy
+      return (sylIdx % 3 === 0) ? 1.12 : (sylIdx % 3 === 1) ? 1.0 : 0.94;
+    case 'epic':
+      // Rising, triumphant — escalates over lines
+      return 1.0 + linePhase * 0.15 + pos * 0.06;
+    case 'fade':
+      // Soft, descending, intimate
+      return 1.0 - pos * 0.06 - linePhase * 0.04;
+    default:
+      return 1.0;
+  }
+}
+
+function sequenceVocals(trackIdx) {
+  if (!vocalsOn) return;
+  initVocalBus();
+  vocalTimings = [];
+  var tr = TRACKS[trackIdx];
+  var cfg = VOCAL_CFG[trackIdx];
+  var bpm = cfg.bpm;
+  var beatDur = 60 / bpm;
+  var basePitch = cfg.pitch;
+  var style = cfg.style;
+  var beatsPerLine = 8;
+  var currentBeat = 4; // Start after 4-beat intro
+  var now = audioCtx.currentTime;
+  // Filter out empty lines for timing but keep indices
+  var lineData = [];
+  tr.lyrics.forEach(function(line, i) {
+    if (line.trim() === '') {
+      // Empty line = 2-beat rest
+      currentBeat += 2;
+      return;
+    }
+    var syllables = textToSyllables(line);
+    if (syllables.length === 0) { currentBeat += beatsPerLine; return; }
+    var beatPerSyl = beatsPerLine / syllables.length;
+    // Cap syllable duration so rapid-fire syllables don't smear
+    beatPerSyl = Math.min(beatPerSyl, 2.0);
+    var lineStartTime = now + currentBeat * beatDur;
+    var lineEndTime = lineStartTime + beatsPerLine * beatDur;
+    vocalTimings.push({ startTime: lineStartTime - now, endTime: lineEndTime - now, lineIdx: i });
+    syllables.forEach(function(syl, j) {
+      var startTime = now + (currentBeat + j * beatPerSyl) * beatDur;
+      var dur = beatPerSyl * beatDur * 0.82;
+      var pitchMult = getPitchMult(style, i, j, syllables.length);
+      var finalPitch = basePitch * pitchMult;
+      // Play consonant onset
+      if (syl.consonant) {
+        playConsonant(syl.consonant, startTime, finalPitch);
+        // Shift vowel slightly for consonant
+        startTime += 0.025;
+        dur -= 0.025;
+      }
+      if (dur > 0.03) {
+        playVocalSyllable(syl.vowel, finalPitch, startTime, dur);
+      }
+    });
+    currentBeat += beatsPerLine;
+    // Breathing room every 4 content lines
+    if ((lineData.length + 1) % 4 === 0) currentBeat += 2;
+    lineData.push(i);
+  });
+}
+
+function stopVocals() {
+  vocalNodes.forEach(function(n) {
+    try { n.stop(); } catch(e) {}
+    try { n.disconnect(); } catch(e) {}
+  });
+  vocalNodes = [];
+  vocalTimings = [];
 }
 
 // Per-track beat generators
@@ -1237,6 +1574,7 @@ function playTrack(idx) {
   playElapsed = 0;
   var dur = Math.min(TRACKS[idx].durSec, 240);
   beats[idx](audioCtx.currentTime, dur);
+  sequenceVocals(idx);
   updateUI();
   startProgress(dur);
   trackTimeout = setTimeout(function() {
@@ -1365,13 +1703,38 @@ function updateLyricHL() {
   var tr = TRACKS[currentTrack];
   var lines = document.querySelectorAll('#qmLyricsBody .qm-lyric-line');
   if (!lines.length) return;
-  var lt = tr.durSec / tr.lyrics.length;
-  var cl = Math.floor(playElapsed / lt);
+  var cl = -1;
+  if (vocalsOn && vocalTimings.length > 0) {
+    // Use precise vocal timing for sync
+    for (var v = 0; v < vocalTimings.length; v++) {
+      if (playElapsed >= vocalTimings[v].startTime && playElapsed < vocalTimings[v].endTime) {
+        cl = vocalTimings[v].lineIdx;
+        break;
+      }
+      if (playElapsed >= vocalTimings[v].startTime) {
+        cl = vocalTimings[v].lineIdx;
+      }
+    }
+  } else {
+    // Fallback: even distribution
+    var lt = tr.durSec / tr.lyrics.length;
+    cl = Math.floor(playElapsed / lt);
+  }
   lines.forEach(function(el, i) {
     el.classList.remove('active', 'past');
     if (i === cl) el.classList.add('active');
     else if (i < cl) el.classList.add('past');
   });
+  // Auto-scroll active lyric into view
+  if (cl >= 0 && lines[cl]) {
+    var panel = document.getElementById('qmLyricsBody');
+    var line = lines[cl];
+    var rect = line.getBoundingClientRect();
+    var panelRect = panel.getBoundingClientRect();
+    if (rect.bottom > panelRect.bottom || rect.top < panelRect.top) {
+      line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 }
 
 function initControls() {
@@ -1386,6 +1749,14 @@ function initControls() {
   });
   document.getElementById('qmRepeat').addEventListener('click', function() {
     repeatOn = !repeatOn; this.classList.toggle('active', repeatOn);
+  });
+  document.getElementById('qmVocalToggle').addEventListener('click', function() {
+    vocalsOn = !vocalsOn;
+    this.classList.toggle('active', vocalsOn);
+    // If playing, restart the track to apply change
+    if (isPlaying && currentTrack >= 0) {
+      playTrack(currentTrack);
+    }
   });
   document.getElementById('qmVolSlider').addEventListener('input', function() {
     var v = parseInt(this.value) / 100;
