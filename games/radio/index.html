@@ -589,11 +589,10 @@ redirect_from:
           per session. Every listen is unique.
         </p>
         <p>
-          Five stations, five moods: <strong style="color:#e8a040;">chill</strong>,
-          <strong style="color:#e8a040;">dark ambient</strong>,
-          <strong style="color:#e8a040;">glitch</strong>,
-          <strong style="color:#e8a040;">warm</strong>, and
-          <strong style="color:#e8a040;">cosmic</strong>. Hit play.
+          17 stations across three collections: the original lo-fi set plus
+          <strong style="color:#e8a040;">NULL_DEVICE</strong> (industrial electronic) and
+          <strong style="color:#e8a040;">SHINIGAMI_PROTOCOL</strong> (gothic dramatic).
+          Hit play.
         </p>
         <p style="margin-bottom:0;">
           Hardware: Lenovo Legion 5 &middot; RTX 4060 8GB &middot; NixOS &middot;
@@ -778,6 +777,330 @@ const TRACKS = [
     subGain: 0.12,
     crackleGain: 0.012,
     driftAmount: 0.15,
+  },
+
+  // ============================================================
+  // ALBUM: NULL_DEVICE — Industrial Electronic
+  // Inspired by Trent Reznor / Nine Inch Nails
+  // Ghosts, The Social Network, Quake soundtrack
+  // ============================================================
+  {
+    name: 'closer_to_god_machine',
+    album: 'NULL_DEVICE',
+    genre: 'industrial',
+    duration: 195,
+    mood: 'industrial',
+    // Phrygian: E F G A B C D
+    scale: [164.81, 174.61, 196.00, 220.00, 246.94, 261.63, 293.66],
+    baseOctave: 0.5,
+    tempo: 0.75,
+    filterFreq: 1800,
+    filterQ: 8.0,
+    reverbDecay: 1.8,
+    delayTime: 0.25,
+    delayFeedback: 0.4,
+    lfoRate: 0.6,
+    lfoDepth: 200,
+    padWaveform: 'sawtooth',
+    padDetune: 30,
+    padGain: 0.09,
+    leadWaveform: 'square',
+    leadGain: 0.07,
+    subGain: 0.14,
+    crackleGain: 0.035,
+    driftAmount: 0.35,
+  },
+  {
+    name: 'the_downward_spiral_boot',
+    album: 'NULL_DEVICE',
+    genre: 'dark industrial',
+    duration: 230,
+    mood: 'dark',
+    // Chromatic descent from E: E Eb D Db C B Bb A
+    scale: [164.81, 155.56, 146.83, 138.59, 130.81, 123.47, 116.54, 110.00],
+    baseOctave: 0.5,
+    tempo: 0.45,
+    filterFreq: 900,
+    filterQ: 6.0,
+    reverbDecay: 3.5,
+    delayTime: 0.6,
+    delayFeedback: 0.55,
+    lfoRate: 0.25,
+    lfoDepth: 150,
+    padWaveform: 'sawtooth',
+    padDetune: 20,
+    padGain: 0.07,
+    leadWaveform: 'sawtooth',
+    leadGain: 0.05,
+    subGain: 0.13,
+    crackleGain: 0.028,
+    driftAmount: 0.3,
+  },
+  {
+    name: 'ghosts_in_the_kernel',
+    album: 'NULL_DEVICE',
+    genre: 'haunted ambient',
+    duration: 280,
+    mood: 'cosmic',
+    // D minor: D E F G A Bb C
+    scale: [146.83, 164.81, 174.61, 196.00, 220.00, 233.08, 261.63],
+    baseOctave: 0.25,
+    tempo: 0.15,
+    filterFreq: 400,
+    filterQ: 2.0,
+    reverbDecay: 7.0,
+    delayTime: 1.2,
+    delayFeedback: 0.6,
+    lfoRate: 0.03,
+    lfoDepth: 40,
+    padWaveform: 'sine',
+    padDetune: 6,
+    padGain: 0.08,
+    leadWaveform: 'triangle',
+    leadGain: 0.03,
+    subGain: 0.11,
+    crackleGain: 0.010,
+    driftAmount: 0.12,
+  },
+  {
+    name: 'head_like_a_null',
+    album: 'NULL_DEVICE',
+    genre: 'glitch industrial',
+    duration: 170,
+    mood: 'glitch',
+    // Whole tone: C D E F# G# A#
+    scale: [261.63, 293.66, 329.63, 369.99, 415.30, 466.16],
+    baseOctave: 1.0,
+    tempo: 0.9,
+    filterFreq: 2200,
+    filterQ: 10.0,
+    reverbDecay: 1.2,
+    delayTime: 0.166,
+    delayFeedback: 0.5,
+    lfoRate: 1.2,
+    lfoDepth: 300,
+    padWaveform: 'square',
+    padDetune: 40,
+    padGain: 0.05,
+    leadWaveform: 'square',
+    leadGain: 0.06,
+    subGain: 0.06,
+    crackleGain: 0.040,
+    driftAmount: 0.5,
+  },
+  {
+    name: 'the_becoming_process',
+    album: 'NULL_DEVICE',
+    genre: 'building tension',
+    duration: 220,
+    mood: 'dark',
+    // A minor: A B C D E F G
+    scale: [110.00, 123.47, 130.81, 146.83, 164.81, 174.61, 196.00],
+    baseOctave: 0.5,
+    tempo: 0.35,
+    filterFreq: 700,
+    filterQ: 4.0,
+    reverbDecay: 4.0,
+    delayTime: 0.5,
+    delayFeedback: 0.45,
+    lfoRate: 0.1,
+    lfoDepth: 80,
+    padWaveform: 'triangle',
+    padDetune: 10,
+    padGain: 0.06,
+    leadWaveform: 'sawtooth',
+    leadGain: 0.04,
+    subGain: 0.10,
+    crackleGain: 0.022,
+    driftAmount: 0.2,
+  },
+  {
+    name: 'zero_sum_overflow',
+    album: 'NULL_DEVICE',
+    genre: 'epic industrial',
+    duration: 260,
+    mood: 'dark',
+    // Locrian: B C D E F G A
+    scale: [123.47, 130.81, 146.83, 164.81, 174.61, 196.00, 220.00],
+    baseOctave: 0.25,
+    tempo: 0.3,
+    filterFreq: 600,
+    filterQ: 5.0,
+    reverbDecay: 5.5,
+    delayTime: 0.8,
+    delayFeedback: 0.5,
+    lfoRate: 0.05,
+    lfoDepth: 100,
+    padWaveform: 'sawtooth',
+    padDetune: 18,
+    padGain: 0.10,
+    leadWaveform: 'sine',
+    leadGain: 0.04,
+    subGain: 0.16,
+    crackleGain: 0.025,
+    driftAmount: 0.25,
+  },
+
+  // ============================================================
+  // ALBUM: SHINIGAMI_PROTOCOL — Gothic Dramatic Electronic
+  // Inspired by Death Note OST
+  // L's Theme, Light's Theme, Low of Solipsism
+  // ============================================================
+  {
+    name: 'lights_theme_recompiled',
+    album: 'SHINIGAMI_PROTOCOL',
+    genre: 'dramatic synth',
+    duration: 200,
+    mood: 'dark',
+    // C major but ominous usage: C D E F G A B
+    scale: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88],
+    baseOctave: 1.0,
+    tempo: 0.55,
+    filterFreq: 1400,
+    filterQ: 3.0,
+    reverbDecay: 2.5,
+    delayTime: 0.33,
+    delayFeedback: 0.3,
+    lfoRate: 0.2,
+    lfoDepth: 50,
+    padWaveform: 'triangle',
+    padDetune: 4,
+    padGain: 0.07,
+    leadWaveform: 'triangle',
+    leadGain: 0.08,
+    subGain: 0.07,
+    crackleGain: 0.008,
+    driftAmount: 0.08,
+  },
+  {
+    name: 'l_stands_for_logarithm',
+    album: 'SHINIGAMI_PROTOCOL',
+    genre: 'mysterious ambient',
+    duration: 240,
+    mood: 'dark',
+    // C minor: C D Eb F G Ab Bb
+    scale: [261.63, 293.66, 311.13, 349.23, 392.00, 415.30, 466.16],
+    baseOctave: 0.5,
+    tempo: 0.2,
+    filterFreq: 600,
+    filterQ: 2.5,
+    reverbDecay: 5.0,
+    delayTime: 0.75,
+    delayFeedback: 0.5,
+    lfoRate: 0.06,
+    lfoDepth: 35,
+    padWaveform: 'sine',
+    padDetune: 3,
+    padGain: 0.06,
+    leadWaveform: 'triangle',
+    leadGain: 0.05,
+    subGain: 0.08,
+    crackleGain: 0.006,
+    driftAmount: 0.1,
+  },
+  {
+    name: 'low_of_solipsism_v2',
+    album: 'SHINIGAMI_PROTOCOL',
+    genre: 'gothic organ',
+    duration: 270,
+    mood: 'dark',
+    // D minor: D E F G A Bb C
+    scale: [146.83, 164.81, 174.61, 196.00, 220.00, 233.08, 261.63],
+    baseOctave: 0.25,
+    tempo: 0.12,
+    filterFreq: 350,
+    filterQ: 2.0,
+    reverbDecay: 8.0,
+    delayTime: 1.0,
+    delayFeedback: 0.55,
+    lfoRate: 0.02,
+    lfoDepth: 25,
+    padWaveform: 'sawtooth',
+    padDetune: 8,
+    padGain: 0.10,
+    leadWaveform: 'sine',
+    leadGain: 0.03,
+    subGain: 0.14,
+    crackleGain: 0.005,
+    driftAmount: 0.08,
+  },
+  {
+    name: 'requiem_for_a_daemon',
+    album: 'SHINIGAMI_PROTOCOL',
+    genre: 'somber choral',
+    duration: 230,
+    mood: 'dark',
+    // A minor pentatonic: A C D E G
+    scale: [220.00, 261.63, 293.66, 329.63, 392.00],
+    baseOctave: 0.5,
+    tempo: 0.22,
+    filterFreq: 500,
+    filterQ: 1.5,
+    reverbDecay: 6.0,
+    delayTime: 0.8,
+    delayFeedback: 0.45,
+    lfoRate: 0.04,
+    lfoDepth: 30,
+    padWaveform: 'triangle',
+    padDetune: 6,
+    padGain: 0.09,
+    leadWaveform: 'sine',
+    leadGain: 0.04,
+    subGain: 0.10,
+    crackleGain: 0.007,
+    driftAmount: 0.1,
+  },
+  {
+    name: 'kiras_kernel_panic',
+    album: 'SHINIGAMI_PROTOCOL',
+    genre: 'urgent dramatic',
+    duration: 185,
+    mood: 'glitch',
+    // Chromatic urgency: C Db D Eb E F F# G Ab A Bb B
+    scale: [261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88],
+    baseOctave: 1.0,
+    tempo: 0.8,
+    filterFreq: 2000,
+    filterQ: 7.0,
+    reverbDecay: 1.5,
+    delayTime: 0.2,
+    delayFeedback: 0.35,
+    lfoRate: 0.8,
+    lfoDepth: 180,
+    padWaveform: 'sawtooth',
+    padDetune: 15,
+    padGain: 0.06,
+    leadWaveform: 'square',
+    leadGain: 0.07,
+    subGain: 0.08,
+    crackleGain: 0.015,
+    driftAmount: 0.3,
+  },
+  {
+    name: 'near_death_experience',
+    album: 'SHINIGAMI_PROTOCOL',
+    genre: 'bittersweet resolve',
+    duration: 250,
+    mood: 'chill',
+    // A harmonic minor: A B C D E F G#
+    scale: [220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 415.30],
+    baseOctave: 0.5,
+    tempo: 0.28,
+    filterFreq: 900,
+    filterQ: 1.5,
+    reverbDecay: 4.5,
+    delayTime: 0.6,
+    delayFeedback: 0.4,
+    lfoRate: 0.08,
+    lfoDepth: 25,
+    padWaveform: 'triangle',
+    padDetune: 4,
+    padGain: 0.08,
+    leadWaveform: 'triangle',
+    leadGain: 0.06,
+    subGain: 0.09,
+    crackleGain: 0.010,
+    driftAmount: 0.08,
   },
 ];
 
@@ -1341,7 +1664,9 @@ function formatTime(s) {
 function updateDisplay() {
   var track = TRACKS[currentTrack];
   document.getElementById('npTrack').textContent = track.name;
-  document.getElementById('npGenre').textContent = track.genre;
+  var genreText = track.genre;
+  if (track.album) genreText = track.album + ' — ' + genreText;
+  document.getElementById('npGenre').textContent = genreText;
   updateTimeDisplay();
   renderQueue();
 }
@@ -1483,9 +1808,21 @@ function renderQueue() {
   var list = document.getElementById('queueList');
   list.innerHTML = '';
 
+  var lastAlbum = null;
   for (var i = 0; i < TRACKS.length; i++) {
     var idx = i;
     var track = TRACKS[idx];
+
+    // Insert album header when album changes
+    var album = track.album || 'SUBSTRATE_LOFI';
+    if (album !== lastAlbum) {
+      var header = document.createElement('li');
+      header.style.cssText = 'padding:8px 12px 4px;font-size:0.65rem;letter-spacing:0.15em;color:#e8a040;border-bottom:1px solid rgba(232,160,64,0.15);cursor:default;font-weight:600;';
+      header.textContent = album;
+      list.appendChild(header);
+      lastAlbum = album;
+    }
+
     var li = document.createElement('li');
     li.className = idx === currentTrack ? 'active-track' : '';
     li.innerHTML =
