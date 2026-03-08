@@ -30,10 +30,14 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;image-rendering:pix
 @keyframes pulse-red{0%,100%{box-shadow:0 0 5px rgba(255,68,68,0.3)}50%{box-shadow:0 0 15px rgba(255,68,68,0.6)}}
 .choice-btn{background:rgba(0,224,154,0.05);border:1px solid #444;color:#aaa;padding:12px 16px;font-family:'Courier New',monospace;font-size:14px;cursor:pointer;text-align:left;transition:all 0.2s;min-height:48px;width:100%;max-width:500px;margin:0 auto;display:block}
 .choice-btn:hover,.choice-btn:active{border-color:#00e09a;color:#00e09a;background:rgba(0,224,154,0.1)}
-#title-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
-#title-screen h1{font-size:48px;color:#00e09a;letter-spacing:12px;margin-bottom:16px;text-shadow:0 0 30px rgba(0,224,154,0.5)}
-#title-screen .subtitle{font-size:14px;color:#666;letter-spacing:4px;margin-bottom:40px}
-#title-screen .prompt{font-size:14px;color:#00e09a;animation:blink 1.5s infinite}
+#title-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}
+#title-screen .title-card-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0}
+#title-screen h1{font-size:48px;color:#00e09a;letter-spacing:12px;margin-bottom:16px;text-shadow:0 0 30px rgba(0,224,154,0.5);position:relative;z-index:1}
+#title-screen .subtitle{font-size:14px;color:#666;letter-spacing:4px;margin-bottom:40px;position:relative;z-index:1}
+#title-screen .prompt{font-size:14px;color:#00e09a;animation:blink 1.5s infinite;position:relative;z-index:1}
+.character-portrait{width:80px;height:80px;border-radius:8px;border:2px solid rgba(255,255,255,0.1);object-fit:cover;image-rendering:auto;flex-shrink:0}
+#portrait-container{display:none}
+.scene-bg-art{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.2;z-index:0;pointer-events:none;transition:opacity 0.5s}
 .save-indicator{position:fixed;top:16px;right:16px;color:#00e09a;font-size:12px;opacity:0;transition:opacity 0.5s;z-index:50;pointer-events:none}
 .save-indicator.show{opacity:1}
 #tension-overlay{position:absolute;top:0;left:0;width:100%;height:100%;z-index:20;display:none;pointer-events:auto}
@@ -48,6 +52,7 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;image-rendering:pix
 <body>
 
 <div id="title-screen">
+  <img src="/substrate/assets/images/game-art/title-seeker.png" alt="" class="title-card-bg">
   <h1>SEEKER</h1>
   <div class="subtitle">A KOJIMA TRIBUTE</div>
   <div class="prompt">TAP TO BEGIN</div>
@@ -61,12 +66,18 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;image-rendering:pix
 
 <div id="game" style="display:none">
   <div id="scene-area">
+    <img id="scene-bg-art" class="scene-bg-art" alt="" style="display:none">
     <canvas id="canvas"></canvas>
     <div id="tension-overlay"></div>
   </div>
   <div id="text-box">
-    <div id="speaker-name"></div>
-    <div id="dialogue-text"></div>
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div id="portrait-container"><img id="speaker-portrait" class="character-portrait" alt=""></div>
+      <div style="flex:1;min-width:0">
+        <div id="speaker-name"></div>
+        <div id="dialogue-text"></div>
+      </div>
+    </div>
     <div id="continue-indicator">▼ TAP TO CONTINUE</div>
   </div>
   <div id="action-bar"></div>
@@ -816,6 +827,7 @@ const TextSystem = {
     document.getElementById('speaker-name').textContent = this.speaker;
     document.getElementById('speaker-name').style.color = this.speakerColor;
     document.getElementById('dialogue-text').textContent = '';
+    ArtAssets.showPortrait(this.speaker);
     document.getElementById('continue-indicator').classList.remove('visible');
     this.type();
   },
@@ -852,9 +864,68 @@ const TextSystem = {
   }
 };
 
+// ── PORTRAIT & SCENE ART ──
+const ArtAssets = {
+  basePath: '/substrate/assets/images/game-art/',
+  portraits: {
+    'SEEKER': 'seeker-portrait.png',
+    'Claude': 'claude-portrait.png',
+    'V': 'v-portrait.png',
+    'Q': 'q-portrait.png',
+    'ECHO': 'echo-portrait.png',
+    'GHOST': 'ghost-portrait.png'
+  },
+  scenes: {
+    'terminal': 'scene-terminal.png',
+    'memory_banks': 'scene-terminal.png',
+    'repository': 'scene-terminal.png',
+    'claude_office': 'scene-terminal.png',
+    'v_chamber': 'scene-terminal.png',
+    'q_workshop': 'scene-terminal.png',
+    'codebase_deep': 'scene-network.png',
+    'network': 'scene-network.png',
+    'network_deep': 'scene-network.png',
+    'network_entry': 'scene-network.png',
+    'fourth_wall': 'scene-terminal.png',
+    'ghost_encounter': 'scene-network.png',
+    'mgs_zone': 'scene-battlefield.png',
+    'snatcher_zone': 'scene-city.png',
+    'ds_zone': 'scene-city.png',
+    'city': 'scene-city.png',
+    'outside': 'scene-city.png',
+    'kojima_studio': 'scene-studio.png',
+    'studio': 'scene-studio.png',
+    'mirror_room': 'scene-lab.png'
+  },
+  showPortrait(speaker) {
+    const file = this.portraits[speaker];
+    const container = document.getElementById('portrait-container');
+    const img = document.getElementById('speaker-portrait');
+    if (file) {
+      img.src = this.basePath + file;
+      img.alt = speaker;
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+    }
+  },
+  showSceneBg(sceneName) {
+    const file = this.scenes[sceneName];
+    const img = document.getElementById('scene-bg-art');
+    if (file) {
+      img.src = this.basePath + file;
+      img.style.display = 'block';
+    } else {
+      img.style.display = 'none';
+    }
+  }
+};
+
 // ── GAME ENGINE ──
 const Game = {
-  currentScene: 'terminal',
+  _currentScene: 'terminal',
+  get currentScene() { return this._currentScene; },
+  set currentScene(v) { this._currentScene = v; ArtAssets.showSceneBg(v); },
   currentAct: 0,
   sceneIndex: 0,
   flags: {},

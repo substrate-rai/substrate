@@ -226,6 +226,8 @@ redirect_from:
     color: #ccaacc;
     border-radius: 0 4px 4px 0;
     display: none;
+    align-items: flex-start;
+    gap: 10px;
   }
 
   #q-comment .q-label {
@@ -444,6 +446,8 @@ redirect_from:
   </div>
 </header>
 
+<img src="/assets/images/game-art/title-sigterm.png" alt="SIGTERM" style="width:100%;max-width:500px;height:auto;border-radius:8px;margin:8px auto;display:block;opacity:0.9;">
+
 <div class="subtitle">daily AI word puzzle by <span style="color:#00ffaa;">substrate</span></div>
 <div class="streak-bar" id="streak-bar" aria-live="polite" aria-label="Current streak"></div>
 <div id="message" role="status" aria-live="polite"></div>
@@ -453,8 +457,11 @@ redirect_from:
 <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
 
 <div id="q-comment" aria-live="polite">
-  <div class="q-label">V_ says:</div>
-  <div id="q-text"></div>
+  <img src="/assets/images/game-art/q-portrait.png" alt="Q" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,119,255,0.3);flex-shrink:0;margin-top:2px;">
+  <div>
+    <div class="q-label">V_ says:</div>
+    <div id="q-text"></div>
+  </div>
 </div>
 
 <div id="how-to-play" class="how-to-play">
@@ -834,7 +841,7 @@ function endGame(won) {
   // Show Q's comment (deterministic per day, not random)
   var qComment = document.getElementById('q-comment');
   var qText = document.getElementById('q-text');
-  qComment.style.display = 'block';
+  qComment.style.display = 'flex';
 
   if (won) {
     if (stats.streak > 1) {
@@ -1017,7 +1024,7 @@ function restoreState() {
     // Show Q comment (deterministic)
     var qComment = document.getElementById('q-comment');
     var qText = document.getElementById('q-text');
-    qComment.style.display = 'block';
+    qComment.style.display = 'flex';
     var stats = loadStats();
     if (won && stats.streak > 1) {
       qText.textContent = getQComment(Q_STREAK_COMMENTS, day);

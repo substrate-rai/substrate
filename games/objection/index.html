@@ -773,8 +773,35 @@ redirect_from:
     align-items: center;
     justify-content: center;
     text-align: center;
+    overflow: hidden;
   }
   #title-screen.hidden { display: none; }
+  .title-card-img {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+    position: relative;
+    z-index: 1;
+  }
+  .scene-bg-art {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.12;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .char-avatar-portrait {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
 
   .title-main {
     font-family: 'JetBrains Mono', monospace;
@@ -917,6 +944,7 @@ redirect_from:
 
 <!-- TITLE SCREEN -->
 <div id="title-screen" role="main" aria-label="Objection! Cyber Court title screen">
+  <img src="{{ site.baseurl }}/assets/images/game-art/title-objection.png" alt="OBJECTION! Cyber Court" class="title-card-img">
   <div class="title-main">OBJECTION!</div>
   <div class="title-sub">CYBER COURT</div>
   <div class="title-desc">
@@ -965,6 +993,7 @@ redirect_from:
 
   <!-- Scene -->
   <div id="scene">
+    <img src="{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png" alt="" class="scene-bg-art">
     <canvas id="court-bg-canvas"></canvas>
     <div class="scene-grid"></div>
     <div class="court-desk"></div>
@@ -1025,6 +1054,14 @@ redirect_from:
       <div class="char-info">
         <div class="char-role">Witness</div>
         <div class="char-card-name" id="card-witness-name">Witness</div>
+      </div>
+    </div>
+    <div class="char-card" id="card-claude" style="display:none;">
+      <span class="speaking-label">CONSULTING</span>
+      <img src="{{ site.baseurl }}/assets/images/game-art/claude-portrait.png" alt="Claude AI" class="char-avatar-portrait">
+      <div class="char-info">
+        <div class="char-role">AI Advisor</div>
+        <div class="char-card-name">Claude</div>
       </div>
     </div>
   </div>
@@ -1438,13 +1475,20 @@ redirect_from:
   function syncCards(speaker) {
     var atty = document.getElementById('card-attorney');
     var wit = document.getElementById('card-witness');
+    var claudeCard = document.getElementById('card-claude');
     atty.classList.remove('active');
     wit.classList.remove('active');
+    claudeCard.classList.remove('active');
     if (speaker === 'You') {
       atty.classList.add('active');
-    } else if (speaker !== 'Judge' && speaker !== 'Claude AI') {
+      claudeCard.style.display = 'none';
+    } else if (speaker === 'Claude AI') {
+      claudeCard.style.display = 'flex';
+      claudeCard.classList.add('active');
+    } else if (speaker !== 'Judge') {
       wit.classList.add('active');
       document.getElementById('card-witness-name').textContent = speaker;
+      claudeCard.style.display = 'none';
       // Update witness avatar letter
       var sym = speaker.split(' ').pop().charAt(0);
       wit.querySelector('.char-avatar').textContent = sym;

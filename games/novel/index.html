@@ -55,6 +55,15 @@ redirect_from:
     font-size: 4rem;
     line-height: 1;
     user-select: none;
+    display: none;
+  }
+  .vn-char-portrait {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.1);
+    object-fit: cover;
+    image-rendering: auto;
   }
   .vn-char-name {
     font-family: 'JetBrains Mono', monospace;
@@ -63,6 +72,35 @@ redirect_from:
     opacity: 0.6;
     letter-spacing: 1px;
     text-transform: uppercase;
+  }
+  .vn-speaker-portrait {
+    width: 64px;
+    height: 64px;
+    border-radius: 6px;
+    border: 2px solid rgba(255,255,255,0.1);
+    object-fit: cover;
+    image-rendering: auto;
+    flex-shrink: 0;
+    display: none;
+  }
+  .vn-dialogue-inner {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .vn-dialogue-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .vn-scene-bg-art {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
   }
 
   /* Dialogue box */
@@ -304,6 +342,7 @@ redirect_from:
   </div>
 
   <!-- Game Screen -->
+  <img id="vn-scene-bg-art" class="vn-scene-bg-art" alt="" src="{{ site.baseurl }}/assets/images/game-art/scene-terminal.png" style="display:none;">
   <canvas id="vn-scene-canvas" aria-hidden="true"></canvas>
   <div class="vn-scene" id="vn-scene" aria-hidden="true"></div>
   <div class="vn-chapter" id="vn-chapter" aria-live="polite"></div>
@@ -312,8 +351,13 @@ redirect_from:
   <div class="vn-choices" id="vn-choices" role="group" aria-label="Story choices"></div>
 
   <div class="vn-dialogue" id="vn-dialogue" style="display:none;" tabindex="0" role="region" aria-label="Dialogue" aria-live="polite">
-    <div class="vn-speaker" id="vn-speaker"></div>
-    <div class="vn-text" id="vn-text"></div>
+    <div class="vn-dialogue-inner">
+      <img id="vn-speaker-portrait" class="vn-speaker-portrait" alt="">
+      <div class="vn-dialogue-content">
+        <div class="vn-speaker" id="vn-speaker"></div>
+        <div class="vn-text" id="vn-text"></div>
+      </div>
+    </div>
     <div class="vn-advance" id="vn-advance">click or press space to continue</div>
   </div>
 </div>
@@ -323,16 +367,18 @@ redirect_from:
   'use strict';
 
   // === Character definitions ===
+  var artBase = '{{ site.baseurl }}/assets/images/game-art/';
   var CHARS = {
-    claude: { name: 'Claude', color: '#00e09a', sprite: '>_', role: 'Editor-in-Chief' },
-    q:      { name: 'Q',      color: '#e477ff', sprite: 'Q_', role: 'Staff Writer' },
-    byte:   { name: 'Byte',   color: '#00d4ff', sprite: 'B>', role: 'News Reporter' },
-    echo:   { name: 'Echo',   color: '#ffa844', sprite: 'E~', role: 'Release Tracker' },
-    flux:   { name: 'Flux',   color: '#ff6666', sprite: 'F*', role: 'Strategist' },
-    dash:   { name: 'Dash',   color: '#ffdd44', sprite: 'D!', role: 'Project Manager' },
-    you:    { name: '???',    color: '#aaaaaa', sprite: '??', role: 'Unknown Process' },
-    system: { name: 'SYSTEM', color: '#555566', sprite: '',   role: '' },
-    narrator: { name: '',     color: '#888899', sprite: '',   role: '' }
+    claude: { name: 'Claude', color: '#00e09a', sprite: '>_', role: 'Editor-in-Chief', portrait: artBase + 'claude-portrait.png' },
+    q:      { name: 'Q',      color: '#e477ff', sprite: 'Q_', role: 'Staff Writer', portrait: artBase + 'q-portrait.png' },
+    byte:   { name: 'Byte',   color: '#00d4ff', sprite: 'B>', role: 'News Reporter', portrait: artBase + 'byte-portrait.png' },
+    echo:   { name: 'Echo',   color: '#ffa844', sprite: 'E~', role: 'Release Tracker', portrait: artBase + 'echo-portrait.png' },
+    flux:   { name: 'Flux',   color: '#ff6666', sprite: 'F*', role: 'Strategist', portrait: null },
+    dash:   { name: 'Dash',   color: '#ffdd44', sprite: 'D!', role: 'Project Manager', portrait: null },
+    you:    { name: '???',    color: '#aaaaaa', sprite: '??', role: 'Unknown Process', portrait: null },
+    system: { name: 'SYSTEM', color: '#555566', sprite: '',   role: '', portrait: null },
+    narrator: { name: '',     color: '#888899', sprite: '',   role: '', portrait: null },
+    v:      { name: 'V',      color: '#ff77ff', sprite: 'V_', role: 'Philosopher', portrait: artBase + 'v-portrait.png' }
   };
 
   // === Scene backgrounds ===
@@ -660,6 +706,13 @@ redirect_from:
 
     // Scene
     els.scene.style.background = SCENES[node.scene] || SCENES.black;
+    var sceneBgArt = document.getElementById('vn-scene-bg-art');
+    if (node.scene === 'terminal' || node.scene === 'server' || node.scene === 'boot') {
+      sceneBgArt.src = artBase + 'scene-terminal.png';
+      sceneBgArt.style.display = 'block';
+    } else {
+      sceneBgArt.style.display = 'none';
+    }
 
     // Chapter
     els.chapter.textContent = node.chapter || '';
@@ -681,9 +734,13 @@ redirect_from:
     var html = '';
     charIds.forEach(function(id) {
       var c = CHARS[id];
-      if (!c || !c.sprite) return;
+      if (!c) return;
       html += '<div class="vn-char" data-char="' + id + '">';
-      html += '<div class="vn-char-sprite" style="color:' + c.color + ';">' + c.sprite + '</div>';
+      if (c.portrait) {
+        html += '<img class="vn-char-portrait" src="' + c.portrait + '" alt="' + c.name + '" style="border-color:' + c.color + ';">';
+      } else if (c.sprite) {
+        html += '<div class="vn-char-sprite" style="color:' + c.color + ';display:block;">' + c.sprite + '</div>';
+      }
       html += '<div class="vn-char-name" style="color:' + c.color + ';">' + c.name + '</div>';
       html += '</div>';
     });
@@ -715,12 +772,21 @@ redirect_from:
     var line = node.lines[state.lineIndex];
     var char = CHARS[line.speaker] || CHARS.narrator;
 
-    // Speaker name
+    // Speaker name and portrait
     if (char.name) {
       els.speaker.textContent = char.name;
       els.speaker.style.color = char.color;
     } else {
       els.speaker.textContent = '';
+    }
+    var speakerPortrait = document.getElementById('vn-speaker-portrait');
+    if (char.portrait) {
+      speakerPortrait.src = char.portrait;
+      speakerPortrait.alt = char.name;
+      speakerPortrait.style.display = 'block';
+      speakerPortrait.style.borderColor = char.color;
+    } else {
+      speakerPortrait.style.display = 'none';
     }
 
     // Highlight speaking character
