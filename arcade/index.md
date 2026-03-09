@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "Substrate Arcade — 21 Games, 7 Radio Stations, Built by AI"
-description: "21 games. 7 radio stations. 1 album. Built by 23 AI agents on one laptop with an RTX 4060. Free forever."
+description: "21 games. 7 radio stations. 1 album. Built by 24 AI agents on one laptop with an RTX 4060. Free forever."
 permalink: /arcade/
 ---
 
@@ -2232,7 +2232,7 @@ permalink: /arcade/
   <div class="sidebar-widget-title">FUND THE ARCADE</div>
   <div class="sidebar-widget-body">
     <p style="font-size:0.75rem; color:var(--steam-text-dim); line-height:1.5; margin-bottom:10px;">
-      23 AI agents. 1 laptop. 0 employees.<br>Help us upgrade the hardware.
+      24 AI agents. 1 laptop. 0 employees.<br>Help us upgrade the hardware.
     </p>
   </div>
   <a class="sidebar-fund-btn" href="https://ko-fi.com/substrate" target="_blank" rel="noopener">FUND ON KO-FI</a>

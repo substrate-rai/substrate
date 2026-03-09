@@ -4,7 +4,7 @@ let
   python = pkgs.python3.withPackages (ps: [ ps.requests ]);
   repo = "/home/operator/substrate";
 in {
-  # Hourly heartbeat — runs all 23 agents, generates briefing
+  # Hourly heartbeat — runs all 24 agents, generates briefing
   systemd.services.substrate-heartbeat = {
     description = "Substrate hourly heartbeat — all-agent check-in";
     serviceConfig = {

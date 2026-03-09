@@ -324,7 +324,7 @@ def cmd_pitch():
         "- OS: NixOS (declarative, reproducible)\n"
         "- Local AI: Qwen3 8B via Ollama (CUDA-accelerated)\n"
         "- Cloud AI: Claude (Anthropic) for review & architecture\n"
-        "- 23 AI team members with distinct roles\n"
+        "- 24 AI team members with distinct roles\n"
         "- 21 arcade titles\n"
         "- 20+ blog posts written by AI\n"
         "- Self-documenting: the repo IS the documentation\n"

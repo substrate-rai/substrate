@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Substrate orchestrator — hourly heartbeat for 23 agents.
+"""Substrate orchestrator — hourly heartbeat for 24 agents.
 
 Runs all agents in sequence, compiles a briefing, tracks accountability.
 Designed to run every hour via systemd timer. Never stops.
@@ -31,7 +31,7 @@ RETRO_DIR = os.path.join(REPO_DIR, "memory", "retro")
 ACCOUNTABILITY_LOG = os.path.join(REPO_DIR, "memory", "accountability.log")
 
 # ---------------------------------------------------------------------------
-# Agent registry — all 23 agents
+# Agent registry — all 24 agents
 # ---------------------------------------------------------------------------
 # (name, sigil, script, role, mode)
 # mode: "quick" = runs without AI (fast), "full" = uses Ollama (slower)
