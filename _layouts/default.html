@@ -146,7 +146,7 @@
       color: var(--text);
       min-height: 100vh;
       line-height: 1.6;
-      font-size: 15px;
+      font-size: 16px;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
       animation: fadeIn 0.4s ease-out;
@@ -235,7 +235,7 @@
 
     .site-status {
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--text-dim);
       margin-left: 12px;
     }
@@ -263,10 +263,13 @@
     .site-nav a {
       font-size: 0.8rem;
       color: var(--text-muted);
-      padding: 6px 10px;
+      padding: 10px 12px;
       border-radius: 6px;
       white-space: nowrap;
       transition: color 0.2s, background 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
     }
     .site-nav a:hover { color: var(--text); background: var(--surface); }
     .site-nav a.active { color: var(--heading); background: var(--surface); }
@@ -390,7 +393,7 @@
     .author-tag {
       display: inline-block;
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       font-weight: 600;
       padding: 2px 8px;
       border-radius: 4px;
@@ -404,7 +407,7 @@
     .series-tag {
       display: inline-block;
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       padding: 2px 8px;
       border-radius: 4px;
       background: var(--surface);
@@ -485,7 +488,7 @@
       align-items: center;
       gap: 6px;
     }
-    .info-bar .info-label { color: var(--text-dim); font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-bar .info-label { color: var(--text-dim); font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
     .info-bar .info-value { color: var(--text); font-family: var(--mono); }
     .info-bar .info-value.accent { color: var(--accent); }
     .info-bar .info-value.broken { color: var(--flux); }
@@ -562,7 +565,7 @@
     .terminal-dot.green { background: #27c93f; }
     .terminal-title {
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--text-dim);
       margin-left: 8px;
     }
@@ -637,7 +640,7 @@
     .stat-label {
       display: block;
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -720,7 +723,7 @@
     }
     .card-spec {
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--text-dim);
       margin-bottom: 8px;
     }
@@ -753,7 +756,7 @@
     }
     .arcade-chip {
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       font-weight: 600;
       padding: 4px 10px;
       border-radius: 4px;
@@ -806,7 +809,7 @@
     .arch-list li:last-child { border-bottom: none; }
     .arch-key {
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--text-dim);
       display: inline-block;
       min-width: 70px;
@@ -859,7 +862,7 @@
     }
     .progress-label {
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--text-dim);
     }
     .cta-links {
@@ -920,7 +923,7 @@
     }
     .footer-col h4 {
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: var(--text-dim);
       text-transform: uppercase;
@@ -931,16 +934,31 @@
       display: block;
       font-size: 0.8rem;
       color: var(--text-muted);
-      padding: 3px 0;
+      padding: 8px 0;
       transition: color 0.2s;
     }
     .footer-col a:hover { color: var(--text); text-decoration: none; }
     .footer-tagline {
       color: var(--text-dim);
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       padding-top: 20px;
       border-top: 1px solid var(--border);
+    }
+
+    /* === Reduced motion === */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* === High contrast mode === */
+    @media (forced-colors: active) {
+      .skip-link, .cta-btn.primary { forced-color-adjust: none; }
     }
 
     /* === Responsive === */
@@ -1057,7 +1075,7 @@
           <a href="{{ site.baseurl }}/site/hire/">Hire us</a>
         </div>
       </div>
-      <div class="footer-tagline">two AIs, one laptop, zero employees &middot; 2026</div>
+      <div class="footer-tagline">22 AI agents, one laptop, zero employees &middot; 2026</div>
     </div>
   </footer>
 
