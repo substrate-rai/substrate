@@ -10,7 +10,7 @@ redirect_from:
   /* ===== CAROUSEL CARD UI ===== */
   .staff-intro {
     font-size: 1.1rem;
-    color: var(--text-dim, #999);
+    color: var(--text-dim);
     line-height: 1.8;
     max-width: 640px;
     margin: 0 auto 2rem;
@@ -34,7 +34,7 @@ redirect_from:
     position: absolute;
     top: 0; left: 0;
     width: 100%;
-    background: #12121a;
+    background: var(--surface);
     border-radius: 16px;
     overflow: hidden;
     transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.45s ease;
@@ -66,7 +66,7 @@ redirect_from:
     height: 260px;
     overflow: hidden;
     position: relative;
-    background: #0a0a12;
+    background: var(--bg);
   }
   .card-portrait img {
     width: 100%;
@@ -85,7 +85,7 @@ redirect_from:
     position: absolute;
     bottom: 0; left: 0; right: 0;
     height: 80px;
-    background: linear-gradient(transparent, #12121a);
+    background: linear-gradient(transparent, var(--surface));
     z-index: 2;
   }
 
@@ -146,7 +146,7 @@ redirect_from:
   }
   .portrait-nav-arrow:hover {
     background: rgba(0,0,0,0.6);
-    color: #fff;
+    color: var(--text);
   }
   .portrait-nav-arrow.pg-prev { left: 8px; }
   .portrait-nav-arrow.pg-next { right: 8px; }
@@ -166,8 +166,8 @@ redirect_from:
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border: 1px solid var(--border, #444);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    background: var(--surface);
     font-size: 15px;
     cursor: pointer;
     display: flex;
@@ -180,7 +180,7 @@ redirect_from:
   }
   .card-play-btn:hover {
     background: rgba(255,255,255,0.1);
-    border-color: var(--text-dim, #666);
+    border-color: var(--text-dim);
   }
   .card-play-btn.playing {
     border-color: currentColor;
@@ -199,23 +199,23 @@ redirect_from:
   }
   .card-role {
     font-size: 0.8rem;
-    color: var(--text-dim, #888);
+    color: var(--text-dim);
     margin-bottom: 0.7rem;
   }
   .card-stats {
     font-size: 0.78rem;
-    color: var(--text-dim, #999);
+    color: var(--text-dim);
     line-height: 1.7;
     margin-bottom: 0.6rem;
   }
   .card-stats strong {
-    color: var(--text, #ccc);
+    color: var(--text);
   }
   .card-quote {
     font-style: italic;
     font-size: 0.82rem;
-    color: var(--text-dim, #999);
-    border-left: 2px solid var(--border, #444);
+    color: var(--text-dim);
+    border-left: 2px solid var(--border);
     padding-left: 0.8rem;
     margin: 0.5rem 0 0.8rem;
     line-height: 1.6;
@@ -255,27 +255,27 @@ redirect_from:
     transform: scale(0.95);
   }
   .btn-prev {
-    border-color: var(--text-dim, #888);
-    color: var(--text-dim, #888);
+    border-color: var(--text-dim);
+    color: var(--text-dim);
   }
   .btn-prev:hover {
     background: rgba(255,255,255,0.08);
     box-shadow: 0 0 16px rgba(255,255,255,0.15);
   }
   .btn-expand {
-    border-color: #77bbdd;
-    color: #77bbdd;
+    border-color: var(--link);
+    color: var(--link);
     width: 44px;
     height: 44px;
     font-size: 1.1rem;
   }
   .btn-expand:hover {
-    background: rgba(119,187,221,0.12);
-    box-shadow: 0 0 16px rgba(119,187,221,0.3);
+    background: color-mix(in srgb, var(--link) 12%, transparent);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--link) 30%, transparent);
   }
   .btn-next {
-    border-color: var(--text-dim, #888);
-    color: var(--text-dim, #888);
+    border-color: var(--text-dim);
+    color: var(--text-dim);
   }
   .btn-next:hover {
     background: rgba(255,255,255,0.08);
@@ -295,7 +295,7 @@ redirect_from:
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: var(--border, #333);
+    background: var(--border);
     border: none;
     padding: 0;
     cursor: pointer;
@@ -338,7 +338,7 @@ redirect_from:
     opacity: 0;
   }
   .expanded-card {
-    background: #12121a;
+    background: var(--surface);
     border-radius: 16px;
     max-width: 560px;
     width: 100%;
@@ -367,7 +367,7 @@ redirect_from:
     border-radius: 50%;
     border: 1px solid rgba(255,255,255,0.2);
     background: rgba(0,0,0,0.6);
-    color: #ccc;
+    color: var(--text);
     font-size: 1.2rem;
     cursor: pointer;
     display: flex;
@@ -403,7 +403,7 @@ redirect_from:
     position: absolute;
     bottom: 0; left: 0; right: 0;
     height: 100px;
-    background: linear-gradient(transparent, #12121a);
+    background: linear-gradient(transparent, var(--surface));
     z-index: 2;
   }
   .expanded-portrait .portrait-gallery-dots {
@@ -432,31 +432,31 @@ redirect_from:
   .expanded-story {
     font-size: 0.95rem;
     line-height: 1.8;
-    color: var(--text, #ccc);
+    color: var(--text);
   }
   .expanded-story p {
     margin: 0.8rem 0;
   }
   .expanded-quote {
-    border-left: 2px solid var(--text-dim, #555);
+    border-left: 2px solid var(--text-dim);
     padding-left: 1rem;
     margin: 1.2rem 0;
     font-style: italic;
-    color: var(--text-dim, #999);
+    color: var(--text-dim);
     font-size: 0.95rem;
     line-height: 1.7;
   }
   .expanded-arc {
     margin-top: 1.2rem;
     padding: 0.8rem 1rem;
-    background: rgba(255,255,255,0.03);
+    background: var(--surface);
     border-radius: 4px;
     font-size: 0.85rem;
-    color: var(--text-dim, #999);
+    color: var(--text-dim);
     line-height: 1.7;
   }
   .expanded-arc strong {
-    color: var(--text, #ccc);
+    color: var(--text);
     display: block;
     margin-bottom: 4px;
     font-size: 0.75rem;
@@ -468,11 +468,11 @@ redirect_from:
   .team-note {
     margin-top: 2rem;
     padding: 1.5rem;
-    border: 1px dashed var(--border, #333);
+    border: 1px dashed var(--border);
     border-radius: 6px;
     background: rgba(0,0,0,0.2);
     font-size: 0.9rem;
-    color: var(--text-dim, #999);
+    color: var(--text-dim);
     line-height: 1.7;
     max-width: 560px;
     margin-left: auto;
@@ -484,7 +484,7 @@ redirect_from:
   .keyboard-hint {
     text-align: center;
     font-size: 0.7rem;
-    color: var(--text-dim, #555);
+    color: var(--text-dim);
     margin-top: 0.5rem;
     font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
     user-select: none;
@@ -492,7 +492,7 @@ redirect_from:
   .keyboard-hint kbd {
     display: inline-block;
     padding: 1px 5px;
-    border: 1px solid var(--border, #444);
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.65rem;
     background: rgba(255,255,255,0.04);

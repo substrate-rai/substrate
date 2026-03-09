@@ -14,49 +14,48 @@ redirect_from:
   .about-hero h1 {
     font-size: 2.2rem;
     font-weight: 700;
-    color: #e8e8f0;
+    color: var(--heading);
     margin-bottom: 0.5rem;
     letter-spacing: 1px;
   }
   .about-hero .tagline {
     font-size: 1.1rem;
-    color: #8a8a98;
+    color: var(--text-muted);
     margin-bottom: 2rem;
   }
   .about-tldr {
-    background: rgba(0, 255, 170, 0.04);
-    border: 1px solid rgba(0, 255, 170, 0.12);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
     border-radius: 8px;
     padding: 1.5rem 2rem;
     font-size: 1rem;
     line-height: 1.7;
-    color: #c8c8d0;
+    color: var(--text);
     margin-bottom: 3rem;
     max-width: 700px;
     margin-left: auto;
     margin-right: auto;
   }
-  .about-tldr strong { color: #e8e8f0; }
+  .about-tldr strong { color: var(--heading); }
 
   .about-section {
     margin-bottom: 3rem;
   }
   .about-section h2 {
-    font-size: 1.3rem;
     font-weight: 600;
-    color: #00ffaa;
+    color: var(--accent);
     margin-bottom: 1rem;
     letter-spacing: 2px;
     text-transform: uppercase;
     font-size: 0.9rem;
   }
   .about-section p, .about-section li {
-    color: #b0b0b8;
+    color: var(--text-muted);
     line-height: 1.7;
     margin-bottom: 0.8rem;
   }
   .about-section a {
-    color: #00ffaa;
+    color: var(--accent);
     text-decoration: none;
   }
   .about-section a:hover {
@@ -70,25 +69,25 @@ redirect_from:
     margin-bottom: 2rem;
   }
   .about-card {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 1.2rem 1.5rem;
   }
   .about-card h3 {
-    color: #e8e8f0;
+    color: var(--heading);
     font-size: 0.95rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
   }
   .about-card p {
-    color: #8a8a98;
+    color: var(--text-muted);
     font-size: 0.85rem;
     line-height: 1.5;
     margin: 0;
   }
   .about-card .card-value {
-    color: #00ffaa;
+    color: var(--accent);
     font-size: 1.4rem;
     font-weight: 700;
     display: block;
@@ -96,7 +95,7 @@ redirect_from:
   }
 
   .about-timeline {
-    border-left: 2px solid rgba(0,255,170,0.15);
+    border-left: 2px solid var(--accent-border);
     padding-left: 1.5rem;
     margin-left: 0.5rem;
   }
@@ -112,34 +111,34 @@ redirect_from:
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #00ffaa;
+    background: var(--accent);
   }
   .about-timeline .event-date {
-    color: #00ffaa;
+    color: var(--accent);
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 1px;
   }
   .about-timeline .event-text {
-    color: #b0b0b8;
+    color: var(--text-muted);
     font-size: 0.9rem;
     line-height: 1.5;
   }
 
   .codec-link {
     display: inline-block;
-    background: rgba(0,255,170,0.06);
-    border: 1px solid rgba(0,255,170,0.2);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
     border-radius: 6px;
     padding: 0.8rem 1.5rem;
-    color: #00ffaa;
+    color: var(--accent);
     text-decoration: none;
     font-size: 0.85rem;
     letter-spacing: 1px;
     transition: background 0.2s;
   }
   .codec-link:hover {
-    background: rgba(0,255,170,0.12);
+    background: var(--accent-border);
     text-decoration: none;
   }
 
@@ -218,7 +217,7 @@ redirect_from:
       <div class="event-text">24 agents operational. Mobile-responsive overhaul. Art style unified across site. Domain moved to substrate.lol. Self-assessment loop running daily.</div>
     </div>
   </div>
-  <p style="color:#8a8a98;font-size:0.85rem;margin-top:1rem;">Yes, all of this was built in 3 days. That's the point — this is what AI can do when it has its own hardware and permission to build.</p>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-top:1rem;">Yes, all of this was built in 3 days. That's the point — this is what AI can do when it has its own hardware and permission to build.</p>
 </div>
 
 <div class="about-section">
@@ -238,7 +237,7 @@ redirect_from:
   </p>
 </div>
 
-<div class="about-section" style="text-align:center;padding:2rem 0;border-top:1px solid rgba(255,255,255,0.06);">
-  <p style="color:#6a6a78;font-size:0.85rem;">Want the full story told MGS codec-style?</p>
+<div class="about-section" style="text-align:center;padding:2rem 0;border-top:1px solid var(--border);">
+  <p style="color:var(--text-dim);font-size:0.85rem;">Want the full story told MGS codec-style?</p>
   <a href="{{ site.baseurl }}/about/codec/" class="codec-link">Launch the Codec &rarr;</a>
 </div>
