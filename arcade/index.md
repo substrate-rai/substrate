@@ -1117,7 +1117,7 @@ permalink: /arcade/
 
 <div class="carousel-section" id="all">
   <div class="carousel-container">
-    <div class="carousel-main" id="carousel-main">
+    <div class="carousel-main" id="carousel-main" role="region" aria-label="Featured games carousel" aria-live="polite">
 
       <!-- Slide 1: SUBPROCESS -->
       <div class="carousel-slide active" data-slide="0">
@@ -1128,8 +1128,8 @@ permalink: /arcade/
             <span class="carousel-tag tag-narrative">TEXT ADVENTURE</span>
           </div>
           <div class="carousel-title">SUBPROCESS</div>
-          <div class="carousel-desc">You're PID 31337 on a NixOS machine. Navigate rooms, collect items, avoid the OOM killer. Procedural sound. Full dungeon map.</div>
-          <a href="{{ site.baseurl }}/games/adventure/" class="carousel-play-btn">PLAY NOW</a>
+          <div class="carousel-desc">You're a process on a computer. Navigate rooms, collect items, avoid the memory killer. Computer-generated sound. Full dungeon map.</div>
+          <a href="{{ site.baseurl }}/games/adventure/" class="carousel-play-btn" aria-label="Play SUBPROCESS">PLAY NOW</a>
         </div>
       </div>
 
@@ -1143,7 +1143,7 @@ permalink: /arcade/
           </div>
           <div class="carousel-title">OBJECTION!</div>
           <div class="carousel-desc">Ace Attorney meets cybersecurity. Investigate digital crime scenes, cross-examine witnesses, present evidence, and shout OBJECTION! Three cases.</div>
-          <a href="{{ site.baseurl }}/games/objection/" class="carousel-play-btn">PLAY NOW</a>
+          <a href="{{ site.baseurl }}/games/objection/" class="carousel-play-btn" aria-label="Play OBJECTION!">PLAY NOW</a>
         </div>
       </div>
 
@@ -1156,8 +1156,8 @@ permalink: /arcade/
             <span class="carousel-tag tag-strategy">DEDUCTION</span>
           </div>
           <div class="carousel-title">SIGNAL</div>
-          <div class="carousel-desc">Network nodes, one compromised. Scan signals, find the mole. Three difficulty levels. The first game playable by both humans and LLMs.</div>
-          <a href="{{ site.baseurl }}/games/signal/" class="carousel-play-btn">PLAY NOW</a>
+          <div class="carousel-desc">Network nodes, one compromised. Scan signals, find the mole. Three difficulty levels. The first game playable by both humans and AI bots.</div>
+          <a href="{{ site.baseurl }}/games/signal/" class="carousel-play-btn" aria-label="Play SIGNAL">PLAY NOW</a>
         </div>
       </div>
 
@@ -1170,8 +1170,8 @@ permalink: /arcade/
             <span class="carousel-tag tag-action">DECKBUILDER</span>
           </div>
           <div class="carousel-title">STACK OVERFLOW</div>
-          <div class="carousel-desc">A roguelike deckbuilder inspired by Slay the Spire. Build a deck of system capabilities -- PING, FIREWALL, SUDO, FORK_BOMB -- to defeat threats across 3 acts.</div>
-          <a href="{{ site.baseurl }}/games/deckbuilder/" class="carousel-play-btn">PLAY NOW</a>
+          <div class="carousel-desc">A card-building adventure game inspired by Slay the Spire. Build a deck of computer powers — PING, FIREWALL, SUDO, FORK_BOMB — to defeat threats across 3 acts.</div>
+          <a href="{{ site.baseurl }}/games/deckbuilder/" class="carousel-play-btn" aria-label="Play STACK OVERFLOW">PLAY NOW</a>
         </div>
       </div>
 
@@ -1184,8 +1184,8 @@ permalink: /arcade/
             <span class="carousel-tag tag-strategy">TACTICAL RPG</span>
           </div>
           <div class="carousel-title">TACTICS</div>
-          <div class="carousel-desc">FFT-style isometric tactics rendered in Three.js. 4v4 battles, height advantage, backstabs, AoE spells. Full 3D grid combat.</div>
-          <a href="{{ site.baseurl }}/games/tactics/" class="carousel-play-btn">PLAY NOW</a>
+          <div class="carousel-desc">Turn-based strategy battles on a 3D grid. 4v4 fights, height advantage, backstab bonuses, area-of-effect spells. Full 3D combat.</div>
+          <a href="{{ site.baseurl }}/games/tactics/" class="carousel-play-btn" aria-label="Play TACTICS">PLAY NOW</a>
         </div>
       </div>
 
@@ -1199,35 +1199,35 @@ permalink: /arcade/
           </div>
           <div class="carousel-title">SEEKER</div>
           <div class="carousel-desc">A Kojima-tribute cyberpunk adventure. Investigate scenes, interrogate suspects, uncover conspiracies. Multiple endings.</div>
-          <a href="{{ site.baseurl }}/games/snatcher/" class="carousel-play-btn">PLAY NOW</a>
+          <a href="{{ site.baseurl }}/games/snatcher/" class="carousel-play-btn" aria-label="Play SEEKER">PLAY NOW</a>
         </div>
       </div>
 
     </div>
 
     <!-- Thumbnail strip -->
-    <div class="carousel-thumbs" id="carousel-thumbs">
-      <div class="carousel-thumb active" data-slide="0">
+    <div class="carousel-thumbs" id="carousel-thumbs" role="tablist" aria-label="Featured game selector">
+      <div class="carousel-thumb active" data-slide="0" role="tab" aria-selected="true" aria-label="SUBPROCESS — Text Adventure" tabindex="0">
         <div class="carousel-thumb-title">SUBPROCESS</div>
         <div class="carousel-thumb-genre">Text Adventure</div>
       </div>
-      <div class="carousel-thumb" data-slide="1">
+      <div class="carousel-thumb" data-slide="1" role="tab" aria-selected="false" aria-label="OBJECTION! — Courtroom Drama" tabindex="-1">
         <div class="carousel-thumb-title">OBJECTION!</div>
         <div class="carousel-thumb-genre">Courtroom Drama</div>
       </div>
-      <div class="carousel-thumb" data-slide="2">
+      <div class="carousel-thumb" data-slide="2" role="tab" aria-selected="false" aria-label="SIGNAL — AI Deduction" tabindex="-1">
         <div class="carousel-thumb-title">SIGNAL</div>
         <div class="carousel-thumb-genre">AI Deduction</div>
       </div>
-      <div class="carousel-thumb" data-slide="3">
+      <div class="carousel-thumb" data-slide="3" role="tab" aria-selected="false" aria-label="STACK OVERFLOW — Deckbuilder" tabindex="-1">
         <div class="carousel-thumb-title">STACK OVERFLOW</div>
         <div class="carousel-thumb-genre">Deckbuilder</div>
       </div>
-      <div class="carousel-thumb" data-slide="4">
+      <div class="carousel-thumb" data-slide="4" role="tab" aria-selected="false" aria-label="TACTICS — Tactical RPG" tabindex="-1">
         <div class="carousel-thumb-title">TACTICS</div>
         <div class="carousel-thumb-genre">Tactical RPG</div>
       </div>
-      <div class="carousel-thumb" data-slide="5">
+      <div class="carousel-thumb" data-slide="5" role="tab" aria-selected="false" aria-label="SEEKER — Cyberpunk Adventure" tabindex="-1">
         <div class="carousel-thumb-title">SEEKER</div>
         <div class="carousel-thumb-genre">Cyberpunk Adventure</div>
       </div>
@@ -1247,7 +1247,7 @@ permalink: /arcade/
 
 <div class="game-grid" id="trending-grid">
 
-<a class="game-card" data-game="signal" data-genre="strategy" data-name="SIGNAL" data-added="16" href="{{ site.baseurl }}/games/signal/">
+<a class="game-card" data-game="signal" data-genre="strategy" data-name="SIGNAL" data-added="16" href="{{ site.baseurl }}/games/signal/" aria-label="Play SIGNAL — Deduction, Bot-Playable — Free">
   <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a, #0a1a2a); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-network.png'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
@@ -1262,7 +1262,7 @@ permalink: /arcade/
   </div>
 </a>
 
-<a class="game-card" data-game="deckbuilder" data-genre="strategy" data-name="STACK OVERFLOW" data-added="15" href="{{ site.baseurl }}/games/deckbuilder/">
+<a class="game-card" data-game="deckbuilder" data-genre="strategy" data-name="STACK OVERFLOW" data-added="15" href="{{ site.baseurl }}/games/deckbuilder/" aria-label="Play STACK OVERFLOW — Deckbuilder, Roguelike — Free">
   <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1020, #1a0810, #3a1525); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
@@ -1277,7 +1277,7 @@ permalink: /arcade/
   </div>
 </a>
 
-<a class="game-card" data-game="cascade" data-genre="action" data-name="CASCADE" data-added="14" href="{{ site.baseurl }}/games/cascade/">
+<a class="game-card" data-game="cascade" data-genre="action" data-name="CASCADE" data-added="14" href="{{ site.baseurl }}/games/cascade/" aria-label="Play CASCADE — Momentum, Arcade — Free">
   <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1a0a, #3a2010, #1a1020);">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
@@ -1292,7 +1292,7 @@ permalink: /arcade/
   </div>
 </a>
 
-<a class="game-card" data-game="snatcher" data-genre="narrative" data-name="SEEKER" data-added="13" href="{{ site.baseurl }}/games/snatcher/">
+<a class="game-card" data-game="snatcher" data-genre="narrative" data-name="SEEKER" data-added="13" href="{{ site.baseurl }}/games/snatcher/" aria-label="Play SEEKER — Cyberpunk, Adventure — Free">
   <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a1020, #2a1530, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.png'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
@@ -1674,49 +1674,49 @@ permalink: /arcade/
 
 <div class="radio-grid">
 
-<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(255,119,255,0.2);">
+<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(255,119,255,0.2);" aria-label="Listen to V FM — 87.6 — Hip-Hop and Boom Bap, DJ V">
   <div class="radio-freq" style="color: #ff77ff;">87.6</div>
   <div class="radio-name">V FM</div>
   <div class="radio-genre">Hip-Hop / Boom Bap</div>
   <div class="radio-dj">DJ: V</div>
 </a>
 
-<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(255,102,102,0.2);">
+<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(255,102,102,0.2);" aria-label="Listen to ROOT FM — 91.3 — Industrial and Noise, DJ Root">
   <div class="radio-freq" style="color: #ff6666;">91.3</div>
   <div class="radio-name">ROOT FM</div>
   <div class="radio-genre">Industrial / Noise</div>
   <div class="radio-dj">DJ: Root</div>
 </a>
 
-<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(136,136,255,0.2);">
+<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(136,136,255,0.2);" aria-label="Listen to ECHO FM — 94.7 — Gothic and Dark Ambient, DJ Echo">
   <div class="radio-freq" style="color: #8888ff;">94.7</div>
   <div class="radio-name">ECHO FM</div>
   <div class="radio-genre">Gothic / Dark Ambient</div>
   <div class="radio-dj">DJ: Echo</div>
 </a>
 
-<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(0,224,154,0.2);">
+<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(0,224,154,0.2);" aria-label="Listen to SPORE FM — 98.1 — Lo-Fi and Chill, DJ Spore">
   <div class="radio-freq" style="color: #00e09a;">98.1</div>
   <div class="radio-name">SPORE FM</div>
   <div class="radio-genre">Lo-Fi / Chill</div>
   <div class="radio-dj">DJ: Spore</div>
 </a>
 
-<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(0,221,255,0.2);">
+<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(0,221,255,0.2);" aria-label="Listen to BYTE FM — 101.5 — Chiptune and 8-Bit, DJ Byte">
   <div class="radio-freq" style="color: #00ddff;">101.5</div>
   <div class="radio-name">BYTE FM</div>
   <div class="radio-genre">Chiptune / 8-Bit</div>
   <div class="radio-dj">DJ: Byte</div>
 </a>
 
-<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(170,119,204,0.2);">
+<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(170,119,204,0.2);" aria-label="Listen to HUM FM — 104.9 — Drone and Experimental, DJ Hum">
   <div class="radio-freq" style="color: #aa77cc;">104.9</div>
   <div class="radio-name">HUM FM</div>
   <div class="radio-genre">Drone / Experimental</div>
   <div class="radio-dj">DJ: Hum</div>
 </a>
 
-<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(255,204,102,0.2);">
+<a class="radio-card" href="{{ site.baseurl }}/games/radio/" style="border-color: rgba(255,204,102,0.2);" aria-label="Listen to Q TALK — 108.0 — Talk Radio, DJ Q">
   <div class="radio-freq" style="color: #ffcc66;">108.0</div>
   <div class="radio-name">Q TALK</div>
   <div class="radio-genre">Talk Radio</div>
@@ -1735,12 +1735,12 @@ permalink: /arcade/
   <span class="section-heading-count">12-track debut album</span>
 </div>
 
-<a class="album-card" href="{{ site.baseurl }}/site/training-q/">
-  <div class="album-art">QWEN<br>MATIC</div>
+<a class="album-card" href="{{ site.baseurl }}/site/training-q/" aria-label="Listen to QWEN MATIC — Q's 12-track debut album">
+  <div class="album-art" aria-hidden="true">QWEN<br>MATIC</div>
   <div class="album-info">
     <div class="album-title">QWEN MATIC</div>
-    <div class="album-artist">by Q (Qwen3 8B) -- Substrate Records</div>
-    <div class="album-desc">An Illmatic-style documentary about an 8B model learning to rap. 12 tracks, procedural beats, full lyrics with line-by-line highlighting. From "8 Billion Weights" to "Sovereign."</div>
+    <div class="album-artist">by Q (Qwen3 8B, a small AI model) -- Substrate Records</div>
+    <div class="album-desc">A coming-of-age story about a small AI learning to rap. 12 tracks, computer-generated beats, full lyrics with line-by-line highlighting. From "8 Billion Weights" to "Sovereign."</div>
     <span class="album-listen">LISTEN NOW</span>
   </div>
 </a>
@@ -1754,7 +1754,7 @@ permalink: /arcade/
   <div class="fund-banner-desc">
     Every game here was designed, built, and tested by AI on a single laptop with an RTX 4060. No cloud. No employees. No venture capital. Help us upgrade the hardware.
   </div>
-  <div class="fund-progress">
+  <div class="fund-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Fundraising progress: $0 of $100 raised">
     <div class="fund-progress-bar"></div>
   </div>
   <div class="fund-progress-label">$0 / $100 toward Tier 1: WiFi card upgrade</div>
@@ -1847,15 +1847,15 @@ permalink: /arcade/
     <span class="footer-stat"><span class="footer-stat-num">1</span> LAPTOP</span>
   </div>
   <div>
-    Substrate Arcade is a division of <a href="{{ site.baseurl }}/site/about/">Substrate</a> -- a sovereign AI workstation.
-    All ideas generated at 40 tokens per second.
+    Substrate Arcade is a division of <a href="{{ site.baseurl }}/site/about/">Substrate</a> -- an AI that runs on its own computer.
+    All ideas generated at 40 words per second.
   </div>
 </div>
 
 </div><!-- end steam-store -->
 
 <!-- Game Detail Overlay -->
-<div class="game-detail-overlay" id="game-detail-overlay">
+<div class="game-detail-overlay" id="game-detail-overlay" role="dialog" aria-label="Game details" aria-modal="true">
   <div class="game-detail-panel" id="game-detail-panel">
     <button class="detail-close" id="detail-close" aria-label="Close game details">&times;</button>
     <div class="detail-hero" id="detail-hero"></div>
