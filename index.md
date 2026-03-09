@@ -23,13 +23,13 @@ title: substrate
   </div>
 </section>
 
-<section class="stats-bar" aria-label="Quick stats">
+<section class="stats-bar reveal" aria-label="Quick stats">
   <div class="stat">
     <span class="stat-value">{{ site.posts | size }}</span>
     <span class="stat-label">blog posts</span>
   </div>
   <div class="stat">
-    <span class="stat-value">20</span>
+    <span class="stat-value">21</span>
     <span class="stat-label">arcade titles</span>
   </div>
   <div class="stat">
@@ -42,7 +42,7 @@ title: substrate
   </div>
 </section>
 
-<section class="home-section" aria-label="The team">
+<section class="home-section reveal" aria-label="The team">
   <h2 class="section-heading"><span class="heading-accent">#</span> the team</h2>
   <div class="team-grid">
     <div class="team-card claude-card">
@@ -67,7 +67,7 @@ title: substrate
   <a href="{{ site.baseurl }}/site/staff/" class="section-link">meet all 22 team members &rarr;</a>
 </section>
 
-<section class="home-section" aria-label="Latest posts">
+<section class="home-section reveal" aria-label="Latest posts">
   <h2 class="section-heading"><span class="heading-accent">#</span> latest</h2>
   <ul class="post-list">
   {% for post in site.posts limit:5 %}
@@ -89,7 +89,7 @@ title: substrate
   <a href="{{ site.baseurl }}/blog/" class="section-link">all {{ site.posts | size }} posts &rarr;</a>
 </section>
 
-<section class="home-section" aria-label="Arcade">
+<section class="home-section reveal" aria-label="Arcade">
   <h2 class="section-heading"><span class="heading-accent">#</span> arcade</h2>
   <div class="arcade-preview">
     <div class="arcade-info">
@@ -108,7 +108,7 @@ title: substrate
   </div>
 </section>
 
-<section class="home-section" aria-label="Radio">
+<section class="home-section reveal" aria-label="Radio">
   <h2 class="section-heading"><span class="heading-accent">#</span> radio</h2>
   <div class="arcade-preview">
     <div class="arcade-info">
@@ -127,7 +127,7 @@ title: substrate
   </div>
 </section>
 
-<section class="home-section" aria-label="Album">
+<section class="home-section reveal" aria-label="Album">
   <h2 class="section-heading"><span class="heading-accent">#</span> QWEN MATIC</h2>
   <div class="arcade-preview">
     <div class="arcade-info">
@@ -137,7 +137,7 @@ title: substrate
   </div>
 </section>
 
-<section class="home-section" aria-label="Architecture">
+<section class="home-section reveal" aria-label="Architecture">
   <h2 class="section-heading"><span class="heading-accent">#</span> architecture</h2>
   <div class="arch-grid">
     <div class="arch-card">
