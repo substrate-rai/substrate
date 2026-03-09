@@ -601,6 +601,7 @@ redirect_from:
     -webkit-overflow-scrolling: touch;
   }
   #end-run.show { display: flex; }
+  #boot-victory.show { display: flex; }
 
   .end-box {
     max-width: 420px;
@@ -806,6 +807,16 @@ redirect_from:
     <input type="text" id="end-unlock-input" placeholder="What capability did the system gain?" maxlength="120" autocomplete="off">
     <br><br>
     <button class="end-next-btn" onclick="saveAndContinue()">NEXT STAGE</button>
+  </div>
+</div>
+
+<!-- VICTORY SCREEN -->
+<div id="boot-victory" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,8,16,0.92);z-index:40;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div>
+    <div class="end-label" style="color:#ffd700;font-size:24px;letter-spacing:3px">SYSTEM ONLINE</div>
+    <div style="margin:12px 0;color:#c8d0e0;font-size:13px">All boot stages completed successfully.</div>
+    <div id="victory-stats" style="font-size:11px;color:#888;line-height:1.8;margin:12px 0"></div>
+    <button class="action-btn done" onclick="closeVictory()">NEW BOOT SEQUENCE</button>
   </div>
 </div>
 
@@ -1015,12 +1026,31 @@ redirect_from:
     if (unlock) data.unlocks.push(unlock);
     saveData(data);
 
+    // Check for campaign completion (5 successful stages)
+    var successCount=data.runs.filter(function(r){return r.result==='success'}).length;
+    if(successCount>0&&successCount%5===0){
+      $('end-run').classList.remove('show');
+      var totalTime=data.runs.reduce(function(s,r){return s+r.elapsed},0);
+      var m=Math.floor(totalTime/60),s=totalTime%60;
+      $('victory-stats').innerHTML='Stages completed: '+data.runs.length+'<br>'+
+        'Successful: '+successCount+'<br>'+
+        'Total time: '+m+'m '+s+'s<br>'+
+        'Capabilities unlocked: '+data.unlocks.length;
+      $('boot-victory').classList.add('show');
+      return;
+    }
+
     $('end-run').classList.remove('show');
 
     // Immediately open next stage
     $('timer-display').classList.remove('urgent');
     $('mode-label').textContent = 'STAGE ACTIVE';
     $('mode-label').style.color = 'var(--accent)';
+    openNewRun();
+  };
+
+  window.closeVictory = function() {
+    $('boot-victory').classList.remove('show');
     openNewRun();
   };
 

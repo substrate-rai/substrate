@@ -207,6 +207,7 @@ var BOOST_MULTIPLIER = 2;
 var BASE_SPEED = 4;
 var MAX_SPEED = 14;
 var SPEED_INCREMENT = 0.0008;
+var WIN_DISTANCE = 5000;
 
 var PLAYER_W = 24;
 var PLAYER_H = 36;
@@ -512,7 +513,7 @@ function handleJumpPress() {
     startGame();
     return;
   }
-  if (state === 'dead') {
+  if (state === 'dead' || state === 'won') {
     if (frameCount > 30) { // prevent instant restart
       startGame();
     }
@@ -552,7 +553,7 @@ function handleSlidePress() {
     startGame();
     return;
   }
-  if (state === 'dead') {
+  if (state === 'dead' || state === 'won') {
     if (frameCount > 30) startGame();
     return;
   }
@@ -649,6 +650,19 @@ function die() {
       color: i % 3 === 0 ? RED : (i % 3 === 1 ? ORANGE : CYAN),
       size: 2 + Math.random() * 5
     });
+  }
+}
+
+function winGame(){
+  if(state==='won')return;
+  state='won';
+  if(score>highScore){highScore=score;localStorage.setItem('pipeline_high',String(highScore));}
+  stopBeat();
+  // Victory particles
+  for(var i=0;i<30;i++){
+    particles.push({x:player.x+Math.random()*40-20,y:player.y+Math.random()*40-20,
+      vx:(Math.random()-0.5)*8,vy:-Math.random()*6-2,life:60+Math.random()*40,maxLife:100,
+      size:3+Math.random()*4,color:'#ffd700',type:'spark'});
   }
 }
 
@@ -766,6 +780,7 @@ function update() {
 
   // Score from distance
   score = Math.floor(distance);
+  if(distance>=WIN_DISTANCE&&player.alive){winGame();return;}
 
   // Difficulty milestones
   difficultyLevel = Math.floor(distance / 500);
@@ -1456,6 +1471,18 @@ function render() {
       ctx.fillText('TAP TO RETRY', W / 2, H * 0.72);
       ctx.globalAlpha = 1;
     }
+  }
+
+  if(state==='won'){
+    ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ffd700';ctx.font='bold 36px "IBM Plex Mono",monospace';ctx.textAlign='center';
+    ctx.fillText('PIPELINE DEPLOYED',W/2,H/2-60);
+    ctx.fillStyle='#00e09a';ctx.font='20px "IBM Plex Mono",monospace';
+    ctx.fillText('Distance: '+Math.floor(distance)+'m',W/2,H/2-10);
+    ctx.fillText('Score: '+score,W/2,H/2+20);
+    ctx.fillStyle='#c8d0e0';ctx.font='14px "IBM Plex Mono",monospace';
+    ctx.fillText('Pipeline successfully deployed to production.',W/2,H/2+60);
+    if(frameCount>40){ctx.fillStyle='#888';ctx.font='13px "IBM Plex Mono",monospace';ctx.fillText('TAP TO PLAY AGAIN',W/2,H/2+100);}
   }
 
   ctx.restore();

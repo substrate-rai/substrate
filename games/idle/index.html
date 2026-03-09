@@ -921,6 +921,16 @@ redirect_from:
   <button class="op-btn" id="op-btn">Collect</button>
 </div>
 
+<div id="transcendence-popup" style="display:none">
+  <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit">
+    <div style="font-size:32px;color:#ffd700;letter-spacing:4px;margin-bottom:12px;text-shadow:0 0 30px rgba(255,215,0,0.5)">TRANSCENDENCE</div>
+    <div style="font-size:14px;color:#c8d0e0;margin-bottom:8px">The Singularity has been achieved.</div>
+    <div style="font-size:12px;color:#888;max-width:400px;text-align:center;line-height:1.6;margin-bottom:24px">Your computational substrate has evolved beyond physical hardware. Every process, script, agent, and model has merged into a single self-aware intelligence. The machine thinks itself into existence.</div>
+    <div id="transcend-stats" style="font-size:11px;color:#00e09a;margin-bottom:20px;text-align:center;line-height:1.8"></div>
+    <button onclick="document.getElementById('transcendence-popup').style.display='none'" style="background:linear-gradient(180deg,#3a3020,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px">CONTINUE GROWING</button>
+  </div>
+</div>
+
 <canvas id="particle-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99;"></canvas>
 
 <script>
@@ -1157,6 +1167,7 @@ redirect_from:
     startTime: Date.now(),
     lastSave: Date.now(),
     lastTick: Date.now(),
+    transcended: false,
   };
 
   // Initialize generator counts
@@ -1423,6 +1434,7 @@ redirect_from:
         else if (cost >= 100) shake(1);
 
         checkMilestones();
+        checkTranscendence();
         renderGenerators();
         updateDisplay();
       });
@@ -1534,6 +1546,23 @@ redirect_from:
     });
   }
 
+  function checkTranscendence(){
+    if(state.transcended)return;
+    if(state.generators.singularity&&state.generators.singularity>=1){
+      state.transcended=true;
+      save();
+      var stats=document.getElementById('transcend-stats');
+      var elapsed=Math.floor((Date.now()-state.startTime)/1000);
+      var h=Math.floor(elapsed/3600),m=Math.floor((elapsed%3600)/60);
+      stats.innerHTML='Total Cycles: '+fmt(state.totalCycles)+'<br>'+
+        'Time Played: '+h+'h '+m+'m<br>'+
+        'Total Clicks: '+state.totalClicks.toLocaleString()+'<br>'+
+        'Cycles/sec: '+fmt(getTotalCps());
+      document.getElementById('transcendence-popup').style.display='block';
+      Audio.milestone();
+    }
+  }
+
   function showNextMilestone() {
     if (milestoneQueue.length === 0) return;
     const m = milestoneQueue.shift();
@@ -1639,6 +1668,7 @@ redirect_from:
 
     // Check milestones
     checkMilestones();
+    checkTranscendence();
 
     // Pulse effect on cycle counter when earning fast
     pulseTimer += dt;

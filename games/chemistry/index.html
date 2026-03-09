@@ -520,6 +520,17 @@ redirect_from:
 </div>
 
 <div id="toast" class="ui-overlay">ALL CLEAN!</div>
+<div id="journal-btn" onclick="toggleJournal()" style="position:absolute;top:10px;right:10px;z-index:30;background:rgba(10,10,15,0.8);border:1px solid rgba(0,224,154,0.3);color:#00e09a;font-family:inherit;font-size:12px;padding:4px 10px;border-radius:4px;cursor:pointer;pointer-events:all">JOURNAL <span id="journal-count">0/11</span></div>
+<div id="journal-panel" style="display:none;position:absolute;top:40px;right:10px;z-index:30;background:rgba(10,10,15,0.9);border:1px solid rgba(0,224,154,0.2);border-radius:6px;padding:12px;width:220px;font-size:11px;pointer-events:all">
+  <div style="color:#ffd700;font-weight:700;margin-bottom:8px;letter-spacing:1px">DISCOVERY JOURNAL</div>
+  <div id="journal-list"></div>
+</div>
+<div id="mastery-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center;flex-direction:column">
+  <div style="font-size:28px;color:#ffd700;letter-spacing:3px;margin-bottom:12px;text-shadow:0 0 20px rgba(255,215,0,0.3)">MASTER ALCHEMIST</div>
+  <div style="font-size:14px;color:#c8d0e0;margin-bottom:8px">All reactions discovered.</div>
+  <div style="font-size:12px;color:#888;max-width:400px;text-align:center;line-height:1.6;margin-bottom:20px">You have witnessed every interaction in the natural world. Fire, water, ice, wind, and earth have revealed all their secrets to you.</div>
+  <button onclick="document.getElementById('mastery-screen').style.display='none'" style="background:linear-gradient(180deg,#2a2418,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:13px;padding:8px 20px;border-radius:4px;cursor:pointer;pointer-events:all">CONTINUE EXPLORING</button>
+</div>
 
 <div id="footer" class="ui-overlay">
   <a href="{{ site.baseurl }}/arcade/">a Substrate Arcade game</a>
@@ -1297,6 +1308,22 @@ let windOn = false;
 let selectedMaterial = 0;
 let keys = {};
 let mouseWorld = { x: 0, y: 0 };
+let discoveredReactions = new Set();
+const ALL_REACTIONS = ['fire_spread','water_extinguish','water_wet','ice_freeze','spontaneous_combustion','ice_melt','drying','updraft','wind_fan','wind_spread','seed_explosion'];
+
+function discoverReaction(id){
+  if(discoveredReactions.has(id))return;
+  discoveredReactions.add(id);
+  try{localStorage.setItem('synthesis_discoveries',JSON.stringify([...discoveredReactions]))}catch(e){}
+  showToast('Discovery '+discoveredReactions.size+'/'+ALL_REACTIONS.length+': '+id.replace(/_/g,' ').toUpperCase());
+  updateJournal();
+  if(discoveredReactions.size>=ALL_REACTIONS.length){
+    setTimeout(showMasteryScreen,1500);
+  }
+}
+function loadDiscoveries(){
+  try{var d=localStorage.getItem('synthesis_discoveries');if(d)discoveredReactions=new Set(JSON.parse(d))}catch(e){}
+}
 
 // --- GROUND ---
 let groundMesh;
@@ -1591,6 +1618,7 @@ function updateChemistry(dt) {
         if (a.isBurning && b.isFlammable && !b.isBurning && !b.isWet) {
           b.isBurning = true;
           b.temperature = 300;
+          discoverReaction('fire_spread');
           showToast('It caught fire!');
           spawnReactionBurst(b.x, b.y, 0xFF4400, 8);
           popScale(b.group);
@@ -1599,6 +1627,7 @@ function updateChemistry(dt) {
         if (b.isBurning && a.isFlammable && !a.isBurning && !a.isWet) {
           a.isBurning = true;
           a.temperature = 300;
+          discoverReaction('fire_spread');
           showToast('It caught fire!');
           spawnReactionBurst(a.x, a.y, 0xFF4400, 8);
           popScale(a.group);
@@ -1613,6 +1642,7 @@ function updateChemistry(dt) {
           b.justExtinguished = true;
           b.smokeTimer = 1.5;
           spawnWaterSplash(b.x, b.y);
+          discoverReaction('water_extinguish');
           showToast('Sssshhh! The water wins!');
           spawnReactionBurst(b.x, b.y, 0x88bbff, 10);
           popScale(b.group);
@@ -1625,6 +1655,7 @@ function updateChemistry(dt) {
           a.justExtinguished = true;
           a.smokeTimer = 1.5;
           spawnWaterSplash(a.x, a.y);
+          discoverReaction('water_extinguish');
           showToast('Sssshhh! The water wins!');
           spawnReactionBurst(a.x, a.y, 0x88bbff, 10);
           popScale(a.group);
@@ -1632,8 +1663,8 @@ function updateChemistry(dt) {
         }
 
         // === Water makes things wet ===
-        if (a.isWater && !b.isWater) b.isWet = true;
-        if (b.isWater && !a.isWater) a.isWet = true;
+        if (a.isWater && !b.isWater) { b.isWet = true; discoverReaction('water_wet'); }
+        if (b.isWater && !a.isWater) { a.isWet = true; discoverReaction('water_wet'); }
 
         // === Ice freezes water! ===
         if (a.isFrozen && b.isWater) {
@@ -1642,6 +1673,7 @@ function updateChemistry(dt) {
           b.temperature = -20;
           b.baseColor = new THREE.Color(0x88CCEE);
           b.type = 'ice';
+          discoverReaction('ice_freeze');
           showToast('Brrr! Frozen solid!');
           spawnReactionBurst(b.x, b.y, 0x88CCEE, 12);
           popScale(b.group);
@@ -1653,6 +1685,7 @@ function updateChemistry(dt) {
           a.temperature = -20;
           a.baseColor = new THREE.Color(0x88CCEE);
           a.type = 'ice';
+          discoverReaction('ice_freeze');
           showToast('Brrr! Frozen solid!');
           spawnReactionBurst(a.x, a.y, 0x88CCEE, 12);
           popScale(a.group);
@@ -1682,6 +1715,7 @@ function updateChemistry(dt) {
     // === Gets hot enough to catch fire on its own ===
     if (a.isFlammable && !a.isBurning && !a.isWet && a.temperature > 200) {
       a.isBurning = true;
+      discoverReaction('spontaneous_combustion');
       showToast('Too hot! Spontaneous combustion!');
       spawnReactionBurst(a.x, a.y, 0xFF8800, 8);
       popScale(a.group);
@@ -1695,6 +1729,7 @@ function updateChemistry(dt) {
       a.type = 'water';
       a.baseColor = new THREE.Color(0x2288FF);
       a.isFlammable = false;
+      discoverReaction('ice_melt');
       showToast('Thawing... it melted!');
       spawnReactionBurst(a.x, a.y, 0x2288FF, 8);
       popScale(a.group);
@@ -1704,6 +1739,7 @@ function updateChemistry(dt) {
     // === Dries out when hot ===
     if (a.isWet && !a.isWater && a.temperature > 50) {
       a.isWet = false;
+      discoverReaction('drying');
     }
 
     // === Hot things push light things up ===
@@ -1715,6 +1751,7 @@ function updateChemistry(dt) {
         if (Math.abs(dx) < 40 && dy > 0 && dy < 120) {
           const liftFactor = (1 - dy / 120) / Math.max(1, other.weight);
           other.vy += UPDRAFT_FORCE * liftFactor * dt;
+          discoverReaction('updraft');
         }
       }
     }
@@ -1730,6 +1767,7 @@ function updateChemistry(dt) {
       // Wind makes fire burn faster
       if (obj.isBurning) {
         obj.durability -= obj.burnRate * 0.5 * dt;
+        discoverReaction('wind_fan');
       }
 
       // Wind spreads heat forward
@@ -1740,6 +1778,7 @@ function updateChemistry(dt) {
           const dy = Math.abs(other.y - obj.y);
           if (dx > 0 && dx < FIRE_SPREAD_RADIUS * 2 && dy < 50) {
             other.temperature += HEAT_TRANSFER_RATE * 0.8 * dt;
+            discoverReaction('wind_spread');
           }
         }
       }
@@ -1755,6 +1794,7 @@ function updateChemistry(dt) {
     const force = big ? BIG_EXPLOSION_FORCE : EXPLOSION_FORCE;
 
     spawnExplosion(obj.x, obj.y, radius, force);
+    discoverReaction('seed_explosion');
     showToast('BOOM! The seed burst!');
 
     // Apply force and damage to nearby objects
@@ -1966,6 +2006,29 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('visible'), 1200);
 }
 
+function updateJournal(){
+  var countEl=document.getElementById('journal-count');
+  if(countEl)countEl.textContent=discoveredReactions.size+'/'+ALL_REACTIONS.length;
+  var list=document.getElementById('journal-list');
+  if(!list)return;
+  list.innerHTML='';
+  ALL_REACTIONS.forEach(function(r){
+    var div=document.createElement('div');
+    div.style.cssText='color:'+(discoveredReactions.has(r)?'#00e09a':'#333')+';margin:3px 0';
+    div.textContent=(discoveredReactions.has(r)?'● ':'○ ')+r.replace(/_/g,' ');
+    list.appendChild(div);
+  });
+}
+function toggleJournal(){
+  var p=document.getElementById('journal-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  updateJournal();
+}
+function showMasteryScreen(){
+  var el=document.getElementById('mastery-screen');
+  el.style.display='flex';
+}
+
 // --- RESIZE ---
 window.addEventListener('resize', () => {
   const newAspect = window.innerWidth / window.innerHeight;
@@ -2121,6 +2184,8 @@ updatePlayer = function(dt) {
 
 // --- INIT ---
 initScene();
+loadDiscoveries();
+updateJournal();
 selectMaterial(0);
 requestAnimationFrame(gameLoop);
 
