@@ -1418,7 +1418,7 @@ permalink: /arcade/
 
       <!-- Slide 6: SEEKER -->
       <div class="carousel-slide" data-slide="5">
-        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #1a1020, #2a1530, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.png'); background-size: cover; background-position: center;"></div>
+        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #1a1020, #2a1530, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.webp'); background-size: cover; background-position: center;"></div>
         <div class="carousel-content">
           <div class="carousel-tags">
             <span class="carousel-tag tag-narrative">NARRATIVE</span>
@@ -1586,7 +1586,7 @@ permalink: /arcade/
     <span class="game-list-price">FREE</span>
   </a>
   <a class="game-list-item" href="{{ site.baseurl }}/games/snatcher/">
-    <div class="game-list-thumb" style="background: linear-gradient(135deg, #1a1020, #2a1530); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.png'); background-size: cover; background-position: center;"></div>
+    <div class="game-list-thumb" style="background: linear-gradient(135deg, #1a1020, #2a1530); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.webp'); background-size: cover; background-position: center;"></div>
     <div class="game-list-info">
       <div class="game-list-title">SEEKER</div>
       <div class="game-list-tags">
@@ -1616,7 +1616,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="deckbuilder" data-genre="strategy" data-name="STACK OVERFLOW" data-added="15" href="{{ site.baseurl }}/games/deckbuilder/" aria-label="Play STACK OVERFLOW — Deckbuilder, Roguelike — Free">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1020, #1a0810, #3a1525); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1020, #1a0810, #3a1525); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <span class="game-card-badge badge-new">NEW</span>
@@ -1646,7 +1646,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="snatcher" data-genre="narrative" data-name="SEEKER" data-added="13" href="{{ site.baseurl }}/games/snatcher/" aria-label="Play SEEKER — Cyberpunk, Adventure — Free">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a1020, #2a1530, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a1020, #2a1530, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <span class="game-card-badge badge-updated">UPDATED</span>
@@ -1755,7 +1755,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="snatcher" data-genre="narrative" data-name="SEEKER" data-added="13" href="{{ site.baseurl }}/games/snatcher/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a1020, #2a1530, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a1020, #2a1530, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1824,7 +1824,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="deckbuilder" data-genre="strategy" data-name="STACK OVERFLOW" data-added="15" href="{{ site.baseurl }}/games/deckbuilder/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1020, #1a0810, #3a1525); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1020, #1a0810, #3a1525); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -2399,8 +2399,8 @@ permalink: /arcade/
       tagClass: 'tag-narrative',
       url: '{{ site.baseurl }}/games/snatcher/',
       bg: 'linear-gradient(135deg, #1a1020, #2a1530, #0a0a1a)',
-      img: '{{ site.baseurl }}/assets/images/game-art/title-seeker.png',
-      scene: '{{ site.baseurl }}/assets/images/game-art/scene-city.png'
+      img: '{{ site.baseurl }}/assets/images/game-art/title-seeker.webp',
+      scene: '{{ site.baseurl }}/assets/images/game-art/scene-city.webp'
     },
     'tactics': {
       title: 'TACTICS',
