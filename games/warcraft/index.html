@@ -89,6 +89,66 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
 #notifications{position:absolute;top:44px;right:12px;z-index:25;display:flex;flex-direction:column;gap:4px;pointer-events:none}
 .notif{background:rgba(20,16,10,0.9);border:1px solid #5a4a2a;border-radius:3px;padding:4px 10px;font-size:11px;color:#ffd700;animation:notif-fade 3s forwards;white-space:nowrap}
 @keyframes notif-fade{0%{opacity:0;transform:translateX(20px)}10%{opacity:1;transform:translateX(0)}80%{opacity:1}100%{opacity:0}}
+
+/* Mission Select */
+#campaign-list{display:flex;flex-direction:column;gap:8px;width:380px;max-height:50vh;overflow-y:auto;margin-bottom:20px;padding:4px}
+.mission-card{background:linear-gradient(180deg,#2a2418,#1a1610);border:2px solid #5a4a2a;border-radius:6px;padding:12px 16px;cursor:pointer;text-align:left;transition:all 0.2s;position:relative}
+.mission-card:hover:not(.mission-locked){border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,0.15);transform:translateY(-1px)}
+.mission-card.mission-locked{opacity:0.4;cursor:not-allowed}
+.mission-card .mc-num{font-size:11px;color:#8a8a6a}
+.mission-card .mc-title{font-size:15px;font-weight:700;color:#ffd700;margin:2px 0}
+.mission-card .mc-brief{font-size:11px;color:#8a8a6a;line-height:1.3}
+.mission-card .mc-stars{position:absolute;top:12px;right:16px;font-size:16px;letter-spacing:2px}
+.mission-card .mc-lock{position:absolute;top:12px;right:16px;font-size:12px;color:#5a4a2a}
+#sandbox-btn{background:none;border:1px solid #5a4a2a;color:#8a8a6a;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;margin-bottom:10px}
+#sandbox-btn:hover{border-color:#00e09a;color:#00e09a}
+
+/* Briefing Overlay */
+#briefing-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(10,8,5,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110;padding:40px}
+#briefing-overlay .bo-title{font-size:28px;font-weight:700;color:#ffd700;letter-spacing:3px;margin-bottom:16px;text-shadow:0 0 20px rgba(255,215,0,0.3)}
+#briefing-overlay .bo-text{font-size:14px;color:#c8c0a0;max-width:500px;text-align:center;line-height:1.6;margin-bottom:24px;min-height:60px}
+#briefing-overlay .bo-objectives{margin-bottom:30px;text-align:left}
+#briefing-overlay .bo-obj{font-size:13px;color:#8a8a6a;margin:4px 0;padding-left:20px;position:relative}
+#briefing-overlay .bo-obj::before{content:'[ ]';position:absolute;left:0;color:#5a4a2a;font-size:11px}
+#briefing-overlay button{background:linear-gradient(180deg,#3a3020,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:14px;padding:10px 32px;border-radius:4px;cursor:pointer;letter-spacing:2px;transition:all 0.2s}
+#briefing-overlay button:hover{background:linear-gradient(180deg,#5a4a30,#3a3020);box-shadow:0 0 20px rgba(255,215,0,0.2)}
+
+/* Objective HUD */
+#objective-hud{position:absolute;top:42px;left:50%;transform:translateX(-50%);z-index:22;background:rgba(20,16,10,0.85);border:1px solid #5a4a2a;border-radius:4px;padding:8px 14px;display:none;min-width:220px;text-align:center}
+#obj-title{font-size:11px;color:#ffd700;font-weight:700;letter-spacing:1px;margin-bottom:4px}
+#obj-timer{font-size:20px;color:#c8c0a0;font-weight:700;margin-bottom:6px}
+#obj-timer.timer-urgent{color:#ff4444;animation:timer-pulse 1s infinite}
+@keyframes timer-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+#obj-list{text-align:left}
+.obj-item{font-size:11px;color:#8a8a6a;margin:2px 0;transition:color 0.3s}
+.obj-item.obj-done{color:#00cc44;text-decoration:line-through}
+.obj-item::before{content:'○ ';color:#5a4a2a}
+.obj-item.obj-done::before{content:'● ';color:#00cc44}
+#obj-par{font-size:10px;color:#5a4a2a;margin-top:4px}
+#obj-par .star-active{color:#ffd700}
+
+/* Event Bar */
+#event-bar{position:absolute;top:0;left:0;right:0;background:rgba(40,20,0,0.95);border-bottom:2px solid #b8860b;color:#ffa500;font-size:13px;padding:10px 20px;text-align:center;z-index:120;transform:translateY(-100%);transition:transform 0.3s;font-weight:600}
+#event-bar.show{transform:translateY(0)}
+
+/* Victory Screen */
+#victory-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(10,8,5,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110}
+#victory-screen h2{font-size:32px;color:#ffd700;letter-spacing:4px;margin-bottom:8px;text-shadow:0 0 30px rgba(255,215,0,0.4)}
+#victory-screen .vs-mission{font-size:16px;color:#c8c0a0;margin-bottom:20px}
+#victory-screen .vs-rating{font-size:36px;letter-spacing:4px;margin-bottom:16px}
+#victory-screen .vs-stats{font-size:12px;color:#8a8a6a;line-height:1.8;margin-bottom:24px;text-align:center}
+#victory-screen .vs-btns{display:flex;gap:12px}
+#victory-screen button{background:linear-gradient(180deg,#3a3020,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s}
+#victory-screen button:hover{background:linear-gradient(180deg,#5a4a30,#3a3020);box-shadow:0 0 15px rgba(255,215,0,0.2)}
+
+/* Defeat Screen */
+#defeat-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(20,5,5,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110}
+#defeat-screen h2{font-size:32px;color:#cc3333;letter-spacing:4px;margin-bottom:12px;text-shadow:0 0 20px rgba(204,51,51,0.3)}
+#defeat-screen .ds-reason{font-size:14px;color:#c8a0a0;max-width:400px;text-align:center;line-height:1.5;margin-bottom:12px}
+#defeat-screen .ds-progress{font-size:12px;color:#8a6a6a;margin-bottom:24px;text-align:center;line-height:1.8}
+#defeat-screen .ds-btns{display:flex;gap:12px}
+#defeat-screen button{background:linear-gradient(180deg,#3a2020,#1a1010);border:2px solid #cc3333;color:#cc3333;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s}
+#defeat-screen button:hover{background:linear-gradient(180deg,#5a3030,#3a2020);box-shadow:0 0 15px rgba(204,51,51,0.2)}
 </style>
 </head>
 <body>
@@ -96,11 +156,50 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
 <div id="title-screen">
   <h1>DOMINION</h1>
   <div class="subtitle">a base-building RTS &middot; substrate arcade</div>
-  <button onclick="startGame()">BEGIN</button>
+  <div id="campaign-list"></div>
+  <button id="sandbox-btn" onclick="startSandbox()">SANDBOX MODE</button>
   <div class="title-controls">
     WASD / Arrow keys — scroll &nbsp;&middot;&nbsp; Mouse wheel — zoom<br>
     Left click — select &nbsp;&middot;&nbsp; Right click — command &nbsp;&middot;&nbsp; Drag — box select<br>
     F/B/L/K/T — build &nbsp;&middot;&nbsp; Q — train worker &nbsp;&middot;&nbsp; ESC — cancel
+  </div>
+</div>
+
+<div id="briefing-overlay">
+  <div class="bo-title"></div>
+  <div class="bo-text"></div>
+  <div class="bo-objectives"></div>
+  <button onclick="launchMission()">BEGIN MISSION</button>
+</div>
+
+<div id="objective-hud">
+  <div id="obj-title"></div>
+  <div id="obj-timer"></div>
+  <div id="obj-list"></div>
+  <div id="obj-par"></div>
+</div>
+
+<div id="event-bar"></div>
+
+<div id="victory-screen">
+  <h2>MISSION COMPLETE</h2>
+  <div class="vs-mission"></div>
+  <div class="vs-rating"></div>
+  <div class="vs-stats"></div>
+  <div class="vs-btns">
+    <button onclick="nextMission()">NEXT MISSION</button>
+    <button onclick="replayMission()">REPLAY</button>
+    <button onclick="showCampaign()">CAMPAIGN</button>
+  </div>
+</div>
+
+<div id="defeat-screen">
+  <h2>MISSION FAILED</h2>
+  <div class="ds-reason"></div>
+  <div class="ds-progress"></div>
+  <div class="ds-btns">
+    <button onclick="replayMission()">RETRY</button>
+    <button onclick="showCampaign()">CAMPAIGN</button>
   </div>
 </div>
 
@@ -168,6 +267,103 @@ const BUILDINGS={
 const WORKER_COST={gold:75,lumber:0,food:1};
 
 // ============================================================
+// MISSIONS
+// ============================================================
+const MISSIONS=[
+  {
+    id:'tutorial',title:'FIRST SETTLEMENT',
+    briefing:'Establish a foothold. The land is rich but your supplies are limited. Build farms to feed your people and a barracks to secure the settlement.',
+    objectives:[
+      {type:'build',building:'farm',count:4,label:'Build 4 Farms'},
+      {type:'build',building:'barracks',count:1,label:'Build a Barracks'},
+    ],
+    parTime:300,failTime:null,
+    startResources:{gold:600,lumber:400},startWorkers:4,
+    mapSeed:'tutorial-01',resourceDensity:'rich',
+    events:[],unlocks:'expansion',
+  },
+  {
+    id:'expansion',title:'THE GOLD RUSH',
+    briefing:'Your first mine is running dry. Scouts report a second gold deposit to the northeast, but the terrain is rough. Expand before your coffers empty.',
+    objectives:[
+      {type:'build',building:'townhall',count:2,label:'Build a second Town Hall'},
+      {type:'resource',resource:'gold',amount:2000,label:'Stockpile 2000 Gold'},
+    ],
+    parTime:480,failTime:null,
+    startResources:{gold:300,lumber:200},startWorkers:4,
+    mapSeed:'expansion-01',resourceDensity:'scarce',
+    events:[
+      {trigger:'time',at:180,type:'mine_collapse',message:'The mine shaft has partially collapsed! Extraction speed halved.'},
+    ],
+    unlocks:'deadline',
+  },
+  {
+    id:'deadline',title:"THE KING'S DEMAND",
+    briefing:'A royal courier arrives: the King demands tribute of 1500 gold and 800 lumber within 10 minutes. Failure is not an option.',
+    objectives:[
+      {type:'resource',resource:'gold',amount:1500,label:'Deliver 1500 Gold'},
+      {type:'resource',resource:'lumber',amount:800,label:'Deliver 800 Lumber'},
+    ],
+    parTime:420,failTime:600,
+    startResources:{gold:200,lumber:100},startWorkers:6,
+    mapSeed:'deadline-01',resourceDensity:'moderate',
+    events:[
+      {trigger:'time',at:300,type:'message',message:'The courier returns: "Five minutes remain, commander."'},
+    ],
+    unlocks:'famine',
+  },
+  {
+    id:'famine',title:'FAMINE WINTER',
+    briefing:'Frost has killed the crops. Your farms produce nothing. You must build a Lumber Mill and 3 Farms before your food reserves hit zero, or your workers abandon the settlement.',
+    objectives:[
+      {type:'build',building:'lumbermill',count:1,label:'Build a Lumber Mill'},
+      {type:'build',building:'farm',count:3,label:'Build 3 new Farms'},
+    ],
+    parTime:360,failTime:null,
+    startResources:{gold:500,lumber:150},startWorkers:5,
+    mapSeed:'famine-01',resourceDensity:'moderate',
+    startFood:100,
+    events:[
+      {trigger:'time',at:0,type:'food_drain',rate:2,message:'Food reserves are draining. Build farms quickly.'},
+    ],
+    unlocks:'fortress',
+  },
+  {
+    id:'fortress',title:'THE IRON FORTRESS',
+    briefing:'Build the ultimate settlement. Every building type. Full tech tree. Prove you can master the land.',
+    objectives:[
+      {type:'build',building:'townhall',count:1,label:'Town Hall'},
+      {type:'build',building:'farm',count:6,label:'Build 6 Farms'},
+      {type:'build',building:'barracks',count:1,label:'Build a Barracks'},
+      {type:'build',building:'lumbermill',count:1,label:'Build a Lumber Mill'},
+      {type:'build',building:'blacksmith',count:1,label:'Build a Blacksmith'},
+      {type:'build',building:'tower',count:2,label:'Build 2 Towers'},
+      {type:'workers',count:12,label:'Train 12 Workers'},
+    ],
+    parTime:720,failTime:null,
+    startResources:{gold:400,lumber:300},startWorkers:3,
+    mapSeed:'fortress-01',resourceDensity:'scarce',
+    events:[
+      {trigger:'time',at:240,type:'mine_collapse',message:'Cave-in! Your nearest mine yields 50% less.'},
+      {trigger:'time',at:420,type:'storm',duration:60,message:'A storm strikes! Workers move at half speed for 60 seconds.'},
+    ],
+    unlocks:null,
+  },
+];
+
+// Seeded PRNG (mulberry32)
+function seededRandom(seed){
+  let h=0;
+  for(let i=0;i<seed.length;i++)h=Math.imul(31,h)+seed.charCodeAt(i)|0;
+  return function(){
+    h|=0;h=h+0x6D2B79F5|0;
+    let t=Math.imul(h^h>>>15,1|h);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return((t^t>>>14)>>>0)/4294967296;
+  };
+}
+
+// ============================================================
 // GAME STATE
 // ============================================================
 let gold=CFG.START_GOLD,lumber=CFG.START_LUMBER,foodUsed=0,foodCap=0;
@@ -175,6 +371,20 @@ let entities=[],selected=[],goldMines=[],trees=[];
 let buildMode=null,buildGhost=null;
 let gameStarted=false,gameTick=0;
 let musicPlaying=false,audioCtx=null,bgmGain=null;
+
+// Mission state
+let currentMission=null;// current mission data object or null for sandbox
+let missionElapsed=0;// seconds since mission start
+let missionCompleted=false,missionFailed=false;
+let missionFiredEvents=new Set();
+let unlockedMissions=['tutorial'];
+let missionRatings={};
+let workerSpeedMult=1;
+let foodReserve=0;// famine mission food counter
+let foodDrainRate=0;
+let desertionTimer=0;
+let missionStats={workersTrainedTotal:0,buildingsBuilt:0,goldGathered:0,lumberGathered:0,workersLost:0,idleWorkerSeconds:0};
+let pendingMissionId=null;// set by briefing, consumed by launchMission
 
 // Keyboard state
 const keys={};
@@ -202,7 +412,7 @@ const camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight
 let camTarget=new THREE.Vector3(CFG.MAP_SIZE*CFG.TILE_SIZE/2,0,CFG.MAP_SIZE*CFG.TILE_SIZE/2);
 let camDist=CFG.CAM_ZOOM_START;
 let camAngle=Math.PI*0.75;// rotation around Y
-const CAM_PITCH=0.9;// fixed pitch angle
+const CAM_PITCH=0.55;// steep top-down angle (Hades-style)
 
 function updateCamera(){
   const x=camTarget.x+camDist*Math.sin(CAM_PITCH)*Math.cos(camAngle);
@@ -468,17 +678,16 @@ function createGoldMineModel(){
 // Trees — instanced mesh for performance
 let treeInstances=null;
 const treePositions=[];
-function createTrees(){
+function createTrees(rng){
+  rng=rng||Math.random.bind(Math);
   const trunkGeo=new THREE.CylinderGeometry(0.1,0.15,1.2,6);
   const canopyGeo=new THREE.SphereGeometry(0.6,6,6);
-  // We'll use two instanced meshes: trunk + canopy
   const numTrees=200;
   const trunkMesh=new THREE.InstancedMesh(trunkGeo,makeToon(0x654321),numTrees);
   const canopyMesh=new THREE.InstancedMesh(canopyGeo,makeToon(0x2a6a2a),numTrees);
   trunkMesh.castShadow=true;canopyMesh.castShadow=true;
   const dummy=new THREE.Object3D();
   let count=0;
-  // Create forest patches
   const patches=[
     {cx:8,cz:8,r:8,n:40},{cx:38,cz:8,r:8,n:40},
     {cx:8,cz:38,r:8,n:40},{cx:38,cz:38,r:8,n:40},
@@ -487,21 +696,19 @@ function createTrees(){
   ];
   for(const p of patches){
     for(let i=0;i<p.n&&count<numTrees;i++){
-      const a=Math.random()*Math.PI*2,r=Math.random()*p.r;
-      const tx=Math.floor(p.cx+Math.cos(a)*r);
-      const tz=Math.floor(p.cz+Math.sin(a)*r);
+      const a=rng()*Math.PI*2,r2=rng()*p.r;
+      const tx=Math.floor(p.cx+Math.cos(a)*r2);
+      const tz=Math.floor(p.cz+Math.sin(a)*r2);
       if(tx<1||tz<1||tx>=CFG.MAP_SIZE-1||tz>=CFG.MAP_SIZE-1)continue;
       if(!isTileFree(tx,tz))continue;
       const wx=(tx+0.5)*CFG.TILE_SIZE,wz=(tz+0.5)*CFG.TILE_SIZE;
-      const scale=0.8+Math.random()*0.5;
-      // Trunk
+      const scale=0.8+rng()*0.5;
       dummy.position.set(wx,0.6*scale,wz);dummy.scale.set(scale,scale,scale);
       dummy.updateMatrix();trunkMesh.setMatrixAt(count,dummy.matrix);
-      // Canopy
       dummy.position.set(wx,1.5*scale,wz);
       dummy.updateMatrix();canopyMesh.setMatrixAt(count,dummy.matrix);
       treePositions.push({idx:count,tx,tz,x:wx,z:wz,hp:50,maxHp:50,alive:true});
-      occupyTiles(tx,tz,1,1,2);// 2 = tree
+      occupyTiles(tx,tz,1,1,2);
       count++;
     }
   }
@@ -584,7 +791,7 @@ class Worker extends Entity{
       this.mesh.position.x=this.x;this.mesh.position.z=this.z;
       this.onArrived();return;
     }
-    const speed=CFG.WORKER_SPEED*dt;
+    const speed=CFG.WORKER_SPEED*workerSpeedMult*dt;
     const step=Math.min(speed,dist);
     this.x+=dx/dist*step;this.z+=dz/dist*step;
     this.mesh.position.x=this.x;this.mesh.position.z=this.z;
@@ -594,8 +801,8 @@ class Worker extends Entity{
   onArrived(){
     if(this.state==='returning'){
       // Deposit resources
-      if(this.carryType==='gold'){gold+=this.carryAmount;playSfx('deposit')}
-      else if(this.carryType==='lumber'){lumber+=this.carryAmount;playSfx('deposit')}
+      if(this.carryType==='gold'){gold+=this.carryAmount;missionStats.goldGathered+=this.carryAmount;playSfx('deposit')}
+      else if(this.carryType==='lumber'){lumber+=this.carryAmount;missionStats.lumberGathered+=this.carryAmount;playSfx('deposit')}
       this.carryAmount=0;
       // Go back to harvest source if it still exists
       if(this._harvestSource){
@@ -643,10 +850,24 @@ class Worker extends Entity{
     if(this.harvestTimer>=CFG.HARVEST_TIME){
       this.harvestTimer=0;
       if(this._harvestSource&&this._harvestSource.hp>0){
-        const take=Math.min(CFG.HARVEST_GOLD,this._harvestSource.hp);
+        let take=Math.min(CFG.HARVEST_GOLD,this._harvestSource.hp);
+        if(this._harvestSource.collapsed)take=Math.max(1,Math.floor(take*0.5));
         this._harvestSource.hp-=take;
         this.carryType='gold';this.carryAmount=take;
         playSfx('mine');
+        // Update mine visual: darken gold veins as mine depletes
+        if(this._harvestSource.mesh){
+          const ratio=this._harvestSource.hp/this._harvestSource.maxHp;
+          this._harvestSource.mesh.traverse(c=>{
+            if(c.isMesh&&c.material&&c.material.emissive){
+              c.material.emissiveIntensity=ratio*0.5;
+            }
+          });
+        }
+        // Mine depleted notification
+        if(this._harvestSource.hp<=0){
+          notify('Gold mine depleted!');playSfx('error');
+        }
         this.returnToDepot();
       }else{this.state='idle'}
     }
@@ -695,7 +916,7 @@ class Worker extends Entity{
       this.buildTarget.built=true;
       this.buildTarget.mesh.scale.y=1;
       if(BUILDINGS[this.buildTarget.btype].supply)foodCap+=BUILDINGS[this.buildTarget.btype].supply;
-      playSfx('complete');
+      playSfx('complete');missionStats.buildingsBuilt++;
       notify(BUILDINGS[this.buildTarget.btype].name+' complete');
       this.buildTarget=null;this.state='idle';
     }
@@ -732,8 +953,9 @@ class Building extends Entity{
 // ============================================================
 // GOLD MINES
 // ============================================================
-function spawnGoldMine(tx,tz){
-  const mine={type:'goldmine',tx,tz,hp:2500,maxHp:2500,
+function spawnGoldMine(tx,tz,totalGold){
+  totalGold=totalGold||2500;
+  const mine={type:'goldmine',tx,tz,hp:totalGold,maxHp:totalGold,collapsed:false,
     x:(tx+1)*CFG.TILE_SIZE,z:(tz+1)*CFG.TILE_SIZE};
   const model=createGoldMineModel();
   model.position.set(mine.x,0,mine.z);
@@ -745,31 +967,81 @@ function spawnGoldMine(tx,tz){
 // ============================================================
 // MAP GENERATION
 // ============================================================
-function generateMap(){
-  // Gold mines — two near center, two in corners
-  spawnGoldMine(20,20);spawnGoldMine(26,26);
-  spawnGoldMine(4,22);spawnGoldMine(42,22);
-  // Trees
-  createTrees();
+function generateMap(seed,density){
+  const rng=seed?seededRandom(seed):Math.random.bind(Math);
+  density=density||'moderate';
+  const mineGold={rich:15000,moderate:10000,scarce:5000};
+  const farMineGold={rich:15000,moderate:10000,scarce:10000};
+
+  if(density==='scarce'){
+    // 1 close mine with less gold, 1 far mine with more
+    spawnGoldMine(20+Math.floor(rng()*4),20+Math.floor(rng()*4),mineGold[density]);
+    // Far mine — pick a distant corner
+    const corners=[[4,4],[42,4],[4,42],[42,42]];
+    const pick=corners[Math.floor(rng()*corners.length)];
+    spawnGoldMine(pick[0],pick[1],farMineGold[density]);
+  }else{
+    // 2 mines near center + 2 on edges
+    spawnGoldMine(18+Math.floor(rng()*4),18+Math.floor(rng()*4),mineGold[density]);
+    spawnGoldMine(26+Math.floor(rng()*4),26+Math.floor(rng()*4),mineGold[density]);
+    if(density==='rich'){
+      spawnGoldMine(4+Math.floor(rng()*4),22+Math.floor(rng()*4),mineGold[density]);
+      spawnGoldMine(40+Math.floor(rng()*4),22+Math.floor(rng()*4),mineGold[density]);
+    }
+  }
+  createTrees(rng);
 }
 
 // ============================================================
-// GAME INIT
+// GAME RESET & INIT
 // ============================================================
-function initGame(){
-  generateMap();
+function resetGame(){
+  for(const e of entities){if(e.mesh)scene.remove(e.mesh)}
+  entities=[];selected=[];
+  for(const m of goldMines){if(m.mesh)scene.remove(m.mesh)}
+  goldMines=[];
+  if(treeInstances){
+    scene.remove(treeInstances.trunk);scene.remove(treeInstances.canopy);
+    treeInstances=null;
+  }
+  treePositions.length=0;
+  tileOccupied.fill(0);
+  gold=CFG.START_GOLD;lumber=CFG.START_LUMBER;
+  foodUsed=0;foodCap=0;
+  if(buildGhost){scene.remove(buildGhost);buildGhost=null}
+  buildMode=null;gameTick=0;
+  workerSpeedMult=1;foodReserve=0;foodDrainRate=0;desertionTimer=0;
+  missionElapsed=0;missionCompleted=false;missionFailed=false;
+  missionFiredEvents.clear();
+  missionStats={workersTrainedTotal:0,buildingsBuilt:0,goldGathered:0,lumberGathered:0,workersLost:0,idleWorkerSeconds:0};
+}
+
+function initGame(mission){
+  resetGame();
+  const numWorkers=mission?mission.startWorkers:4;
+  if(mission){
+    gold=mission.startResources.gold;
+    lumber=mission.startResources.lumber;
+    foodReserve=mission.startFood||0;
+    generateMap(mission.mapSeed,mission.resourceDensity);
+  }else{
+    gold=CFG.START_GOLD;lumber=CFG.START_LUMBER;
+    generateMap();
+  }
   // Starting town hall
   const thTx=22,thTz=22;
   const th=new Building('townhall',thTx,thTz);
   th.hp=th.maxHp;th.built=true;th.mesh.scale.y=1;
   foodCap+=BUILDINGS.townhall.supply;
   entities.push(th);
+  missionStats.buildingsBuilt++;
   // Starting workers
-  for(let i=0;i<4;i++){
-    const wx=(thTx+1.5)*CFG.TILE_SIZE+(i-1.5)*1.5;
+  for(let i=0;i<numWorkers;i++){
+    const wx=(thTx+1.5)*CFG.TILE_SIZE+(i-Math.floor(numWorkers/2))*1.5;
     const wz=(thTz+BUILDINGS.townhall.h+0.5)*CFG.TILE_SIZE;
     const w=new Worker(wx,wz);
     entities.push(w);foodUsed++;
+    missionStats.workersTrainedTotal++;
   }
   camTarget.set(th.x,0,th.z);
 }
@@ -1009,7 +1281,7 @@ function trainWorker(){
   const wx=th.x+(Math.random()-0.5)*3;
   const wz=th.z+BUILDINGS.townhall.h*CFG.TILE_SIZE/2+1+Math.random()*2;
   const w=new Worker(wx,wz);
-  entities.push(w);
+  entities.push(w);missionStats.workersTrainedTotal++;
   playSfx('ack');notify('Worker trained');
 }
 
@@ -1233,6 +1505,54 @@ function playSfx(type){
       o.frequency.linearRampToValueAtTime(150,t+0.2);
       g.gain.setValueAtTime(0.1,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.25);
       o.connect(g);o.start(t);o.stop(t+0.25);break;
+    case'briefing_horn':
+      o.type='triangle';o.frequency.value=130.8;g.gain.setValueAtTime(0.15,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.4);o.connect(g);o.start(t);o.stop(t+0.4);
+      const bh2=audioCtx.createOscillator();bh2.type='triangle';bh2.frequency.value=164.8;
+      const bg2=audioCtx.createGain();bg2.gain.setValueAtTime(0.15,t+0.4);
+      bg2.gain.exponentialRampToValueAtTime(0.01,t+0.9);
+      bh2.connect(bg2);bg2.connect(audioCtx.destination);bh2.start(t+0.4);bh2.stop(t+0.9);return;
+    case'victory':
+      [261.6,329.6,392.0,523.3].forEach((f,i)=>{
+        const oc=audioCtx.createOscillator();oc.type='triangle';oc.frequency.value=f;
+        const gc=audioCtx.createGain();gc.gain.setValueAtTime(0.12,t+i*0.15);
+        gc.gain.exponentialRampToValueAtTime(0.01,t+i*0.15+0.3);
+        oc.connect(gc);gc.connect(audioCtx.destination);oc.start(t+i*0.15);oc.stop(t+i*0.15+0.3);
+      });
+      // Sustained chord
+      setTimeout(()=>{if(!audioCtx)return;const t2=audioCtx.currentTime;
+        [261.6,329.6,392.0,523.3].forEach(f=>{
+          const oc=audioCtx.createOscillator();oc.type='triangle';oc.frequency.value=f;
+          const gc=audioCtx.createGain();gc.gain.setValueAtTime(0.06,t2);
+          gc.gain.exponentialRampToValueAtTime(0.01,t2+0.8);
+          oc.connect(gc);gc.connect(audioCtx.destination);oc.start(t2);oc.stop(t2+0.8);
+        });
+      },600);return;
+    case'defeat':
+      [261.6,207.7,174.6].forEach((f,i)=>{
+        const oc=audioCtx.createOscillator();oc.type='sawtooth';oc.frequency.value=f;
+        const gc=audioCtx.createGain();gc.gain.setValueAtTime(0.08,t+i*0.3);
+        gc.gain.exponentialRampToValueAtTime(0.01,t+i*0.3+0.5);
+        oc.connect(gc);gc.connect(audioCtx.destination);oc.start(t+i*0.3);oc.stop(t+i*0.3+0.5);
+      });return;
+    case'event_alert':
+      o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(0.1,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.08);o.connect(g);o.start(t);o.stop(t+0.08);
+      const ea2=audioCtx.createOscillator();ea2.type='sine';ea2.frequency.value=880;
+      const eg2=audioCtx.createGain();eg2.gain.setValueAtTime(0.1,t+0.12);
+      eg2.gain.exponentialRampToValueAtTime(0.01,t+0.2);
+      ea2.connect(eg2);eg2.connect(audioCtx.destination);ea2.start(t+0.12);ea2.stop(t+0.2);return;
+    case'mine_collapse':
+      playNoiseBurst(0.3,40,200,t);
+      o.type='sine';o.frequency.value=80;g.gain.setValueAtTime(0.15,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.4);o.connect(g);o.start(t);o.stop(t+0.4);break;
+    case'desertion':
+      o.type='triangle';o.frequency.value=330;g.gain.setValueAtTime(0.08,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.2);o.connect(g);o.start(t);o.stop(t+0.2);
+      const ds2=audioCtx.createOscillator();ds2.type='triangle';ds2.frequency.value=220;
+      const dg2=audioCtx.createGain();dg2.gain.setValueAtTime(0.08,t+0.2);
+      dg2.gain.exponentialRampToValueAtTime(0.01,t+0.5);
+      ds2.connect(dg2);dg2.connect(audioCtx.destination);ds2.start(t+0.2);ds2.stop(t+0.5);return;
   }
 }
 
@@ -1288,6 +1608,284 @@ window.toggleMusic=function(){
 };
 
 // ============================================================
+// MISSION SYSTEM
+// ============================================================
+function checkObjective(obj){
+  switch(obj.type){
+    case'build':
+      return entities.filter(e=>e.type==='building'&&e.btype===obj.building&&e.built).length>=obj.count;
+    case'resource':
+      if(obj.resource==='gold')return gold>=obj.amount;
+      if(obj.resource==='lumber')return lumber>=obj.amount;
+      return false;
+    case'workers':
+      return entities.filter(e=>e instanceof Worker&&e.alive).length>=obj.count;
+    default:return false;
+  }
+}
+
+function fireMissionEvent(event){
+  switch(event.type){
+    case'mine_collapse':
+      // Collapse nearest mine to starting position
+      let nearest=null,bestD=Infinity;
+      const cx=23*CFG.TILE_SIZE,cz=23*CFG.TILE_SIZE;
+      for(const m of goldMines){
+        if(m.hp<=0||m.collapsed)continue;
+        const d=(m.x-cx)**2+(m.z-cz)**2;
+        if(d<bestD){bestD=d;nearest=m}
+      }
+      if(nearest){nearest.collapsed=true;playSfx('mine_collapse')}
+      break;
+    case'storm':
+      workerSpeedMult=0.5;
+      setTimeout(()=>{workerSpeedMult=1;notify('The storm has passed.')},event.duration*1000);
+      break;
+    case'food_drain':
+      foodDrainRate=event.rate;
+      break;
+  }
+  showEventMessage(event.message);
+  playSfx('event_alert');
+}
+
+function updateMission(dt){
+  if(!currentMission||missionCompleted||missionFailed)return;
+  missionElapsed+=dt;
+
+  // Fire timed events
+  for(const event of currentMission.events){
+    const key=`${event.type}-${event.at}`;
+    if(event.trigger==='time'&&missionElapsed>=event.at&&!missionFiredEvents.has(key)){
+      missionFiredEvents.add(key);
+      fireMissionEvent(event);
+    }
+  }
+
+  // Food drain (famine mission)
+  if(foodDrainRate>0){
+    foodReserve-=foodDrainRate*dt;
+    if(foodReserve<=0){
+      foodReserve=0;
+      desertionTimer+=dt;
+      if(desertionTimer>=15){
+        desertionTimer=0;
+        // Remove one worker
+        const workers=entities.filter(e=>e instanceof Worker&&e.alive);
+        if(workers.length>0){
+          const w=workers[workers.length-1];
+          w.hp=0;scene.remove(w.mesh);foodUsed=Math.max(0,foodUsed-1);
+          missionStats.workersLost++;
+          notify('A worker has deserted!');playSfx('desertion');
+        }
+        if(entities.filter(e=>e instanceof Worker&&e.alive).length===0){
+          failMission('All workers have deserted. The settlement is abandoned.');return;
+        }
+      }
+    }
+    // Building a farm stops food drain (each farm adds food reserve)
+    const farmCount=entities.filter(e=>e.type==='building'&&e.btype==='farm'&&e.built).length;
+    if(farmCount>=3&&currentMission.id==='famine')foodDrainRate=0;// farms save the day
+  }
+
+  // Check fail time
+  if(currentMission.failTime&&missionElapsed>=currentMission.failTime){
+    failMission("Time expired. The King's patience has run out.");return;
+  }
+
+  // Track idle worker time
+  for(const e of entities){
+    if(e instanceof Worker&&e.alive&&e.state==='idle')missionStats.idleWorkerSeconds+=dt;
+  }
+
+  // Check all objectives
+  if(currentMission.objectives.every(obj=>checkObjective(obj))){
+    completeMission();
+  }
+
+  // Update objective HUD
+  updateObjectiveHUD();
+}
+
+function completeMission(){
+  missionCompleted=true;
+  const rating=calculateRating();
+  if(currentMission.unlocks&&!unlockedMissions.includes(currentMission.unlocks)){
+    unlockedMissions.push(currentMission.unlocks);
+  }
+  if(!missionRatings[currentMission.id]||missionRatings[currentMission.id]<rating){
+    missionRatings[currentMission.id]=rating;
+  }
+  saveMissionProgress();
+  showVictoryScreen(rating);
+  playSfx('victory');
+}
+
+function failMission(reason){
+  missionFailed=true;
+  showDefeatScreen(reason);
+  playSfx('defeat');
+}
+
+function calculateRating(){
+  const par=currentMission.parTime;
+  if(missionElapsed<=par*0.8)return 3;
+  if(missionElapsed<=par)return 2;
+  if(missionElapsed<=par*1.5)return 1;
+  return 0;
+}
+
+function saveMissionProgress(){
+  try{
+    sessionStorage.setItem('dominion_unlocked',JSON.stringify(unlockedMissions));
+    sessionStorage.setItem('dominion_ratings',JSON.stringify(missionRatings));
+  }catch(e){}
+}
+
+function loadMissionProgress(){
+  try{
+    const u=sessionStorage.getItem('dominion_unlocked');
+    if(u)unlockedMissions=JSON.parse(u);
+    const r=sessionStorage.getItem('dominion_ratings');
+    if(r)missionRatings=JSON.parse(r);
+  }catch(e){}
+}
+
+// ============================================================
+// MISSION UI
+// ============================================================
+function formatTime(s){
+  const m=Math.floor(s/60);
+  const sec=Math.floor(s%60);
+  return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+}
+
+function renderCampaignList(){
+  const list=document.getElementById('campaign-list');
+  list.innerHTML='';
+  MISSIONS.forEach((m,i)=>{
+    const unlocked=unlockedMissions.includes(m.id);
+    const card=document.createElement('div');
+    card.className='mission-card'+(unlocked?'':' mission-locked');
+    const stars=missionRatings[m.id]||0;
+    const starStr=unlocked?(stars>0?'★'.repeat(stars)+'☆'.repeat(3-stars):''):'';
+    card.innerHTML=`<div class="mc-num">MISSION ${i+1}</div><div class="mc-title">${m.title}</div><div class="mc-brief">${m.briefing.split('.')[0]}.</div>`+
+      (unlocked?`<div class="mc-stars">${starStr}</div>`:`<div class="mc-lock">LOCKED</div>`);
+    if(unlocked)card.addEventListener('click',()=>showBriefing(m));
+    list.appendChild(card);
+  });
+}
+
+function showBriefing(mission){
+  pendingMissionId=mission.id;
+  const overlay=document.getElementById('briefing-overlay');
+  overlay.querySelector('.bo-title').textContent=mission.title;
+  const textEl=overlay.querySelector('.bo-text');
+  textEl.textContent='';
+  overlay.style.display='flex';
+  // Typewriter effect
+  let charIdx=0;
+  const typeInterval=setInterval(()=>{
+    if(charIdx<mission.briefing.length){
+      textEl.textContent+=mission.briefing[charIdx];charIdx++;
+    }else clearInterval(typeInterval);
+  },25);
+  // Objectives
+  const objEl=overlay.querySelector('.bo-objectives');
+  objEl.innerHTML='';
+  for(const obj of mission.objectives){
+    const div=document.createElement('div');
+    div.className='bo-obj';div.textContent=obj.label;
+    objEl.appendChild(div);
+  }
+  playSfx('briefing_horn');
+}
+
+function updateObjectiveHUD(){
+  if(!currentMission)return;
+  const hud=document.getElementById('objective-hud');
+  hud.style.display='block';
+  document.getElementById('obj-title').textContent=currentMission.title;
+  // Timer
+  const timerEl=document.getElementById('obj-timer');
+  if(currentMission.failTime){
+    const remaining=currentMission.failTime-missionElapsed;
+    timerEl.textContent=formatTime(Math.max(0,remaining));
+    timerEl.className=remaining<60?'timer-urgent':'';
+  }else{
+    timerEl.textContent=formatTime(missionElapsed);
+    timerEl.className='';
+  }
+  // Objectives list
+  const list=document.getElementById('obj-list');
+  list.innerHTML='';
+  for(const obj of currentMission.objectives){
+    const div=document.createElement('div');
+    const done=checkObjective(obj);
+    div.className='obj-item'+(done?' obj-done':'');
+    div.textContent=obj.label;
+    list.appendChild(div);
+  }
+  // Par indicator
+  const par=document.getElementById('obj-par');
+  const starClass=missionElapsed<=currentMission.parTime*0.8?'star-active':'';
+  par.innerHTML=`Par: ${formatTime(currentMission.parTime)} <span class="${starClass}">★</span>`;
+  // Food reserve (famine)
+  if(foodReserve>0||foodDrainRate>0){
+    const foodDiv=document.createElement('div');
+    foodDiv.className='obj-item';
+    foodDiv.textContent=`Food Reserve: ${Math.floor(foodReserve)}`;
+    if(foodReserve<=20)foodDiv.style.color='#ff4444';
+    list.appendChild(foodDiv);
+  }
+}
+
+function showEventMessage(msg){
+  const bar=document.getElementById('event-bar');
+  bar.textContent='⚠ '+msg;
+  bar.classList.add('show');
+  setTimeout(()=>bar.classList.remove('show'),4000);
+}
+
+function showVictoryScreen(rating){
+  const screen=document.getElementById('victory-screen');
+  screen.style.display='flex';
+  screen.querySelector('.vs-mission').textContent=currentMission.title;
+  screen.querySelector('.vs-rating').textContent='★'.repeat(rating)+'☆'.repeat(3-rating);
+  const labels=['','BRONZE','SILVER','GOLD'];
+  const stats=screen.querySelector('.vs-stats');
+  stats.innerHTML=`Time: ${formatTime(missionElapsed)} / Par: ${formatTime(currentMission.parTime)}<br>`+
+    `Rating: ${labels[rating]||'COMPLETED'}<br>`+
+    `Workers trained: ${missionStats.workersTrainedTotal}<br>`+
+    `Buildings built: ${missionStats.buildingsBuilt}<br>`+
+    `Gold gathered: ${missionStats.goldGathered.toLocaleString()}<br>`+
+    `Lumber gathered: ${missionStats.lumberGathered.toLocaleString()}`;
+  // Hide next mission button if no unlock
+  const nextBtn=screen.querySelector('.vs-btns').children[0];
+  nextBtn.style.display=currentMission.unlocks?'':'none';
+  document.getElementById('objective-hud').style.display='none';
+}
+
+function showDefeatScreen(reason){
+  const screen=document.getElementById('defeat-screen');
+  screen.style.display='flex';
+  screen.querySelector('.ds-reason').textContent=reason;
+  const completed=currentMission.objectives.filter(o=>checkObjective(o)).length;
+  const total=currentMission.objectives.length;
+  let progressText=`Progress: ${completed}/${total} objectives`;
+  for(const obj of currentMission.objectives){
+    if(!checkObjective(obj)){
+      if(obj.type==='resource'){
+        const have=obj.resource==='gold'?gold:lumber;
+        progressText+=`\n${obj.label}: ${Math.floor(have)} / ${obj.amount}`;
+      }
+    }
+  }
+  screen.querySelector('.ds-progress').textContent=progressText;
+  document.getElementById('objective-hud').style.display='none';
+}
+
+// ============================================================
 // GAME LOOP
 // ============================================================
 const clock=new THREE.Clock();
@@ -1300,6 +1898,8 @@ function gameLoop(){
   gameTick++;
   // Input
   handleKeys();
+  // Update mission
+  if(currentMission)updateMission(dt);
   // Update entities
   for(const e of entities){
     if(e instanceof Worker)e.update(dt);
@@ -1325,29 +1925,81 @@ window.addEventListener('resize',()=>{
 });
 
 // ============================================================
-// START
+// START & MISSION FLOW
 // ============================================================
-window.startGame=function(){
+function hideAllScreens(){
   document.getElementById('title-screen').style.display='none';
+  document.getElementById('briefing-overlay').style.display='none';
+  document.getElementById('victory-screen').style.display='none';
+  document.getElementById('defeat-screen').style.display='none';
+  document.getElementById('objective-hud').style.display='none';
+}
+
+function showGameUI(){
   document.getElementById('hud').style.display='flex';
   document.getElementById('bottom-panel').style.display='flex';
-  initAudio();
+}
+
+function hideGameUI(){
+  document.getElementById('hud').style.display='none';
+  document.getElementById('bottom-panel').style.display='none';
+}
+
+window.startSandbox=function(){
+  hideAllScreens();showGameUI();
+  initAudio();currentMission=null;
   gameStarted=true;
-  initGame();
-  updateCamera();
-  clock.start();
+  initGame(null);
+  updateCamera();clock.start();
 };
+
+// Kept for backwards compat
+window.startGame=window.startSandbox;
+
+window.launchMission=function(){
+  if(!pendingMissionId)return;
+  const mission=MISSIONS.find(m=>m.id===pendingMissionId);
+  if(!mission)return;
+  hideAllScreens();showGameUI();
+  initAudio();
+  currentMission=mission;
+  gameStarted=true;
+  initGame(mission);
+  updateCamera();clock.start();
+};
+
+window.nextMission=function(){
+  if(!currentMission||!currentMission.unlocks)return;
+  const next=MISSIONS.find(m=>m.id===currentMission.unlocks);
+  if(!next)return;
+  hideAllScreens();hideGameUI();
+  showBriefing(next);
+};
+
+window.replayMission=function(){
+  if(!currentMission)return;
+  hideAllScreens();hideGameUI();
+  showBriefing(currentMission);
+};
+
+window.showCampaign=function(){
+  hideAllScreens();hideGameUI();gameStarted=false;
+  currentMission=null;
+  document.getElementById('title-screen').style.display='flex';
+  renderCampaignList();
+};
+
+// Load progress and render campaign on page load
+loadMissionProgress();
+renderCampaignList();
 
 // State persistence
 window.addEventListener('beforeunload',()=>{
-  if(!gameStarted)return;
-  const state={gold,lumber,foodUsed,foodCap,gameTick};
-  try{sessionStorage.setItem('dominion-state',JSON.stringify(state))}catch(e){}
+  saveMissionProgress();
 });
 
 updateCamera();
 gameLoop();
 </script>
 </body>
-</html>
 </html>
