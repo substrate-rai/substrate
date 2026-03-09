@@ -118,8 +118,8 @@ redirect_from:
   }
 
   .cell {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
     border: 2px solid #333366;
     display: flex;
     align-items: center;
@@ -189,7 +189,7 @@ redirect_from:
 
   /* Keyboard */
   #keyboard {
-    margin: 16px auto;
+    margin: 8px auto;
     max-width: 500px;
     width: 100%;
     padding: 0 8px;
@@ -460,6 +460,32 @@ redirect_from:
     .key.wide { min-width: 38px; }
     header h1 { font-size: 1.1rem; }
   }
+
+  /* Short viewport: fit grid + keyboard on screen */
+  @media (max-height: 750px) {
+    .cell { width: 46px; height: 46px; font-size: 1.3rem; }
+    .key { height: 42px; }
+    #grid { margin: 4px auto; gap: 4px; }
+    .row { gap: 4px; }
+    #keyboard { margin: 6px auto; }
+    .kb-row { margin-bottom: 3px; }
+    header { padding: 10px 20px; }
+    .subtitle { margin: 4px 0 2px; }
+    .streak-bar { margin-bottom: 4px; }
+    .how-to-play { display: none; }
+    .legend { display: none; }
+  }
+
+  @media (max-height: 650px) {
+    .cell { width: 40px; height: 40px; font-size: 1.1rem; }
+    .key { height: 38px; min-width: 28px; font-size: 0.7rem; }
+    .key.wide { min-width: 44px; }
+    header { padding: 8px 16px; }
+    header h1 { font-size: 1.1rem; }
+    .subtitle { font-size: 0.6rem; margin: 2px 0; }
+    .streak-bar { font-size: 0.65rem; margin-bottom: 2px; }
+    #message { min-height: 18px; font-size: 0.7rem; margin: 2px 0; }
+  }
 </style>
 <script src="{{ site.baseurl }}/assets/js/substrate-audio.js"></script>
 <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
@@ -479,7 +505,7 @@ redirect_from:
   </div>
 </header>
 
-<img src="{{ site.baseurl }}/assets/images/game-art/title-sigterm.webp" alt="SIGTERM" style="width:100%;max-width:500px;height:auto;border-radius:0;margin:8px auto;display:block;opacity:0.9;image-rendering:pixelated;">
+<img src="{{ site.baseurl }}/assets/images/game-art/title-sigterm.webp" alt="SIGTERM" style="width:100%;max-width:500px;max-height:20vh;height:auto;object-fit:cover;border-radius:0;margin:4px auto;display:block;opacity:0.9;image-rendering:pixelated;">
 
 <div class="subtitle">daily word game by <span style="color:#00ffaa;">substrate</span></div>
 <div class="streak-bar" id="streak-bar" aria-live="polite" aria-label="Current streak"></div>

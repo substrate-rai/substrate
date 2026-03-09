@@ -109,8 +109,8 @@ redirect_from:
   }
 
   .cell {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
     border: 2px solid #333366;
     display: flex;
     align-items: center;
@@ -179,7 +179,7 @@ redirect_from:
 
   /* Keyboard */
   #keyboard {
-    margin: 16px auto;
+    margin: 8px auto;
     max-width: 500px;
     width: 100%;
     padding: 0 8px;
@@ -542,6 +542,30 @@ redirect_from:
     .key { min-width: 22px; height: 36px; font-size: 0.6rem; }
     .key.wide { min-width: 38px; }
     header h1 { font-size: 1.1rem; }
+  }
+
+  /* Short viewport: fit grid + keyboard on screen */
+  @media (max-height: 750px) {
+    .cell { width: 46px; height: 46px; font-size: 1.3rem; }
+    .key { height: 42px; }
+    #grid { margin: 4px auto; gap: 4px; }
+    .row { gap: 4px; }
+    #keyboard { margin: 6px auto; }
+    .kb-row { margin-bottom: 3px; }
+    header { padding: 10px 20px; }
+    .subtitle { margin: 4px 0 2px; }
+    .legend { display: none; }
+  }
+
+  @media (max-height: 650px) {
+    .cell { width: 40px; height: 40px; font-size: 1.1rem; }
+    .key { height: 38px; min-width: 28px; font-size: 0.7rem; }
+    .key.wide { min-width: 44px; }
+    header { padding: 8px 16px; }
+    header h1 { font-size: 1.1rem; }
+    .subtitle { font-size: 0.6rem; margin: 2px 0; }
+    .challenge-info { font-size: 0.65rem; margin: 2px 0 4px; }
+    #message { min-height: 18px; font-size: 0.7rem; margin: 2px 0; }
   }
 </style>
 </head>
