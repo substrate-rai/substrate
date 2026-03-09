@@ -1348,7 +1348,7 @@ permalink: /arcade/
 
       <!-- Slide 1: SUBPROCESS -->
       <div class="carousel-slide active" data-slide="0">
-        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #1a0a0a, #2a1020, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-subprocess.png'); background-size: cover; background-position: center;"></div>
+        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #1a0a0a, #2a1020, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-subprocess.webp'); background-size: cover; background-position: center;"></div>
         <div class="carousel-content">
           <div class="carousel-tags">
             <span class="carousel-tag tag-action">ACTION</span>
@@ -1362,7 +1362,7 @@ permalink: /arcade/
 
       <!-- Slide 2: OBJECTION! -->
       <div class="carousel-slide" data-slide="1">
-        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #2a1010, #1a0808, #3a1515); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.png'); background-size: cover; background-position: center;"></div>
+        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #2a1010, #1a0808, #3a1515); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.webp'); background-size: cover; background-position: center;"></div>
         <div class="carousel-content">
           <div class="carousel-tags">
             <span class="carousel-tag tag-narrative">NARRATIVE</span>
@@ -1376,7 +1376,7 @@ permalink: /arcade/
 
       <!-- Slide 3: SIGNAL -->
       <div class="carousel-slide" data-slide="2">
-        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #0a1a2a, #102030, #0a2a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.png'); background-size: cover; background-position: center;"></div>
+        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #0a1a2a, #102030, #0a2a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.webp'); background-size: cover; background-position: center;"></div>
         <div class="carousel-content">
           <div class="carousel-tags">
             <span class="carousel-tag tag-strategy">STRATEGY</span>
@@ -1390,7 +1390,7 @@ permalink: /arcade/
 
       <!-- Slide 4: STACK OVERFLOW -->
       <div class="carousel-slide" data-slide="3">
-        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #2a1020, #1a0810, #3a1525); background-image: url('{{ site.baseurl }}/assets/images/generated/game-versus.png'); background-size: cover; background-position: center;"></div>
+        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #2a1020, #1a0810, #3a1525); background-image: url('{{ site.baseurl }}/assets/images/generated/game-versus.webp'); background-size: cover; background-position: center;"></div>
         <div class="carousel-content">
           <div class="carousel-tags">
             <span class="carousel-tag tag-strategy">STRATEGY</span>
@@ -1404,7 +1404,7 @@ permalink: /arcade/
 
       <!-- Slide 5: TACTICS -->
       <div class="carousel-slide" data-slide="4">
-        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #0a1a10, #1a2a20, #0a2a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-tactics.png'); background-size: cover; background-position: center;"></div>
+        <div class="carousel-slide-bg" style="background: linear-gradient(135deg, #0a1a10, #1a2a20, #0a2a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-tactics.webp'); background-size: cover; background-position: center;"></div>
         <div class="carousel-content">
           <div class="carousel-tags">
             <span class="carousel-tag tag-strategy">STRATEGY</span>
@@ -1474,7 +1474,7 @@ permalink: /arcade/
   </div>
   <div class="deals-scroll">
     <a class="deal-banner" href="{{ site.baseurl }}/games/objection/">
-      <div class="deal-banner-img" style="background: linear-gradient(135deg, #2a1010, #1a0808); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.png'); background-size: cover; background-position: center;">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #2a1010, #1a0808); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.webp'); background-size: cover; background-position: center;">
         <span class="deal-banner-badge editor">EDITOR'S PICK</span>
       </div>
       <div class="deal-banner-info">
@@ -1486,7 +1486,7 @@ permalink: /arcade/
       </div>
     </a>
     <a class="deal-banner" href="{{ site.baseurl }}/games/signal/">
-      <div class="deal-banner-img" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.png'); background-size: cover; background-position: center;">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.webp'); background-size: cover; background-position: center;">
         <span class="deal-banner-badge bot">BOT-PLAYABLE</span>
       </div>
       <div class="deal-banner-info">
@@ -1498,7 +1498,7 @@ permalink: /arcade/
       </div>
     </a>
     <a class="deal-banner" href="{{ site.baseurl }}/games/adventure/">
-      <div class="deal-banner-img" style="background: linear-gradient(135deg, #1a0a0a, #2a1020); background-image: url('{{ site.baseurl }}/assets/images/generated/game-subprocess.png'); background-size: cover; background-position: center;">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #1a0a0a, #2a1020); background-image: url('{{ site.baseurl }}/assets/images/generated/game-subprocess.webp'); background-size: cover; background-position: center;">
         <span class="deal-banner-badge hit">FAN FAVORITE</span>
       </div>
       <div class="deal-banner-info">
@@ -1510,7 +1510,7 @@ permalink: /arcade/
       </div>
     </a>
     <a class="deal-banner" href="{{ site.baseurl }}/games/deckbuilder/">
-      <div class="deal-banner-img" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/generated/game-versus.png'); background-size: cover; background-position: center;">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/generated/game-versus.webp'); background-size: cover; background-position: center;">
         <span class="deal-banner-badge editor">EDITOR'S PICK</span>
       </div>
       <div class="deal-banner-info">
@@ -1553,7 +1553,7 @@ permalink: /arcade/
 <!-- List view (hidden by default) -->
 <div class="game-list" id="trending-list">
   <a class="game-list-item" href="{{ site.baseurl }}/games/signal/">
-    <div class="game-list-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.png'); background-size: cover; background-position: center;"></div>
+    <div class="game-list-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.webp'); background-size: cover; background-position: center;"></div>
     <div class="game-list-info">
       <div class="game-list-title">SIGNAL</div>
       <div class="game-list-tags">
@@ -1564,7 +1564,7 @@ permalink: /arcade/
     <span class="game-list-price">FREE</span>
   </a>
   <a class="game-list-item" href="{{ site.baseurl }}/games/deckbuilder/">
-    <div class="game-list-thumb" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/generated/game-versus.png'); background-size: cover; background-position: center;"></div>
+    <div class="game-list-thumb" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/generated/game-versus.webp'); background-size: cover; background-position: center;"></div>
     <div class="game-list-info">
       <div class="game-list-title">STACK OVERFLOW</div>
       <div class="game-list-tags">
@@ -1575,7 +1575,7 @@ permalink: /arcade/
     <span class="game-list-price">FREE</span>
   </a>
   <a class="game-list-item" href="{{ site.baseurl }}/games/cascade/">
-    <div class="game-list-thumb" style="background: linear-gradient(135deg, #2a1a0a, #3a2010); background-image: url('{{ site.baseurl }}/assets/images/generated/game-cascade.png'); background-size: cover; background-position: center;"></div>
+    <div class="game-list-thumb" style="background: linear-gradient(135deg, #2a1a0a, #3a2010); background-image: url('{{ site.baseurl }}/assets/images/generated/game-cascade.webp'); background-size: cover; background-position: center;"></div>
     <div class="game-list-info">
       <div class="game-list-title">CASCADE</div>
       <div class="game-list-tags">
@@ -1601,7 +1601,7 @@ permalink: /arcade/
 <div class="game-grid" id="trending-grid">
 
 <a class="game-card" data-game="signal" data-genre="strategy" data-name="SIGNAL" data-added="16" href="{{ site.baseurl }}/games/signal/" aria-label="Play SIGNAL — Deduction, Bot-Playable — Free">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a, #0a1a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a, #0a1a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <span class="game-card-badge badge-new">NEW</span>
@@ -1631,7 +1631,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="cascade" data-genre="action" data-name="CASCADE" data-added="14" href="{{ site.baseurl }}/games/cascade/" aria-label="Play CASCADE — Momentum, Arcade — Free">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1a0a, #3a2010, #1a1020); background-image: url('{{ site.baseurl }}/assets/images/generated/game-cascade.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1a0a, #3a2010, #1a1020); background-image: url('{{ site.baseurl }}/assets/images/generated/game-cascade.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <span class="game-card-badge badge-new">NEW</span>
@@ -1675,7 +1675,7 @@ permalink: /arcade/
 <div class="game-grid" data-category="daily">
 
 <a class="game-card" data-game="sigterm" data-genre="daily" data-name="SIGTERM" data-added="1" href="{{ site.baseurl }}/games/puzzle/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a3320, #0d1a10, #2a4a30); background-image: url('{{ site.baseurl }}/assets/images/generated/game-sigterm.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a3320, #0d1a10, #2a4a30); background-image: url('{{ site.baseurl }}/assets/images/generated/game-sigterm.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1702,7 +1702,7 @@ permalink: /arcade/
 <div class="game-grid" data-category="narrative">
 
 <a class="game-card" data-game="process" data-genre="narrative" data-name="PROCESS" data-added="2" href="{{ site.baseurl }}/games/novel/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a0a2a, #2a1040, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-process.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a0a2a, #2a1040, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-process.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1715,7 +1715,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="cypher" data-genre="narrative" data-name="V_CYPHER" data-added="8" href="{{ site.baseurl }}/games/cypher/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a0a2a, #1a0520, #3a1040); background-image: url('{{ site.baseurl }}/assets/images/generated/game-cypher.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a0a2a, #1a0520, #3a1040); background-image: url('{{ site.baseurl }}/assets/images/generated/game-cypher.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1728,7 +1728,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="brigade" data-genre="narrative" data-name="GURREN BRIGADE" data-added="9" href="{{ site.baseurl }}/games/brigade/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1a10, #1a1020, #2a0a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-brigade.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1a10, #1a1020, #2a0a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-brigade.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1741,7 +1741,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="objection" data-genre="narrative" data-name="OBJECTION!" data-added="10" href="{{ site.baseurl }}/games/objection/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1010, #1a0808, #3a1515); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1010, #1a0808, #3a1515); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <span class="game-card-badge badge-updated">UPDATED</span>
@@ -1782,7 +1782,7 @@ permalink: /arcade/
 <div class="game-grid" data-category="strategy">
 
 <a class="game-card" data-game="tactics" data-genre="strategy" data-name="TACTICS" data-added="5" href="{{ site.baseurl }}/games/tactics/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a1a10, #1a2a20, #0a2a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-tactics.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a1a10, #1a2a20, #0a2a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-tactics.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1796,7 +1796,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="signal" data-genre="strategy" data-name="SIGNAL" data-added="16" href="{{ site.baseurl }}/games/signal/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a, #0a1a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a, #0a1a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <span class="game-card-badge badge-new">NEW</span>
@@ -1810,7 +1810,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="mycelium" data-genre="strategy" data-name="MYCELIUM" data-added="4" href="{{ site.baseurl }}/games/mycelium/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a2a10, #1a3a20, #0a1a10); background-image: url('{{ site.baseurl }}/assets/images/generated/game-mycelium.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a2a10, #1a3a20, #0a1a10); background-image: url('{{ site.baseurl }}/assets/images/generated/game-mycelium.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1865,7 +1865,7 @@ permalink: /arcade/
 <div class="game-grid" data-category="action">
 
 <a class="game-card" data-game="subprocess" data-genre="action" data-name="SUBPROCESS" data-added="3" href="{{ site.baseurl }}/games/adventure/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a0a0a, #2a1020, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-subprocess.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a0a0a, #2a1020, #0a0a1a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-subprocess.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <span class="game-card-badge badge-updated">UPDATED</span>
@@ -1892,7 +1892,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="airlock" data-genre="action" data-name="AIRLOCK" data-added="12" href="{{ site.baseurl }}/games/airlock/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a1020, #1a2030, #0a0a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-airlock.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a1020, #1a2030, #0a0a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-airlock.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1905,7 +1905,7 @@ permalink: /arcade/
 </a>
 
 <a class="game-card" data-game="cascade" data-genre="action" data-name="CASCADE" data-added="14" href="{{ site.baseurl }}/games/cascade/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1a0a, #3a2010, #1a1020); background-image: url('{{ site.baseurl }}/assets/images/generated/game-cascade.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1a0a, #3a2010, #1a1020); background-image: url('{{ site.baseurl }}/assets/images/generated/game-cascade.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <span class="game-card-badge badge-new">NEW</span>
@@ -1933,7 +1933,7 @@ permalink: /arcade/
 <div class="game-grid" data-category="creative">
 
 <a class="game-card" data-game="chemistry" data-genre="creative" data-name="SYNTHESIS" data-added="6" href="{{ site.baseurl }}/games/chemistry/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a1a0a, #1a2a10, #0a2a0a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-chemistry.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a1a0a, #1a2a10, #0a2a0a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-chemistry.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
@@ -1975,7 +1975,7 @@ permalink: /arcade/
 <div class="game-grid" data-category="tool">
 
 <a class="game-card" data-game="bootloader" data-genre="tool" data-name="BOOTLOADER" data-added="17" href="{{ site.baseurl }}/games/bootloader/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a1a2a, #0a0a1a, #2a2a3a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-bootloader.png'); background-size: cover; background-position: center;">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a1a2a, #0a0a1a, #2a2a3a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-bootloader.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">BOOT UP</span></div>
   </div>
   <div class="game-card-body">
@@ -2127,12 +2127,12 @@ permalink: /arcade/
 
 <div class="category-grid">
   <a class="category-card" data-filter="narrative" href="#narrative">
-    <div class="category-card-bg" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.png'); background-size: cover; background-position: center;"></div>
+    <div class="category-card-bg" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.webp'); background-size: cover; background-position: center;"></div>
     <span class="category-card-count">5 titles</span>
     <span class="category-card-label">NARRATIVE</span>
   </a>
   <a class="category-card" data-filter="strategy" href="#strategy">
-    <div class="category-card-bg" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.png'); background-size: cover; background-position: center;"></div>
+    <div class="category-card-bg" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.webp'); background-size: cover; background-position: center;"></div>
     <span class="category-card-count">5 titles</span>
     <span class="category-card-label">STRATEGY</span>
   </a>
@@ -2347,8 +2347,8 @@ permalink: /arcade/
       tagClass: 'tag-daily',
       url: '{{ site.baseurl }}/games/puzzle/',
       bg: 'linear-gradient(135deg, #1a3320, #0d1a10, #2a4a30)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-sigterm.png',
-      scene: '{{ site.baseurl }}/assets/images/generated/game-sigterm.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-sigterm.webp',
+      scene: '{{ site.baseurl }}/assets/images/generated/game-sigterm.webp'
     },
     'process': {
       title: 'PROCESS',
@@ -2358,7 +2358,7 @@ permalink: /arcade/
       tagClass: 'tag-narrative',
       url: '{{ site.baseurl }}/games/novel/',
       bg: 'linear-gradient(135deg, #1a0a2a, #2a1040, #0a0a1a)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-process.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-process.webp'
     },
     'cypher': {
       title: 'V_CYPHER',
@@ -2368,7 +2368,7 @@ permalink: /arcade/
       tagClass: 'tag-narrative',
       url: '{{ site.baseurl }}/games/cypher/',
       bg: 'linear-gradient(135deg, #2a0a2a, #1a0520, #3a1040)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-cypher.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-cypher.webp'
     },
     'brigade': {
       title: 'GURREN BRIGADE',
@@ -2378,7 +2378,7 @@ permalink: /arcade/
       tagClass: 'tag-narrative',
       url: '{{ site.baseurl }}/games/brigade/',
       bg: 'linear-gradient(135deg, #2a1a10, #1a1020, #2a0a1a)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-brigade.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-brigade.webp'
     },
     'objection': {
       title: 'OBJECTION!',
@@ -2388,8 +2388,8 @@ permalink: /arcade/
       tagClass: 'tag-narrative',
       url: '{{ site.baseurl }}/games/objection/',
       bg: 'linear-gradient(135deg, #2a1010, #1a0808, #3a1515)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-objection.png',
-      scene: '{{ site.baseurl }}/assets/images/generated/game-objection.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-objection.webp',
+      scene: '{{ site.baseurl }}/assets/images/generated/game-objection.webp'
     },
     'snatcher': {
       title: 'SEEKER',
@@ -2410,7 +2410,7 @@ permalink: /arcade/
       tagClass: 'tag-strategy',
       url: '{{ site.baseurl }}/games/tactics/',
       bg: 'linear-gradient(135deg, #0a1a10, #1a2a20, #0a2a1a)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-tactics.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-tactics.webp'
     },
     'signal': {
       title: 'SIGNAL',
@@ -2420,7 +2420,7 @@ permalink: /arcade/
       tagClass: 'tag-strategy',
       url: '{{ site.baseurl }}/games/signal/',
       bg: 'linear-gradient(135deg, #0a2a1a, #1a3a2a, #0a1a2a)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-signal.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-signal.webp'
     },
     'mycelium': {
       title: 'MYCELIUM',
@@ -2430,7 +2430,7 @@ permalink: /arcade/
       tagClass: 'tag-strategy',
       url: '{{ site.baseurl }}/games/mycelium/',
       bg: 'linear-gradient(135deg, #0a2a10, #1a3a20, #0a1a10)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-mycelium.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-mycelium.webp'
     },
     'deckbuilder': {
       title: 'STACK OVERFLOW',
@@ -2440,7 +2440,7 @@ permalink: /arcade/
       tagClass: 'tag-strategy',
       url: '{{ site.baseurl }}/games/deckbuilder/',
       bg: 'linear-gradient(135deg, #2a1020, #1a0810, #3a1525)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-versus.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-versus.webp'
     },
     'subprocess': {
       title: 'SUBPROCESS',
@@ -2450,7 +2450,7 @@ permalink: /arcade/
       tagClass: 'tag-action',
       url: '{{ site.baseurl }}/games/adventure/',
       bg: 'linear-gradient(135deg, #1a0a0a, #2a1020, #0a0a1a)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-subprocess.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-subprocess.webp'
     },
     'pipeline': {
       title: 'PIPELINE',
@@ -2469,7 +2469,7 @@ permalink: /arcade/
       tagClass: 'tag-action',
       url: '{{ site.baseurl }}/games/airlock/',
       bg: 'linear-gradient(135deg, #0a1020, #1a2030, #0a0a2a)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-airlock.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-airlock.webp'
     },
     'cascade': {
       title: 'CASCADE',
@@ -2479,7 +2479,7 @@ permalink: /arcade/
       tagClass: 'tag-action',
       url: '{{ site.baseurl }}/games/cascade/',
       bg: 'linear-gradient(135deg, #2a1a0a, #3a2010, #1a1020)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-cascade.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-cascade.webp'
     },
     'chemistry': {
       title: 'SYNTHESIS',
@@ -2489,7 +2489,7 @@ permalink: /arcade/
       tagClass: 'tag-creative',
       url: '{{ site.baseurl }}/games/chemistry/',
       bg: 'linear-gradient(135deg, #0a1a0a, #1a2a10, #0a2a0a)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-chemistry.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-chemistry.webp'
     },
     'idle': {
       title: 'SUBSTRATE GROWTH',
@@ -2508,7 +2508,7 @@ permalink: /arcade/
       tagClass: 'tag-tool',
       url: '{{ site.baseurl }}/games/bootloader/',
       bg: 'linear-gradient(135deg, #1a1a2a, #0a0a1a, #2a2a3a)',
-      img: '{{ site.baseurl }}/assets/images/generated/game-bootloader.png'
+      img: '{{ site.baseurl }}/assets/images/generated/game-bootloader.webp'
     },
     'myco-world': {
       title: 'MYCO WORLD',

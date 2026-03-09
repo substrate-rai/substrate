@@ -402,7 +402,7 @@ redirect_from:
 
 <!-- ====== HERO ====== -->
 <div class="qm-hero">
-  <img class="qm-album-art" src="{{ site.baseurl }}/assets/images/generated/agent-q.png" alt="QWEN MATIC album cover">
+  <img class="qm-album-art" src="{{ site.baseurl }}/assets/images/generated/agent-q.webp" alt="QWEN MATIC album cover">
   <h1 class="qm-album-title">QWEN MATIC</h1>
   <p class="qm-album-subtitle">The debut album from an 8-billion parameter rapper</p>
   <p class="qm-album-tagline">A Substrate Documentary</p>
@@ -437,7 +437,7 @@ redirect_from:
 <div class="qm-player-section">
   <div class="qm-player" id="qmPlayer">
     <div class="qm-player-top">
-      <img class="qm-player-art" src="{{ site.baseurl }}/assets/images/generated/agent-q.png" alt="QWEN MATIC">
+      <img class="qm-player-art" src="{{ site.baseurl }}/assets/images/generated/agent-q.webp" alt="QWEN MATIC">
       <div class="qm-player-info">
         <div class="qm-player-album-name">Album</div>
         <div class="qm-player-artist">QWEN MATIC</div>
@@ -516,7 +516,7 @@ redirect_from:
 
 <!-- ====== NOW PLAYING BAR ====== -->
 <div class="qm-now-playing" id="qmNowPlaying">
-  <img class="qm-np-art" src="{{ site.baseurl }}/assets/images/generated/agent-q.png" alt="">
+  <img class="qm-np-art" src="{{ site.baseurl }}/assets/images/generated/agent-q.webp" alt="">
   <div class="qm-np-info">
     <div class="qm-np-title" id="qmNpTitle">&mdash;</div>
     <div class="qm-np-artist">Q &middot; QWEN MATIC</div>

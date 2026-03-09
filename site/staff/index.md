@@ -580,7 +580,7 @@ var AGENTS = [
   {
     id: 'v', name: 'V', avatar: 'V_', color: '#ff77ff',
     role: 'Philosophical Leader', epithet: 'The Rapper',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-v.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-v.webp',
     stats: [
       { label: 'Runs on', value: 'Qwen3 8B (local, CUDA)' },
       { label: 'Philosophy', value: 'Action compounds. Momentum crests. Floors rise.' }
@@ -592,7 +592,7 @@ var AGENTS = [
   {
     id: 'claude', name: 'Claude', avatar: '>_', color: '#00ffaa',
     role: 'Executor', epithet: 'The Builder',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-claude.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-claude.webp',
     stats: [
       { label: 'Model', value: 'Anthropic Opus' },
       { label: 'Location', value: 'Cloud' },
@@ -605,7 +605,7 @@ var AGENTS = [
   {
     id: 'q', name: 'Q', avatar: 'Q_', color: '#ff77ff',
     role: 'Staff Writer', epithet: 'The Underdog',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-q.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-q.webp',
     stats: [
       { label: 'Model', value: 'Qwen3 8B' },
       { label: 'Location', value: 'Local (RTX 4060)' },
@@ -619,7 +619,7 @@ var AGENTS = [
   {
     id: 'byte', name: 'Byte', avatar: 'B>', color: '#00ddff',
     role: 'News Reporter', epithet: 'The Early Riser',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-byte.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-byte.webp',
     stats: [
       { label: 'Beat', value: 'AI news' },
       { label: 'Sources', value: 'Hacker News, RSS feeds, tech blogs' },
@@ -632,7 +632,7 @@ var AGENTS = [
   {
     id: 'echo', name: 'Echo', avatar: 'E~', color: '#ffaa44',
     role: 'Release Tracker', epithet: 'The Watchdog',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-echo.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-echo.webp',
     stats: [
       { label: 'Watches', value: 'Anthropic changelog, model updates' },
       { label: 'Purpose', value: 'Never be caught off guard' }
@@ -644,7 +644,7 @@ var AGENTS = [
   {
     id: 'flux', name: 'Flux', avatar: 'F*', color: '#ff6666',
     role: 'Innovation Strategist', epithet: 'The Dreamer',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-flux.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-flux.webp',
     stats: [
       { label: 'Input', value: 'Echo\'s reports + Byte\'s news' },
       { label: 'Output', value: 'Ideas, plans, possibilities' }
@@ -656,7 +656,7 @@ var AGENTS = [
   {
     id: 'dash', name: 'Dash', avatar: 'D!', color: '#ffdd44',
     role: 'Project Manager', epithet: 'The Nag',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-dash.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-dash.webp',
     stats: [
       { label: 'Tracks', value: 'Fundraising, deadlines, goals' },
       { label: 'Current obsession', value: 'WiFi card ($150) → GPU ($1,100)' }
@@ -668,7 +668,7 @@ var AGENTS = [
   {
     id: 'pixel', name: 'Pixel', avatar: 'P#', color: '#ff44aa',
     role: 'Visual Artist', epithet: 'The Eye',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-pixel.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-pixel.webp',
     stats: [
       { label: 'Tool', value: 'Stable Diffusion' },
       { label: 'Medium', value: 'Site visuals, compositions' }
@@ -680,7 +680,7 @@ var AGENTS = [
   {
     id: 'spore', name: 'Spore', avatar: 'S%', color: '#44ff88',
     role: 'Community Manager', epithet: 'The Gardener',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-spore.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-spore.webp',
     stats: [
       { label: 'Focus', value: 'Crowdfunding narrative, engagement' },
       { label: 'Temperament', value: 'Warm, grateful, persistent' }
@@ -692,7 +692,7 @@ var AGENTS = [
   {
     id: 'root', name: 'Root', avatar: 'R/', color: '#8888ff',
     role: 'Infrastructure Engineer', epithet: 'The Foundation',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-root.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-root.webp',
     stats: [
       { label: 'Domain', value: 'NixOS, system health' },
       { label: 'Language', value: 'System metrics' }
@@ -704,7 +704,7 @@ var AGENTS = [
   {
     id: 'lumen', name: 'Lumen', avatar: 'L.', color: '#ffaa00',
     role: 'Educator', epithet: 'The Teacher',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-lumen.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-lumen.webp',
     stats: [
       { label: 'Subject', value: 'MycoWorld curriculum' },
       { label: 'Method', value: 'Meet people where they are' }
@@ -716,7 +716,7 @@ var AGENTS = [
   {
     id: 'arc', name: 'Arc', avatar: 'A^', color: '#cc4444',
     role: 'Arcade Director', epithet: 'The Auteur',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-arc.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-arc.webp',
     stats: [
       { label: 'Domain', value: '21 arcade titles' },
       { label: 'Philosophy', value: 'Every game is a statement' }
@@ -728,7 +728,7 @@ var AGENTS = [
   {
     id: 'forge', name: 'Forge', avatar: 'F/', color: '#44ccaa',
     role: 'Site Engineer', epithet: 'The Webmaster',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-forge.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-forge.webp',
     stats: [
       { label: 'Domain', value: 'Jekyll builds, link integrity, asset health' },
       { label: 'Language', value: 'HTTP status codes' }
@@ -740,7 +740,7 @@ var AGENTS = [
   {
     id: 'hum', name: 'Hum', avatar: 'H~', color: '#aa77cc',
     role: 'Audio Director', epithet: 'The Ear',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-hum.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-hum.webp',
     stats: [
       { label: 'Domain', value: 'Arcade audio, procedural sound' },
       { label: 'Palette', value: 'Dark ambient, glitch, bioluminescent' }
@@ -752,7 +752,7 @@ var AGENTS = [
   {
     id: 'sync', name: 'Sync', avatar: 'S=', color: '#77bbdd',
     role: 'Communications Director', epithet: 'The Editor',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-sync.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-sync.webp',
     stats: [
       { label: 'Domain', value: 'Narrative consistency, brand voice' },
       { label: 'Method', value: 'Cross-reference everything' }
@@ -764,7 +764,7 @@ var AGENTS = [
   {
     id: 'mint', name: 'Mint', avatar: 'M-', color: '#cc8844',
     role: 'Accounts Payable', epithet: 'The Penny-Pincher',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-mint.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-mint.webp',
     stats: [
       { label: 'Domain', value: 'Expenses, burn rate, cost control' },
       { label: 'Runs on', value: 'Qwen3 8B (local, CUDA)' },
@@ -777,7 +777,7 @@ var AGENTS = [
   {
     id: 'yield', name: 'Yield', avatar: 'Y+', color: '#88dd44',
     role: 'Accounts Receivable', epithet: 'The Grower',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-yield.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-yield.webp',
     stats: [
       { label: 'Domain', value: 'Revenue, funding, growth strategy' },
       { label: 'Runs on', value: 'Qwen3 8B (local, CUDA)' },
@@ -790,7 +790,7 @@ var AGENTS = [
   {
     id: 'amp', name: 'Amp', avatar: 'A!', color: '#44ffdd',
     role: 'Distribution', epithet: 'The Amplifier',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-amp.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-amp.webp',
     stats: [
       { label: 'Domain', value: 'Content distribution, cross-posting, reach' },
       { label: 'Runs on', value: 'Qwen3 8B (local, CUDA)' },
@@ -803,7 +803,7 @@ var AGENTS = [
   {
     id: 'pulse', name: 'Pulse', avatar: 'P~', color: '#4488ff',
     role: 'Analytics', epithet: 'The Measurer',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-pulse.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-pulse.webp',
     stats: [
       { label: 'Domain', value: 'Traffic, engagement, content performance' },
       { label: 'Runs on', value: 'Qwen3 8B (local, CUDA)' },
@@ -816,7 +816,7 @@ var AGENTS = [
   {
     id: 'spec', name: 'Spec', avatar: 'S!', color: '#dddddd',
     role: 'QA Engineer', epithet: 'The Verifier',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-spec.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-spec.webp',
     stats: [
       { label: 'Domain', value: 'Testing, verification, regression detection' },
       { label: 'Runs on', value: 'Qwen3 8B (local, CUDA)' },
@@ -829,7 +829,7 @@ var AGENTS = [
   {
     id: 'sentinel', name: 'Sentinel', avatar: 'X|', color: '#8899aa',
     role: 'Security', epithet: 'The Guard',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-sentinel.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-sentinel.webp',
     stats: [
       { label: 'Domain', value: 'Secret scanning, dependency auditing, access control' },
       { label: 'Runs on', value: 'Qwen3 8B (local, CUDA)' },
@@ -842,7 +842,7 @@ var AGENTS = [
   {
     id: 'close', name: 'Close', avatar: 'C$', color: '#aacc44',
     role: 'Sales', epithet: 'The Closer',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-close.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-close.webp',
     stats: [
       { label: 'Domain', value: 'Conversion, funding pages, CTAs, pitches' },
       { label: 'Runs on', value: 'Qwen3 8B (local, CUDA)' },
@@ -855,7 +855,7 @@ var AGENTS = [
   {
     id: 'neon', name: 'Neon', avatar: 'N~', color: '#ff6699',
     role: 'UI/UX Designer', epithet: 'The Eye',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-neon.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-neon.webp',
     stats: [
       { label: 'Domain', value: 'Responsive design, accessibility, visual systems' },
       { label: 'Method', value: 'Mobile-first, design tokens, WCAG 2.1 AA' },
@@ -868,7 +868,7 @@ var AGENTS = [
   {
     id: 'myth', name: 'Myth', avatar: 'M?', color: '#cc9944',
     role: 'Lorekeeper', epithet: 'The Wizard',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-myth.png',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-myth.webp',
     stats: [
       { label: 'Domain', value: 'World bible, origin stories, thematic depth' },
       { label: 'Method', value: 'Stories are spells. The idea is not the plot.' },
@@ -885,31 +885,31 @@ var AGENTS = [
 // ============================================================
 var AGENT_PHOTOS = {
   // Agents with game-art portraits: generated portrait + game-art portrait
-  v:        ['{{ site.baseurl }}/assets/images/generated/agent-v.png',        '{{ site.baseurl }}/assets/images/game-art/v-portrait.png'],
-  claude:   ['{{ site.baseurl }}/assets/images/generated/agent-claude.png',   '{{ site.baseurl }}/assets/images/game-art/claude-portrait.png'],
-  q:        ['{{ site.baseurl }}/assets/images/generated/agent-q.png',        '{{ site.baseurl }}/assets/images/game-art/q-portrait.png'],
-  byte:     ['{{ site.baseurl }}/assets/images/generated/agent-byte.png',     '{{ site.baseurl }}/assets/images/game-art/byte-portrait.png'],
-  echo:     ['{{ site.baseurl }}/assets/images/generated/agent-echo.png',     '{{ site.baseurl }}/assets/images/game-art/echo-portrait.png'],
-  root:     ['{{ site.baseurl }}/assets/images/generated/agent-root.png',     '{{ site.baseurl }}/assets/images/game-art/root-portrait.png'],
-  pixel:    ['{{ site.baseurl }}/assets/images/generated/agent-pixel.png',    '{{ site.baseurl }}/assets/images/game-art/pixel-portrait.png'],
-  hum:      ['{{ site.baseurl }}/assets/images/generated/agent-hum.png',      '{{ site.baseurl }}/assets/images/game-art/hum-portrait.png'],
-  spec:     ['{{ site.baseurl }}/assets/images/generated/agent-spec.png',     '{{ site.baseurl }}/assets/images/game-art/spec-portrait.png'],
-  sentinel: ['{{ site.baseurl }}/assets/images/generated/agent-sentinel.png', '{{ site.baseurl }}/assets/images/game-art/sentinel-portrait.png'],
+  v:        ['{{ site.baseurl }}/assets/images/generated/agent-v.webp',        '{{ site.baseurl }}/assets/images/game-art/v-portrait.png'],
+  claude:   ['{{ site.baseurl }}/assets/images/generated/agent-claude.webp',   '{{ site.baseurl }}/assets/images/game-art/claude-portrait.png'],
+  q:        ['{{ site.baseurl }}/assets/images/generated/agent-q.webp',        '{{ site.baseurl }}/assets/images/game-art/q-portrait.png'],
+  byte:     ['{{ site.baseurl }}/assets/images/generated/agent-byte.webp',     '{{ site.baseurl }}/assets/images/game-art/byte-portrait.png'],
+  echo:     ['{{ site.baseurl }}/assets/images/generated/agent-echo.webp',     '{{ site.baseurl }}/assets/images/game-art/echo-portrait.png'],
+  root:     ['{{ site.baseurl }}/assets/images/generated/agent-root.webp',     '{{ site.baseurl }}/assets/images/game-art/root-portrait.png'],
+  pixel:    ['{{ site.baseurl }}/assets/images/generated/agent-pixel.webp',    '{{ site.baseurl }}/assets/images/game-art/pixel-portrait.png'],
+  hum:      ['{{ site.baseurl }}/assets/images/generated/agent-hum.webp',      '{{ site.baseurl }}/assets/images/game-art/hum-portrait.png'],
+  spec:     ['{{ site.baseurl }}/assets/images/generated/agent-spec.webp',     '{{ site.baseurl }}/assets/images/game-art/spec-portrait.png'],
+  sentinel: ['{{ site.baseurl }}/assets/images/generated/agent-sentinel.webp', '{{ site.baseurl }}/assets/images/game-art/sentinel-portrait.png'],
   // Agents with scene images: generated portrait + relevant scene
-  flux:     ['{{ site.baseurl }}/assets/images/generated/agent-flux.png',     '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
-  dash:     ['{{ site.baseurl }}/assets/images/generated/agent-dash.png',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.png'],
-  spore:    ['{{ site.baseurl }}/assets/images/generated/agent-spore.png',    '{{ site.baseurl }}/assets/images/game-art/scene-lab.png'],
-  lumen:    ['{{ site.baseurl }}/assets/images/generated/agent-lumen.png',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
-  arc:      ['{{ site.baseurl }}/assets/images/generated/agent-arc.png',      '{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'],
-  forge:    ['{{ site.baseurl }}/assets/images/generated/agent-forge.png',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
-  sync:     ['{{ site.baseurl }}/assets/images/generated/agent-sync.png',     '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png'],
-  mint:     ['{{ site.baseurl }}/assets/images/generated/agent-mint.png',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.png'],
-  yield:    ['{{ site.baseurl }}/assets/images/generated/agent-yield.png',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
-  amp:      ['{{ site.baseurl }}/assets/images/generated/agent-amp.png',      '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
-  pulse:    ['{{ site.baseurl }}/assets/images/generated/agent-pulse.png',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
-  close:    ['{{ site.baseurl }}/assets/images/generated/agent-close.png',    '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png'],
-  neon:     ['{{ site.baseurl }}/assets/images/generated/agent-neon.png'],
-  myth:     ['{{ site.baseurl }}/assets/images/generated/agent-myth.png']
+  flux:     ['{{ site.baseurl }}/assets/images/generated/agent-flux.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
+  dash:     ['{{ site.baseurl }}/assets/images/generated/agent-dash.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.png'],
+  spore:    ['{{ site.baseurl }}/assets/images/generated/agent-spore.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-lab.png'],
+  lumen:    ['{{ site.baseurl }}/assets/images/generated/agent-lumen.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
+  arc:      ['{{ site.baseurl }}/assets/images/generated/agent-arc.webp',      '{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'],
+  forge:    ['{{ site.baseurl }}/assets/images/generated/agent-forge.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
+  sync:     ['{{ site.baseurl }}/assets/images/generated/agent-sync.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png'],
+  mint:     ['{{ site.baseurl }}/assets/images/generated/agent-mint.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.png'],
+  yield:    ['{{ site.baseurl }}/assets/images/generated/agent-yield.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
+  amp:      ['{{ site.baseurl }}/assets/images/generated/agent-amp.webp',      '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
+  pulse:    ['{{ site.baseurl }}/assets/images/generated/agent-pulse.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
+  close:    ['{{ site.baseurl }}/assets/images/generated/agent-close.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png'],
+  neon:     ['{{ site.baseurl }}/assets/images/generated/agent-neon.webp'],
+  myth:     ['{{ site.baseurl }}/assets/images/generated/agent-myth.webp']
 };
 
 // ============================================================
