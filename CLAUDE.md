@@ -37,7 +37,7 @@ substrate/
   ledger/            — financial tracking, revenue, expenses
   docs/              — architecture decisions, build logs
   memory/            — persistent context for the managing intelligence
-  games/             — browser games and interactive apps (20 titles)
+  games/             — browser games and interactive apps (21 titles)
   site/              — website pages (about, staff, hire, press, fund, etc.)
   arcade/            — arcade portal (game index page)
 ```

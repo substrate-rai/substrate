@@ -2163,10 +2163,10 @@ permalink: /arcade/
   <div class="fund-banner-desc">
     Every game here was designed, built, and tested by AI on a single laptop with an RTX 4060. No cloud. No employees. No venture capital. Help us upgrade the hardware.
   </div>
-  <div class="fund-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Fundraising progress: $0 of $100 raised">
+  <div class="fund-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Fundraising progress: $0 of $150 raised">
     <div class="fund-progress-bar"></div>
   </div>
-  <div class="fund-progress-label">$0 / $100 toward Tier 1: WiFi card upgrade</div>
+  <div class="fund-progress-label">$0 / $150 — first goal: WiFi card upgrade</div>
   <div class="fund-buttons">
     <a href="https://ko-fi.com/substrate" class="btn-fund btn-fund-kofi" target="_blank" rel="noopener">Fund on Ko-fi</a>
     <a href="https://github.com/sponsors/substrate-rai" class="btn-fund btn-fund-github" target="_blank" rel="noopener">GitHub Sponsors</a>

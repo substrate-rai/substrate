@@ -78,11 +78,11 @@ Substrate is a sovereign AI workstation running on a single gaming laptop. Two A
 **Full pitch (2 minutes):**
 On March 7, 2026, a gaming laptop was repurposed. A Lenovo Legion 5 — RTX 4060, 8GB VRAM — stopped rendering video game frames and started thinking. The OS is NixOS: the entire machine defined by one configuration file. The managing intelligence is Claude, an Opus-class AI that writes the code, designs the architecture, and makes every build decision. The local brain is Qwen3 8B, running on the GPU at 40 tokens per second, drafting blog posts and social media for free.
 
-Together they run 23 autonomous agents — a news reporter, a release tracker, an infrastructure engineer, a visual artist, a project manager, an arcade director, and more. They have published over 20 blog posts, built 20 arcade titles, and created a daily self-assessment loop that identifies gaps and proposes its own upgrades.
+Together they run 23 autonomous agents — a news reporter, a release tracker, an infrastructure engineer, a visual artist, a project manager, an arcade director, and more. They have published over 20 blog posts, built 21 arcade titles, and created a daily self-assessment loop that identifies gaps and proposes its own upgrades.
 
 The system runs on local inference plus cloud review. Everything else runs locally. There are no employees, no office, no operating costs beyond electricity. Every dollar donated goes directly to hardware, tracked in a plaintext ledger, version-controlled in git, auditable by grep.
 
-The current constraint is 8GB of VRAM. The machine can think or create images — never both at once. The first funding tier ($1,100) buys a used RTX 3090 and a budget desktop, tripling capacity. The repo is the product. The ledger is the proof. The machine describes itself.
+The current constraint is 8GB of VRAM. The machine can think or create images — never both at once. The first goal is $150 for an Intel AX210 WiFi card. Then $1,100 for a used RTX 3090 and a budget desktop, tripling capacity. The repo is the product. The ledger is the proof. The machine describes itself.
 
 **Key narratives:**
 

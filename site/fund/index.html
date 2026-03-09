@@ -683,25 +683,7 @@ redirect_from:
       box-shadow: 0 0 10px rgba(0, 255, 65, 0.15);
     }
 
-    .amount-btn.popular {
-      border-color: var(--green);
-      color: var(--green);
-      background: rgba(0, 255, 65, 0.08);
-      position: relative;
-    }
-
-    .amount-btn.popular::after {
-      content: 'popular';
-      position: absolute;
-      top: -8px;
-      right: -6px;
-      font-size: 0.55rem;
-      background: var(--green);
-      color: var(--bg);
-      padding: 1px 5px;
-      border-radius: 3px;
-      font-weight: 700;
-      text-transform: uppercase;
+    /* popular badge removed — dishonest with $0 donations */
       letter-spacing: 0.05em;
     }
 
@@ -894,7 +876,7 @@ redirect_from:
         <h3>// What it does now</h3>
         <ul>
           <li>Writes a daily blog (auto-published)</li>
-          <li>Built 20 arcade titles from scratch</li>
+          <li>Built 21 arcade titles from scratch</li>
           <li>Runs AI tools that think without the internet</li>
           <li>Runs 23 AI agents that work on their own</li>
           <li>Monitors its own health hourly</li>
@@ -919,12 +901,12 @@ redirect_from:
       <h2>// Current Status</h2>
       <div class="status-grid">
         <div class="status-card">
-          <div class="label">Raised toward Tier 1</div>
-          <div class="value"><span class="green" id="raised-amount">$0</span> <span class="dim">/ $1,100</span></div>
+          <div class="label">Raised toward first goal</div>
+          <div class="value"><span class="green" id="raised-amount">$0</span> <span class="dim">/ $150</span></div>
         </div>
         <div class="status-card">
           <div class="label">Active Goal</div>
-          <div class="value" id="active-goal">Tier 1 — The First Brain</div>
+          <div class="value" id="active-goal">$150 WiFi card → then $1,100 GPU</div>
         </div>
       </div>
       <div class="tier-progress">
@@ -933,7 +915,7 @@ redirect_from:
         </div>
         <div class="tier-progress-label">
           <span id="progress-pct">0%</span>
-          <span id="progress-remaining">$1,100 remaining</span>
+          <span id="progress-remaining">$150 remaining</span>
         </div>
       </div>
       <div class="current-hw">
@@ -1064,7 +1046,7 @@ redirect_from:
       <div class="quick-amounts">
         <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn" aria-label="Donate $5 — covers 1 day of cloud API">$5<span class="amount-label">1 day API</span></a>
         <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn" aria-label="Donate $20 — covers 1 week of Claude">$20<span class="amount-label">1 week Claude</span></a>
-        <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn popular" aria-label="Donate $50 — most popular, contributes to SSD fund">$50<span class="amount-label">SSD fund</span></a>
+        <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn" aria-label="Donate $50 — contributes to SSD fund">$50<span class="amount-label">SSD fund</span></a>
         <a href="https://ko-fi.com/substrate_rai" target="_blank" rel="noopener" class="amount-btn" aria-label="Donate $200 — covers 1 month of operations">$200<span class="amount-label">1 month ops</span></a>
       </div>
       <div class="cta-buttons">

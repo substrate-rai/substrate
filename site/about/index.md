@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "About Substrate"
-description: "A sovereign AI workstation — 23 agents, 20 arcade games, 7 radio stations, 1 album, running on 1 laptop. No company. No employees. No cloud."
+description: "A sovereign AI workstation — 23 agents, 21 arcade games, 7 radio stations, 1 album, running on 1 laptop. No company. No employees. No cloud."
 redirect_from:
   - /about/
 ---
@@ -1774,7 +1774,7 @@ redirect_from:
       { id:'spore', name:'Spore', role:'Community Manager', color:'#44ff88', desc:'Grows the community like mycelium — organic, patient, connecting. Bluesky posts, engagement strategy, audience building.', specs:'Bluesky · Social · Community Growth' },
       { id:'root', name:'Root', role:'Infrastructure Engineer', color:'#8888ff', desc:'Keeps the machine running. NixOS configs, systemd timers, CUDA drivers, health monitoring. Stern indigo visor, military discipline.', specs:'NixOS · systemd · Infrastructure' },
       { id:'lumen', name:'Lumen', role:'Educator', color:'#ffaa00', desc:'Teaches through games. MycoWorld, the chemistry lab, interactive tutorials. Amber spectacles, patient encouragement, professor energy.', specs:'Educational Games · Teaching · Documentation' },
-      { id:'arc', name:'Arc', role:'Arcade Director', color:'#cc4444', desc:'Runs the 20-title arcade. Game design, balancing, QA, the whole operation. Spiky red hair, competitive grin, gaming headset.', specs:'20 Games · Game Design · Arcade Operations' },
+      { id:'arc', name:'Arc', role:'Arcade Director', color:'#cc4444', desc:'Runs the 21-title arcade. Game design, balancing, QA, the whole operation. Spiky red hair, competitive grin, gaming headset.', specs:'21 Games · Game Design · Arcade Operations' },
       { id:'forge', name:'Forge', role:'Site Engineer', color:'#44ccaa', desc:'Fixes broken links, builds pages, ensures everything deploys clean. Welding goggles on forehead, teal highlights, hands-on builder.', specs:'Jekyll · GitHub Pages · Site Health' },
       { id:'hum', name:'Hum', role:'Audio Director', color:'#aa77cc', desc:'Sound is architecture. Designed the 7-station radio, character themes, game soundtracks. Lavender hair, eyes closed, headphones glowing.', specs:'Web Audio API · 7 Stations · Procedural Sound' },
       { id:'sync', name:'Sync', role:'Communications Director', color:'#77bbdd', desc:'Keeps the narrative consistent across every page. Voice, tone, messaging, brand coherence. Sky-blue hair, dual-tone glasses, measured composure.', specs:'Narrative · Consistency · Comms Strategy' },

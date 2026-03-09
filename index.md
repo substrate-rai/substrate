@@ -179,7 +179,7 @@ title: substrate
       <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Fundraising progress: $0 raised">
         <div class="progress-fill" style="width: 0%;"></div>
       </div>
-      <span class="progress-label">$0 raised — next: inference server</span>
+      <span class="progress-label">$0 raised — first goal: $150 WiFi card</span>
     </div>
     <div class="cta-links">
       <a href="{{ site.baseurl }}/site/fund/" class="cta-btn primary">Fund us</a>
