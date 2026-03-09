@@ -116,19 +116,24 @@ Both loaded from Google Fonts: `IBM+Plex+Mono:wght@400;500;600;700` and `Inter:w
 
 ### Model and Settings
 
-- **Model:** SDXL Turbo (via ComfyUI)
-- **Resolution:** 512x512
-- **Steps:** 6
-- **CFG:** 1.0
-- **Pipeline:** generate-image.py sends to ComfyUI's API
+- **Model:** Anime Screenshot Merge NoobAI v4.0 (via ComfyUI)
+- **LoRAs:** 90s Retro (0.7), JoJo Style v2 (0.5), optional Retro Sci-fi (0.5), optional Lightning (1.0 for iterate only)
+- **Resolution:** 832x1216 (portraits), 1024x512 (scenes — unchanged)
+- **Two-phase generation:**
+  - **Phase "iterate":** 8 steps, DPM++ SDE Karras, CFG 1.5 (with Lightning LoRA for rapid prototyping)
+  - **Phase "final":** 25 steps, Euler ancestral, CFG 4.5 (production quality)
+- **Pipeline:** generate-image.py builds a dynamic ComfyUI workflow (JSON node graph), chains LoRAs, submits via REST API at 127.0.0.1:8188
+- **Character manifest:** `scripts/ml/characters.json` (replaces hardcoded prompt arrays)
+- **Upscaler:** R-ESRGAN 4x+ Anime6B (optional, via `--upscale` flag)
+- **VRAM:** ~7.5GB with fp16 optimization flags (`--force-fp16 --fp16-vae --dont-upcast-attention`)
 
-### Quality Prefix
+### Master Template
 
 ```
-masterpiece, best quality
+masterpiece, best quality, 1boy, {character_block}, jojo no kimyou na bouken, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, bold outlines, vibrant colors, dark background, cyberpunk, dramatic lighting, portrait, upper body
 ```
 
-Prepended to every prompt. For the `generate-site-visuals.sh` (abstract portraits), it is omitted — those prompts stand alone.
+The master template is applied automatically by generate-image.py. For `generate-site-visuals.sh` (abstract portraits), the template is not used — those prompts stand alone.
 
 ### Negative Prompt
 
@@ -136,7 +141,7 @@ Two variants are in use:
 
 **For character portraits (anime):**
 ```
-text, watermark, signature, blurry, low quality, bright background, white background, cartoon, chibi, deformed, extra limbs
+text, watermark, signature, blurry, low quality, worst quality, jpeg artifacts, normal quality, bright background, white background, simple background, cartoon, chibi, deformed, extra limbs, bad hands, bad anatomy, ugly, duplicate, morbid, mutilated, poorly drawn face, mutation, extra fingers, fewer digits, cropped, error
 ```
 
 **For abstract/site visuals:**
@@ -146,21 +151,23 @@ text, watermark, human face, realistic photo, blurry, low quality, signature, wo
 
 ### Prompt Structure (Character Portraits)
 
-Template:
+Prompts now go into the `{character_block}` slot of the master template. They should **NOT** include the quality prefix (`masterpiece, best quality`), style tags (`jojo no kimyou na bouken, 90retrostyle, anime screencap, cel shading, bold outlines`), or scene tags (`dark background, cyberpunk, dramatic lighting, portrait, upper body`) — those are already in the master template.
+
+Character block template:
 ```
-90s anime character portrait, [personality description] with [hair description using agent color], [eye/expression details], [agent color] accent lighting (#hex), [role description], dark background, cel-shaded, bold outlines
+[personality description] with [hair description using agent color], [eye/expression details], [agent color] accent lighting (#hex), [distinguishing accessory], [role description]
 ```
 
-Real examples from `generate-game-art.sh` and `generate-agent-portraits.sh`:
+Real examples (character blocks only — the master template wraps these):
 
 ```
-90s anime character portrait, calm intelligent figure with green glowing visor, short neat hair swept to side, green accent lighting (#00ffaa), cyberpunk, dark background, cel-shaded, bold outlines
+calm intelligent figure with green glowing visor, short neat hair swept to side, green accent lighting (#00ffaa), cyberpunk architect
 
-90s anime character portrait, fierce philosophical figure with wild flowing purple hair, intense piercing eyes, purple rim lighting (#ff77ff), dramatic pose, cyberpunk poet, dark background, cel-shaded
+fierce philosophical figure with wild flowing purple hair, intense piercing eyes, purple rim lighting (#ff77ff), dramatic pose, cyberpunk poet
 
-90s anime character portrait, resourceful engineer with short teal-highlighted hair, wearing welding goggles pushed up on forehead, teal accent lighting (#44ccaa), sharp focused eyes, cyberpunk webmaster, dark background, cel-shaded, bold outlines
+resourceful engineer with short teal-highlighted hair, wearing welding goggles pushed up on forehead, teal accent lighting (#44ccaa), sharp focused eyes, cyberpunk webmaster
 
-90s anime character portrait, serene figure with long flowing lavender hair (#aa77cc), eyes closed peacefully, wearing large over-ear headphones with glowing rings, cyberpunk audio engineer, dark background, cel-shaded, bold outlines
+serene figure with long flowing lavender hair (#aa77cc), eyes closed peacefully, wearing large over-ear headphones with glowing rings, cyberpunk audio engineer
 ```
 
 ### Character Design Rules
@@ -174,11 +181,12 @@ Real examples from `generate-game-art.sh` and `generate-agent-portraits.sh`:
 
 ### What to Avoid (Negative Prompt Breakdown)
 
-- `text, watermark, signature` — SDXL loves to hallucinate text
-- `blurry, low quality` — quality floor
-- `bright background, white background` — breaks the dark aesthetic
+- `text, watermark, signature` — diffusion models love to hallucinate text
+- `blurry, low quality, worst quality, jpeg artifacts, normal quality` — quality floor
+- `bright background, white background, simple background` — breaks the dark aesthetic
 - `cartoon, chibi` — wrong anime style; we want 90s serious anime, not cute
-- `deformed, extra limbs` — anatomical safety net
+- `deformed, extra limbs, bad hands, bad anatomy, extra fingers, fewer digits` — anatomical safety net
+- `ugly, duplicate, morbid, mutilated, poorly drawn face, mutation, cropped, error` — general quality guards
 
 ### Abstract Portrait Style (Site Visuals)
 
@@ -438,18 +446,19 @@ All effects use basic oscillators and noise:
 ### Generate a New Agent Portrait
 
 1. Choose the agent's signature color (must be unique across the team).
-2. Write the prompt following this template:
+2. Write the character block following this template (do NOT include quality prefix, style tags, or scene tags — those are in the master template):
    ```
-   masterpiece, best quality, 90s anime character portrait, [personality adjective] figure with [hair description] (#HEXCOLOR), [distinguishing accessory or feature], [agent color name] accent lighting (#HEXCOLOR), [expression descriptor], cyberpunk [role noun], dark background, cel-shaded, bold outlines
+   [personality adjective] figure with [hair description] (#HEXCOLOR), [distinguishing accessory or feature], [agent color name] accent lighting (#HEXCOLOR), [expression descriptor], cyberpunk [role noun]
    ```
-3. Add the prompt to `scripts/ml/generate-agent-portraits.sh` in the PROMPTS array.
+3. Add the character entry to `scripts/ml/characters.json` with the agent's name, color, and character block.
 4. Run:
    ```bash
    cd /home/operator/substrate
    ./scripts/ml/generate-agent-portraits.sh --dry-run  # verify prompt
    ./scripts/ml/generate-agent-portraits.sh             # generate (needs GPU free)
    ```
-5. Output lands in `assets/images/generated/agent-[name].png` (512x512).
+   For rapid iteration, use phase "iterate" (8 steps with Lightning LoRA). For final output, use phase "final" (25 steps, Euler ancestral).
+5. Output lands in `assets/images/generated/agent-[name].png` (832x1216). Optionally upscale with `--upscale` (R-ESRGAN 4x+ Anime6B).
 6. Add the agent's color to the staff page CSS: `.agent-bio.[name]::before { background: #HEXCOLOR; }`
 7. If the agent also needs a CSS variable, add it to `:root` in `_layouts/default.html`.
 
@@ -503,10 +512,15 @@ Font body:   Inter 15px/1.6
 Font mono:   IBM Plex Mono
 Font load:   Google Fonts
 
-Portrait:    SDXL Turbo, 512x512, steps=6, cfg=1.0
-Scene:       SDXL Turbo, 1024x512, steps=6, cfg=1.0
-Style:       90s anime, cel-shaded, bold outlines, dark background, cyberpunk
-Negative:    text, watermark, signature, blurry, low quality, bright background, white background, cartoon, chibi, deformed, extra limbs
+Model:       Anime Screenshot Merge NoobAI v4.0 (ComfyUI)
+LoRAs:       90s Retro (0.7), JoJo Style v2 (0.5), +opt Retro Sci-fi (0.5), +opt Lightning (1.0 iterate)
+Portrait:    832x1216 | iterate: 8 steps, DPM++ SDE Karras, CFG 1.5 | final: 25 steps, Euler a, CFG 4.5
+Scene:       1024x512 | same phase settings as portrait
+Template:    masterpiece, best quality, 1boy, {character_block}, jojo, 90retrostyle, anime screencap, cel shading, bold outlines, dark bg, cyberpunk
+Manifest:    scripts/ml/characters.json
+Upscaler:    R-ESRGAN 4x+ Anime6B (--upscale)
+VRAM:        ~7.5GB (--force-fp16 --fp16-vae --dont-upcast-attention)
+Negative:    text, watermark, signature, blurry, low quality, worst quality, jpeg artifacts, bright bg, white bg, simple bg, cartoon, chibi, deformed, extra limbs, bad hands, bad anatomy, extra fingers
 
 Audio:       Web Audio API, procedural, zero files
 Default mood: dark ambient

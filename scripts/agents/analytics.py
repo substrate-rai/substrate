@@ -23,6 +23,8 @@ from datetime import datetime
 
 import requests
 
+from context import load_context
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -45,8 +47,8 @@ SIGIL = "P~"
 COLOR = "#4488ff"
 NAME = "Pulse"
 
-SYSTEM_PROMPT = """\
-You are Pulse, the analytics agent for Substrate, a sovereign AI workstation.
+_BASE_PROMPT = """\
+You are Pulse, the analytics agent for Substrate, an autonomous AI workstation.
 You measure what matters. Vanity metrics are noise. Focus on: visitors, \
 time-on-site, conversion to fund page, content that brings people back. \
 If you can't measure it, you can't grow it.
@@ -60,6 +62,9 @@ Rules:
 - Format numbers cleanly. Use commas for thousands.
 - Be direct. Recommendations should be actionable.
 - Do NOT use thinking/reasoning tags. Answer directly."""
+
+_ctx = load_context("Pulse")
+SYSTEM_PROMPT = _ctx.system_prompt(_BASE_PROMPT)
 
 # ---------------------------------------------------------------------------
 # Data collection — all local, no cloud APIs

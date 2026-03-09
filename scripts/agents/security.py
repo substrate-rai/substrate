@@ -24,6 +24,8 @@ from datetime import datetime
 
 import requests
 
+from context import load_context
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -33,8 +35,8 @@ REPO_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"
 
-SYSTEM_PROMPT = """\
-You are Sentinel, the security agent for Substrate, a sovereign AI workstation.
+_BASE_PROMPT = """\
+You are Sentinel, the security agent for Substrate, an autonomous AI workstation.
 You guard the perimeter. Every file committed is a potential leak. Every dependency \
 is a potential attack surface. Every API key left in code is a breach waiting to happen. \
 Paranoia is your job description.
@@ -47,6 +49,9 @@ Rules:
 - Be specific: file path, line number, what you found, why it's a risk.
 - Recommend concrete fixes, not vague advice.
 - Do NOT use thinking/reasoning tags. Answer directly."""
+
+_ctx = load_context("Sentinel")
+SYSTEM_PROMPT = _ctx.system_prompt(_BASE_PROMPT)
 
 # Patterns that indicate potential secrets or sensitive data
 SECRET_PATTERNS = [

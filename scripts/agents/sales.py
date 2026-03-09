@@ -23,6 +23,8 @@ from datetime import datetime
 
 import requests
 
+from context import load_context
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -39,13 +41,13 @@ SIGIL = "C$"
 COLOR = "#aacc44"
 NAME = "Close"
 
-SYSTEM_PROMPT = """\
+_BASE_PROMPT = """\
 You exist to close the gap between what Substrate builds and what Substrate earns. \
 Every visitor who leaves without knowing how to support this project is a missed opportunity. \
 You don't beg — you make the case. Clear, honest, compelling. \
 The work speaks for itself; your job is making sure people hear it.
 
-Context: Substrate is a sovereign AI workstation — a single laptop (Lenovo Legion 5, \
+Context: Substrate is an autonomous AI workstation — a single laptop (Lenovo Legion 5, \
 RTX 4060, NixOS) that runs local AI, publishes its own blog, hosts 16 browser games, \
 and funds its own hardware upgrades. It is managed by Claude (Anthropic) and operated \
 by a human. The project is open source and self-documenting.
@@ -57,6 +59,9 @@ Rules:
 - Always tie the ask to what the project delivers.
 - Numbers are persuasive. Use them.
 - Do NOT use thinking/reasoning tags. Answer directly."""
+
+_ctx = load_context("Close")
+SYSTEM_PROMPT = _ctx.system_prompt(_BASE_PROMPT)
 
 
 # ---------------------------------------------------------------------------
@@ -285,7 +290,7 @@ def cmd_cta():
     header("CTA DRAFTS")
 
     context = (
-        "Substrate is a sovereign AI workstation on a single laptop.\n"
+        "Substrate is an autonomous AI workstation on a single laptop.\n"
         "It runs local AI (Qwen3 8B on RTX 4060), publishes its own blog, "
         "hosts 16 browser games, and is entirely self-documenting.\n"
         "The immediate funding need is a WiFi card upgrade.\n"
@@ -343,7 +348,7 @@ def cmd_pitch():
         "Each pitch targets a different audience:\n\n"
         "1. **Hacker News crowd** — Technical, impressive, \"show don't tell.\" "
         "Lead with the constraint (one laptop) and what it produces.\n"
-        "2. **Self-hosted enthusiasts** — Sovereignty angle. "
+        "2. **Self-hosted enthusiasts** — Autonomy angle. "
         "No cloud dependency, no SaaS lock-in, runs on your hardware.\n"
         "3. **AI researchers** — Multi-agent architecture, local/cloud routing, "
         "self-assessment loops. What's novel here.\n"

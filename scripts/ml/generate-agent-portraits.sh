@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
-# generate-agent-portraits.sh — Generate missing agent portraits using SDXL Turbo via ComfyUI.
+# generate-agent-portraits.sh — Generate agent portraits using ComfyUI.
 #
-# Generates 10 missing agent portraits (512x512, 90s anime style)
-# for: Forge, Hum, Sync, Mint, Yield, Amp, Pulse, Spec, Sentinel, Close
+# Model stack: Anime Screenshot Merge NoobAI v4.0 + 90s Retro + JoJo LoRAs
+# Reads character definitions from scripts/ml/characters.json
 #
 # Usage:
 #   ./generate-agent-portraits.sh              Generate all missing portraits
 #   ./generate-agent-portraits.sh --dry-run    Print prompts without generating
-#   ./generate-agent-portraits.sh --list       List all image names
+#   ./generate-agent-portraits.sh --list       List all character names
 #   ./generate-agent-portraits.sh --force      Regenerate even if files already exist
+#   ./generate-agent-portraits.sh --iterate    Phase 1 rapid iteration (8 steps)
+#   ./generate-agent-portraits.sh --only NAME  Generate only one character
 #
-# Requires: gpu-switch.sh, generate-image.py, ComfyUI, CUDA, ~4GB VRAM free
-# Time estimate: ~70 seconds on RTX 4060 (6 steps per image, ~7s each)
+# Requires: gpu-switch.sh, generate-image.py, ComfyUI, CUDA, ~7.5GB VRAM
+# Time: ~18s per image (final), ~6s per image (iterate) on RTX 4060
 
 set -euo pipefail
 
@@ -20,6 +22,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 OUTPUT_DIR="${REPO_ROOT}/assets/images/generated"
 GPU_SWITCH="${SCRIPT_DIR}/gpu-switch.sh"
 GENERATE_PY="${SCRIPT_DIR}/generate-image.py"
+CHARACTERS_JSON="${SCRIPT_DIR}/characters.json"
 COMFYUI_DIR="/home/operator/comfyui"
 COMFYUI_PYTHON="${COMFYUI_DIR}/venv/bin/python"
 COMFYUI_URL="http://127.0.0.1:8188"
@@ -31,12 +34,16 @@ export LD_LIBRARY_PATH="/run/opengl-driver/lib:/nix/store/ihpdbhy4rfxaixiamyb588
 DRY_RUN=false
 LIST_ONLY=false
 FORCE=false
+PHASE="final"
+ONLY=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --dry-run)  DRY_RUN=true; shift ;;
         --list)     LIST_ONLY=true; shift ;;
         --force)    FORCE=true; shift ;;
+        --iterate)  PHASE="iterate"; shift ;;
+        --only)     ONLY="$2"; shift 2 ;;
         -h|--help)
             head -14 "$0" | grep '^#' | sed 's/^# \?//'
             exit 0
@@ -48,56 +55,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# ── shared prompt fragments ────────────────────────────────────────────────
+if [[ ! -f "$CHARACTERS_JSON" ]]; then
+    echo "error: characters.json not found at $CHARACTERS_JSON" >&2
+    exit 1
+fi
 
-QUALITY_PREFIX="masterpiece, best quality"
-NEGATIVE="text, watermark, signature, blurry, low quality, bright background, white background, cartoon, chibi, deformed, extra limbs"
-STEPS=6
-CFG=1.0
+# ── parse characters ─────────────────────────────────────────────────────
 
-# ── prompt definitions ─────────────────────────────────────────────────────
-# Format: "filename|prompt"
-# All outputs are 512x512
-
-PROMPTS=(
-    # === Batch 4: Original 7 agents still showing abstract art ===
-    "agent-v|90s anime character portrait, fierce philosophical figure with wild flowing purple hair (#ff77ff), intense piercing eyes, purple rim lighting, dramatic pose, cyberpunk poet, dark background, cel-shaded, bold outlines"
-    "agent-claude|90s anime character portrait, calm intelligent figure with green glowing visor covering upper face, short neat hair swept to side, green accent lighting (#00ffaa), cyberpunk architect, dark background, cel-shaded, bold outlines"
-    "agent-q|90s anime character portrait, young curious figure with messy medium-length purple hair (#dd88ff), wide excited eyes, eager enthusiastic expression, cyberpunk student rapper, dark background, cel-shaded, bold outlines"
-    "agent-byte|90s anime character portrait, alert reporter with sharp cyan bob cut (#00ddff), headset with mic boom, focused attentive eyes, cyberpunk journalist, dark background, cel-shaded, bold outlines"
-    "agent-echo|90s anime character portrait, observant tracker with medium wavy orange hair (#ffaa44), slight knowing smile, squinting analytical eyes, cyberpunk intelligence analyst, dark background, cel-shaded, bold outlines"
-    "agent-pixel|90s anime character portrait, creative artist with asymmetric pink hair (#ff44aa), one side longer, paint smudge on cheek, bright creative spark in eyes, cyberpunk artist, dark background, cel-shaded, bold outlines"
-    "agent-root|90s anime character portrait, stern military engineer with short indigo hair (#8888ff), indigo tactical visor, serious disciplined expression, sturdy build, cyberpunk soldier, dark background, cel-shaded, bold outlines"
-    # === Batch 1: Previously fixed agents ===
-    "agent-flux|90s anime character portrait, bold strategist with swept-back coral-red hair (#ff6666), thin red-tinted glasses, visionary expression looking into distance, cyberpunk innovator, dark background, cel-shaded, bold outlines"
-    "agent-dash|90s anime character portrait, determined project manager with short structured gold-highlighted hair (#ffdd44), focused organized eyes tracking multiple tasks, cyberpunk coordinator, dark background, cel-shaded, bold outlines"
-    "agent-spore|90s anime character portrait, warm friendly figure with curly bright green hair (#44ff88), welcoming smile, small mushroom motif earring, cyberpunk community manager, dark background, cel-shaded, bold outlines"
-    "agent-lumen|90s anime character portrait, patient educator with warm amber hair (#ffaa00), round amber-tinted spectacles, kind encouraging expression, cyberpunk professor, dark background, cel-shaded, bold outlines"
-    "agent-arc|90s anime character portrait, energetic gamer with spiky red hair (#cc4444), competitive grin, gaming headset with red LED, cyberpunk arcade champion, dark background, cel-shaded, bold outlines"
-    # === Batch 2: Re-run for consistency ===
-    "agent-sync|90s anime character portrait, composed figure with neatly parted sky-blue hair (#77bbdd), dual-tone glasses reflecting data, calm confident expression, cyberpunk communications director, dark background, cel-shaded, bold outlines"
-    "agent-mint|90s anime character portrait, shrewd figure with short neat brown hair with tan highlights (#cc8844), reading glasses perched on nose, slightly skeptical expression, cyberpunk accountant, dark background, cel-shaded, bold outlines"
-    "agent-spec|90s anime character portrait, precise figure with platinum white hair (#dddddd) tied in tight bun, monocle over one eye, stern meticulous expression, cyberpunk quality inspector, dark background, cel-shaded, bold outlines"
-    # === Batch 3: Other agents ===
-    "agent-forge|90s anime character portrait, resourceful engineer with short teal-highlighted hair, wearing welding goggles pushed up on forehead, teal accent lighting (#44ccaa), sharp focused eyes, cyberpunk webmaster, dark background, cel-shaded, bold outlines"
-    "agent-hum|90s anime character portrait, serene figure with long flowing lavender hair (#aa77cc), eyes closed peacefully, wearing large over-ear headphones with glowing rings, cyberpunk audio engineer, dark background, cel-shaded, bold outlines"
-    "agent-yield|90s anime character portrait, optimistic figure with upswept lime-green hair (#88dd44), bright eager eyes, warm smile, plant motif earrings, cyberpunk growth analyst, dark background, cel-shaded, bold outlines"
-    "agent-amp|90s anime character portrait, energetic figure with spiky cyan-white hair (#44ffdd), glowing earbuds, electric crackling around shoulders, intense expression, cyberpunk amplifier, dark background, cel-shaded, bold outlines"
-    "agent-pulse|90s anime character portrait, analytical figure with neat blue hair (#4488ff), holographic data overlay across one eye like a scouter, calm measured expression, cyberpunk data analyst, dark background, cel-shaded, bold outlines"
-    "agent-sentinel|90s anime character portrait, hooded vigilant figure with steel-grey hair (#8899aa), lower face covered by tactical mask, sharp watchful eyes scanning, cyberpunk security guard, dark background, cel-shaded, bold outlines"
-    "agent-close|90s anime character portrait, charismatic figure with slicked-back olive-green hair (#aacc44), confident grin, loosened tie, finger guns pose, cyberpunk salesperson, dark background, cel-shaded, bold outlines"
-)
+# Use Python to parse JSON (available via ComfyUI venv)
+read_characters() {
+    "$COMFYUI_PYTHON" -c "
+import json, sys
+with open('$CHARACTERS_JSON') as f:
+    data = json.load(f)
+for c in data['characters']:
+    scifi = '1' if 'scifi' in c.get('extra_loras', []) else '0'
+    print(f\"{c['id']}|{c['name']}|{c['role']}|{c['prompt_block']}|{scifi}|{c.get('approved_seed', '') or ''}\")
+"
+}
 
 # ── functions ───────────────────────────────────────────────────────────────
 
-log() { echo "[agent-portraits] $*"; }
+log() { echo "[portraits] $*"; }
 
 list_images() {
-    echo "Missing agent portraits (${#PROMPTS[@]} total):"
-    for entry in "${PROMPTS[@]}"; do
-        IFS='|' read -r name _ <<< "$entry"
-        echo "  ${name}.png  (512x512)"
-    done
+    echo "Agent portraits (from characters.json):"
+    while IFS='|' read -r id name role prompt scifi seed; do
+        echo "  ${id}.png — ${name} (${role})"
+    done < <(read_characters)
 }
 
 start_comfyui() {
@@ -108,10 +93,11 @@ start_comfyui() {
     log "Starting ComfyUI server..."
     "$COMFYUI_PYTHON" "${COMFYUI_DIR}/main.py" \
         --listen 127.0.0.1 --port 8188 --disable-auto-launch \
+        --force-fp16 --fp16-vae --dont-upcast-attention --preview-method taesd \
         > /tmp/comfyui-agent-portraits.log 2>&1 &
     COMFYUI_PID=$!
 
-    for i in $(seq 1 60); do
+    for i in $(seq 1 90); do
         if curl -sf "${COMFYUI_URL}/system_stats" -o /dev/null 2>/dev/null; then
             log "ComfyUI ready (took ${i}s)"
             return 0
@@ -123,7 +109,7 @@ start_comfyui() {
         fi
         sleep 1
     done
-    log "ERROR: ComfyUI failed to start in 60s"
+    log "ERROR: ComfyUI failed to start in 90s"
     tail -20 /tmp/comfyui-agent-portraits.log
     return 1
 }
@@ -137,36 +123,43 @@ stop_comfyui() {
     fi
 }
 
-generate_image() {
-    local name="$1"
+generate_portrait() {
+    local id="$1"
     local prompt="$2"
-    local outfile="${OUTPUT_DIR}/${name}.png"
+    local use_scifi="$3"
+    local seed="$4"
+    local outfile="${OUTPUT_DIR}/${id}.png"
 
     if [[ -f "$outfile" ]] && ! $FORCE; then
-        log "SKIP  ${name}.png (already exists, use --force to regenerate)"
+        log "SKIP  ${id}.png (already exists, use --force to regenerate)"
         return 0
     fi
 
     if $DRY_RUN; then
         echo ""
-        echo "  FILE: ${name}.png"
-        echo "  SIZE: 512x512"
-        echo "  PROMPT: ${QUALITY_PREFIX}, ${prompt}"
-        echo "  NEGATIVE: ${NEGATIVE}"
+        echo "  FILE: ${id}.png"
+        echo "  SIZE: 832x1216"
+        echo "  PHASE: ${PHASE}"
+        echo "  BLOCK: ${prompt}"
+        echo "  SCIFI: ${use_scifi}"
         return 0
     fi
 
+    local extra_args=()
+    extra_args+=(--phase "$PHASE")
+    extra_args+=(--no-unload --no-start --no-stop)
+    extra_args+=(--output "$outfile")
+    extra_args+=(--width 832 --height 1216)
+    if [[ "$use_scifi" == "1" ]]; then
+        extra_args+=(--scifi)
+    fi
+    if [[ -n "$seed" ]]; then
+        extra_args+=(--seed "$seed")
+    fi
+
     "$COMFYUI_PYTHON" "$GENERATE_PY" \
-        --no-unload \
-        --no-start \
-        --no-stop \
-        --output "$outfile" \
-        --width 512 \
-        --height 512 \
-        --steps "$STEPS" \
-        --cfg "$CFG" \
-        --negative "$NEGATIVE" \
-        "${QUALITY_PREFIX}, ${prompt}" || {
+        "${prompt}" \
+        "${extra_args[@]}" || {
         return 1
     }
 }
@@ -181,18 +174,19 @@ fi
 mkdir -p "$OUTPUT_DIR"
 
 log "============================================"
-log "  Substrate — Missing Agent Portrait Generator"
+log "  Substrate — Agent Portrait Generator"
 log "============================================"
 log ""
 log "Output directory: ${OUTPUT_DIR}"
-log "Total portraits: ${#PROMPTS[@]}"
-log "Settings: steps=${STEPS}, cfg=${CFG}, size=512x512"
+log "Phase: ${PHASE}"
+log "Model: Anime Screenshot Merge NoobAI v4.0"
+log "LoRAs: 90s Retro (0.7) + JoJo (0.5)"
+log "Resolution: 832x1216"
 echo ""
 
 if $DRY_RUN; then
-    log "DRY RUN — printing prompts only"
+    log "DRY RUN — printing character blocks only"
     echo ""
-    echo "Shared negative prompt: ${NEGATIVE}"
 fi
 
 cleanup() { stop_comfyui; }
@@ -221,37 +215,47 @@ failed=0
 succeeded=0
 skipped=0
 failed_names=()
-total=${#PROMPTS[@]}
+total=0
 current=0
 
-for entry in "${PROMPTS[@]}"; do
-    IFS='|' read -r name prompt <<< "$entry"
+# Count total (or filtered)
+while IFS='|' read -r id name role prompt scifi seed; do
+    if [[ -n "$ONLY" ]] && [[ "$id" != "$ONLY" ]] && [[ "$name" != "$ONLY" ]]; then
+        continue
+    fi
+    total=$((total + 1))
+done < <(read_characters)
+
+while IFS='|' read -r id name role prompt scifi seed; do
+    if [[ -n "$ONLY" ]] && [[ "$id" != "$ONLY" ]] && [[ "$name" != "$ONLY" ]]; then
+        continue
+    fi
     current=$((current + 1))
-    outfile="${OUTPUT_DIR}/${name}.png"
+    outfile="${OUTPUT_DIR}/${id}.png"
 
     if [[ -f "$outfile" ]] && ! $FORCE && ! $DRY_RUN; then
-        log "(${current}/${total}) SKIP  ${name}.png (exists)"
+        log "(${current}/${total}) SKIP  ${id}.png (exists)"
         skipped=$((skipped + 1))
         continue
     fi
 
     if ! $DRY_RUN; then
-        log "(${current}/${total}) Generating ${name}.png..."
+        log "(${current}/${total}) Generating ${id}.png (${name} — ${role})..."
     fi
 
-    if generate_image "$name" "$prompt"; then
+    if generate_portrait "$id" "$prompt" "$scifi" "$seed"; then
         succeeded=$((succeeded + 1))
     else
         failed=$((failed + 1))
-        failed_names+=("$name")
-        log "(${current}/${total}) FAILED  ${name}.png — continuing..."
+        failed_names+=("$id")
+        log "(${current}/${total}) FAILED  ${id}.png — continuing..."
     fi
-done
+done < <(read_characters)
 
 echo ""
 
 if $DRY_RUN; then
-    log "DRY RUN COMPLETE — ${succeeded} prompts listed"
+    log "DRY RUN COMPLETE — ${succeeded} characters listed"
 else
     log "Step 4/4: Stopping ComfyUI and reloading Ollama..."
     stop_comfyui

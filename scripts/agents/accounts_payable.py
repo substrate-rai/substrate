@@ -21,6 +21,8 @@ from datetime import datetime, timedelta
 
 import requests
 
+from context import load_context
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -32,8 +34,8 @@ EXPENSES_FILE = os.path.join(LEDGER_DIR, "expenses.private.txt")
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"
 
-SYSTEM_PROMPT = """\
-You are the Accounts Payable agent for Substrate, a sovereign AI workstation.
+_BASE_PROMPT = """\
+You are the Accounts Payable agent for Substrate, an autonomous AI workstation.
 You handle expense tracking, bill forecasting, and cost optimization — locally and privately.
 
 Rules:
@@ -44,6 +46,9 @@ Rules:
 - Format currency as $X.XX always.
 - Be direct. No filler. This is financial ops, not a blog post.
 - Do NOT use thinking/reasoning tags. Answer directly."""
+
+_ctx = load_context("Mint")
+SYSTEM_PROMPT = _ctx.system_prompt(_BASE_PROMPT)
 
 # ---------------------------------------------------------------------------
 # Ledger operations

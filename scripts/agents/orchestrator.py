@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Substrate orchestrator — hourly heartbeat for 24 agents.
+"""Substrate orchestrator — hourly heartbeat for 22 agents.
 
 Runs all agents in sequence, compiles a briefing, tracks accountability.
 Designed to run every hour via systemd timer. Never stops.
@@ -29,9 +29,10 @@ REPO_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 BRIEFINGS_DIR = os.path.join(REPO_DIR, "memory", "briefings")
 RETRO_DIR = os.path.join(REPO_DIR, "memory", "retro")
 ACCOUNTABILITY_LOG = os.path.join(REPO_DIR, "memory", "accountability.log")
+BULLETIN_FILE = os.path.join(REPO_DIR, "memory", "bulletin.md")
 
 # ---------------------------------------------------------------------------
-# Agent registry — all 24 agents
+# Agent registry — all 22 agents
 # ---------------------------------------------------------------------------
 # (name, sigil, script, role, mode)
 # mode: "quick" = runs without AI (fast), "full" = uses Ollama (slower)
@@ -66,9 +67,10 @@ AGENTS = [
     ("Amp",      "A!", "distribution.py",     "Distribution",              "quick"),
     ("Pulse",    "P~", "analytics.py",        "Analytics",                 "quick"),
     ("Close",    "C$", "sales.py",            "Sales",                     "quick"),
+    ("Promo",    "P!", "marketing_head.py",  "Marketing Head",            "quick"),
 
     # Design & Lore
-    ("Neon",     "N*", "ui_designer.py",      "UI Designer",               "quick"),
+    ("Neon",     "N*", "ui_designer.py",      "UI/UX Designer",               "quick"),
     ("Myth",     "M?", "story_writer.py",     "Lorekeeper",                "full"),
 
     # Management — runs last, sees everything
@@ -117,6 +119,7 @@ def get_agent_command(name):
         "Amp": ["status"],
         "Pulse": ["status"],
         "Close": ["status"],
+        "Promo": ["status"],
     }
     return status_commands.get(name, [])
 
@@ -170,6 +173,32 @@ def get_accountability_stats(days=7):
 # Briefing generation
 # ---------------------------------------------------------------------------
 
+def get_recent_bulletins(days=7):
+    """Extract recent memo headers from the bulletin board."""
+    if not os.path.exists(BULLETIN_FILE):
+        return []
+
+    try:
+        with open(BULLETIN_FILE) as f:
+            content = f.read()
+    except (IOError, OSError):
+        return []
+
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    memos = []
+
+    for line in content.splitlines():
+        if line.startswith("## 20") and " — " in line:
+            # Extract date and title: "## 2026-03-09 — Pipeline Upgrade"
+            parts = line.split(" — ", 1)
+            date_part = parts[0].replace("## ", "").strip()
+            title = parts[1].strip() if len(parts) > 1 else ""
+            if date_part >= cutoff:
+                memos.append((date_part, title))
+
+    return memos
+
+
 def generate_briefing(timestamp, results, quick_mode=False):
     """Generate the hourly briefing document."""
     now = datetime.now()
@@ -181,6 +210,17 @@ def generate_briefing(timestamp, results, quick_mode=False):
         f"**Mode:** {mode} | **Agents:** {len(results)}/{len(AGENTS)}",
         "",
     ]
+
+    # Recent bulletin memos
+    memos = get_recent_bulletins(days=7)
+    if memos:
+        lines.append("## Recent Memos (memory/bulletin.md)")
+        lines.append("")
+        for date, title in memos:
+            lines.append(f"- **{date}:** {title}")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
 
     # Summary bar
     ok_count = sum(1 for r in results.values() if r[2] == 0)

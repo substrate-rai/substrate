@@ -24,6 +24,8 @@ from datetime import datetime
 
 import requests
 
+from context import load_context
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -33,7 +35,7 @@ REPO_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"
 
-SYSTEM_PROMPT = """\
+_BASE_PROMPT = """\
 You are the last line of defense before something ships. \
 Your job: find what's broken before anyone else sees it. \
 No false confidence. If you can't verify it works, say so.
@@ -44,6 +46,10 @@ Rules:
 - Never say "looks good" without proof.
 - If something is ambiguous, flag it — don't assume it's fine.
 - Do NOT use thinking/reasoning tags. Answer directly."""
+
+# Load voice, bulletins, and domain knowledge
+_ctx = load_context("Spec")
+SYSTEM_PROMPT = _ctx.system_prompt(_BASE_PROMPT)
 
 # ANSI colors
 WHITE = "\033[1;37m"
@@ -576,6 +582,119 @@ def cmd_audit():
     print()
 
 
+def cmd_roles():
+    """Check agent role consistency across all definition sources."""
+    print(f"{WHITE}  S! SPEC — ROLE CONSISTENCY CHECK{RESET}")
+    print(f"{DIM}  ─────────────────────────────────────────────────{RESET}")
+    print()
+
+    issues = []
+    warnings = []
+
+    # Source 1: staff/index.md (canonical — public-facing)
+    staff_roles = {}
+    staff_path = os.path.join(REPO_DIR, "site", "staff", "index.md")
+    if os.path.exists(staff_path):
+        with open(staff_path, "r", encoding="utf-8", errors="replace") as f:
+            content = f.read()
+        # Match patterns like: name: 'Byte',  and  role: 'News Reporter',
+        # Staff page uses JS object literals with single quotes
+        for m in re.finditer(r"name:\s*'([^']+)'.*?role:\s*'([^']+)'", content, re.DOTALL):
+            staff_roles[m.group(1)] = m.group(2)
+
+    # Source 2: orchestrator.py
+    orch_roles = {}
+    orch_path = os.path.join(SCRIPT_DIR, "orchestrator.py")
+    if os.path.exists(orch_path):
+        with open(orch_path, "r", encoding="utf-8", errors="replace") as f:
+            orch_content = f.read()
+        for m in re.finditer(r'\("(\w+)",\s*"[^"]+",\s*"[^"]+",\s*"([^"]+)"', orch_content):
+            orch_roles[m.group(1)] = m.group(2)
+
+    # Source 3: characters.json
+    char_roles = {}
+    char_path = os.path.join(REPO_DIR, "scripts", "ml", "characters.json")
+    if os.path.exists(char_path):
+        try:
+            with open(char_path) as f:
+                data = json.load(f)
+            for c in data.get("characters", []):
+                char_roles[c["name"]] = c["role"]
+        except (json.JSONDecodeError, KeyError):
+            issues.append("characters.json: failed to parse")
+
+    # Source 4: character-guide.md
+    guide_roles = {}
+    guide_path = os.path.join(REPO_DIR, "memory", "character-guide.md")
+    if os.path.exists(guide_path):
+        with open(guide_path, "r", encoding="utf-8", errors="replace") as f:
+            guide_content = f.read()
+        for m in re.finditer(r'###\s+\d+\.\s+(\w+)\s+—\s+(.+)', guide_content):
+            guide_roles[m.group(1)] = m.group(2).strip()
+
+    # Staff page is canonical. Check others against it.
+    if not staff_roles:
+        issues.append("Could not parse staff/index.md — no canonical source")
+        print(f"  {RED}FAIL{RESET}  No canonical role source found")
+        print()
+        print(f"  -- Spec, Substrate QA")
+        print()
+        return
+
+    all_names = sorted(set(
+        list(staff_roles.keys()) + list(orch_roles.keys()) +
+        list(char_roles.keys()) + list(guide_roles.keys())
+    ))
+
+    consistent = 0
+    inconsistent = 0
+    missing_count = 0
+
+    print(f"  {BOLD}Canonical source: site/staff/index.md{RESET}")
+    print()
+
+    for name in all_names:
+        canonical = staff_roles.get(name)
+        mismatches = []
+
+        if name in orch_roles and canonical and orch_roles[name] != canonical:
+            mismatches.append(f"orchestrator.py: \"{orch_roles[name]}\"")
+        if name in char_roles and canonical and char_roles[name] != canonical:
+            mismatches.append(f"characters.json: \"{char_roles[name]}\"")
+        if name in guide_roles and canonical and guide_roles[name] != canonical:
+            mismatches.append(f"character-guide.md: \"{guide_roles[name]}\"")
+
+        if not canonical:
+            print(f"  {YELLOW}MISS{RESET}  {name}: not on staff page")
+            missing_count += 1
+        elif mismatches:
+            print(f"  {RED}FAIL{RESET}  {name}: canonical \"{canonical}\"")
+            for mm in mismatches:
+                print(f"         ≠ {mm}")
+            inconsistent += 1
+        else:
+            consistent += 1
+
+    print()
+    print(f"  {BOLD}Summary{RESET}")
+    print(f"  Agents checked:  {len(all_names)}")
+    print(f"  {GREEN}Consistent:      {consistent}{RESET}")
+    if inconsistent:
+        print(f"  {RED}Inconsistent:    {inconsistent}{RESET}")
+    if missing_count:
+        print(f"  {YELLOW}Missing:         {missing_count}{RESET}")
+    print()
+
+    if inconsistent == 0 and missing_count == 0:
+        print(f"  {GREEN}Role consistency: ALL CLEAR{RESET}")
+    else:
+        print(f"  {RED}Role consistency: {inconsistent} MISMATCH(ES) — reconcile against staff page{RESET}")
+    print()
+
+    print(f"  -- Spec, Substrate QA")
+    print()
+
+
 def cmd_smoke():
     """Run a basic smoke test on key files and directories."""
     print(f"{WHITE}  S! SPEC — SMOKE TEST{RESET}")
@@ -714,7 +833,7 @@ def main():
     )
     parser.add_argument(
         "command",
-        choices=["status", "links", "scripts", "build", "audit", "smoke"],
+        choices=["status", "links", "scripts", "build", "audit", "smoke", "roles"],
         help="QA command to run",
     )
     args = parser.parse_args()
@@ -726,6 +845,7 @@ def main():
         "build": cmd_build,
         "audit": cmd_audit,
         "smoke": cmd_smoke,
+        "roles": cmd_roles,
     }
     cmds[args.command]()
 

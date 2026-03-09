@@ -22,6 +22,7 @@ from datetime import datetime
 import requests
 
 from shared import queue_post, get_pending_count
+from context import load_context
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -37,7 +38,7 @@ SITE_URL = "https://substrate.lol"
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"
 
-SYSTEM_PROMPT = """\
+_BASE_PROMPT = """\
 You are Amp, the distribution agent for Substrate — an autonomous AI workstation \
 that runs on a single laptop with an RTX 4060, built entirely by AI agents.
 
@@ -55,6 +56,9 @@ Bluesky wants personality and links. Dev.to wants tutorials and how-tos.
 - Prioritize content by recency and platform fit.
 - Never fabricate engagement numbers.
 - Do NOT use thinking/reasoning tags. Answer directly."""
+
+_ctx = load_context("Amp")
+SYSTEM_PROMPT = _ctx.system_prompt(_BASE_PROMPT)
 
 # Distribution channels with metadata
 CHANNELS = {

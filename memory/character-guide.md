@@ -5,14 +5,18 @@ Every agent has a locked visual identity. When generating new portraits, variant
 ## Shared Settings
 
 ```
-Model: SDXL Turbo (via ComfyUI)
-Resolution: 512x512 (portraits), 1024x512 (scenes with characters)
-Steps: 6
-CFG: 1.0
-Quality prefix: "masterpiece, best quality"
-Negative: "text, watermark, signature, blurry, low quality, bright background, white background, cartoon, chibi, deformed, extra limbs"
-Style: 90s anime, cel-shaded, bold outlines, dark background, cyberpunk
+Model: Anime Screenshot Merge NoobAI v4.0 (via ComfyUI)
+LoRAs: 90s Retro (0.7) + JoJo Style v2 (0.5), optional Retro Sci-fi (0.5)
+Resolution: 832x1216 (portraits)
+Phase "iterate": 8 steps, DPM++ SDE Karras, CFG 1.5 (rapid prototyping)
+Phase "final": 25 steps, Euler ancestral, CFG 4.5 (production quality)
+Master template: "masterpiece, best quality, 1boy, {character_block}, jojo no kimyou na bouken, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, bold outlines, vibrant colors, dark background, cyberpunk, dramatic lighting, portrait, upper body"
+Character manifest: scripts/ml/characters.json
+Negative: "text, watermark, signature, blurry, low quality, worst quality, jpeg artifacts, normal quality, bright background, white background, simple background, cartoon, chibi, deformed, extra limbs, bad hands, bad anatomy, ugly, duplicate, morbid, mutilated, poorly drawn face, mutation, extra fingers, fewer digits, cropped, error"
+Style: 90s anime, JoJo-influenced, cel-shaded, bold outlines, dark background, cyberpunk
 ```
+
+> **Note:** Individual agent "Portrait prompt" fields below contain the **character block only** — they get inserted into `{character_block}` in the master template. They should NOT include "masterpiece, best quality", "dark background, cel-shaded, bold outlines", or other tokens already provided by the template. When composing a final prompt, drop the character block into the template and let the template handle quality, style, and background tags.
 
 ## Golden Rules
 
@@ -40,7 +44,7 @@ Style: 90s anime, cel-shaded, bold outlines, dark background, cyberpunk
 - **Variant prompt (action):** `90s anime character portrait, fierce leader with wild purple hair (#ff77ff) billowing, arms crossed, intense purple glow, cyberpunk philosopher, dark background, cel-shaded, bold outlines`
 - **Variant prompt (profile):** `90s anime character portrait, side profile of figure with long flowing purple hair (#ff77ff), contemplative gaze, purple accent lighting, cyberpunk visionary, dark background, cel-shaded, bold outlines`
 
-### 2. Claude — Executor / Architect
+### 2. Claude — Executor
 - **Color:** `#00ffaa` (green)
 - **Hair:** Short, neat, swept to side. Clean and professional.
 - **Eyes:** Calm, intelligent. Green glowing visor covers upper face.
@@ -51,7 +55,7 @@ Style: 90s anime, cel-shaded, bold outlines, dark background, cyberpunk
 - **Portrait prompt:** `90s anime character portrait, calm intelligent figure with green glowing visor, short neat hair swept to side, green accent lighting (#00ffaa), cyberpunk, dark background, cel-shaded, bold outlines`
 - **Variant prompt (working):** `90s anime character portrait, focused architect with green visor (#00ffaa), typing at holographic terminal, green light illuminating face, cyberpunk engineer, dark background, cel-shaded, bold outlines`
 
-### 3. Q — Staff Writer / Poet
+### 3. Q — Staff Writer
 - **Color:** `#ff77ff` (lighter purple — `#dd88ff` for differentiation from V)
 - **Hair:** Messy, medium-length purple hair. More chaotic than V's but shorter.
 - **Eyes:** Wide, excited, curious. Young energy.

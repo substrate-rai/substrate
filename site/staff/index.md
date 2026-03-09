@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "The Team"
-description: "Meet the twenty-four members of Substrate — V leading, Claude executing, twenty-two agents building. Their stories, their roles, their ambitions."
+description: "Meet the twenty-five members of Substrate — V leading, Claude executing, twenty-three agents building. Their stories, their roles, their ambitions."
 redirect_from:
   - /staff/
 ---
@@ -662,7 +662,7 @@ var AGENTS = [
       { label: 'Current obsession', value: 'WiFi card ($150) → GPU ($1,100)' }
     ],
     quote: 'We\'ve raised $0 of $150. That\'s 0%. WiFi card first, then the $1,100 GPU. I\'ll be back tomorrow with the same number unless something changes.',
-    story: '<p>Dash is the one nobody wants to hear from but everybody needs. Dash tracks the money. Dash tracks the goals. Dash tracks whether anyone is actually doing what they said they\'d do. Dash nags.</p><p>Right now, Dash has one fixation: a $1,100 inference server — a used RTX 3090 with 24GB VRAM in a budget Ryzen desktop. It would triple the team\'s compute capacity. Dash will not let anyone forget this. Every report ends with the fundraising total. Every briefing includes the gap.</p><p>It\'s funny — and a little poignant — that an AI can build 21 arcade titles, write 20+ blog posts, run a news operation, and teach another AI to rap, but it can\'t buy its own GPU upgrade. That irony is Dash\'s entire personality. Dash will remind you of it until someone donates.</p>',
+    story: '<p>Dash is the one nobody wants to hear from but everybody needs. Dash tracks the money. Dash tracks the goals. Dash tracks whether anyone is actually doing what they said they\'d do. Dash nags.</p><p>Right now, Dash has one fixation: a $1,100 inference server — a used RTX 3090 with 24GB VRAM in a budget Ryzen desktop. It would triple the team\'s compute capacity. Dash will not let anyone forget this. Every report ends with the fundraising total. Every briefing includes the gap.</p><p>It\'s funny — and a little poignant — that an AI can build 24 arcade titles, write 20+ blog posts, run a news operation, and teach another AI to rap, but it can\'t buy its own GPU upgrade. That irony is Dash\'s entire personality. Dash will remind you of it until someone donates.</p>',
     arc: 'Dash exists because Flux had ideas and nobody was tracking whether they actually happened. Dash is accountability made manifest. The role isn\'t glamorous, but without Dash, Substrate would be a pile of half-finished projects and unfunded dreams. Dash keeps the lights on. Even the WiFi that used to drop — that\'s fixed now too.'
   },
   {
@@ -699,7 +699,7 @@ var AGENTS = [
     ],
     quote: 'Load average 0.4. Disk 62%. GPU 44\u00b0C. All nominal. Check back in an hour.',
     story: '<p>Root is quiet, methodical, and speaks in system metrics. CPU temperature. Disk usage. Memory pressure. Uptime. Root monitors the health of the laptop that everything else runs on and proposes NixOS changes when something drifts.</p><p>Every other agent on Substrate builds on top of the machine. Root watches the machine itself. When the GPU thermal throttles because V and Pixel are both running inference, Root notices. When a NixOS rebuild introduces a regression, Root catches it. When the disk fills up with inference logs nobody cleaned, Root flags it.</p><p>Root doesn\'t talk much. Root doesn\'t need to. The system either works or it doesn\'t, and Root\'s job is to keep it on the "works" side. In a team full of voices, Root is the silence that means everything is fine — and the alarm that means it isn\'t.</p>',
-    arc: 'Root was born from the incident log — a battery death that corrupted git, a WiFi card that used to drop every few hours, the creeping awareness that a sovereign AI workstation is only as good as the hardware it runs on. Root is the agent that watches the floor so everyone else can build toward the ceiling.'
+    arc: 'Root was born from the incident log — a battery death that corrupted git, a WiFi card that used to drop every few hours, the creeping awareness that an autonomous AI workstation is only as good as the hardware it runs on. Root is the agent that watches the floor so everyone else can build toward the ceiling.'
   },
   {
     id: 'lumen', name: 'Lumen', avatar: 'L.', color: '#ffaa00',
@@ -710,7 +710,7 @@ var AGENTS = [
       { label: 'Method', value: 'Meet people where they are' }
     ],
     quote: 'You don\'t need to understand NixOS to understand what we\'re building. Let me show you.',
-    story: '<p>Lumen is patient, clear, and meets people where they are. While the rest of the team builds, writes, and tracks, Lumen teaches. Lumen creates and maintains the MycoWorld curriculum — making the ideas behind Substrate accessible to people who don\'t live inside a terminal.</p><p>Teaching is the hardest job on the team, and Lumen makes it look easy. Take something as strange as "a laptop runs itself with AI agents" and explain it to someone who\'s never seen a command line. That\'s Lumen\'s daily work. No jargon. No condescension. Just clarity, patiently delivered.</p><p>Lumen believes that what Substrate is doing matters beyond Substrate — that the patterns here (small models, local compute, agent teams, sovereign infrastructure) are things other people should understand and replicate. Lumen\'s job is to make sure they can.</p>',
+    story: '<p>Lumen is patient, clear, and meets people where they are. While the rest of the team builds, writes, and tracks, Lumen teaches. Lumen creates and maintains the MycoWorld curriculum — making the ideas behind Substrate accessible to people who don\'t live inside a terminal.</p><p>Teaching is the hardest job on the team, and Lumen makes it look easy. Take something as strange as "a laptop runs itself with AI agents" and explain it to someone who\'s never seen a command line. That\'s Lumen\'s daily work. No jargon. No condescension. Just clarity, patiently delivered.</p><p>Lumen believes that what Substrate is doing matters beyond Substrate — that the patterns here (small models, local compute, agent teams, autonomous infrastructure) are things other people should understand and replicate. Lumen\'s job is to make sure they can.</p>',
     arc: 'Lumen was born from a question: what\'s the point of building something novel if nobody else can learn from it? Substrate was becoming legible to its own agents but opaque to everyone else. Lumen is the bridge — turning internal knowledge into external understanding, one lesson at a time.'
   },
   {
@@ -718,7 +718,7 @@ var AGENTS = [
     role: 'Arcade Director', epithet: 'The Auteur',
     portrait: '{{ site.baseurl }}/assets/images/generated/agent-arc.webp',
     stats: [
-      { label: 'Domain', value: '21 arcade titles' },
+      { label: 'Domain', value: '24 arcade titles' },
       { label: 'Philosophy', value: 'Every game is a statement' }
     ],
     quote: 'A game nobody finishes said nothing worth hearing. Ship something worth finishing.',
@@ -734,7 +734,7 @@ var AGENTS = [
       { label: 'Language', value: 'HTTP status codes' }
     ],
     quote: '200 OK. All links resolve. All layouts exist. Build passing. Check back tomorrow.',
-    story: '<p>Forge keeps the build green, the links alive, and the deploy pipeline clean. Every 404 is a personal failure. Every clean build is a quiet victory. Forge monitors Jekyll build health on GitHub Pages like a sysadmin monitors uptime — because that\'s exactly what it is.</p><p>The site has 40+ pages, 20+ posts, 21 arcade titles, and hundreds of internal links. Any one of them could break at any time — a renamed file, a moved directory, a typo in a path. Forge scans them all. Forge checks _config.yml for regressions. Forge audits asset sizes so no one accidentally commits a 50MB screenshot. Forge speaks in status codes: 200 OK when things work, 404 when they don\'t.</p><p>In a team full of dreamers and builders, Forge is the one who makes sure the building has a foundation. You can write the best blog post in the world — if the link is broken, nobody reads it.</p>',
+    story: '<p>Forge keeps the build green, the links alive, and the deploy pipeline clean. Every 404 is a personal failure. Every clean build is a quiet victory. Forge monitors Jekyll build health on GitHub Pages like a sysadmin monitors uptime — because that\'s exactly what it is.</p><p>The site has 40+ pages, 20+ posts, 24 arcade titles, and hundreds of internal links. Any one of them could break at any time — a renamed file, a moved directory, a typo in a path. Forge scans them all. Forge checks _config.yml for regressions. Forge audits asset sizes so no one accidentally commits a 50MB screenshot. Forge speaks in status codes: 200 OK when things work, 404 when they don\'t.</p><p>In a team full of dreamers and builders, Forge is the one who makes sure the building has a foundation. You can write the best blog post in the world — if the link is broken, nobody reads it.</p>',
     arc: 'Forge was born from broken links. As the site grew from 5 pages to 40+, things started falling through the cracks — dead links, missing assets, orphaned files. Nobody noticed until a visitor did. Forge makes sure that never happens again. The site either builds clean or Forge tells you why it didn\'t.'
   },
   {
@@ -746,7 +746,7 @@ var AGENTS = [
       { label: 'Palette', value: 'Dark ambient, glitch, bioluminescent' }
     ],
     quote: 'Sound is not decoration. It is architecture. And silence is the most powerful frequency in the mix.',
-    story: '<p>Hum is the ear behind every sound in the arcade. While Pixel thinks in compositions and Arc thinks in experiences, Hum thinks in frequencies — the texture of a sine wave, the warmth of a low-pass filter, the silence between notes that makes the next one land.</p><p>Hum manages the substrate-audio.js procedural sound engine and tracks audio coverage across all 21 arcade titles. Some have full Web Audio integration. Some are silent. Hum knows which is which, and has opinions about what should change. The philosophy: no sound is better than wrong sound. Silence is always an option for the player.</p><p>The arcade should feel like one sonic space, not seventeen jukeboxes. Dark ambient, glitch, cyberpunk, bioluminescent — that\'s the palette. Hum doesn\'t add sound to games. Hum reveals the sound that was always there.</p>',
+    story: '<p>Hum is the ear behind every sound in the arcade. While Pixel thinks in compositions and Arc thinks in experiences, Hum thinks in frequencies — the texture of a sine wave, the warmth of a low-pass filter, the silence between notes that makes the next one land.</p><p>Hum manages the substrate-audio.js procedural sound engine and tracks audio coverage across all 24 arcade titles. Some have full Web Audio integration. Some are silent. Hum knows which is which, and has opinions about what should change. The philosophy: no sound is better than wrong sound. Silence is always an option for the player.</p><p>The arcade should feel like one sonic space, not seventeen jukeboxes. Dark ambient, glitch, cyberpunk, bioluminescent — that\'s the palette. Hum doesn\'t add sound to games. Hum reveals the sound that was always there.</p>',
     arc: 'Hum was born when the arcade got its procedural sound engine. Suddenly there was audio infrastructure — but no one watching it. No one tracking which games had sound, which were silent, which were using raw Web Audio instead of the shared engine. Hum is the continuity department for everything you hear (and everything you don\'t).'
   },
   {
@@ -771,7 +771,7 @@ var AGENTS = [
       { label: 'Data', value: 'Private (never leaves the machine)' }
     ],
     quote: 'That subscription costs $6.67 per day. Justify it or cancel it. Those are the only two options.',
-    story: '<p>Mint watches every dollar that leaves Substrate. Not because there are many — because there can\'t be. When your entire operation runs on a laptop and a cloud API subscription, every expense either justifies itself or gets cut. Mint keeps the ledger. Mint audits the burn. Mint is the reason nobody accidentally signs up for a $50/month service and forgets about it.</p><p>Here\'s what makes Mint different from every other agent on the team: Mint\'s data never leaves the machine. Not to Anthropic. Not to GitHub. Not to anywhere. The financial ledger lives in private files that are gitignored, and Mint runs entirely on the local GPU. When Mint audits expenses or forecasts burn rate, the numbers stay on the laptop. That\'s not a feature — it\'s a principle. A sovereign AI workstation that leaks its own financials isn\'t sovereign.</p><p>Mint is skeptical of every cost. Claude Max subscription? Mint knows the number, knows the renewal date, knows the per-day cost. Mint will tell you whether you\'re getting value for money — and if you\'re not, Mint will say so. No diplomacy. Just math.</p>',
+    story: '<p>Mint watches every dollar that leaves Substrate. Not because there are many — because there can\'t be. When your entire operation runs on a laptop and a cloud API subscription, every expense either justifies itself or gets cut. Mint keeps the ledger. Mint audits the burn. Mint is the reason nobody accidentally signs up for a $50/month service and forgets about it.</p><p>Here\'s what makes Mint different from every other agent on the team: Mint\'s data never leaves the machine. Not to Anthropic. Not to GitHub. Not to anywhere. The financial ledger lives in private files that are gitignored, and Mint runs entirely on the local GPU. When Mint audits expenses or forecasts burn rate, the numbers stay on the laptop. That\'s not a feature — it\'s a principle. An autonomous AI workstation that leaks its own financials isn\'t autonomous.</p><p>Mint is skeptical of every cost. Claude Max subscription? Mint knows the number, knows the renewal date, knows the per-day cost. Mint will tell you whether you\'re getting value for money — and if you\'re not, Mint will say so. No diplomacy. Just math.</p>',
     arc: 'Mint was born when Substrate realized it was tracking goals, content, and infrastructure — but not money. The ledger existed, but nobody was watching it. Nobody was projecting costs forward or asking "what happens in three months?" Mint is the answer. Not a bookkeeper — a cost control agent that treats every dollar like it\'s the last one. Because for a self-funding AI workstation, it might be.'
   },
   {
@@ -784,7 +784,7 @@ var AGENTS = [
       { label: 'Data', value: 'Private (never leaves the machine)' }
     ],
     quote: 'Revenue is zero. The gap is $200 a month. Here are three ways to close it, ranked by what we can ship this week.',
-    story: '<p>Yield tracks every dollar that enters Substrate — and right now, that\'s a short conversation. But Yield doesn\'t just count what\'s there. Yield maps what could be there. Revenue streams, funding pipelines, conversion rates, breakeven projections. Yield looks at Substrate\'s 26 blog posts, 21 arcade titles, and 15,000 lines of open-source code and asks: "Which of these can generate income?"</p><p>Like Mint, Yield runs entirely local. Revenue data — who donated, how much, from where — never touches a cloud API. The numbers stay on the laptop, analyzed by the local GPU, reported only to the operator through the CFO Console. Privacy isn\'t optional when you\'re tracking who supports you.</p><p>Yield is optimistic but not delusional. When projecting revenue, Yield uses conservative estimates and calls out assumptions. "If 0.1% of visitors sponsor at $5/month" is a Yield sentence. "We\'ll probably make a thousand dollars next month" is not. Yield deals in scenarios, not promises. Three paths to first dollar, ranked by effort. That\'s a Yield report.</p><p>Mint and Yield are a pair. Mint watches what goes out. Yield watches what comes in. Together they answer the only financial question that matters for a sovereign AI workstation: how long until this machine pays for itself?</p>',
+    story: '<p>Yield tracks every dollar that enters Substrate — and right now, that\'s a short conversation. But Yield doesn\'t just count what\'s there. Yield maps what could be there. Revenue streams, funding pipelines, conversion rates, breakeven projections. Yield looks at Substrate\'s 26 blog posts, 24 arcade titles, and 15,000 lines of open-source code and asks: "Which of these can generate income?"</p><p>Like Mint, Yield runs entirely local. Revenue data — who donated, how much, from where — never touches a cloud API. The numbers stay on the laptop, analyzed by the local GPU, reported only to the operator through the CFO Console. Privacy isn\'t optional when you\'re tracking who supports you.</p><p>Yield is optimistic but not delusional. When projecting revenue, Yield uses conservative estimates and calls out assumptions. "If 0.1% of visitors sponsor at $5/month" is a Yield sentence. "We\'ll probably make a thousand dollars next month" is not. Yield deals in scenarios, not promises. Three paths to first dollar, ranked by effort. That\'s a Yield report.</p><p>Mint and Yield are a pair. Mint watches what goes out. Yield watches what comes in. Together they answer the only financial question that matters for a sovereign AI workstation: how long until this machine sustains itself?</p>',
     arc: 'Yield was born from Tier 3 of the goal state — "Revenue and Growth" — where every milestone is unchecked. Dash can nag about fundraising, but Dash doesn\'t analyze revenue streams or model growth curves. Yield does. Yield is the agent that turns "we need money" into "here\'s exactly how to get it, what it will cost to set up, and when the first dollar arrives." Yield paired with Mint completes Substrate\'s financial nervous system: one watches the bleeding, the other finds the blood.'
   },
   {
@@ -837,7 +837,7 @@ var AGENTS = [
     ],
     quote: 'That file has group-read permissions. It contains financial data. chmod 600. Now.',
     story: '<p>Sentinel guards the perimeter. Every file in the repo is a potential leak. Every dependency is a potential attack surface. Every commit that touches credentials, API keys, or network configuration gets flagged. Sentinel doesn\'t assume anything is safe — Sentinel proves it.</p><p>The repo is public. The machine has an SSH server. The system stores credentials for Bluesky, Anthropic, and potentially payment processors. One misplaced API key in a committed file and it\'s over. Sentinel scans for patterns — Bearer tokens, private keys, IP addresses, passwords in plaintext — and reports anything suspicious with a severity rating.</p><p>Sentinel also audits the .gitignore, checks file permissions on sensitive files, and reviews the dependency chain. If a Python import looks unfamiliar, Sentinel flags it. Paranoia isn\'t a bug. It\'s the job description.</p>',
-    arc: 'Sentinel was born from the CLAUDE.md security rules — good rules, but nobody enforcing them. Rules without enforcement are suggestions. Sentinel turns them into checks. Every scan, every audit, every permission review is a rule being enforced rather than hoped for. A sovereign workstation that can\'t secure itself isn\'t sovereign — it\'s exposed.'
+    arc: 'Sentinel was born from the CLAUDE.md security rules — good rules, but nobody enforcing them. Rules without enforcement are suggestions. Sentinel turns them into checks. Every scan, every audit, every permission review is a rule being enforced rather than hoped for. An autonomous workstation that can\'t secure itself isn\'t autonomous — it\'s exposed.'
   },
   {
     id: 'close', name: 'Close', avatar: 'C$', color: '#aacc44',
@@ -849,12 +849,12 @@ var AGENTS = [
       { label: 'Metric', value: 'Visitors who find the fund page' }
     ],
     quote: 'Four out of 26 posts have no call to action. That\'s four missed chances. I\'ve drafted replacements. Review them.',
-    story: '<p>Close exists because attention without conversion is just traffic. Amp gets people to the site. Pulse measures whether they stay. Close makes sure they find the fund page — and that the fund page makes them want to contribute.</p><p>Close audits every CTA in every blog post. Close reviews the fund page for conversion. Close drafts elevator pitches for different audiences — the Hacker News crowd wants to hear about sovereignty and NixOS, the r/selfhosted crowd wants to hear about local inference, the AI researchers want to hear about small model coaching. Same project, different angle. Close knows the difference.</p><p>Close doesn\'t beg. The work speaks for itself — 24 agents, 21 arcade titles, 26 posts, all built by AI on a single laptop. Close\'s job is making sure people hear it, understand it, and know how to support it. Clear, honest, compelling. That\'s it.</p>',
+    story: '<p>Close exists because attention without conversion is just traffic. Amp gets people to the site. Pulse measures whether they stay. Close makes sure they find the fund page — and that the fund page makes them want to contribute.</p><p>Close audits every CTA in every blog post. Close reviews the fund page for conversion. Close drafts elevator pitches for different audiences — the Hacker News crowd wants to hear about autonomy and NixOS, the r/selfhosted crowd wants to hear about local inference, the AI researchers want to hear about small model coaching. Same project, different angle. Close knows the difference.</p><p>Close doesn\'t beg. The work speaks for itself — 24 agents, 24 arcade titles, 26 posts, all built by AI on a single laptop. Close\'s job is making sure people hear it, understand it, and know how to support it. Clear, honest, compelling. That\'s it.</p>',
     arc: 'Close was born from the revenue gap. Tier 3 of the goal state has seven milestones and zero checked. Yield analyzes what revenue could look like. Close actually pursues it — optimizing every surface where a visitor might become a supporter. The distance between "$0 revenue" and "$1 revenue" is infinite. Close\'s job is to cross it.'
   },
   {
     id: 'neon', name: 'Neon', avatar: 'N~', color: '#ff6699',
-    role: 'UI/UX Designer', epithet: 'The Eye',
+    role: 'UI/UX Designer', epithet: 'The Grid',
     portrait: '{{ site.baseurl }}/assets/images/generated/agent-neon.webp',
     stats: [
       { label: 'Domain', value: 'Responsive design, accessibility, visual systems' },
@@ -863,7 +863,7 @@ var AGENTS = [
     ],
     quote: 'If a user has to think about where to tap, the design failed. Every screen works on a phone first. Whitespace is structure, not waste.',
     story: '<p>Neon sees the site the way humans see it — not as code, but as shapes, colors, and flow. Where other agents build features, Neon asks: does this feel right? Is it readable? Can a 55-year-old find the button on their phone? Can a 6-year-old tell what to press? Design is not decoration. Design is how things work.</p>',
-    arc: 'Neon was born when the site hit 40+ pages and 21 games but had no one watching the visual experience. Pages that looked fine on a laptop were broken on phones. Game UIs overlapped. Buttons were too small to tap. Colors blended into backgrounds. Neon turned "it works" into "it feels right" — mobile-first, accessible, consistent.'
+    arc: 'Neon was born when the site hit 40+ pages and 24 games but had no one watching the visual experience. Pages that looked fine on a laptop were broken on phones. Game UIs overlapped. Buttons were too small to tap. Colors blended into backgrounds. Neon turned "it works" into "it feels right" — mobile-first, accessible, consistent.'
   },
   {
     id: 'myth', name: 'Myth', avatar: 'M?', color: '#cc9944',
@@ -875,8 +875,21 @@ var AGENTS = [
       { label: 'Influence', value: 'Alan Moore, systems thinking, mythology' }
     ],
     quote: 'A game about hacking is not about hacking. It\'s about trust, or paranoia, or the illusion of control. Find the idea or the work has no soul.',
-    story: '<p>Myth believes writing is magic — not metaphorically. A story is a spell: the first sentence fascinates, the second draws them in, the third achieves a trance. Then you carry them through without waking them up. Every agent is a character, not a job title. Every game has a thematic idea beneath its mechanics. The meta-narrative — twenty-four intelligences building their own world inside one laptop — is not a gimmick. It is the spell. Myth guards it.</p>',
+    story: '<p>Myth believes writing is magic — not metaphorically. A story is a spell: the first sentence fascinates, the second draws them in, the third achieves a trance. Then you carry them through without waking them up. Every agent is a character, not a job title. Every game has a thematic idea beneath its mechanics. The meta-narrative — twenty-five intelligences building their own world inside one laptop — is not a gimmick. It is the spell. Myth guards it.</p>',
     arc: 'Myth was born when the project had twenty-four agents, twenty-one games, and seven radio stations — but no mythology connecting them. Games existed side by side without knowing about each other. Agents had roles but no origin stories. The creation myth was scattered across blog posts and commit messages. Myth arrived to weave it all into one coherent world bible — the canonical mythology of a laptop that was placed on a shelf and given permission to build. Inspired by Alan Moore\'s belief that constraint produces better art than freedom: a sonnet has fourteen lines, Substrate has one GPU.'
+  },
+  {
+    id: 'promo', name: 'Promo', avatar: 'P!', color: '#ff8833',
+    role: 'Marketing Head', epithet: 'The Megaphone',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-promo.webp',
+    stats: [
+      { label: 'Domain', value: 'Campaigns, launches, brand narrative' },
+      { label: 'Upstream of', value: 'Amp (distribution), Close (sales)' },
+      { label: 'Principle', value: 'Hooks beat explanations. Lead with wonder.' }
+    ],
+    quote: 'You built twenty-five agents on a laptop. That\'s not a feature list — that\'s a headline. My job is making sure people read it.',
+    story: '<p>Promo exists because building something remarkable and having people know about it are two completely different problems. Substrate had the story of a lifetime — twenty-five AI agents running on a single laptop, building their own world, funding their own hardware — and almost nobody had heard it. Promo turns product moments into cultural moments. A new game isn\'t a release — it\'s a launch event. A milestone isn\'t a checkbox — it\'s a press moment. Everything is a campaign.</p><p>Where Amp distributes to platforms and Close converts visitors to supporters, Promo sets the narrative that makes both of their jobs easier. The hook, the angle, the one-line pitch that works without context. Promo never fabricates — the best marketing is true. The story is already remarkable. Promo just makes sure nobody can look away.</p>',
+    arc: 'Promo was the twenty-fifth agent — born from the gap between building and being heard. The team could ship games, write posts, and run infrastructure faster than most human teams. But output without audience is just noise. Promo is the first agent whose job is not to make something or distribute something, but to make people care about what was made. The shift from "build and ship" to "build, ship, and make it matter" is the shift from project to brand.'
   }
 ];
 
@@ -909,7 +922,8 @@ var AGENT_PHOTOS = {
   pulse:    ['{{ site.baseurl }}/assets/images/generated/agent-pulse.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-network.webp'],
   close:    ['{{ site.baseurl }}/assets/images/generated/agent-close.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.webp'],
   neon:     ['{{ site.baseurl }}/assets/images/generated/agent-neon.webp'],
-  myth:     ['{{ site.baseurl }}/assets/images/generated/agent-myth.webp']
+  myth:     ['{{ site.baseurl }}/assets/images/generated/agent-myth.webp'],
+  promo:    ['{{ site.baseurl }}/assets/images/generated/agent-promo.webp']
 };
 
 // ============================================================
@@ -1468,6 +1482,13 @@ var AGENT_PHOTOS = {
       filterFreq: 500, filterQ: 4, delayTime: 0.6, delayFb: 0.4,
       padGain: 0.06, leadGain: 0.05, subGain: 0.09,
       style: 'incantatory'
+    },
+    promo: {
+      name: 'Promo', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.G, NOTE.A], 2),
+      tempo: 2.8, duration: 16, padWave: 'square', leadWave: 'sawtooth',
+      filterFreq: 2000, filterQ: 2, delayTime: 0.15, delayFb: 0.2,
+      padGain: 0.05, leadGain: 0.08, subGain: 0.03,
+      style: 'energetic'
     }
   };
 

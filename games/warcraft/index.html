@@ -62,6 +62,12 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
 .cmd-btn .cmd-label{font-size:9px;text-align:center;line-height:1.1}
 .cmd-btn .cmd-cost{font-size:8px;color:#b8860b}
 
+/* Idle worker alert */
+#idle-alert{background:rgba(255,170,0,0.15);border:1px solid #ffa500;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:11px;color:#ffa500;display:none;animation:idle-blink 1s infinite}
+@keyframes idle-blink{0%,100%{opacity:1}50%{opacity:0.4}}
+/* Upkeep indicator */
+.upkeep-warn{color:#ff8844!important}
+
 /* Build ghost tooltip */
 #build-tooltip{position:absolute;background:rgba(20,16,10,0.95);border:1px solid #5a4a2a;border-radius:4px;padding:8px;font-size:11px;pointer-events:none;display:none;z-index:30;max-width:200px}
 #build-tooltip .tt-name{font-weight:700;color:#ffd700;margin-bottom:4px}
@@ -213,6 +219,7 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
   <div class="res"><div class="res-icon res-gold"></div><span class="res-val" id="gold-val">500</span></div>
   <div class="res"><div class="res-icon res-lumber"></div><span class="res-val" id="lumber-val">200</span></div>
   <div class="res"><div class="res-icon res-food"></div><span class="res-val" id="food-val">4/10</span></div>
+  <div id="idle-alert" onclick="selectIdleWorkers()" title="Click to select idle workers">⚠ 0 IDLE</div>
   <div id="hud-right">
     <button id="music-btn" onclick="toggleMusic()">&#9835; OFF</button>
   </div>
@@ -256,6 +263,8 @@ const CFG={
   HARVEST_TIME:4,HARVEST_GOLD:10,HARVEST_LUMBER:8,
   BUILD_RATE:12,// hp per second during construction
   START_GOLD:500,START_LUMBER:200,
+  FOG_SIGHT:8,// tiles revealed around units/buildings
+  IDLE_ALERT_TIME:10,// seconds before idle worker SFX
 };
 const BUILDINGS={
   townhall:{name:'Town Hall',w:3,h:3,hp:1200,cost:{gold:0,lumber:0},food:0,supply:10,prereq:[],key:'H',train:['worker']},
@@ -387,6 +396,13 @@ let desertionTimer=0;
 let missionStats={workersTrainedTotal:0,buildingsBuilt:0,goldGathered:0,lumberGathered:0,workersLost:0,idleWorkerSeconds:0};
 let pendingMissionId=null;// set by briefing, consumed by launchMission
 
+// Fog of war
+let fogExplored;// Uint8Array[MAP_SIZE*MAP_SIZE], 1=explored
+// Upkeep tax (WC3 model: 0-50=100%, 51-80=70%, 81+=40%)
+let upkeepMult=1;
+// Idle worker tracking
+let idleWorkerTimers=new Map();
+
 // Keyboard state
 const keys={};
 window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Escape')cancelBuild()});
@@ -494,6 +510,36 @@ gridHelper.material.opacity=0.15;
 gridHelper.material.transparent=true;
 scene.add(gridHelper);
 
+// 3D fog of war overlay — dark plane above terrain, transparent where explored
+const fogCanvas=document.createElement('canvas');
+fogCanvas.width=CFG.MAP_SIZE;fogCanvas.height=CFG.MAP_SIZE;
+const fogCtx=fogCanvas.getContext('2d');
+const fogTex=new THREE.CanvasTexture(fogCanvas);
+fogTex.minFilter=THREE.NearestFilter;fogTex.magFilter=THREE.NearestFilter;
+const fogPlane=new THREE.Mesh(
+  new THREE.PlaneGeometry(CFG.MAP_SIZE*CFG.TILE_SIZE,CFG.MAP_SIZE*CFG.TILE_SIZE),
+  new THREE.MeshBasicMaterial({map:fogTex,transparent:true,depthWrite:false})
+);
+fogPlane.rotation.x=-Math.PI/2;
+fogPlane.position.set(CFG.MAP_SIZE*CFG.TILE_SIZE/2,0.08,CFG.MAP_SIZE*CFG.TILE_SIZE/2);
+fogPlane.renderOrder=999;// render last so it overlays terrain
+scene.add(fogPlane);
+let fogDirty=true;
+
+function updateFogTexture(){
+  if(!fogExplored||!fogDirty)return;
+  fogDirty=false;
+  const imgData=fogCtx.createImageData(CFG.MAP_SIZE,CFG.MAP_SIZE);
+  const d=imgData.data;
+  for(let i=0;i<CFG.MAP_SIZE*CFG.MAP_SIZE;i++){
+    const idx=i*4;
+    d[idx]=0;d[idx+1]=0;d[idx+2]=0;
+    d[idx+3]=fogExplored[i]?0:190;// transparent if explored, dark if not
+  }
+  fogCtx.putImageData(imgData,0,0);
+  fogTex.needsUpdate=true;
+}
+
 // Tile occupancy grid
 const tileOccupied=new Uint8Array(CFG.MAP_SIZE*CFG.MAP_SIZE);
 function tileIdx(tx,tz){return tz*CFG.MAP_SIZE+tx}
@@ -509,6 +555,19 @@ function occupyTiles(tx,tz,w,h,val=1){
 }
 function worldToTile(x,z){return{tx:Math.floor(x/CFG.TILE_SIZE),tz:Math.floor(z/CFG.TILE_SIZE)}}
 function tileToWorld(tx,tz){return{x:(tx+0.5)*CFG.TILE_SIZE,z:(tz+0.5)*CFG.TILE_SIZE}}
+
+// Fog of war — reveal circular area around a tile
+function revealFog(cx,cz,r){
+  if(!fogExplored)return;
+  for(let dz=-r;dz<=r;dz++)for(let dx=-r;dx<=r;dx++){
+    if(dx*dx+dz*dz>r*r)continue;
+    const tx=cx+dx,tz=cz+dz;
+    if(tx>=0&&tz>=0&&tx<CFG.MAP_SIZE&&tz<CFG.MAP_SIZE){
+      const idx=tz*CFG.MAP_SIZE+tx;
+      if(!fogExplored[idx]){fogExplored[idx]=1;fogDirty=true}
+    }
+  }
+}
 
 // ============================================================
 // PROCEDURAL MODELS
@@ -852,6 +911,7 @@ class Worker extends Entity{
       this.harvestTimer=0;
       if(this._harvestSource&&this._harvestSource.hp>0){
         let take=Math.min(CFG.HARVEST_GOLD,this._harvestSource.hp);
+        take=Math.max(1,Math.floor(take*upkeepMult));// upkeep tax
         if(this._harvestSource.collapsed)take=Math.max(1,Math.floor(take*0.5));
         this._harvestSource.hp-=take;
         this.carryType='gold';this.carryAmount=take;
@@ -961,6 +1021,7 @@ function spawnGoldMine(tx,tz,totalGold){
   const model=createGoldMineModel();
   model.position.set(mine.x,0,mine.z);
   scene.add(model);mine.mesh=model;
+  model.visible=false;// hidden until fog reveals
   occupyTiles(tx,tz,2,2,4);// 4 = gold mine
   goldMines.push(mine);
 }
@@ -1012,6 +1073,9 @@ function resetGame(){
   if(buildGhost){scene.remove(buildGhost);buildGhost=null}
   buildMode=null;gameTick=0;
   workerSpeedMult=1;foodReserve=0;foodDrainRate=0;desertionTimer=0;
+  fogExplored=new Uint8Array(CFG.MAP_SIZE*CFG.MAP_SIZE);
+  fogDirty=true;
+  idleWorkerTimers.clear();upkeepMult=1;
   missionElapsed=0;missionCompleted=false;missionFailed=false;
   missionFiredEvents.clear();
   missionStats={workersTrainedTotal:0,buildingsBuilt:0,goldGathered:0,lumberGathered:0,workersLost:0,idleWorkerSeconds:0};
@@ -1045,6 +1109,9 @@ function initGame(mission){
     missionStats.workersTrainedTotal++;
   }
   camTarget.set(th.x,0,th.z);
+  // Reveal fog around starting town hall
+  const startTile=worldToTile(th.x,th.z);
+  revealFog(startTile.tx,startTile.tz,CFG.FOG_SIGHT);
 }
 
 // ============================================================
@@ -1391,7 +1458,14 @@ function trainWorker(){
 function updateHUD(){
   document.getElementById('gold-val').textContent=Math.floor(gold);
   document.getElementById('lumber-val').textContent=Math.floor(lumber);
-  document.getElementById('food-val').textContent=foodUsed+'/'+foodCap;
+  const foodEl=document.getElementById('food-val');
+  if(upkeepMult<1){foodEl.textContent=foodUsed+'/'+foodCap+' ('+Math.round(upkeepMult*100)+'%)';foodEl.classList.add('upkeep-warn')}
+  else{foodEl.textContent=foodUsed+'/'+foodCap;foodEl.classList.remove('upkeep-warn')}
+  // Idle worker alert
+  const idleCount=entities.filter(e=>e instanceof Worker&&e.alive&&e.state==='idle').length;
+  const idleEl=document.getElementById('idle-alert');
+  if(idleCount>0){idleEl.style.display='block';idleEl.textContent='\u26A0 '+idleCount+' IDLE'}
+  else{idleEl.style.display='none'}
 }
 
 function updateSelectionUI(){
@@ -1492,6 +1566,13 @@ function updateMinimap(){
     const tx=e.x/CFG.TILE_SIZE*ts,tz=e.z/CFG.TILE_SIZE*ts;
     mctx.fillRect(tx-1,tz-1,3,3);
   }
+  // Fog of war overlay
+  if(fogExplored){
+    mctx.fillStyle='rgba(0,0,0,0.82)';
+    for(let fz=0;fz<CFG.MAP_SIZE;fz++)for(let fx=0;fx<CFG.MAP_SIZE;fx++){
+      if(!fogExplored[fz*CFG.MAP_SIZE+fx])mctx.fillRect(fx*ts,fz*ts,ts+0.5,ts+0.5);
+    }
+  }
   // Camera viewport
   mctx.strokeStyle='#ffffff';mctx.lineWidth=1;
   const cx=camTarget.x/CFG.TILE_SIZE/CFG.MAP_SIZE*s;
@@ -1564,14 +1645,26 @@ function playSfx(type){
     case'select':
       o.type='sine';o.frequency.value=600;g.gain.setValueAtTime(0.15,t);
       g.gain.exponentialRampToValueAtTime(0.01,t+0.1);o.connect(g);o.start(t);o.stop(t+0.1);break;
-    case'ack':
-      o.type='triangle';o.frequency.setValueAtTime(120,t);o.frequency.linearRampToValueAtTime(180,t+0.08);
-      g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.25);
-      o.connect(g);o.start(t);o.stop(t+0.25);
-      // Second formant
-      const o2=audioCtx.createOscillator();o2.type='triangle';
-      o2.frequency.setValueAtTime(240,t);o2.frequency.linearRampToValueAtTime(300,t+0.08);
-      o2.connect(g);o2.start(t);o2.stop(t+0.25);break;
+    case'ack':{
+      const v=Math.floor(Math.random()*3);
+      if(v===0){// "Right away" — rising dual formant
+        o.type='triangle';o.frequency.setValueAtTime(120,t);o.frequency.linearRampToValueAtTime(180,t+0.08);
+        g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.25);
+        o.connect(g);o.start(t);o.stop(t+0.25);
+        const o2=audioCtx.createOscillator();o2.type='triangle';
+        o2.frequency.setValueAtTime(240,t);o2.frequency.linearRampToValueAtTime(300,t+0.08);
+        o2.connect(g);o2.start(t);o2.stop(t+0.25);
+      }else if(v===1){// "On it" — quick grunt
+        o.type='triangle';o.frequency.setValueAtTime(150,t);o.frequency.linearRampToValueAtTime(130,t+0.1);
+        g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.15);
+        o.connect(g);o.start(t);o.stop(t+0.15);
+      }else{// "Hmm" — questioning uptick
+        o.type='triangle';o.frequency.setValueAtTime(100,t);o.frequency.linearRampToValueAtTime(140,t+0.12);
+        o.frequency.linearRampToValueAtTime(120,t+0.2);
+        g.gain.setValueAtTime(0.15,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.25);
+        o.connect(g);o.start(t);o.stop(t+0.25);
+      }break;
+    }
     case'mine':
       o.type='square';o.frequency.value=800;g.gain.setValueAtTime(0.1,t);
       g.gain.exponentialRampToValueAtTime(0.01,t+0.15);o.connect(g);o.start(t);o.stop(t+0.15);
@@ -1646,6 +1739,9 @@ function playSfx(type){
       playNoiseBurst(0.3,40,200,t);
       o.type='sine';o.frequency.value=80;g.gain.setValueAtTime(0.15,t);
       g.gain.exponentialRampToValueAtTime(0.01,t+0.4);o.connect(g);o.start(t);o.stop(t+0.4);break;
+    case'idle_alert':
+      o.type='sine';o.frequency.value=440;g.gain.setValueAtTime(0.04,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.15);o.connect(g);o.start(t);o.stop(t+0.15);break;
     case'desertion':
       o.type='triangle';o.frequency.value=330;g.gain.setValueAtTime(0.08,t);
       g.gain.exponentialRampToValueAtTime(0.01,t+0.2);o.connect(g);o.start(t);o.stop(t+0.2);
@@ -1698,6 +1794,13 @@ function stopBGM(){
   if(bgmInterval){clearInterval(bgmInterval);bgmInterval=null}
   if(bgmGain)bgmGain.gain.setValueAtTime(0,audioCtx.currentTime);
 }
+
+window.selectIdleWorkers=function(){
+  const idles=entities.filter(e=>e instanceof Worker&&e.alive&&e.state==='idle');
+  if(idles.length>0){selectEntities(idles);playSfx('select');
+    camTarget.set(idles[0].x,0,idles[0].z);
+  }
+};
 
 window.toggleMusic=function(){
   initAudio();
@@ -2004,12 +2107,37 @@ function gameLoop(){
   for(const e of entities){
     if(e instanceof Worker)e.update(dt);
   }
+  // Fog of war — reveal around all entities
+  if(fogExplored){
+    for(const e of entities){
+      if(!e.alive)continue;
+      const ft=worldToTile(e.x,e.z);
+      revealFog(ft.tx,ft.tz,CFG.FOG_SIGHT);
+    }
+    // Update gold mine visibility based on fog
+    for(const m of goldMines){
+      if(m.mesh)m.mesh.visible=!!fogExplored[m.tz*CFG.MAP_SIZE+m.tx];
+    }
+  }
+  // Upkeep tax (WC3 model)
+  if(foodUsed<=50)upkeepMult=1;
+  else if(foodUsed<=80)upkeepMult=0.7;
+  else upkeepMult=0.4;
+  // Idle worker tracking + alert SFX
+  for(const e of entities){
+    if(!(e instanceof Worker)||!e.alive)continue;
+    if(e.state==='idle'){
+      const prev=idleWorkerTimers.get(e.id)||0;
+      idleWorkerTimers.set(e.id,prev+dt);
+      if(prev<CFG.IDLE_ALERT_TIME&&prev+dt>=CFG.IDLE_ALERT_TIME)playSfx('idle_alert');
+    }else{idleWorkerTimers.delete(e.id)}
+  }
   // Camera
   updateCamera();
   // UI (throttled)
   uiTimer+=dt;
   if(uiTimer>0.25){
-    uiTimer=0;updateHUD();updateMinimap();
+    uiTimer=0;updateHUD();updateMinimap();updateFogTexture();
     if(selected.length>0)updateSelectionUI();
   }
   renderer.render(scene,camera);

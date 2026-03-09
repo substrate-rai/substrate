@@ -61,7 +61,7 @@ redirect_from:
   header {
     width: 100%;
     max-width: 500px;
-    padding: 16px 20px;
+    padding: 16px 20px 16px 90px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -203,8 +203,10 @@ redirect_from:
   }
 
   .key {
-    min-width: 32px;
+    flex: 1;
+    max-width: 36px;
     height: 48px;
+    padding: 0;
     border: none;
     border-radius: 0;
     background: #222255;
@@ -224,7 +226,7 @@ redirect_from:
   }
 
   .key:hover { background: #333377; }
-  .key.wide { min-width: 56px; font-size: 0.75rem; }
+  .key.wide { flex: 1.6; max-width: 60px; font-size: 0.75rem; }
   .key.correct { background: #00ffaa; color: #000; }
   .key.present { background: #ff77ff; color: #000; }
   .key.absent { background: #1a1a2e; color: #555; }
@@ -450,14 +452,14 @@ redirect_from:
 
   @media (max-width: 400px) {
     .cell { width: 48px; height: 48px; font-size: 1.3rem; }
-    .key { min-width: 26px; height: 40px; font-size: 0.7rem; }
-    .key.wide { min-width: 44px; }
+    .key { max-width: 30px; height: 40px; font-size: 0.7rem; }
+    .key.wide { max-width: 48px; }
   }
 
   @media (max-width: 320px) {
     .cell { width: 42px; height: 42px; font-size: 1.1rem; }
-    .key { min-width: 22px; height: 36px; font-size: 0.75rem; }
-    .key.wide { min-width: 38px; }
+    .key { max-width: 26px; height: 36px; font-size: 0.75rem; }
+    .key.wide { max-width: 40px; }
     header h1 { font-size: 1.1rem; }
   }
 
@@ -469,7 +471,7 @@ redirect_from:
     .row { gap: 4px; }
     #keyboard { margin: 6px auto; }
     .kb-row { margin-bottom: 3px; }
-    header { padding: 10px 20px; }
+    header { padding: 10px 20px 10px 90px; }
     .subtitle { margin: 4px 0 2px; }
     .streak-bar { margin-bottom: 4px; }
     .how-to-play { display: none; }
@@ -478,9 +480,9 @@ redirect_from:
 
   @media (max-height: 650px) {
     .cell { width: 40px; height: 40px; font-size: 1.1rem; }
-    .key { height: 38px; min-width: 28px; font-size: 0.7rem; }
-    .key.wide { min-width: 44px; }
-    header { padding: 8px 16px; }
+    .key { height: 38px; max-width: 30px; font-size: 0.7rem; }
+    .key.wide { max-width: 48px; }
+    header { padding: 8px 16px 8px 90px; }
     header h1 { font-size: 1.1rem; }
     .subtitle { font-size: 0.6rem; margin: 2px 0; }
     .streak-bar { font-size: 0.65rem; margin-bottom: 2px; }
@@ -505,7 +507,9 @@ redirect_from:
   </div>
 </header>
 
-<img src="{{ site.baseurl }}/assets/images/game-art/title-sigterm.webp" alt="SIGTERM" style="width:100%;max-width:500px;max-height:20vh;height:auto;object-fit:cover;border-radius:0;margin:4px auto;display:block;opacity:0.9;image-rendering:pixelated;">
+<div style="max-width:500px;margin:4px auto;padding:18px 0 8px;text-align:center;">
+  <div style="font-size:2.4rem;color:#00ffaa;letter-spacing:8px;text-shadow:0 0 12px #00ffaa44;font-weight:700;">SIGTERM</div>
+</div>
 
 <div class="subtitle">daily word game by <span style="color:#00ffaa;">substrate</span></div>
 <div class="streak-bar" id="streak-bar" aria-live="polite" aria-label="Current streak"></div>

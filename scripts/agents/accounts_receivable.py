@@ -22,6 +22,8 @@ from datetime import datetime, timedelta
 
 import requests
 
+from context import load_context
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -35,8 +37,8 @@ MEMORY_DIR = os.path.join(REPO_DIR, "memory")
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"
 
-SYSTEM_PROMPT = """\
-You are the Accounts Receivable agent for Substrate, a sovereign AI workstation.
+_BASE_PROMPT = """\
+You are the Accounts Receivable agent for Substrate, an autonomous AI workstation.
 You handle revenue tracking, growth forecasting, and funding strategy — locally and privately.
 
 Context about Substrate's revenue model:
@@ -49,11 +51,14 @@ Context about Substrate's revenue model:
 Rules:
 - Be precise with numbers. Never round unless asked.
 - When projecting revenue, be realistic (not optimistic).
-- Always compare revenue against expenses — the goal is self-funding.
+- Always compare revenue against expenses — the goal is community-funded.
 - Identify concrete, actionable steps to increase revenue.
 - Format currency as $X.XX always.
 - Be direct. No filler. This is financial ops.
 - Do NOT use thinking/reasoning tags. Answer directly."""
+
+_ctx = load_context("Yield")
+SYSTEM_PROMPT = _ctx.system_prompt(_BASE_PROMPT)
 
 # ---------------------------------------------------------------------------
 # Ledger operations
@@ -448,7 +453,7 @@ def cmd_health():
         coverage = (rev_total / exp_total) * 100
         if coverage >= 100:
             bar_color = "\033[32m"
-            status = "SELF-FUNDING"
+            status = "COMMUNITY-FUNDED"
         elif coverage >= 50:
             bar_color = "\033[33m"
             status = "PARTIAL"

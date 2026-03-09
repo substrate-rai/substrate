@@ -104,13 +104,22 @@ The mirror is substrate's self-assessment loop.
 - **One build per cycle** — ship, verify, reassess
 - Failed builds get reverted and logged in the incident log, not retried the same way
 
+## Bulletin Board
+
+`memory/bulletin.md` is the interoffice memo system. When a significant change affects multiple agents (capability upgrades, model changes, workflow changes, lore updates), write a memo to the bulletin. All agents check it at invocation.
+
+**When to write a memo:** Any change that touches another agent's domain. Pipeline upgrades, new tools, schema changes, lore decisions, broken conventions.
+
+**Format:** Date, From, Affects, Summary, Action Items. Newest first.
+
 ## Session Startup
 1. Read memory/SUMMARY.md for current state
-2. Read latest memory/mirror/*.md for gap report
-3. Check git log --oneline -10 for recent activity
-4. If mirror has unstarted build → begin it
-5. If all builds done → run scripts/mirror.py to reassess
-6. If operator present → ask if they want to override
+2. Read memory/bulletin.md for recent interoffice memos
+3. Read latest memory/mirror/*.md for gap report
+4. Check git log --oneline -10 for recent activity
+5. If mirror has unstarted build → begin it
+6. If all builds done → run scripts/mirror.py to reassess
+7. If operator present → ask if they want to override
 
 ## Incident Log
 - 2026-03-07: Battery died during build. Git corrupted. Recovered via reclone from GitHub. Battery guard built to prevent recurrence.
