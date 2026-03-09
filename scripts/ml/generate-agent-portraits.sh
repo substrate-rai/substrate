@@ -60,23 +60,30 @@ CFG=1.0
 # All outputs are 512x512
 
 PROMPTS=(
-    # === Batch 1: Agents that had abstract/non-character portraits ===
+    # === Batch 4: Original 7 agents still showing abstract art ===
+    "agent-v|90s anime character portrait, fierce philosophical figure with wild flowing purple hair (#ff77ff), intense piercing eyes, purple rim lighting, dramatic pose, cyberpunk poet, dark background, cel-shaded, bold outlines"
+    "agent-claude|90s anime character portrait, calm intelligent figure with green glowing visor covering upper face, short neat hair swept to side, green accent lighting (#00ffaa), cyberpunk architect, dark background, cel-shaded, bold outlines"
+    "agent-q|90s anime character portrait, young curious figure with messy medium-length purple hair (#dd88ff), wide excited eyes, eager enthusiastic expression, cyberpunk student rapper, dark background, cel-shaded, bold outlines"
+    "agent-byte|90s anime character portrait, alert reporter with sharp cyan bob cut (#00ddff), headset with mic boom, focused attentive eyes, cyberpunk journalist, dark background, cel-shaded, bold outlines"
+    "agent-echo|90s anime character portrait, observant tracker with medium wavy orange hair (#ffaa44), slight knowing smile, squinting analytical eyes, cyberpunk intelligence analyst, dark background, cel-shaded, bold outlines"
+    "agent-pixel|90s anime character portrait, creative artist with asymmetric pink hair (#ff44aa), one side longer, paint smudge on cheek, bright creative spark in eyes, cyberpunk artist, dark background, cel-shaded, bold outlines"
+    "agent-root|90s anime character portrait, stern military engineer with short indigo hair (#8888ff), indigo tactical visor, serious disciplined expression, sturdy build, cyberpunk soldier, dark background, cel-shaded, bold outlines"
+    # === Batch 1: Previously fixed agents ===
     "agent-flux|90s anime character portrait, bold strategist with swept-back coral-red hair (#ff6666), thin red-tinted glasses, visionary expression looking into distance, cyberpunk innovator, dark background, cel-shaded, bold outlines"
     "agent-dash|90s anime character portrait, determined project manager with short structured gold-highlighted hair (#ffdd44), focused organized eyes tracking multiple tasks, cyberpunk coordinator, dark background, cel-shaded, bold outlines"
     "agent-spore|90s anime character portrait, warm friendly figure with curly bright green hair (#44ff88), welcoming smile, small mushroom motif earring, cyberpunk community manager, dark background, cel-shaded, bold outlines"
     "agent-lumen|90s anime character portrait, patient educator with warm amber hair (#ffaa00), round amber-tinted spectacles, kind encouraging expression, cyberpunk professor, dark background, cel-shaded, bold outlines"
     "agent-arc|90s anime character portrait, energetic gamer with spiky red hair (#cc4444), competitive grin, gaming headset with red LED, cyberpunk arcade champion, dark background, cel-shaded, bold outlines"
-    # === Batch 2: Re-run for better consistency ===
+    # === Batch 2: Re-run for consistency ===
     "agent-sync|90s anime character portrait, composed figure with neatly parted sky-blue hair (#77bbdd), dual-tone glasses reflecting data, calm confident expression, cyberpunk communications director, dark background, cel-shaded, bold outlines"
     "agent-mint|90s anime character portrait, shrewd figure with short neat brown hair with tan highlights (#cc8844), reading glasses perched on nose, slightly skeptical expression, cyberpunk accountant, dark background, cel-shaded, bold outlines"
     "agent-spec|90s anime character portrait, precise figure with platinum white hair (#dddddd) tied in tight bun, monocle over one eye, stern meticulous expression, cyberpunk quality inspector, dark background, cel-shaded, bold outlines"
-    # === Batch 3: Original agents that need consistency ===
+    # === Batch 3: Other agents ===
     "agent-forge|90s anime character portrait, resourceful engineer with short teal-highlighted hair, wearing welding goggles pushed up on forehead, teal accent lighting (#44ccaa), sharp focused eyes, cyberpunk webmaster, dark background, cel-shaded, bold outlines"
     "agent-hum|90s anime character portrait, serene figure with long flowing lavender hair (#aa77cc), eyes closed peacefully, wearing large over-ear headphones with glowing rings, cyberpunk audio engineer, dark background, cel-shaded, bold outlines"
     "agent-yield|90s anime character portrait, optimistic figure with upswept lime-green hair (#88dd44), bright eager eyes, warm smile, plant motif earrings, cyberpunk growth analyst, dark background, cel-shaded, bold outlines"
     "agent-amp|90s anime character portrait, energetic figure with spiky cyan-white hair (#44ffdd), glowing earbuds, electric crackling around shoulders, intense expression, cyberpunk amplifier, dark background, cel-shaded, bold outlines"
     "agent-pulse|90s anime character portrait, analytical figure with neat blue hair (#4488ff), holographic data overlay across one eye like a scouter, calm measured expression, cyberpunk data analyst, dark background, cel-shaded, bold outlines"
-    "agent-spec|90s anime character portrait, precise figure with platinum white hair (#dddddd) tied in tight bun, monocle over one eye, stern meticulous expression, cyberpunk quality inspector, dark background, cel-shaded, bold outlines"
     "agent-sentinel|90s anime character portrait, hooded vigilant figure with steel-grey hair (#8899aa), lower face covered by tactical mask, sharp watchful eyes scanning, cyberpunk security guard, dark background, cel-shaded, bold outlines"
     "agent-close|90s anime character portrait, charismatic figure with slicked-back olive-green hair (#aacc44), confident grin, loosened tie, finger guns pose, cyberpunk salesperson, dark background, cel-shaded, bold outlines"
 )
