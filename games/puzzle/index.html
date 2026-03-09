@@ -909,13 +909,13 @@ function showStats() {
   var maxGuesses = Math.max.apply(null, stats.guessDistribution.concat([1]));
   for (var i = 0; i < 6; i++) {
     var row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0;font-size:0.65rem;';
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0;font-size:0.75rem;';
     var label = document.createElement('span');
     label.style.cssText = 'width:12px;text-align:right;color:#888;';
     label.textContent = (i + 1);
     var bar = document.createElement('div');
     var pct = Math.max(8, (stats.guessDistribution[i] / maxGuesses) * 100);
-    bar.style.cssText = 'background:#00ffaa;height:16px;border-radius:2px;min-width:16px;display:flex;align-items:center;justify-content:flex-end;padding:0 4px;font-size:0.6rem;color:#000;font-weight:700;width:' + pct + '%;';
+    bar.style.cssText = 'background:#00ffaa;height:16px;border-radius:2px;min-width:16px;display:flex;align-items:center;justify-content:flex-end;padding:0 4px;font-size:0.75rem;color:#000;font-weight:700;width:' + pct + '%;';
     bar.textContent = stats.guessDistribution[i];
     row.appendChild(label);
     row.appendChild(bar);
