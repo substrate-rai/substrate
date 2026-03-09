@@ -1,7 +1,7 @@
 ---
 layout: null
 permalink: /games/cascade/
-title: "CASCADE — Momentum Engine"
+title: "CASCADE — Go Go Go!"
 redirect_from:
   - /cascade/
 ---
@@ -10,7 +10,7 @@ redirect_from:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>CASCADE — Momentum Engine | Substrate Arcade</title>
+<title>CASCADE — Go Go Go! | Substrate Arcade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -56,7 +56,7 @@ redirect_from:
     position: relative;
   }
 
-  /* === SPIRAL GAUGE === */
+  /* === POWER BAR === */
   #gauge-container {
     padding: 12px 16px 8px;
     position: relative;
@@ -152,6 +152,31 @@ redirect_from:
     color: var(--dim);
   }
   #stats .stat-val { color: var(--text); font-weight: 600; }
+
+  /* === RESTART BUTTON === */
+  #restart-btn {
+    position: fixed;
+    top: 10px;
+    right: 70px;
+    z-index: 9999;
+    background: rgba(255, 68, 68, 0.15);
+    border: 1px solid rgba(255, 68, 68, 0.4);
+    color: #ff6666;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    display: none;
+  }
+  #restart-btn:hover {
+    background: rgba(255, 68, 68, 0.3);
+    border-color: rgba(255, 68, 68, 0.7);
+    color: #ff8888;
+  }
 
   /* === SCENARIO === */
   #scenario-area {
@@ -293,7 +318,7 @@ redirect_from:
     transform: none;
   }
 
-  /* Momentum gain preview */
+  /* Power gain preview */
   .choice-btn .momentum-preview {
     position: absolute;
     top: 4px;
@@ -568,48 +593,50 @@ redirect_from:
 
 <a href="#game" class="sr-only">Skip to game</a>
 
+<!-- RESTART BUTTON (always visible during play) -->
+<button id="restart-btn" onclick="confirmRestart()" aria-label="Start over (R)">RESTART</button>
+
 <!-- TITLE -->
 <div id="title-screen" role="main" aria-label="CASCADE title screen">
   <div class="title-name">CASCADE</div>
-  <div class="title-sub">MOMENTUM ENGINE</div>
+  <div class="title-sub">GO GO GO!</div>
   <div class="title-philosophy">
-    The scaffold isn't "learn to pick right."<br>
-    It's <em>"learn to pick at all."</em><br><br>
-    Momentum builds by deciding fast under uncertainty.<br>
-    Hesitation decays it. Every choice compounds.<br>
-    There are no wrong answers — only slow ones.
+    Pick fast. Don't wait.<br>
+    There are <em>no wrong answers.</em><br><br>
+    Just pick something! The faster you tap, the more power you get.<br>
+    Waiting makes your power shrink. Every pick adds up!
   </div>
   <div class="title-modes">
     <button class="mode-btn" onclick="startGame('work')" aria-label="Start work mode">
       WORK MODE
-      <span class="mode-desc">Real decisions about focus, energy, and task initiation</span>
+      <span class="mode-desc">Pick what to do with your time and energy</span>
     </button>
-    <button class="mode-btn" onclick="startGame('spiral')" aria-label="Start spiral mode">
-      SPIRAL MODE
-      <span class="mode-desc">Abstract choices inspired by Gurren Lagann — pure momentum</span>
+    <button class="mode-btn" onclick="startGame('spiral')" aria-label="Start adventure mode">
+      ADVENTURE MODE
+      <span class="mode-desc">Wild choices — go big or go home!</span>
     </button>
     <button class="mode-btn" onclick="startGame('mixed')" aria-label="Start mixed mode">
-      MIXED MODE
-      <span class="mode-desc">Both worlds collide</span>
+      MIX IT UP
+      <span class="mode-desc">A little of both worlds</span>
     </button>
   </div>
   <div class="title-credit">
-    <a href="{{ site.baseurl }}/arcade/">Substrate Arcade</a> — games as cognitive prosthetics
+    <a href="{{ site.baseurl }}/arcade/">Substrate Arcade</a> — fun brain games
   </div>
 </div>
 
 <!-- GAME -->
 <div id="game" style="display:none;">
-  <!-- Spiral Gauge -->
+  <!-- Power Bar -->
   <div id="gauge-container">
     <div id="phase-label" aria-live="polite">GROUND</div>
-    <div id="gauge-track" role="meter" aria-label="Spiral momentum" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div id="gauge-track" role="meter" aria-label="Your power" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div id="gauge-fill"></div>
       <div id="gauge-value">0</div>
       <div class="gauge-marker" style="left:20%;" data-label="SPARK"></div>
-      <div class="gauge-marker" style="left:40%;" data-label="SPIRAL"></div>
+      <div class="gauge-marker" style="left:40%;" data-label="SPIN"></div>
       <div class="gauge-marker" style="left:70%;" data-label="DRILL"></div>
-      <div class="gauge-marker" style="left:90%;" data-label="HEAVEN"></div>
+      <div class="gauge-marker" style="left:90%;" data-label="BOOM"></div>
       <div id="crest-line"></div>
     </div>
   </div>
@@ -617,9 +644,9 @@ redirect_from:
   <!-- Stats -->
   <div id="stats">
     <span>Combo: <span class="stat-val" id="combo-count">0</span></span>
-    <span>Depth: <span class="stat-val" id="depth-count">x1.0</span></span>
-    <span>Crests: <span class="stat-val" id="crest-count">0</span></span>
-    <span>Round: <span class="stat-val" id="round-count">1</span>/20</span>
+    <span>Power: <span class="stat-val" id="depth-count">x1.0</span></span>
+    <span>Stars: <span class="stat-val" id="crest-count">0</span></span>
+    <span>Turn: <span class="stat-val" id="round-count">1</span>/20</span>
   </div>
 
   <!-- Scenario -->
@@ -631,15 +658,15 @@ redirect_from:
   <!-- Timer -->
   <div id="timer-container">
     <div id="timer-track">
-      <div id="timer-fill" role="timer" aria-label="Decision timer"></div>
+      <div id="timer-fill" role="timer" aria-label="Hurry up timer"></div>
     </div>
   </div>
 
   <!-- History -->
-  <div id="history" role="log" aria-label="Decision history"></div>
+  <div id="history" role="log" aria-label="What you picked"></div>
 
   <!-- Choices -->
-  <div id="choices-container" role="group" aria-label="Choices"></div>
+  <div id="choices-container" role="group" aria-label="Pick one"></div>
 
   <!-- Combo popup -->
   <div id="combo-display" aria-live="polite"></div>
@@ -649,20 +676,20 @@ redirect_from:
 </div>
 
 <!-- END SCREEN -->
-<div id="end-screen" role="dialog" aria-label="Run complete">
+<div id="end-screen" role="dialog" aria-label="Game over">
   <div id="end-phase"></div>
-  <div id="end-title">RUN COMPLETE</div>
+  <div id="end-title">ALL DONE!</div>
   <div id="end-subtitle"></div>
   <div class="end-stats">
-    <div class="end-stat"><div class="es-val" id="es-peak">0</div><div class="es-label">Peak Momentum</div></div>
-    <div class="end-stat"><div class="es-val" id="es-decisions">0</div><div class="es-label">Decisions Made</div></div>
+    <div class="end-stat"><div class="es-val" id="es-peak">0</div><div class="es-label">Best Power</div></div>
+    <div class="end-stat"><div class="es-val" id="es-decisions">0</div><div class="es-label">Picks Made</div></div>
     <div class="end-stat"><div class="es-val" id="es-combo">0</div><div class="es-label">Best Combo</div></div>
-    <div class="end-stat"><div class="es-val" id="es-crests">0</div><div class="es-label">Crests Reached</div></div>
+    <div class="end-stat"><div class="es-val" id="es-crests">0</div><div class="es-label">Stars Won</div></div>
   </div>
   <div id="end-lesson"></div>
   <div class="end-actions">
-    <button class="end-btn" onclick="startGame(G.mode)" aria-label="Run again">AGAIN</button>
-    <button class="end-btn" onclick="backToTitle()" aria-label="Return to title" style="border-color:var(--dim);color:var(--dim);">TITLE</button>
+    <button class="end-btn" onclick="startGame(G.mode)" aria-label="Play again">PLAY AGAIN</button>
+    <button class="end-btn" onclick="backToTitle()" aria-label="Go back to start" style="border-color:var(--dim);color:var(--dim);">GO BACK</button>
   </div>
 </div>
 
@@ -685,10 +712,10 @@ redirect_from:
     maxRounds: 20,
     decisions: 0,
     peakMomentum: 0,
-    timerMax: 6000,   // ms per decision
+    timerMax: 6000,   // ms per pick
     timerLeft: 6000,
     timerInterval: null,
-    decayRate: 2,     // momentum lost per second of hesitation
+    decayRate: 2,     // power lost each second you wait
     phase: 'GROUND',
     history: [],
     active: false,
@@ -720,192 +747,192 @@ redirect_from:
 
   var WORK_SCENARIOS = [
     {
-      context: "You have a report due. It's 80% done. You also have 47 unread emails.",
+      context: "Your homework is almost done. But you also have lots of messages.",
       prompt: "What do you do right now?",
       choices: [
-        { label: "FINISH", desc: "Close email. Ship the report.", gain: 12 },
-        { label: "TRIAGE", desc: "Scan emails first, then report.", gain: 5 },
+        { label: "FINISH", desc: "Close everything else. Get it done!", gain: 12 },
+        { label: "CHECK", desc: "Look at messages first, then finish.", gain: 5 },
       ]
     },
     {
-      context: "A meeting invite just appeared for in 15 minutes. You're in flow state.",
-      prompt: "Protect the flow or attend?",
+      context: "Someone wants to talk. But you are doing great work right now!",
+      prompt: "Keep going or stop to talk?",
       choices: [
-        { label: "DECLINE", desc: "Flow is sacred. They can read the notes.", gain: 14 },
-        { label: "ATTEND", desc: "It might be important. Go find out.", gain: 6 },
+        { label: "KEEP GOING", desc: "I'm on a roll! They can wait.", gain: 14 },
+        { label: "STOP", desc: "Maybe it's important. Go see.", gain: 6 },
       ]
     },
     {
-      context: "You've been staring at a blank document for 10 minutes. The cursor blinks.",
-      prompt: "How do you break the paralysis?",
+      context: "You are staring at a blank page. Nothing is coming out.",
+      prompt: "How do you get started?",
       choices: [
-        { label: "TYPE GARBAGE", desc: "Write anything. Fix it later.", gain: 15 },
-        { label: "OUTLINE", desc: "Make three bullet points first.", gain: 8 },
+        { label: "JUST WRITE", desc: "Write anything! Fix it later.", gain: 15 },
+        { label: "MAKE A LIST", desc: "Write three things down first.", gain: 8 },
       ]
     },
     {
-      context: "You finished a task. You feel good. There are 6 more tasks on the list.",
-      prompt: "Ride the wave or take a break?",
+      context: "You just finished one thing. It feels great! But there's more to do.",
+      prompt: "Keep going or take a break?",
       choices: [
-        { label: "RIDE IT", desc: "Momentum is perishable. Use it.", gain: 13 },
-        { label: "REST", desc: "Quit at the peak, not the crash.", gain: 7 },
+        { label: "KEEP GOING", desc: "I feel good! Do the next one!", gain: 13 },
+        { label: "REST", desc: "Stop while it still feels fun.", gain: 7 },
       ]
     },
     {
-      context: "A coworker asks for help. You're in the middle of something.",
-      prompt: "Help now or protect your focus?",
+      context: "A friend asks for help. But you are busy right now.",
+      prompt: "Help them now or later?",
       choices: [
-        { label: "BOUNDARY", desc: "'After 3pm.' No guilt.", gain: 11 },
-        { label: "HELP NOW", desc: "It'll take 5 minutes. Probably.", gain: 5 },
+        { label: "LATER", desc: "'I'll help you after 3!' No worries.", gain: 11 },
+        { label: "HELP NOW", desc: "It'll only take a minute. Maybe.", gain: 5 },
       ]
     },
     {
-      context: "You made a mistake in something you shipped yesterday. Nobody noticed yet.",
-      prompt: "Fix it now or wait?",
+      context: "You made a mistake yesterday. Nobody saw it yet.",
+      prompt: "Fix it now or wait and see?",
       choices: [
-        { label: "FIX NOW", desc: "Before it compounds. Clean.", gain: 14 },
-        { label: "MONITOR", desc: "Watch if it actually matters first.", gain: 6 },
+        { label: "FIX NOW", desc: "Fix it before it gets worse!", gain: 14 },
+        { label: "WAIT", desc: "See if anyone even notices.", gain: 6 },
       ]
     },
     {
-      context: "You have two projects. One is urgent, one is important. Both need attention.",
-      prompt: "Urgent or important?",
+      context: "You have two things to do. One is urgent. One is really important.",
+      prompt: "Which one first?",
       choices: [
-        { label: "IMPORTANT", desc: "Urgent screams. Important whispers. Listen.", gain: 13 },
-        { label: "URGENT", desc: "Clear the blocker, then go deep.", gain: 8 },
+        { label: "IMPORTANT", desc: "Do the big thing. It matters more.", gain: 13 },
+        { label: "URGENT", desc: "Do the fast thing. Then go big.", gain: 8 },
       ]
     },
     {
-      context: "You're about to start a hard task. Your brain says 'just check Twitter first.'",
-      prompt: "Give in or override?",
+      context: "You're about to start something hard. Your brain says 'play first!'",
+      prompt: "Play first or start working?",
       choices: [
-        { label: "OVERRIDE", desc: "That's the resistance talking. Start.", gain: 16 },
-        { label: "2 MINUTES", desc: "Set a timer. Reward, then work.", gain: 4 },
+        { label: "START NOW", desc: "That lazy voice is tricking you. Go!", gain: 16 },
+        { label: "2 MINUTES", desc: "Quick break, then work. Promise!", gain: 4 },
       ]
     },
     {
-      context: "You've been going for 3 hours. You can feel the quality dropping.",
-      prompt: "Push through or stop?",
+      context: "You've been going for a long time. You're getting tired.",
+      prompt: "Keep going or stop?",
       choices: [
-        { label: "STOP", desc: "Diminishing returns. Walk away.", gain: 10 },
-        { label: "PUSH", desc: "One more hour. Finish the section.", gain: 7 },
+        { label: "STOP", desc: "Take a break. Come back fresh!", gain: 10 },
+        { label: "PUSH", desc: "Just a little more. Almost there!", gain: 7 },
       ]
     },
     {
-      context: "A new shiny idea just hit you. It's exciting. It's not what you're working on.",
-      prompt: "Chase it or capture it?",
+      context: "You just got a cool new idea! But it's not what you're working on.",
+      prompt: "Chase it or save it for later?",
       choices: [
-        { label: "CAPTURE", desc: "Write it down. Come back. Stay course.", gain: 14 },
-        { label: "CHASE", desc: "Energy follows interest. Pivot.", gain: 6 },
+        { label: "SAVE IT", desc: "Write it down. Come back later.", gain: 14 },
+        { label: "CHASE IT", desc: "It's so cool! Switch to that!", gain: 6 },
       ]
     },
     {
-      context: "Your plan for today is already wrecked. Three unexpected things happened.",
-      prompt: "Replan or improvise?",
+      context: "Your whole plan for today fell apart. Everything went sideways!",
+      prompt: "Make a new plan or just wing it?",
       choices: [
-        { label: "IMPROVISE", desc: "Pick one thing. Do it. That's the new plan.", gain: 13 },
-        { label: "REPLAN", desc: "Take 10 minutes. Rebuild the day.", gain: 7 },
+        { label: "WING IT", desc: "Pick one thing. Do it. That's the plan!", gain: 13 },
+        { label: "NEW PLAN", desc: "Take a minute. Figure it out.", gain: 7 },
       ]
     },
     {
-      context: "Someone criticized your work publicly. Your face is hot. You want to respond.",
-      prompt: "Respond now or wait?",
+      context: "Someone said your work was bad. Your face is hot. You want to yell back.",
+      prompt: "Yell back now or wait?",
       choices: [
-        { label: "WAIT", desc: "Draft it. Sleep on it. Send tomorrow.", gain: 14 },
-        { label: "RESPOND", desc: "Defend your work. Be professional.", gain: 5 },
+        { label: "WAIT", desc: "Cool down first. Talk tomorrow.", gain: 14 },
+        { label: "SPEAK UP", desc: "Say your side. Be nice about it.", gain: 5 },
       ]
     },
   ];
 
   var SPIRAL_SCENARIOS = [
     {
-      context: "The tunnel is collapsing. Your drill is at half power. There are two paths.",
+      context: "The tunnel is falling down! Your drill is only half power.",
       prompt: "Your drill or your team?",
       choices: [
-        { label: "CHARGE", desc: "My drill is the drill that creates tomorrow!", gain: 15 },
-        { label: "COMBINE", desc: "GATTAI! Two drills become one.", gain: 10 },
+        { label: "CHARGE", desc: "My drill makes tomorrow happen!", gain: 15 },
+        { label: "TEAM UP", desc: "Two drills are better than one!", gain: 10 },
       ]
     },
     {
-      context: "The enemy is ten times your size. Logic says retreat. Your spiral says otherwise.",
-      prompt: "Logic or spiral?",
+      context: "The bad guy is ten times bigger. Smart to run away. But...",
+      prompt: "Be smart or be brave?",
       choices: [
-        { label: "KICK LOGIC", desc: "Who the hell do you think I am?!", gain: 16 },
-        { label: "ADAPT", desc: "Find the weakness. Strike precise.", gain: 8 },
+        { label: "BE BRAVE", desc: "Who do you think I am?!", gain: 16 },
+        { label: "BE SMART", desc: "Find the weak spot. Strike fast.", gain: 8 },
       ]
     },
     {
-      context: "Your power is maxed out. The universe says this is your limit.",
-      prompt: "Accept the limit or break through?",
+      context: "You're at full power. Everyone says this is your limit.",
+      prompt: "Stop here or break through?",
       choices: [
-        { label: "BREAK THROUGH", desc: "Limits exist to be surpassed.", gain: 14 },
-        { label: "ENDURE", desc: "Hold this power. Don't burn out.", gain: 9 },
+        { label: "BREAK THROUGH", desc: "Limits are made to be smashed!", gain: 14 },
+        { label: "HOLD STEADY", desc: "Keep this power. Don't burn out.", gain: 9 },
       ]
     },
     {
-      context: "A comrade has fallen. Their spiral is fading. You can feel it going cold.",
-      prompt: "Mourn or absorb?",
+      context: "Your friend fell down. Their power is fading away.",
+      prompt: "Be sad or take their power?",
       choices: [
-        { label: "ABSORB", desc: "Carry their will forward. Spiral on.", gain: 13 },
-        { label: "BELIEVE", desc: "Their spiral isn't gone. Believe.", gain: 11 },
+        { label: "TAKE IT", desc: "Carry their power forward. Keep going!", gain: 13 },
+        { label: "BELIEVE", desc: "They're not done yet. Believe!", gain: 11 },
       ]
     },
     {
-      context: "The Anti-Spiral says: 'Your evolution is a threat to the universe.'",
-      prompt: "Stop evolving or defy?",
+      context: "The big bad boss says: 'You're too strong. Stop growing.'",
+      prompt: "Stop or keep growing?",
       choices: [
-        { label: "DEFY", desc: "That's tomorrow's problem!", gain: 15 },
-        { label: "DIG", desc: "Dig deeper. Find the truth first.", gain: 8 },
+        { label: "NEVER STOP", desc: "That's tomorrow's problem!", gain: 15 },
+        { label: "DIG DEEPER", desc: "Find out why. Then decide.", gain: 8 },
       ]
     },
     {
-      context: "You're standing at the edge. Below: the Spiral Abyss. Above: the heavens.",
-      prompt: "Climb or descend?",
+      context: "You're at the edge. Down below: darkness. Up above: the sky.",
+      prompt: "Go up or go down?",
       choices: [
-        { label: "CLIMB", desc: "The sky has no ceiling.", gain: 14 },
-        { label: "DESCEND", desc: "The abyss has no floor. But what's down there?", gain: 10 },
+        { label: "GO UP", desc: "The sky has no ceiling!", gain: 14 },
+        { label: "GO DOWN", desc: "What's hiding down there?", gain: 10 },
       ]
     },
     {
-      context: "Two leaders argue. Split the team or choose a side?",
-      prompt: "Unite or divide?",
+      context: "Two leaders are fighting. The team is breaking apart.",
+      prompt: "Pick a side or lead yourself?",
       choices: [
-        { label: "LEAD", desc: "Neither is right. I'll lead.", gain: 15 },
-        { label: "SOLO", desc: "Let them fight. I work alone.", gain: 7 },
+        { label: "I'LL LEAD", desc: "Neither is right. Follow me!", gain: 15 },
+        { label: "GO SOLO", desc: "Let them fight. I work alone.", gain: 7 },
       ]
     },
     {
-      context: "Your drill can pierce one thing: the enemy, or the wall behind them.",
-      prompt: "Enemy or escape?",
+      context: "Your drill can smash one thing: the bad guy or the wall behind them.",
+      prompt: "Smash the bad guy or the wall?",
       choices: [
-        { label: "ENEMY", desc: "You don't run. You drill.", gain: 13 },
-        { label: "WALL", desc: "Freedom for everyone behind you.", gain: 12 },
+        { label: "BAD GUY", desc: "You don't run. You drill!", gain: 13 },
+        { label: "THE WALL", desc: "Free everyone behind you!", gain: 12 },
       ]
     },
     {
-      context: "The spiral gauge is overheating. One more push and it might shatter — or transcend.",
+      context: "Your power bar is shaking! One more push and it might pop — or go super!",
       prompt: "Push past the limit?",
       choices: [
-        { label: "GIGA DRILL", desc: "GIGA. DRILL. BREAKER.", gain: 18 },
-        { label: "SACRIFICE", desc: "Trade your power to save the gauge.", gain: 6 },
+        { label: "GIGA DRILL", desc: "GIGA. DRILL. BOOM!", gain: 18 },
+        { label: "GIVE UP POWER", desc: "Trade your power to stay safe.", gain: 6 },
       ]
     },
     {
-      context: "You've won. The enemy is gone. But who are you now?",
-      prompt: "What comes after fighting?",
+      context: "You won! The bad guys are gone. But what now?",
+      prompt: "What do you do after winning?",
       choices: [
-        { label: "BUILD", desc: "The drill isn't just for breaking.", gain: 12 },
-        { label: "WANDER", desc: "Find the next spiral. Walk on.", gain: 10 },
+        { label: "BUILD", desc: "The drill isn't just for smashing.", gain: 12 },
+        { label: "EXPLORE", desc: "Find the next thing. Keep walking.", gain: 10 },
       ]
     },
   ];
 
   var SURGE_CHOICES = [
-    { label: "GIGA DRILL", desc: "GIGA DRILL BREAKER! Maximum spiral.", gain: 25 },
-    { label: "GATTAI", desc: "Combine all spirals into one.", gain: 22 },
-    { label: "WHO AM I?!", desc: "WHO THE HELL DO YOU THINK I AM?!", gain: 20 },
-    { label: "KICK LOGIC", desc: "Kick reason to the curb. Do the impossible.", gain: 23 },
-    { label: "MY DRILL", desc: "My drill is the drill that creates tomorrow!", gain: 21 },
+    { label: "GIGA DRILL", desc: "GIGA DRILL BOOM! Max power!", gain: 25 },
+    { label: "TEAM UP", desc: "All powers join into one!", gain: 22 },
+    { label: "WHO AM I?!", desc: "WHO DO YOU THINK I AM?!", gain: 20 },
+    { label: "GO WILD", desc: "Forget the rules. Do the impossible!", gain: 23 },
+    { label: "MY DRILL", desc: "My drill makes tomorrow happen!", gain: 21 },
   ];
 
   function getScenarios(mode) {
@@ -939,6 +966,7 @@ redirect_from:
     $('game').style.display = 'flex';
     $('history').innerHTML = '';
     $('crest-line').style.display = 'none';
+    $('restart-btn').style.display = 'block';
 
     updateGauge();
     nextRound();
@@ -946,11 +974,31 @@ redirect_from:
   window.startGame = startGame;
 
   function backToTitle() {
+    clearInterval(G.timerInterval);
+    G.active = false;
     $('end-screen').classList.remove('show');
     $('game').style.display = 'none';
     $('title-screen').classList.remove('hidden');
+    $('restart-btn').style.display = 'none';
   }
   window.backToTitle = backToTitle;
+
+  // === Restart ===
+  function confirmRestart() {
+    if (G.decisions > 0) {
+      if (!confirm('Start over? Your score will be lost.')) return;
+    }
+    restartGame();
+  }
+  window.confirmRestart = confirmRestart;
+
+  function restartGame() {
+    clearInterval(G.timerInterval);
+    G.active = false;
+    $('end-screen').classList.remove('show');
+    startGame(G.mode);
+  }
+  window.restartGame = restartGame;
 
   function nextRound() {
     G.round++;
@@ -986,12 +1034,12 @@ redirect_from:
       row.appendChild(btn);
     });
 
-    // Surge choice at 70+ momentum
+    // Super pick at 70+ power
     if (G.momentum >= 70) {
       var surge = SURGE_CHOICES[Math.floor(Math.random() * SURGE_CHOICES.length)];
       var surgeBtn = document.createElement('button');
       surgeBtn.className = 'choice-btn surge';
-      surgeBtn.setAttribute('aria-label', 'SURGE: ' + surge.label + ' — ' + surge.desc);
+      surgeBtn.setAttribute('aria-label', 'SUPER: ' + surge.label + ' — ' + surge.desc);
       surgeBtn.innerHTML = '<span class="choice-label">' + surge.label + '</span>' +
                            '<span class="choice-desc">' + surge.desc + '</span>' +
                            '<span class="momentum-preview">+' + surge.gain + '</span>';
@@ -1009,9 +1057,8 @@ redirect_from:
     // Start timer
     startTimer();
 
-    // Increase pressure with momentum (decay scales)
+    // Faster and harder as power grows
     G.decayRate = 2 + (G.momentum / 25);
-    // Timer gets shorter as momentum grows
     G.timerMax = Math.max(3000, 6000 - G.momentum * 20);
   }
 
@@ -1021,7 +1068,7 @@ redirect_from:
 
     G.decisions++;
 
-    // Calculate time bonus: faster = more momentum
+    // Speed bonus: faster pick = more power
     var timeRatio = G.timerLeft / G.timerMax;
     var timeBonus = Math.floor(choice.gain * timeRatio * 0.5);
     var comboBonus = Math.floor(G.combo * 0.5);
@@ -1037,41 +1084,41 @@ redirect_from:
       showCombo(G.combo);
     }
 
-    // Apply momentum
+    // Add power
     G.momentum = Math.min(100, G.momentum + totalGain);
     if (G.momentum > G.peakMomentum) G.peakMomentum = G.momentum;
 
-    // Depth increases every 5 decisions
+    // Power grows every 5 picks
     G.depth = 1.0 + (Math.floor(G.decisions / 5) * 0.2);
 
-    // Crest check: at 90+ momentum, lock in a new floor
+    // Star check: at 90+ power, lock in a floor
     if (G.momentum >= 90 && G.crestFloor < G.momentum - 10) {
       G.crests++;
       G.crestFloor = Math.max(G.crestFloor, G.momentum - 15);
       showCrest();
     }
 
-    // Log history
+    // Log what happened
     addHistory(choice.label, totalGain, isSurge);
 
-    // Update UI
+    // Update the screen
     updateGauge();
     $('combo-count').textContent = G.combo;
     $('depth-count').textContent = 'x' + G.depth.toFixed(1);
     $('crest-count').textContent = G.crests;
 
-    // Next round after brief pause
+    // Next turn after a tiny wait
     G.active = true;
     setTimeout(function() { nextRound(); }, 400);
   }
 
   function onTimeout() {
-    // Decay momentum on timeout
+    // Lose power when you wait too long
     var decay = Math.floor(G.decayRate * 3);
     G.momentum = Math.max(G.crestFloor, G.momentum - decay);
     G.combo = 0;
 
-    addHistory('HESITATED', -decay, false);
+    addHistory('TOO SLOW', -decay, false);
     updateGauge();
     $('combo-count').textContent = '0';
 
@@ -1090,7 +1137,7 @@ redirect_from:
     G.timerInterval = setInterval(function() {
       G.timerLeft -= step;
 
-      // Passive decay while deciding
+      // Slowly lose power while you think
       G.momentum = Math.max(G.crestFloor, G.momentum - (G.decayRate * step / 1000));
       updateGauge();
 
@@ -1106,7 +1153,7 @@ redirect_from:
     }, step);
   }
 
-  // === UI Updates ===
+  // === Screen Updates ===
   function updateGauge() {
     var pct = Math.max(0, Math.min(100, G.momentum));
     var phase = getPhase(pct);
@@ -1122,7 +1169,7 @@ redirect_from:
       $('phase-label').style.color = phase.color;
     }
 
-    // Crest line
+    // Star line
     if (G.crestFloor > 0) {
       $('crest-line').style.display = 'block';
       $('crest-line').style.left = G.crestFloor + '%';
@@ -1131,7 +1178,7 @@ redirect_from:
 
   function showCombo(n) {
     var el = $('combo-display');
-    el.textContent = n + 'x COMBO';
+    el.textContent = n + 'x COMBO!';
     el.classList.remove('show');
     void el.offsetWidth;
     el.classList.add('show');
@@ -1144,7 +1191,7 @@ redirect_from:
     flash.classList.add('flash');
 
     var el = $('combo-display');
-    el.textContent = 'CREST!';
+    el.textContent = 'STAR!';
     el.style.color = 'var(--surge)';
     el.classList.remove('show');
     void el.offsetWidth;
@@ -1172,6 +1219,7 @@ redirect_from:
     clearInterval(G.timerInterval);
     G.active = false;
     $('game').style.display = 'none';
+    $('restart-btn').style.display = 'none';
 
     var phase = getPhase(G.peakMomentum);
 
@@ -1180,20 +1228,20 @@ redirect_from:
     $('end-title').style.color = phase.color;
 
     var titles = {
-      'GROUND': 'Still Warming Up',
-      'SPARK': 'The Spark Ignites',
-      'SPIRAL': 'Spiral Awakening',
-      'DRILL': 'Drill Pierces Heaven',
-      'HEAVEN': 'Beyond the Impossible',
+      'GROUND': 'Just Getting Started!',
+      'SPARK': 'Nice Spark!',
+      'SPIRAL': 'Spinning Up!',
+      'DRILL': 'Drill Power!',
+      'HEAVEN': 'You Did It!',
     };
-    $('end-title').textContent = titles[phase.name] || 'Run Complete';
+    $('end-title').textContent = titles[phase.name] || 'All Done!';
 
     var subs = {
-      'GROUND': 'Hesitation held you back. Every choice compounds — next time, go faster.',
-      'SPARK': 'You found the spark. Now feed it. Speed is your friend.',
-      'SPIRAL': 'The spiral is real. You felt the momentum. Now sustain it.',
-      'DRILL': 'Your drill pierces the sky. You committed under pressure and it paid off.',
-      'HEAVEN': 'You broke through. Momentum became identity. This is what flow feels like.',
+      'GROUND': 'You were a bit slow. Pick faster next time! You got this!',
+      'SPARK': 'You found the spark! Now go faster. Speed is your friend!',
+      'SPIRAL': 'You felt the power! You were really rolling. Keep it up!',
+      'DRILL': 'Wow! You picked fast even when it got hard. Great job!',
+      'HEAVEN': 'Amazing! You went all the way to the top! You are a star!',
     };
     $('end-subtitle').textContent = subs[phase.name] || '';
 
@@ -1204,11 +1252,11 @@ redirect_from:
     $('es-crests').textContent = G.crests;
 
     var lessons = {
-      'GROUND': '<strong>THE LESSON</strong>The gap between thinking and doing is where momentum dies. The game isn\'t about making the right choice — it\'s about making any choice quickly enough to keep the spiral turning. In real work: start before you\'re ready. Ship before it\'s perfect. Move before you know where.',
-      'SPARK': '<strong>THE LESSON</strong>You can ignite. Now learn to sustain. Combos build by deciding consecutively, not correctly. In real work: batch your decisions. Don\'t context-switch between deciding and doing. Decide, decide, decide — then execute.',
-      'SPIRAL': '<strong>THE LESSON</strong>Momentum has its own gravity. Once you reach SPIRAL, the system starts working for you — depth multipliers, surge unlocks, crest floors. In real work: the hardest part is the first 20 minutes. After that, flow takes over. Protect the first 20 minutes ruthlessly.',
-      'DRILL': '<strong>THE LESSON</strong>You learned to commit under pressure. The timer got shorter, the decay got steeper, and you kept choosing. In real work: high-stakes decisions under time pressure aren\'t enemies — they\'re accelerants. Embrace the deadline. It\'s spiral fuel.',
-      'HEAVEN': '<strong>THE LESSON</strong>You crested. That means you hit 90+ momentum and locked in a floor you can\'t fall below. In real work: cresting is when a habit becomes automatic. You don\'t need willpower anymore — the behavior persists on its own. This is what you\'re building toward.',
+      'GROUND': '<strong>WHAT YOU LEARNED</strong>Waiting too long makes your power go away. Don\'t worry about picking the "best" one. Just pick! The faster you go, the more power you get. Next time: just tap something right away!',
+      'SPARK': '<strong>WHAT YOU LEARNED</strong>You can get going! Now try to keep going. Combos happen when you pick over and over without stopping. Try to pick many times in a row really fast!',
+      'SPIRAL': '<strong>WHAT YOU LEARNED</strong>Once you get rolling, it gets easier! Your power grows bigger and bigger. The hard part is the first few picks. After that, it feels like flying!',
+      'DRILL': '<strong>WHAT YOU LEARNED</strong>You kept picking even when the timer got faster. That\'s awesome! When things get harder, just go faster. You\'re like a drill going through a wall!',
+      'HEAVEN': '<strong>WHAT YOU LEARNED</strong>You got a star! That means you hit super high power. Stars lock in your power so it can\'t drop below. You built something that lasts. That\'s the whole point!',
     };
     $('end-lesson').innerHTML = lessons[phase.name] || '';
 
@@ -1234,6 +1282,13 @@ redirect_from:
 
   // === Keyboard support ===
   document.addEventListener('keydown', function(e) {
+    // R key to restart (works anytime during play)
+    if ((e.key === 'r' || e.key === 'R') && $('game').style.display !== 'none' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      confirmRestart();
+      return;
+    }
+
     if (!G.active) return;
     var btns = document.querySelectorAll('.choice-btn');
     if (e.key === '1' && btns[0]) btns[0].click();
@@ -1245,7 +1300,7 @@ redirect_from:
   if (typeof AnimeEffects !== 'undefined') {
     AnimeEffects.addScanlines(0.03);
 
-    // Dynamic speed lines canvas behind game
+    // Speed lines behind the game
     var animeCanvas = document.createElement('canvas');
     animeCanvas.id = 'anime-speed-bg';
     animeCanvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;';
@@ -1254,7 +1309,7 @@ redirect_from:
     var lastPhase = '';
     var speedLineIntensity = 0;
 
-    // Redraw speed lines based on momentum
+    // Redraw speed lines based on power
     function updateAnimeBackground() {
       var c = document.getElementById('anime-speed-bg');
       if (!c || !G) return;
@@ -1265,7 +1320,7 @@ redirect_from:
       var momentum = G.momentum || 0;
       var phase = G.phase || 'GROUND';
 
-      // Background gradient based on phase
+      // Background glow based on phase
       var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(c.width, c.height));
       if (momentum < 20) {
         grad.addColorStop(0, '#08080f');
@@ -1286,7 +1341,7 @@ redirect_from:
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, c.width, c.height);
 
-      // Speed lines — more and brighter with higher momentum
+      // Speed lines — more and brighter with higher power
       var lineCount = Math.floor(momentum / 5);
       var colors = { GROUND: '#556677', SPARK: '#00cc88', SPIRAL: '#aa44ff', DRILL: '#ff6644', HEAVEN: '#44ddff' };
       var color = colors[phase] || '#556677';
@@ -1305,7 +1360,7 @@ redirect_from:
       }
       ctx.globalAlpha = 1;
 
-      // Phase transition flash
+      // Phase change flash
       if (phase !== lastPhase && lastPhase !== '') {
         AnimeEffects.screenFlash(color, 250);
         AnimeEffects.textSlam(phase, color, 1000);
@@ -1313,10 +1368,10 @@ redirect_from:
       lastPhase = phase;
     }
 
-    // Poll momentum changes
+    // Update the background
     setInterval(updateAnimeBackground, 500);
 
-    // Patch showCrest for dramatic anime effect
+    // Big flash when you get a star
     var origShowCrest = showCrest;
     if (typeof showCrest === 'function') {
       window.showCrest = function() {
@@ -1442,7 +1497,7 @@ function startMusic() {
   }
   musicTimers.push(setTimeout(arpNote, 500));
 
-  // Cascade shimmer — periodic ascending tone clusters
+  // Shimmer — periodic ascending tone clusters
   function cascadeShimmer() {
     if (!musicPlaying) return;
     var c = getCtx();
@@ -1464,7 +1519,7 @@ function startMusic() {
   }
   musicTimers.push(setTimeout(cascadeShimmer, 2000));
 
-  // Percussion pulse
+  // Beat
   var percBeat = 0;
   function percLoop() {
     if (!musicPlaying) return;
