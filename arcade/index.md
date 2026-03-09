@@ -1933,14 +1933,14 @@ permalink: /arcade/
 <div class="game-grid" data-category="creative">
 
 <a class="game-card" data-game="chemistry" data-genre="creative" data-name="SYNTHESIS" data-added="6" href="{{ site.baseurl }}/games/chemistry/">
-  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a1a2a, #102030, #0a2a2a);">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a1a0a, #1a2a10, #0a2a0a);">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
   </div>
   <div class="game-card-body">
     <div class="game-card-title">SYNTHESIS</div>
     <div class="game-card-tags">
+      <span class="game-tag tag-creative">NATURE</span>
       <span class="game-tag tag-creative">SANDBOX</span>
-      <span class="game-tag tag-creative">EMERGENCE</span>
     </div>
     <div class="game-card-price"><span class="price-free">FREE</span></div>
   </div>
@@ -2478,12 +2478,12 @@ permalink: /arcade/
     },
     'chemistry': {
       title: 'SYNTHESIS',
-      desc: 'Capability lab. Combine compute, data, logic, training. Watch emergent behaviors unfold. No scripts — just emergence. A sandbox for digital alchemy.',
+      desc: 'Nature sandbox. Mix wood, stone, fire, water, ice, mud, seeds, vines, and wind. Watch ecosystems emerge. No scripts — just nature.',
       genre: 'Sandbox',
-      tags: ['SANDBOX', 'EMERGENCE'],
+      tags: ['NATURE', 'SANDBOX'],
       tagClass: 'tag-creative',
       url: '{{ site.baseurl }}/games/chemistry/',
-      bg: 'linear-gradient(135deg, #0a1a2a, #102030, #0a2a2a)'
+      bg: 'linear-gradient(135deg, #0a1a0a, #1a2a10, #0a2a0a)'
     },
     'idle': {
       title: 'SUBSTRATE GROWTH',

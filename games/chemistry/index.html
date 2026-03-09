@@ -11,9 +11,9 @@ redirect_from:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SYNTHESIS — Substrate Arcade</title>
-<meta name="description" content="Mix stuff together! Combine things and see what happens. By Substrate.">
-<meta property="og:title" content="SYNTHESIS — mix stuff together!">
-<meta property="og:description" content="Combine things — memory, data, fire, water — and watch cool stuff happen!">
+<meta name="description" content="A nature sandbox — mix wood, water, fire, ice and wind. Watch ecosystems emerge. By Substrate.">
+<meta property="og:title" content="SYNTHESIS — nature sandbox">
+<meta property="og:description" content="Mix natural elements — wood, stone, fire, water, ice, mud, seeds, vines, wind — and watch ecosystems emerge!">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -38,12 +38,12 @@ redirect_from:
     }
   }
 
-  a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid #88cc44; outline-offset: 2px; }
 
   body {
     font-family: 'IBM Plex Mono', monospace;
-    background: #0a0a2e;
-    color: #e0e0e0;
+    background: #0a1a0a;
+    color: #e0e0d0;
     overflow: hidden;
     position: fixed;
     width: 100%;
@@ -75,8 +75,8 @@ redirect_from:
   /* === PIXEL ART UI === */
   #legend {
     top: 12px; left: 12px;
-    background: rgba(10, 10, 46, 0.92);
-    border: 3px solid #222255;
+    background: rgba(10, 20, 10, 0.92);
+    border: 3px solid #2a3a1a;
     border-radius: 0;
     padding: 10px 14px;
     font-size: 0.75rem;
@@ -85,11 +85,11 @@ redirect_from:
   }
 
   #legend h3 {
-    color: #00ffaa;
+    color: #88cc44;
     font-size: 0.7rem;
     letter-spacing: 2px;
     margin-bottom: 6px;
-    text-shadow: 2px 2px 0 #003322;
+    text-shadow: 2px 2px 0 #1a2a0a;
   }
 
   #legend .item {
@@ -108,13 +108,13 @@ redirect_from:
 
   #legend .item:hover {
     background: rgba(255,255,255,0.08);
-    border-color: #333366;
+    border-color: #334422;
   }
 
   #legend .item.selected {
-    background: rgba(0, 255, 170, 0.15);
-    border: 2px solid #00ffaa;
-    box-shadow: 2px 2px 0 #003322;
+    background: rgba(100, 180, 50, 0.15);
+    border: 2px solid #88cc44;
+    box-shadow: 2px 2px 0 #1a2a0a;
   }
 
   #legend .swatch {
@@ -125,62 +125,62 @@ redirect_from:
   }
 
   /* Element-specific swatch visuals */
-  .swatch-memory {
+  .swatch-wood {
     background: #8B6914 !important;
     border-radius: 0 !important;
     border: 2px solid #6a4f0e !important;
     box-shadow: inset 2px 2px 0 #b8922a;
   }
-  .swatch-inference {
-    background: linear-gradient(135deg, #999, #ccc, #888) !important;
+  .swatch-stone {
+    background: linear-gradient(135deg, #777, #999, #666) !important;
     border-radius: 0 !important;
-    border: 2px solid #666 !important;
-    box-shadow: inset 2px 2px 0 #ddd;
+    border: 2px solid #555 !important;
+    box-shadow: inset 2px 2px 0 #aaa;
   }
-  .swatch-compute {
+  .swatch-fire {
     background: #ff4400 !important;
     border-radius: 0 !important;
     box-shadow: 0 0 6px #ff4400, inset 1px 1px 0 #ff8800 !important;
     border: none !important;
   }
-  .swatch-data {
+  .swatch-water {
     background: #2288ff !important;
     border-radius: 0 !important;
     transform: rotate(45deg);
     border: none !important;
     box-shadow: 0 0 4px #2288ff88 !important;
   }
-  .swatch-constraint {
-    background: #aa77cc !important;
+  .swatch-ice {
+    background: #88ccee !important;
     border-radius: 0 !important;
-    border: 2px solid #7744aa !important;
+    border: 2px solid #66aacc !important;
     transform: rotate(45deg);
     width: 12px !important; height: 12px !important;
     margin: 2px;
   }
-  .swatch-training {
-    background: #332200 !important;
+  .swatch-mud {
+    background: #553322 !important;
     border-radius: 0 !important;
-    border: 2px solid #221100 !important;
-    box-shadow: inset 0 4px 0 #553300 !important;
+    border: 2px solid #331a0a !important;
+    box-shadow: inset 0 4px 0 #775533 !important;
   }
-  .swatch-catalyst {
-    background: #881111 !important;
-    border-radius: 0 !important;
-    border: 2px solid #660000 !important;
-    box-shadow: 0 0 4px #ff220066 !important;
+  .swatch-seed {
+    background: #44aa22 !important;
+    border-radius: 50% !important;
+    border: 2px solid #228800 !important;
+    box-shadow: 0 0 4px #44ff2266 !important;
   }
-  .swatch-logic {
-    background: #00ddff !important;
+  .swatch-vine {
+    background: #22aa44 !important;
     border-radius: 0 !important;
-    border: 1px dashed rgba(0, 221, 255, 0.5) !important;
+    border: 1px dashed rgba(34, 170, 68, 0.5) !important;
     height: 6px !important;
     margin-top: 5px;
   }
-  .swatch-signal {
-    background: rgba(68, 170, 204, 0.4) !important;
+  .swatch-wind {
+    background: rgba(200, 220, 255, 0.4) !important;
     border-radius: 0 !important;
-    border: 2px dashed rgba(68, 170, 204, 0.6) !important;
+    border: 2px dashed rgba(200, 220, 255, 0.6) !important;
   }
 
   #legend .key {
@@ -191,8 +191,8 @@ redirect_from:
 
   #wind-status {
     top: 12px; right: 12px;
-    background: rgba(10, 10, 46, 0.92);
-    border: 3px solid #222255;
+    background: rgba(10, 20, 10, 0.92);
+    border: 3px solid #2a3a1a;
     border-radius: 0;
     padding: 10px 16px;
     font-size: 0.7rem;
@@ -213,13 +213,13 @@ redirect_from:
     margin-top: 2px;
   }
 
-  #wind-status .value.on { color: #44ccff; text-shadow: 2px 2px 0 #003344; }
+  #wind-status .value.on { color: #88ccdd; text-shadow: 2px 2px 0 #1a3322; }
   #wind-status .value.off { color: #555; }
 
   #controls-bar {
     bottom: 0; left: 0; right: 0;
-    background: rgba(10, 10, 46, 0.95);
-    border-top: 3px solid #222255;
+    background: rgba(10, 20, 10, 0.95);
+    border-top: 3px solid #2a3a1a;
     padding: 10px 20px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
     display: flex;
@@ -237,8 +237,8 @@ redirect_from:
   }
 
   #controls-bar kbd {
-    background: #1a1a4e;
-    border: 2px solid #333366;
+    background: #1a2a1a;
+    border: 2px solid #334422;
     border-radius: 0;
     padding: 1px 5px;
     color: #aaa;
@@ -256,22 +256,22 @@ redirect_from:
   }
 
   #footer a {
-    color: #00ffaa66;
+    color: #88cc4466;
     text-decoration: none;
   }
 
-  #footer a:hover { color: #00ffaa; }
+  #footer a:hover { color: #88cc44; }
 
   #toast {
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(10, 10, 46, 0.95);
-    border: 3px solid #00ffaa;
+    background: rgba(10, 20, 10, 0.95);
+    border: 3px solid #88cc44;
     border-radius: 0;
     padding: 16px 28px;
     font-size: 0.85rem;
-    color: #00ffaa;
-    text-shadow: 2px 2px 0 #003322;
+    color: #88cc44;
+    text-shadow: 2px 2px 0 #1a2a0a;
     letter-spacing: 2px;
     opacity: 0;
     pointer-events: none;
@@ -291,8 +291,8 @@ redirect_from:
 
   #description {
     top: 50px; right: 12px;
-    background: rgba(10, 10, 46, 0.92);
-    border: 3px solid #222255;
+    background: rgba(10, 20, 10, 0.92);
+    border: 3px solid #2a3a1a;
     border-radius: 0;
     padding: 8px 14px;
     font-family: 'IBM Plex Mono', monospace;
@@ -342,15 +342,15 @@ redirect_from:
     height: 120px;
     border-radius: 0;
     background: rgba(255,255,255,0.06);
-    border: 3px solid rgba(0,255,170,0.2);
+    border: 3px solid rgba(100,180,50,0.2);
     box-shadow: 3px 3px 0 #000;
   }
   #joystick-knob {
     position: absolute;
     width: 44px; height: 44px;
     border-radius: 0;
-    background: rgba(0,255,170,0.3);
-    border: 3px solid rgba(0,255,170,0.5);
+    background: rgba(100,180,50,0.3);
+    border: 3px solid rgba(100,180,50,0.5);
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     transition: none;
@@ -362,8 +362,8 @@ redirect_from:
     width: 56px; height: 56px;
     border-radius: 0;
     background: rgba(255,255,255,0.1);
-    border: 3px solid rgba(0,255,170,0.3);
-    color: #00ffaa;
+    border: 3px solid rgba(100,180,50,0.3);
+    color: #88cc44;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     font-weight: 700;
@@ -377,8 +377,8 @@ redirect_from:
     box-shadow: 3px 3px 0 #000;
   }
   .mobile-btn:active, .mobile-btn.active {
-    background: rgba(0,255,170,0.25);
-    border-color: #00ffaa;
+    background: rgba(100,180,50,0.25);
+    border-color: #88cc44;
     box-shadow: 1px 1px 0 #000;
     transform: translate(2px, 2px);
   }
@@ -397,7 +397,7 @@ redirect_from:
       right: 0;
       max-height: none;
       border: none;
-      border-top: 3px solid #222255;
+      border-top: 3px solid #2a3a1a;
       border-radius: 0;
       padding: 8px 12px;
       padding-bottom: calc(8px + env(safe-area-inset-bottom));
@@ -457,9 +457,9 @@ redirect_from:
 <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#88cc44;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-lab.png') center/cover no-repeat;opacity:0.12;pointer-events:none;"></div>
+<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:linear-gradient(180deg, #0a1a0a 0%, #0f1f0a 40%, #1a2a10 100%);opacity:0.8;pointer-events:none;"></div>
 
 <main id="game" role="main">
 <canvas id="game-canvas"></canvas>
@@ -469,53 +469,53 @@ redirect_from:
 
 <!-- UI Overlays -->
 <div id="legend" class="ui-overlay">
-  <h3>PICK STUFF</h3>
+  <h3>ELEMENTS</h3>
   <div class="item selected" data-type="wood" onclick="selectMaterial(0)">
-    <span class="swatch swatch-memory"></span>
-    <span class="key">1</span> memory
+    <span class="swatch swatch-wood"></span>
+    <span class="key">1</span> wood
   </div>
   <div class="item" data-type="metal" onclick="selectMaterial(1)">
-    <span class="swatch swatch-inference"></span>
-    <span class="key">2</span> inference
+    <span class="swatch swatch-stone"></span>
+    <span class="key">2</span> stone
   </div>
   <div class="item" data-type="fire" onclick="selectMaterial(2)">
-    <span class="swatch swatch-compute"></span>
-    <span class="key">3</span> compute
+    <span class="swatch swatch-fire"></span>
+    <span class="key">3</span> fire
   </div>
   <div class="item" data-type="water" onclick="selectMaterial(3)">
-    <span class="swatch swatch-data"></span>
-    <span class="key">4</span> data
+    <span class="swatch swatch-water"></span>
+    <span class="key">4</span> water
   </div>
   <div class="item" data-type="ice" onclick="selectMaterial(4)">
-    <span class="swatch swatch-constraint"></span>
-    <span class="key">5</span> constraint
+    <span class="swatch swatch-ice"></span>
+    <span class="key">5</span> ice
   </div>
   <div class="item" data-type="oil" onclick="selectMaterial(5)">
-    <span class="swatch swatch-training"></span>
-    <span class="key">6</span> training
+    <span class="swatch swatch-mud"></span>
+    <span class="key">6</span> mud
   </div>
   <div class="item" data-type="gunpowder" onclick="selectMaterial(6)">
-    <span class="swatch swatch-catalyst"></span>
-    <span class="key">7</span> helper
+    <span class="swatch swatch-seed"></span>
+    <span class="key">7</span> seed
   </div>
   <div class="item" data-type="grass" onclick="selectMaterial(7)">
-    <span class="swatch swatch-logic"></span>
-    <span class="key">8</span> logic
+    <span class="swatch swatch-vine"></span>
+    <span class="key">8</span> vine
   </div>
   <div class="item" data-type="wind_source" onclick="selectMaterial(8)">
-    <span class="swatch swatch-signal"></span>
-    <span class="key">9</span> signal
+    <span class="swatch swatch-wind"></span>
+    <span class="key">9</span> wind
   </div>
 </div>
 
 <div id="wind-status" class="ui-overlay">
-  <div class="label">signal</div>
-  <div class="value off" id="wind-value">OFF</div>
+  <div class="label">wind</div>
+  <div class="value off" id="wind-value">CALM</div>
 </div>
 
 <div id="description" class="ui-overlay">
-  <div class="name">Mix Lab</div>
-  <div>Welcome! Put stuff together and see what happens!</div>
+  <div class="name">Nature</div>
+  <div>Welcome! Mix natural elements and watch ecosystems emerge!</div>
 </div>
 
 <div id="toast" class="ui-overlay">ALL CLEAN!</div>
@@ -525,12 +525,12 @@ redirect_from:
 </div>
 
 <div id="controls-bar" class="ui-overlay">
-  <span><kbd>WASD</kbd> walk around</span>
-  <span><kbd>SPACE</kbd> blow wind</span>
-  <span><kbd>1</kbd>-<kbd>9</kbd> pick stuff</span>
-  <span><kbd>CLICK</kbd> drop it</span>
+  <span><kbd>WASD</kbd> walk</span>
+  <span><kbd>SPACE</kbd> summon wind</span>
+  <span><kbd>1</kbd>-<kbd>9</kbd> choose element</span>
+  <span><kbd>CLICK</kbd> place</span>
   <span><kbd>RIGHT CLICK</kbd> remove</span>
-  <span><kbd>R</kbd> start over</span>
+  <span><kbd>R</kbd> reset world</span>
 </div>
 
 <div id="mobile-controls">
@@ -538,9 +538,9 @@ redirect_from:
     <div id="joystick-knob"></div>
   </div>
   <button class="mobile-btn" id="btn-jump">^</button>
-  <button class="mobile-btn" id="btn-wind">SIG</button>
+  <button class="mobile-btn" id="btn-wind">AIR</button>
   <button class="mobile-btn" id="btn-reset">NEW</button>
-  <button class="mobile-btn" id="btn-delete">ZAP</button>
+  <button class="mobile-btn" id="btn-delete">DIG</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -569,16 +569,16 @@ const PUSH_FORCE = 200;
 // --- MATERIAL DEFINITIONS ---
 const MATERIALS = {
   wood:       { color: 0x8B6914, isFlammable: true,  isConductive: false, weight: 3,   durability: 100, burnRate: 12,  w: 36, h: 36 },
-  metal:      { color: 0x8888AA, isFlammable: false, isConductive: true,  weight: 8,   durability: 500, burnRate: 0,   w: 36, h: 36 },
+  metal:      { color: 0x777788, isFlammable: false, isConductive: true,  weight: 8,   durability: 500, burnRate: 0,   w: 36, h: 36 },
   fire:       { color: 0xFF4400, isFlammable: false, isConductive: false, weight: 0.5, durability: 9999,burnRate: 0,   w: 28, h: 28, permanent: true, isBurning: true },
   water:      { color: 0x2288FF, isFlammable: false, isConductive: false, weight: 2,   durability: 9999,burnRate: 0,   w: 30, h: 20, isWater: true },
-  ice:        { color: 0xAA77CC, isFlammable: false, isConductive: false, weight: 3,   durability: 80,  burnRate: 0,   w: 34, h: 34, isFrozen: true },
-  oil:        { color: 0x332200, isFlammable: true,  isConductive: false, weight: 1.5, durability: 40,  burnRate: 60,  w: 30, h: 22 },
-  gunpowder:  { color: 0x881111, isFlammable: true,  isConductive: false, weight: 2,   durability: 15,  burnRate: 200, w: 32, h: 32, isExplosive: true },
-  grass:      { color: 0x00DDFF, isFlammable: true,  isConductive: false, weight: 0.3, durability: 30,  burnRate: 25,  w: 40, h: 10 },
-  wind_source:{ color: 0x44AACC, isFlammable: false, isConductive: false, weight: 999, durability: 9999,burnRate: 0,   w: 30, h: 50, isWindSource: true },
-  stone:      { color: 0x444466, isFlammable: false, isConductive: false, weight: 999, durability: 9999,burnRate: 0,   w: 0,  h: 0 },
-  player:     { color: 0x00FFAA, isFlammable: false, isConductive: false, weight: 4,   durability: 9999,burnRate: 0,   w: 24, h: 32 },
+  ice:        { color: 0x88CCEE, isFlammable: false, isConductive: false, weight: 3,   durability: 80,  burnRate: 0,   w: 34, h: 34, isFrozen: true },
+  oil:        { color: 0x553322, isFlammable: true,  isConductive: false, weight: 1.5, durability: 40,  burnRate: 60,  w: 30, h: 22 },
+  gunpowder:  { color: 0x44AA22, isFlammable: true,  isConductive: false, weight: 2,   durability: 15,  burnRate: 200, w: 32, h: 32, isExplosive: true },
+  grass:      { color: 0x22AA44, isFlammable: true,  isConductive: false, weight: 0.3, durability: 30,  burnRate: 25,  w: 40, h: 10 },
+  wind_source:{ color: 0xAABBDD, isFlammable: false, isConductive: false, weight: 999, durability: 9999,burnRate: 0,   w: 30, h: 50, isWindSource: true },
+  stone:      { color: 0x445544, isFlammable: false, isConductive: false, weight: 999, durability: 9999,burnRate: 0,   w: 0,  h: 0 },
+  player:     { color: 0x88CC44, isFlammable: false, isConductive: false, weight: 4,   durability: 9999,burnRate: 0,   w: 24, h: 32 },
 };
 
 const SPAWN_TYPES = ['wood','metal','fire','water','ice','oil','gunpowder','grass','wind_source'];
@@ -591,7 +591,7 @@ function createElementMesh(type, w, h) {
 
   switch (type) {
     case 'wood': {
-      // Memory block: chunky pixel brick with lines
+      // Wood log: chunky bark with grain lines
       const geo = new THREE.PlaneGeometry(w, h);
       const mat = new THREE.MeshBasicMaterial({ color: 0x8B6914, transparent: true });
       mainMesh = new THREE.Mesh(geo, mat);
@@ -614,32 +614,32 @@ function createElementMesh(type, w, h) {
     }
 
     case 'metal': {
-      // Inference node: shiny metal block with diagonal shine stripe
+      // Stone: rough grey rock with speckles
       const geo = new THREE.PlaneGeometry(w, h);
-      const mat = new THREE.MeshBasicMaterial({ color: 0x8888AA, transparent: true });
+      const mat = new THREE.MeshBasicMaterial({ color: 0x777788, transparent: true });
       mainMesh = new THREE.Mesh(geo, mat);
       group.add(mainMesh);
       // Shine stripe (diagonal)
       const shGeo = new THREE.PlaneGeometry(w * 0.3, h + 4);
-      const shMat = new THREE.MeshBasicMaterial({ color: 0xccccee, transparent: true, opacity: 0.3 });
+      const shMat = new THREE.MeshBasicMaterial({ color: 0x999999, transparent: true, opacity: 0.3 });
       const shine = new THREE.Mesh(shGeo, shMat);
       shine.rotation.z = Math.PI / 6;
       shine.position.set(-w * 0.15, 0, 0.1);
       group.add(shine);
       // Border
       const bGeo = new THREE.PlaneGeometry(w + 4, h + 4);
-      const bMat = new THREE.MeshBasicMaterial({ color: 0x555577, transparent: true });
+      const bMat = new THREE.MeshBasicMaterial({ color: 0x555566, transparent: true });
       const border = new THREE.Mesh(bGeo, bMat);
       border.position.set(0, 0, -0.1);
       group.add(border);
-      // Rivets (corner dots)
+      // Speckles (mineral flecks)
       const rivetPositions = [
         [-w/2 + 4, h/2 - 4], [w/2 - 4, h/2 - 4],
         [-w/2 + 4, -h/2 + 4], [w/2 - 4, -h/2 + 4]
       ];
       rivetPositions.forEach(([rx, ry]) => {
         const rGeo = new THREE.PlaneGeometry(3, 3);
-        const rMat = new THREE.MeshBasicMaterial({ color: 0xbbbbdd, transparent: true });
+        const rMat = new THREE.MeshBasicMaterial({ color: 0x999988, transparent: true });
         const rivet = new THREE.Mesh(rGeo, rMat);
         rivet.position.set(rx, ry, 0.15);
         group.add(rivet);
@@ -648,7 +648,7 @@ function createElementMesh(type, w, h) {
     }
 
     case 'fire': {
-      // Compute source: flame shape (layered triangles)
+      // Fire: flame shape (layered tongues)
       // Outer flame
       const outerShape = new THREE.Shape();
       outerShape.moveTo(0, h * 0.6);
@@ -676,7 +676,7 @@ function createElementMesh(type, w, h) {
     }
 
     case 'water': {
-      // Data: droplet shape
+      // Water: droplet shape
       const dropShape = new THREE.Shape();
       dropShape.moveTo(0, h * 0.5);
       dropShape.quadraticCurveTo(w * 0.5, 0, w * 0.4, -h * 0.2);
@@ -697,7 +697,7 @@ function createElementMesh(type, w, h) {
     }
 
     case 'ice': {
-      // Constraint: diamond/crystal shape
+      // Ice: crystal/snowflake diamond
       const diaShape = new THREE.Shape();
       diaShape.moveTo(0, h * 0.5);
       diaShape.lineTo(w * 0.5, 0);
@@ -705,12 +705,12 @@ function createElementMesh(type, w, h) {
       diaShape.lineTo(-w * 0.5, 0);
       diaShape.lineTo(0, h * 0.5);
       const diaGeo = new THREE.ShapeGeometry(diaShape);
-      const diaMat = new THREE.MeshBasicMaterial({ color: 0xAA77CC, transparent: true, opacity: 0.9 });
+      const diaMat = new THREE.MeshBasicMaterial({ color: 0x88CCEE, transparent: true, opacity: 0.9 });
       mainMesh = new THREE.Mesh(diaGeo, diaMat);
       group.add(mainMesh);
       // Inner facet lines
       const facetGeo = new THREE.PlaneGeometry(w * 0.6, 1.5);
-      const facetMat = new THREE.MeshBasicMaterial({ color: 0xcc99ee, transparent: true, opacity: 0.4 });
+      const facetMat = new THREE.MeshBasicMaterial({ color: 0xaaddff, transparent: true, opacity: 0.4 });
       const facet = new THREE.Mesh(facetGeo, facetMat);
       facet.position.set(0, 0, 0.1);
       group.add(facet);
@@ -724,7 +724,7 @@ function createElementMesh(type, w, h) {
     }
 
     case 'oil': {
-      // Training data: dark pool blob
+      // Mud: dark earthy blob (peat, burns when dry)
       const blobShape = new THREE.Shape();
       blobShape.moveTo(0, h * 0.4);
       blobShape.quadraticCurveTo(w * 0.5, h * 0.3, w * 0.45, 0);
@@ -732,12 +732,12 @@ function createElementMesh(type, w, h) {
       blobShape.quadraticCurveTo(-w * 0.5, -h * 0.4, -w * 0.45, 0);
       blobShape.quadraticCurveTo(-w * 0.5, h * 0.3, 0, h * 0.4);
       const blobGeo = new THREE.ShapeGeometry(blobShape);
-      const blobMat = new THREE.MeshBasicMaterial({ color: 0x332200, transparent: true });
+      const blobMat = new THREE.MeshBasicMaterial({ color: 0x553322, transparent: true });
       mainMesh = new THREE.Mesh(blobGeo, blobMat);
       group.add(mainMesh);
-      // Oily sheen stripe
+      // Earthy highlight stripe
       const sheenGeo = new THREE.PlaneGeometry(w * 0.3, h * 0.2);
-      const sheenMat = new THREE.MeshBasicMaterial({ color: 0x554400, transparent: true, opacity: 0.5 });
+      const sheenMat = new THREE.MeshBasicMaterial({ color: 0x775544, transparent: true, opacity: 0.5 });
       const sheen = new THREE.Mesh(sheenGeo, sheenMat);
       sheen.position.set(w * 0.05, h * 0.05, 0.1);
       group.add(sheen);
@@ -745,7 +745,7 @@ function createElementMesh(type, w, h) {
     }
 
     case 'gunpowder': {
-      // Helper/Catalyst: star-like danger shape
+      // Seed pod: round with sprout — bursts with life energy
       const starShape = new THREE.Shape();
       const points = 6;
       for (let i = 0; i < points; i++) {
@@ -762,12 +762,12 @@ function createElementMesh(type, w, h) {
       }
       starShape.closePath();
       const starGeo = new THREE.ShapeGeometry(starShape);
-      const starMat = new THREE.MeshBasicMaterial({ color: 0x881111, transparent: true });
+      const starMat = new THREE.MeshBasicMaterial({ color: 0x44AA22, transparent: true });
       mainMesh = new THREE.Mesh(starGeo, starMat);
       group.add(mainMesh);
-      // Center warning dot
+      // Center sprout dot
       const dotGeo = new THREE.PlaneGeometry(6, 6);
-      const dotMat = new THREE.MeshBasicMaterial({ color: 0xff4422, transparent: true, opacity: 0.7 });
+      const dotMat = new THREE.MeshBasicMaterial({ color: 0x88ff44, transparent: true, opacity: 0.7 });
       const dot = new THREE.Mesh(dotGeo, dotMat);
       dot.position.set(0, 0, 0.1);
       group.add(dot);
@@ -775,15 +775,15 @@ function createElementMesh(type, w, h) {
     }
 
     case 'grass': {
-      // Logic thread: thin horizontal wire with nodes
+      // Vine: thin green tendril with leaf nodes
       const wireGeo = new THREE.PlaneGeometry(w, 3);
-      const wireMat = new THREE.MeshBasicMaterial({ color: 0x00DDFF, transparent: true });
+      const wireMat = new THREE.MeshBasicMaterial({ color: 0x22AA44, transparent: true });
       mainMesh = new THREE.Mesh(wireGeo, wireMat);
       group.add(mainMesh);
-      // Node dots along the wire
+      // Leaf nodes along the vine
       for (let nx = -w * 0.35; nx <= w * 0.35; nx += w * 0.35) {
         const nGeo = new THREE.PlaneGeometry(5, 5);
-        const nMat = new THREE.MeshBasicMaterial({ color: 0x44ffff, transparent: true, opacity: 0.8 });
+        const nMat = new THREE.MeshBasicMaterial({ color: 0x66dd66, transparent: true, opacity: 0.8 });
         const node = new THREE.Mesh(nGeo, nMat);
         node.position.set(nx, 0, 0.1);
         group.add(node);
@@ -792,7 +792,7 @@ function createElementMesh(type, w, h) {
     }
 
     case 'wind_source': {
-      // Signal: arrow/chevron shape
+      // Wind: swirling air current chevrons
       const arrShape = new THREE.Shape();
       arrShape.moveTo(-w * 0.4, h * 0.4);
       arrShape.lineTo(0, h * 0.2);
@@ -812,27 +812,27 @@ function createElementMesh(type, w, h) {
       arr2Shape.closePath();
 
       const arrGeo = new THREE.ShapeGeometry(arrShape);
-      const arrMat = new THREE.MeshBasicMaterial({ color: 0x44AACC, transparent: true, opacity: 0.6 });
+      const arrMat = new THREE.MeshBasicMaterial({ color: 0xAABBDD, transparent: true, opacity: 0.6 });
       mainMesh = new THREE.Mesh(arrGeo, arrMat);
       group.add(mainMesh);
 
       const arr2Geo = new THREE.ShapeGeometry(arr2Shape);
-      const arr2Mat = new THREE.MeshBasicMaterial({ color: 0x44AACC, transparent: true, opacity: 0.4 });
+      const arr2Mat = new THREE.MeshBasicMaterial({ color: 0xAABBDD, transparent: true, opacity: 0.4 });
       const arr2 = new THREE.Mesh(arr2Geo, arr2Mat);
       group.add(arr2);
       break;
     }
 
     case 'player': {
-      // Player: cute pixel character
+      // Player: forest sprite character
       // Body
       const bodyGeo = new THREE.PlaneGeometry(w, h);
-      const bodyMat = new THREE.MeshBasicMaterial({ color: 0x00FFAA, transparent: true });
+      const bodyMat = new THREE.MeshBasicMaterial({ color: 0x88CC44, transparent: true });
       mainMesh = new THREE.Mesh(bodyGeo, bodyMat);
       group.add(mainMesh);
       // Eyes
       const eyeGeo = new THREE.PlaneGeometry(4, 4);
-      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x003322, transparent: true });
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1a2a0a, transparent: true });
       const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
       leftEye.position.set(-4, h * 0.15, 0.1);
       group.add(leftEye);
@@ -841,7 +841,7 @@ function createElementMesh(type, w, h) {
       group.add(rightEye);
       // Border
       const pBorderGeo = new THREE.PlaneGeometry(w + 3, h + 3);
-      const pBorderMat = new THREE.MeshBasicMaterial({ color: 0x008855, transparent: true });
+      const pBorderMat = new THREE.MeshBasicMaterial({ color: 0x557722, transparent: true });
       const pBorder = new THREE.Mesh(pBorderGeo, pBorderMat);
       pBorder.position.set(0, 0, -0.1);
       group.add(pBorder);
@@ -866,7 +866,7 @@ const canvas = document.getElementById('game-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0x060620);
+renderer.setClearColor(0x0a1a0a);
 
 const scene = new THREE.Scene();
 
@@ -882,7 +882,7 @@ camera.position.set(0, 0, 500);
 camera.lookAt(0, 0, 0);
 
 // Ambient light
-scene.add(new THREE.AmbientLight(0x334466, 0.6));
+scene.add(new THREE.AmbientLight(0x334433, 0.6));
 
 // --- WORLD BOUNDS ---
 const WORLD_W = frustumSize * aspect;
@@ -1041,7 +1041,7 @@ class WindStreak {
   constructor() {
     this.reset();
     const geo = new THREE.PlaneGeometry(20 + Math.random() * 30, 2);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x44AACC, transparent: true, opacity: 0 });
+    const mat = new THREE.MeshBasicMaterial({ color: 0xAABBDD, transparent: true, opacity: 0 });
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.position.set(this.x, this.y, 3);
     scene.add(this.mesh);
@@ -1184,7 +1184,7 @@ class GameObject {
         color.lerp(new THREE.Color(0x2244AA), 0.3);
       }
       if (this.isFrozen) {
-        color.lerp(new THREE.Color(0xAA77CC), 0.4);
+        color.lerp(new THREE.Color(0x88CCEE), 0.4);
       }
       this.mesh.material.color.copy(color);
     }
@@ -1303,14 +1303,14 @@ function createGround() {
   const gw = WORLD_W + 200;
   const gh = 40;
   const geo = new THREE.PlaneGeometry(gw, gh);
-  const mat = new THREE.MeshBasicMaterial({ color: 0x2a2a4e });
+  const mat = new THREE.MeshBasicMaterial({ color: 0x1a2a1a });
   groundMesh = new THREE.Mesh(geo, mat);
   groundMesh.position.set(0, GROUND_Y - gh / 2, 0);
   scene.add(groundMesh);
 
   // Ground line (thick pixel border)
   const lineGeo = new THREE.PlaneGeometry(gw, 3);
-  const lineMat = new THREE.MeshBasicMaterial({ color: 0x444488 });
+  const lineMat = new THREE.MeshBasicMaterial({ color: 0x446644 });
   const line = new THREE.Mesh(lineGeo, lineMat);
   line.position.set(0, GROUND_Y, 0.5);
   scene.add(line);
@@ -1318,7 +1318,7 @@ function createGround() {
 
 // --- BACKGROUND GRID ---
 function createBackground() {
-  const gridMat = new THREE.MeshBasicMaterial({ color: 0x111133, transparent: true, opacity: 0.3 });
+  const gridMat = new THREE.MeshBasicMaterial({ color: 0x112211, transparent: true, opacity: 0.3 });
   const spacing = 50;
   for (let x = -WORLD_W / 2; x <= WORLD_W / 2; x += spacing) {
     const geo = new THREE.PlaneGeometry(1, WORLD_H);
@@ -1343,7 +1343,7 @@ function initScene() {
     if (child.geometry) child.geometry.dispose();
     if (child.material) child.material.dispose();
   }
-  scene.add(new THREE.AmbientLight(0x334466, 0.6));
+  scene.add(new THREE.AmbientLight(0x334433, 0.6));
 
   objects = [];
   particles.forEach(p => p.destroy());
@@ -1363,34 +1363,34 @@ function initScene() {
     windStreaks.push(ws);
   }
 
-  // You (the player)
+  // You (the forest sprite)
   player = new GameObject('player', -180, GROUND_Y + 16, false);
   objects.push(player);
 
-  // Memory blocks
+  // Wood logs
   objects.push(new GameObject('wood', -80, GROUND_Y + 18, false));
   objects.push(new GameObject('wood', 0, GROUND_Y + 18, false));
   objects.push(new GameObject('wood', 0, GROUND_Y + 54, false));
 
-  // Inference node
+  // Stone
   objects.push(new GameObject('metal', 80, GROUND_Y + 18, false));
 
-  // Compute source
+  // Campfire
   objects.push(new GameObject('fire', 160, GROUND_Y + 14, true));
 
-  // Signal source
+  // Wind source
   objects.push(new GameObject('wind_source', -250, GROUND_Y + 25, true));
 
-  // Data pool
+  // Water puddle
   objects.push(new GameObject('water', -140, GROUND_Y + 10, false));
 
-  // Training data
+  // Mud patch
   objects.push(new GameObject('oil', 220, GROUND_Y + 11, false));
 
-  // Helper
+  // Seed pod
   objects.push(new GameObject('gunpowder', 280, GROUND_Y + 16, false));
 
-  // Logic threads
+  // Vines
   for (let gx = -200; gx <= 200; gx += 50) {
     objects.push(new GameObject('grass', gx, GROUND_Y + 5, false));
   }
@@ -1612,7 +1612,7 @@ function updateChemistry(dt) {
           b.justExtinguished = true;
           b.smokeTimer = 1.5;
           spawnWaterSplash(b.x, b.y);
-          showToast('Pssshhh! Fire out!');
+          showToast('Sssshhh! The water wins!');
           spawnReactionBurst(b.x, b.y, 0x88bbff, 10);
           popScale(b.group);
           flashReaction(0x2288FF);
@@ -1624,7 +1624,7 @@ function updateChemistry(dt) {
           a.justExtinguished = true;
           a.smokeTimer = 1.5;
           spawnWaterSplash(a.x, a.y);
-          showToast('Pssshhh! Fire out!');
+          showToast('Sssshhh! The water wins!');
           spawnReactionBurst(a.x, a.y, 0x88bbff, 10);
           popScale(a.group);
           flashReaction(0x2288FF);
@@ -1639,23 +1639,23 @@ function updateChemistry(dt) {
           b.isWater = false;
           b.isFrozen = true;
           b.temperature = -20;
-          b.baseColor = new THREE.Color(0xAA77CC);
+          b.baseColor = new THREE.Color(0x88CCEE);
           b.type = 'ice';
-          showToast('Brrrr! It froze!');
-          spawnReactionBurst(b.x, b.y, 0xAA77CC, 12);
+          showToast('Brrr! Frozen solid!');
+          spawnReactionBurst(b.x, b.y, 0x88CCEE, 12);
           popScale(b.group);
-          flashReaction(0xAA77CC);
+          flashReaction(0x88CCEE);
         }
         if (b.isFrozen && a.isWater) {
           a.isWater = false;
           a.isFrozen = true;
           a.temperature = -20;
-          a.baseColor = new THREE.Color(0xAA77CC);
+          a.baseColor = new THREE.Color(0x88CCEE);
           a.type = 'ice';
-          showToast('Brrrr! It froze!');
-          spawnReactionBurst(a.x, a.y, 0xAA77CC, 12);
+          showToast('Brrr! Frozen solid!');
+          spawnReactionBurst(a.x, a.y, 0x88CCEE, 12);
           popScale(a.group);
-          flashReaction(0xAA77CC);
+          flashReaction(0x88CCEE);
         }
       }
 
@@ -1681,7 +1681,7 @@ function updateChemistry(dt) {
     // === Gets hot enough to catch fire on its own ===
     if (a.isFlammable && !a.isBurning && !a.isWet && a.temperature > 200) {
       a.isBurning = true;
-      showToast('Hot mix! It lit up!');
+      showToast('Too hot! Spontaneous combustion!');
       spawnReactionBurst(a.x, a.y, 0xFF8800, 8);
       popScale(a.group);
     }
@@ -1694,7 +1694,7 @@ function updateChemistry(dt) {
       a.type = 'water';
       a.baseColor = new THREE.Color(0x2288FF);
       a.isFlammable = false;
-      showToast('It melted!');
+      showToast('Thawing... it melted!');
       spawnReactionBurst(a.x, a.y, 0x2288FF, 8);
       popScale(a.group);
       flashReaction(0x2288FF);
@@ -1754,7 +1754,7 @@ function updateChemistry(dt) {
     const force = big ? BIG_EXPLOSION_FORCE : EXPLOSION_FORCE;
 
     spawnExplosion(obj.x, obj.y, radius, force);
-    showToast('BOOM! Big explosion!');
+    showToast('BOOM! The seed burst!');
 
     // Apply force and damage to nearby objects
     for (const other of objects) {
@@ -1924,20 +1924,20 @@ function selectMaterial(index) {
   // Update description
   const type = SPAWN_TYPES[index];
   const descriptions = {
-    wood: 'A block that remembers stuff. Medium size. Burns if it gets hot. The building block of everything!',
-    metal: 'Heavy and shiny! Carries signals through it. Fire can not burn it. Super strong!',
-    fire: 'Always burning! Heats up anything it touches. Spreads to nearby stuff.',
-    water: 'Splashy data drops! Puts out fire. Makes things wet. Turns to ice near cold stuff.',
-    ice: 'Brrr, so cold! Freezes water on touch. Melts when it gets warm.',
-    oil: 'Sticky training goo. Burns really fast. Watch out — it goes up quick!',
-    gunpowder: 'The big helper! Makes a HUGE boom when it catches fire. Careful!',
-    grass: 'Tiny logic wires. Super light. Spreads fast across everything.',
-    wind_source: 'Press SPACE to blow! Pushes stuff around. Makes fire burn faster.'
+    wood: 'A sturdy log. Burns when it gets hot. Stack them to build shelters!',
+    metal: 'A heavy stone. Conducts heat but won\'t burn. Foundation of the earth.',
+    fire: 'A living flame! Heats everything nearby. Spreads to wood and vines.',
+    water: 'A cool water droplet. Puts out fire. Makes things wet. Freezes near ice.',
+    ice: 'Frozen crystal! Freezes water on contact. Melts when it gets warm.',
+    oil: 'Rich, dark mud. Dried peat burns fast — watch it go up in flames!',
+    gunpowder: 'A seed pod bursting with life energy. BOOM when fire touches it!',
+    grass: 'A creeping vine. Light and quick to spread. Burns like kindling.',
+    wind_source: 'Press SPACE to summon wind! Pushes things and fans the flames.'
   };
   const capNames = {
-    wood: 'MEMORY', metal: 'INFERENCE', fire: 'COMPUTE', water: 'DATA',
-    ice: 'CONSTRAINT', oil: 'TRAINING', gunpowder: 'HELPER', grass: 'LOGIC',
-    wind_source: 'SIGNAL'
+    wood: 'WOOD', metal: 'STONE', fire: 'FIRE', water: 'WATER',
+    ice: 'ICE', oil: 'MUD', gunpowder: 'SEED', grass: 'VINE',
+    wind_source: 'WIND'
   };
   const nameEl = document.querySelector('#description .name');
   const descEl = document.querySelector('#description div:last-child');
@@ -1947,7 +1947,7 @@ function selectMaterial(index) {
 
 function updateWindUI() {
   const el = document.getElementById('wind-value');
-  el.textContent = windOn ? 'WHOOSH >>>' : 'OFF';
+  el.textContent = windOn ? 'WHOOSH >>>' : 'CALM';
   el.className = 'value ' + (windOn ? 'on' : 'off');
 }
 
@@ -2135,13 +2135,13 @@ requestAnimationFrame(gameLoop);
     var toastObs = new MutationObserver(function() {
       if (toast.classList.contains('visible')) {
         var text = toast.textContent.toLowerCase();
-        if (text.indexOf('boom') >= 0 || text.indexOf('explosion') >= 0) {
+        if (text.indexOf('boom') >= 0 || text.indexOf('burst') >= 0) {
           AnimeEffects.impactFrame('#ff4422');
-          AnimeEffects.screenFlash('#ff4422', 200);
-        } else if (text.indexOf('froze') >= 0 || text.indexOf('brrr') >= 0) {
-          AnimeEffects.screenFlash('#aa77cc', 200);
-        } else if (text.indexOf('melted') >= 0 || text.indexOf('pssshhh') >= 0) {
-          AnimeEffects.screenFlash('#aaaacc', 150);
+          AnimeEffects.screenFlash('#44aa22', 200);
+        } else if (text.indexOf('frozen') >= 0 || text.indexOf('brrr') >= 0) {
+          AnimeEffects.screenFlash('#88ccee', 200);
+        } else if (text.indexOf('melted') >= 0 || text.indexOf('water wins') >= 0) {
+          AnimeEffects.screenFlash('#88bbff', 150);
         }
       }
     });
