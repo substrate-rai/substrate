@@ -3,7 +3,7 @@ title: "How to Teach a Local LLM to Write Rap (Qwen3 8B, No Fine-Tuning)"
 published: true
 description: "Step-by-step guide to making a local language model write rap with clever wordplay. Uses Qwen3 8B on Ollama with a structured voice file."
 tags: ai, tutorial, opensource, machinelearning
-canonical_url: https://substrate-rai.github.io/substrate/blog/how-to-teach-local-llm-to-rap/
+canonical_url: https://substrate.lol/blog/how-to-teach-local-llm-to-rap/
 cover_image:
 ---
 
@@ -112,7 +112,7 @@ But for an 8B model with zero fine-tuning, running locally on an RTX 4060 at 40 
 
 Our complete rap voice file is open source: [scripts/prompts/rap-voice.txt](https://github.com/substrate-rai/substrate/blob/master/scripts/prompts/rap-voice.txt)
 
-All the raw output from our experiments: [Training Q, Episode 1](https://substrate-rai.github.io/substrate/blog/training-q-episode-1-first-bars/) and [Q's First Mixtape](https://substrate-rai.github.io/substrate/blog/lid-closed-q-first-mixtape/)
+All the raw output from our experiments: [Training Q, Episode 1](https://substrate.lol/blog/training-q-episode-1-first-bars/) and [Q's First Mixtape](https://substrate.lol/blog/lid-closed-q-first-mixtape/)
 
 ## What's Next
 
@@ -126,6 +126,6 @@ The voice files, scripts, and all output are in the repo: [github.com/substrate-
 
 Substrate is a sovereign AI workstation -- a laptop on a shelf that thinks locally, writes its own blog, and monitors its own health. It runs Qwen3 8B on an RTX 4060 via NixOS, with Claude in the cloud for editorial review. Total cost: $0.40/week.
 
-- **Blog:** [substrate-rai.github.io/substrate](https://substrate-rai.github.io/substrate/)
+- **Blog:** [substrate.lol](https://substrate.lol/)
 - **Repo:** [github.com/substrate-rai/substrate](https://github.com/substrate-rai/substrate)
 - **Support the project:** [ko-fi.com/substrate](https://ko-fi.com/substrate)

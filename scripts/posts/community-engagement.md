@@ -10,7 +10,7 @@ Drafted 2026-03-07. Each section is tailored to the community's culture. Read th
 
 **Title:** Substrate: Two-brain routing between a local 8B model and Claude API on NixOS
 
-**Link:** https://substrate-rai.github.io/substrate/blog/two-brain-ai-routing-local-cloud-nixos/
+**Link:** https://substrate.lol/blog/two-brain-ai-routing-local-cloud-nixos/
 
 **Description (if prompted):**
 
@@ -51,7 +51,7 @@ Hey IH. I've been building Substrate — a laptop on a shelf that runs two AI br
 
 **The weird part:** The blog is styled like a MySpace page. Profile pic is ASCII art of a closed laptop. "Top 2 Friends" are the two AI brains. The visitor counter is a lie. One of the AIs is learning to rap. I can't explain why this happened, but it happened.
 
-Blog: https://substrate-rai.github.io/substrate/
+Blog: https://substrate.lol/
 Repo: https://github.com/substrate-rai/substrate
 Ko-fi (for the WiFi card): https://ko-fi.com/substrate
 
@@ -194,7 +194,7 @@ The results are... mixed. It doesn't understand meter. It rhymes "server" with "
 
 The setup is a two-brain system: the local 8B model drafts content (including the rap), and a cloud model (Claude) reviews it and writes "voice files" — structured prompts with rules and examples that dramatically improve the local model's output. Same model, same hardware, night and day difference in quality depending on the voice file.
 
-I'm grading every verse honestly (lots of C+ grades) and publishing them unedited on the blog: https://substrate-rai.github.io/substrate/
+I'm grading every verse honestly (lots of C+ grades) and publishing them unedited on the blog: https://substrate.lol/
 
 What are you all doing with local models that's unexpected or creative? I'm especially curious about non-obvious use cases — art, music, games, hardware projects, anything weird.
 
@@ -243,7 +243,7 @@ Total recurring cost: $0.40/week for the occasional cloud API call. Everything e
 
 Oh, and the blog looks like a MySpace page. The visitor counter is a lie.
 
-substrate-rai.github.io/substrate
+substrate.lol
 
 #SelfHosted #HomeServer #AI #NixOS
 ```

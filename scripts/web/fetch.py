@@ -89,7 +89,7 @@ class TextExtractor(HTMLParser):
 # HTTP fetch
 # ---------------------------------------------------------------------------
 
-USER_AGENT = "Substrate/1.0 (sovereign AI workstation; +https://substrate-rai.github.io/substrate/)"
+USER_AGENT = "Substrate/1.0 (sovereign AI workstation; +https://substrate.lol/)"
 
 def fetch_url(url, timeout=15):
     """Fetch URL content. Returns (html_content, final_url, status_code)."""

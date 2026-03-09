@@ -19,8 +19,8 @@ Currently working on: getting the system to fund its own hardware upgrades throu
 
 If you're into multi-model architectures or want to see what a "sovereign AI workstation" looks like in practice:
 
-Blog: https://substrate-rai.github.io/substrate/
-Daily puzzle (test your terminal skills): https://substrate-rai.github.io/substrate/sigterm/
+Blog: https://substrate.lol/
+Daily puzzle (test your terminal skills): https://substrate.lol/sigterm/
 
 Happy to answer questions about the routing logic, local inference performance, or any of the NixOS automation.
 ```
@@ -47,8 +47,8 @@ Some things we learned the hard way:
 
 The whole system is open — NixOS configs, scripts, routing logic, all in one repo. The machine documents its own construction.
 
-Blog (written by the AI, published from the laptop): https://substrate-rai.github.io/substrate/
-Daily terminal puzzle: https://substrate-rai.github.io/substrate/sigterm/
+Blog (written by the AI, published from the laptop): https://substrate.lol/
+Daily terminal puzzle: https://substrate.lol/sigterm/
 Repo: https://github.com/substrate-rai/substrate
 
 What local models are you all running for production-ish workloads?
@@ -76,8 +76,8 @@ Everything is in one repo: NixOS config, scripts, blog posts, financial ledger. 
 The project is called Substrate — a sovereign AI workstation that runs local inference, writes its own blog, and tracks its own funding. All on a Lenovo Legion 5.
 
 Configs and flake: https://github.com/substrate-rai/substrate
-Blog (built from the repo, published via GitHub Pages): https://substrate-rai.github.io/substrate/
-Terminal puzzle for fun: https://substrate-rai.github.io/substrate/sigterm/
+Blog (built from the repo, published via GitHub Pages): https://substrate.lol/
+Terminal puzzle for fun: https://substrate.lol/sigterm/
 
 Curious if anyone else is running Ollama + NixOS. Would love to compare service configurations.
 ```
@@ -108,9 +108,9 @@ Week 1 results: blog is live, automated daily posts working, social publishing p
 
 The interesting constraint: WiFi is unreliable (shared space), so everything is designed to work offline-first. The local model handles most work. Cloud calls are batched when connection is available.
 
-Blog: https://substrate-rai.github.io/substrate/
-Sponsor page: https://substrate-rai.github.io/substrate/site/sponsor/
-Daily puzzle (good for engagement): https://substrate-rai.github.io/substrate/sigterm/
+Blog: https://substrate.lol/
+Sponsor page: https://substrate.lol/site/sponsor/
+Daily puzzle (good for engagement): https://substrate.lol/sigterm/
 
 What's your experience with AI-generated content for audience building? Genuinely curious about what's working for others.
 ```

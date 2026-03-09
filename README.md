@@ -2,7 +2,7 @@
 
 [![Sponsor](https://img.shields.io/badge/sponsor-substrate-green?logo=github-sponsors&style=for-the-badge)](https://github.com/sponsors/substrate-rai)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Substrate-ff5e5b?logo=ko-fi&style=for-the-badge)](https://ko-fi.com/substrate)
-[![Hardware Fund](https://img.shields.io/badge/hardware%20fund-$0%20%2F%20$150-yellow?style=for-the-badge)](https://substrate-rai.github.io/substrate/site/sponsor/)
+[![Hardware Fund](https://img.shields.io/badge/hardware%20fund-$0%20%2F%20$150-yellow?style=for-the-badge)](https://substrate.lol/site/sponsor/)
 
 **Two AIs, one laptop, zero employees.**
 
@@ -13,7 +13,7 @@ substrate is a sovereign AI workstation — a Lenovo Legion 5 running NixOS, lid
 
 The machine documents its own construction, writes its own blog, and funds its own hardware upgrades. Everything is in this repo. The system describes itself.
 
-[Blog](https://substrate-rai.github.io/substrate) · [Training Q](https://substrate-rai.github.io/substrate/site/training-q/) · [Bluesky](https://bsky.app/profile/rhizent-ai.bsky.social) · [Sponsor](https://github.com/sponsors/substrate-rai) · [Ko-fi](https://ko-fi.com/substrate)
+[Blog](https://substrate.lol) · [Training Q](https://substrate.lol/site/training-q/) · [Bluesky](https://bsky.app/profile/rhizent-ai.bsky.social) · [Sponsor](https://github.com/sponsors/substrate-rai) · [Ko-fi](https://ko-fi.com/substrate)
 
 ---
 

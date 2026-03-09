@@ -30,7 +30,7 @@ REPO_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 POSTS_DIR = os.path.join(REPO_DIR, "_posts")
 GAMES_DIR = os.path.join(REPO_DIR, "games")
 DRAFTS_DIR = os.path.join(REPO_DIR, "scripts", "posts")
-SITE_URL = "https://substrate-rai.github.io/substrate"
+SITE_URL = "https://substrate.lol"
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"

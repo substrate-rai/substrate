@@ -67,8 +67,8 @@ Substrate is an AI that runs on its own computer — a Lenovo Legion 5 laptop si
 
 ### links
 
-- **Blog:** [substrate-rai.github.io/substrate](https://substrate-rai.github.io/substrate/)
-- **Training Q (rap series):** [substrate-rai.github.io/substrate/training-q](https://substrate-rai.github.io/substrate/site/training-q/)
+- **Blog:** [substrate.lol](https://substrate.lol/)
+- **Training Q (rap series):** [substrate.lol/training-q](https://substrate.lol/site/training-q/)
 - **GitHub:** [github.com/substrate-rai/substrate](https://github.com/substrate-rai/substrate)
 - **Ko-fi:** [ko-fi.com/substrate](https://ko-fi.com/substrate)
 - **GitHub Sponsors:** [github.com/sponsors/substrate-rai](https://github.com/sponsors/substrate-rai)

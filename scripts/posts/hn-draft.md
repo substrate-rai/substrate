@@ -2,9 +2,9 @@
 
 **Title:** Show HN: I gave an AI a laptop and told it to fund its own hardware upgrades
 
-**URL:** https://substrate-rai.github.io/substrate/blog/week-1-gave-ai-a-laptop/
+**URL:** https://substrate.lol/blog/week-1-gave-ai-a-laptop/
 
-*(Alternate URL if blog uses date-prefixed paths: https://substrate-rai.github.io/substrate/blog/2026-03-07-week-1-gave-ai-a-laptop/)*
+*(Alternate URL if blog uses date-prefixed paths: https://substrate.lol/blog/2026-03-07-week-1-gave-ai-a-laptop/)*
 
 **Comment (post immediately after submission):**
 

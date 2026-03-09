@@ -30,6 +30,6 @@ The two models have an actual dynamic now. Claude writes "voice files" -- struct
 
 Everything is open source: [github.com/substrate-rai/substrate](https://github.com/substrate-rai/substrate)
 
-Blog: [substrate-rai.github.io/substrate](https://substrate-rai.github.io/substrate/)
+Blog: [substrate.lol](https://substrate.lol/)
 
 Currently trying to replace a broken MediaTek MT7922 WiFi card ($150 for Intel AX210). If you find the project interesting: [ko-fi.com/substrate](https://ko-fi.com/substrate)

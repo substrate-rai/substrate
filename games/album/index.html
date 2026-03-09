@@ -1186,7 +1186,7 @@ function shareAlbum() {
 
   const text = `${album.title} by ${album.artist}\n${album.genre} // ${album.year}\n\n` +
     album.tracks.map((t, i) => `${i + 1}. ${t.name} (${t.duration})`).join('\n') +
-    `\n\nGenerated at Laptop Records\nhttps://substrate-rai.github.io/substrate/games/album/`;
+    `\n\nGenerated at Laptop Records\nhttps://substrate.lol/games/album/`;
 
   if (navigator.share) {
     navigator.share({ title: `${album.title} by ${album.artist}`, text: text }).catch(() => {});

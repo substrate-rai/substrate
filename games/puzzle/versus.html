@@ -550,8 +550,8 @@ redirect_from:
 <header>
   <h1>SIGTERM <span class="versus-tag">VERSUS</span></h1>
   <div class="nav-links">
-    <a href="https://substrate-rai.github.io/substrate/games/puzzle/">daily</a>
-    <a href="https://substrate-rai.github.io/substrate/">blog</a>
+    <a href="https://substrate.lol/games/puzzle/">daily</a>
+    <a href="https://substrate.lol/">blog</a>
     <a href="https://ko-fi.com/substrate">fund us</a>
   </div>
 </header>
@@ -565,13 +565,13 @@ redirect_from:
   <h2>VERSUS MODE</h2>
   <p>Challenge a friend to beat your SIGTERM score.</p>
   <div class="steps">
-    <span class="step-num">1.</span> Play the <a href="https://substrate-rai.github.io/substrate/games/puzzle/" style="color:#77aaff;">daily puzzle</a> first<br>
+    <span class="step-num">1.</span> Play the <a href="https://substrate.lol/games/puzzle/" style="color:#77aaff;">daily puzzle</a> first<br>
     <span class="step-num">2.</span> After finishing, click "Challenge a friend"<br>
     <span class="step-num">3.</span> Enter your name and get a challenge link<br>
     <span class="step-num">4.</span> Send it -- they play the same word<br>
     <span class="step-num">5.</span> See who solved it in fewer guesses
   </div>
-  <a href="https://substrate-rai.github.io/substrate/games/puzzle/" class="challenge-btn" style="display:inline-block;text-decoration:none;padding:10px 24px;">PLAY TODAY'S PUZZLE</a>
+  <a href="https://substrate.lol/games/puzzle/" class="challenge-btn" style="display:inline-block;text-decoration:none;padding:10px 24px;">PLAY TODAY'S PUZZLE</a>
 </div>
 
 <!-- Game grid (hidden until challenge loaded) -->
@@ -634,7 +634,7 @@ redirect_from:
 </div>
 
 <div class="lumen-credit">
-  a <a href="https://substrate-rai.github.io/substrate/arcade/">Substrate Arcade</a> production
+  a <a href="https://substrate.lol/arcade/">Substrate Arcade</a> production
 </div>
 
 <script>
@@ -1020,7 +1020,7 @@ function shareVersusResult() {
   // Your grid
   text += buildEmojiGrid(guesses, TARGET) + '\n';
 
-  text += '\nhttps://substrate-rai.github.io/substrate/games/puzzle/versus/';
+  text += '\nhttps://substrate.lol/games/puzzle/versus/';
 
   copyToClipboard(text);
 }
@@ -1038,7 +1038,7 @@ function generateChallengeLink() {
   var yourScore = guesses[guesses.length - 1] === TARGET ? guesses.length : 0;
 
   var encoded = encodeChallenge(TARGET, yourScore, name, guesses);
-  var url = 'https://substrate-rai.github.io/substrate/games/puzzle/versus/#challenge=' + encoded;
+  var url = 'https://substrate.lol/games/puzzle/versus/#challenge=' + encoded;
 
   var linkEl = document.getElementById('challenge-link');
   linkEl.style.display = 'block';

@@ -16,7 +16,7 @@ import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(SCRIPT_DIR)
-SITE_URL = "https://substrate-rai.github.io/substrate"
+SITE_URL = "https://substrate.lol"
 
 
 def load_env(path=None):

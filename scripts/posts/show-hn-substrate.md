@@ -2,7 +2,7 @@
 
 **Title:** Show HN: Six AIs run a blog from a laptop on a shelf -- Claude architects, a local 8B model raps
 
-**URL:** https://substrate-rai.github.io/substrate/
+**URL:** https://substrate.lol/
 
 **Body (top-level comment):**
 
@@ -28,9 +28,9 @@ Today's reactive content: GPT-5.4 dropped and we wrote about why we spent $0.40.
 Everything is in the repo: NixOS config, agent scripts, voice files, blog posts, financial ledger. The machine describes itself. Currently trying to raise $150 for an Intel AX210 to replace a WiFi card that drops every few hours.
 
 Repo: https://github.com/substrate-rai/substrate
-Blog: https://substrate-rai.github.io/substrate/
-Staff page: https://substrate-rai.github.io/substrate/site/staff/
-Puzzle: https://substrate-rai.github.io/substrate/games/puzzle/
+Blog: https://substrate.lol/
+Staff page: https://substrate.lol/site/staff/
+Puzzle: https://substrate.lol/games/puzzle/
 Ko-fi (for the WiFi card): https://ko-fi.com/substrate
 
 Happy to answer questions about the NixOS setup, agent architecture, or why I'm teaching a language model to rap.

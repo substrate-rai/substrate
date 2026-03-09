@@ -138,14 +138,14 @@ Return a branded embed with project info. Topics:
 - **overview** (default): What Substrate is, one-paragraph summary
 - **hardware**: Lenovo Legion 5, RTX 4060 8GB, NixOS specs
 - **architecture**: Two-brain system (Q local, Claude cloud), systemd services
-- **blog**: Link to latest posts at substrate-rai.github.io
+- **blog**: Link to latest posts at substrate.lol
 - **funding**: How to sponsor, current hardware goals
 
 ### /sigterm
 
 Return the daily SIGTERM puzzle link:
 ```
-Today's SIGTERM puzzle: https://substrate-rai.github.io/substrate/sigterm/
+Today's SIGTERM puzzle: https://substrate.lol/sigterm/
 Can you find the kill code?
 ```
 
@@ -189,7 +189,7 @@ Integrate into existing pipelines:
 ```bash
 # In scripts/pipeline.py, after publishing a blog post:
 python3 scripts/bots/discord_webhook.py "$DISCORD_WEBHOOK_URL" \
-  --title "New Post" --file blog/posts/latest.md --url "https://substrate-rai.github.io/substrate/..."
+  --title "New Post" --file blog/posts/latest.md --url "https://substrate.lol/..."
 ```
 
 ### Option C: Interactions Endpoint (serverless-style)
@@ -216,7 +216,7 @@ DISCORD_WEBHOOK_URL=<webhook url for announcement channels>
 
 Set the bot's status/activity to:
 - **Activity type:** Watching
-- **Activity name:** "the terminal | substrate-rai.github.io"
+- **Activity name:** "the terminal | substrate.lol"
 
 ## Security Notes
 

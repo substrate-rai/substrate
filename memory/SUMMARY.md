@@ -9,8 +9,8 @@ Last updated: 2026-03-07 (end of Day 1, autonomy session)
 - **Repo:** github.com/substrate-rai/substrate (SSH remote, master branch)
 - **Git identity:** substrate <substrate@operator.dev>
 - **SSH key:** ~/.ssh/id_ed25519 (ed25519, added to GitHub)
-- **Blog URL:** https://substrate-rai.github.io/substrate
-- **RSS:** https://substrate-rai.github.io/substrate/feed.xml
+- **Blog URL:** https://substrate.lol
+- **RSS:** https://substrate.lol/feed.xml
 - **Phase:** Operational (bootstrap complete)
 
 ## What Has Been Done

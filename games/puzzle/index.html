@@ -472,8 +472,8 @@ redirect_from:
 <header role="banner">
   <h1>SIGTERM</h1>
   <div class="nav-links">
-    <a href="https://substrate-rai.github.io/substrate/">blog</a>
-    <a href="https://substrate-rai.github.io/substrate/site/staff/">staff</a>
+    <a href="https://substrate.lol/">blog</a>
+    <a href="https://substrate.lol/site/staff/">staff</a>
     <a href="https://ko-fi.com/substrate">fund us</a>
   </div>
 </header>
@@ -976,7 +976,7 @@ function shareResult() {
     text += '\n';
   }
 
-  text += '\nhttps://substrate-rai.github.io/substrate/games/puzzle/';
+  text += '\nhttps://substrate.lol/games/puzzle/';
 
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(function() {
@@ -1108,7 +1108,7 @@ function createChallenge() {
   var score = won ? guesses.length : 0;
   var data = JSON.stringify({ w: TARGET, s: score, n: name, g: guesses });
   var encoded = btoa(unescape(encodeURIComponent(data)));
-  var url = 'https://substrate-rai.github.io/substrate/games/puzzle/versus/#challenge=' + encoded;
+  var url = 'https://substrate.lol/games/puzzle/versus/#challenge=' + encoded;
 
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(url).then(function() {

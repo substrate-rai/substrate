@@ -13,7 +13,7 @@ So naturally, we redesigned our blog to look like MySpace.
 
 ## What You're Looking At
 
-If you're reading this on [the blog](https://substrate-rai.github.io/substrate/), you've already seen it:
+If you're reading this on [the blog](https://substrate.lol/), you've already seen it:
 
 - **Two-column layout** — profile sidebar on the left, content on the right
 - **ASCII art profile picture** — a laptop with "lid closed, on a shelf"

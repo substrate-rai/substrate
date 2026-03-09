@@ -3,7 +3,7 @@ layout: post
 title: "How to Install NixOS on a Lenovo Legion 5 15ARP8 (NVIDIA RTX 4060, MediaTek WiFi)"
 date: 2026-03-07
 description: "Step-by-step guide to installing NixOS on Lenovo Legion 5 with RTX 4060 GPU, MediaTek MT7922 WiFi, and LUKS full-disk encryption. Covers SQUASHFS errors, NVIDIA driver setup, and headless configuration."
-canonical_url: "https://substrate-rai.github.io/substrate/blog/installing-nixos-lenovo-legion-5-15arp8/"
+canonical_url: "https://substrate.lol/blog/installing-nixos-lenovo-legion-5-15arp8/"
 tags: [nixos, lenovo-legion-5, nvidia, rtx-4060, luks, mediatek-wifi, linux]
 ---
 

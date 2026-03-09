@@ -14,7 +14,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 # Base URL for the live site
-BASE_URL = "https://substrate-rai.github.io/substrate"
+BASE_URL = "https://substrate.lol"
 
 # All arcade games to test
 GAMES = [

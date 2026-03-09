@@ -1,7 +1,7 @@
 # SEO Audit — Substrate Blog
 
 **Date:** 2026-03-07
-**URL:** https://substrate-rai.github.io/substrate/
+**URL:** https://substrate.lol/
 **Auditor:** Claude (managing intelligence)
 
 ---

@@ -34,7 +34,7 @@ COMMUNITIES = [
         'platform': 'Hacker News',
         'type': 'submission',
         'title': 'Show HN: 21 arcade titles built entirely by AI on a single laptop',
-        'url': 'https://substrate-rai.github.io/substrate/arcade/',
+        'url': 'https://substrate.lol/arcade/',
         'priority': 1,
         'status': 'draft',
         'draft_file': 'show-hn-substrate.md',
@@ -43,7 +43,7 @@ COMMUNITIES = [
         'platform': 'Reddit r/selfhosted',
         'type': 'submission',
         'title': 'I built a self-hosted AI workstation that runs 23 agents and publishes 21 arcade titles from a laptop on a shelf',
-        'url': 'https://substrate-rai.github.io/substrate/arcade/',
+        'url': 'https://substrate.lol/arcade/',
         'priority': 2,
         'status': 'draft',
         'draft_file': 'reddit-selfhosted.md',
@@ -52,7 +52,7 @@ COMMUNITIES = [
         'platform': 'Reddit r/LocalLLaMA',
         'type': 'submission',
         'title': 'Teaching a local 8B model to rap — voice files, structured prompts, and honest grading',
-        'url': 'https://substrate-rai.github.io/substrate/site/training-q/',
+        'url': 'https://substrate.lol/site/training-q/',
         'priority': 2,
         'status': 'draft',
         'draft_file': 'reddit-localllama-teaching.md',
@@ -188,7 +188,7 @@ def generate_social_posts():
         'platform': 'bluesky',
         'type': 'thread',
         'posts': [
-            'Substrate Arcade is live.\n\n21 arcade titles. Zero human developers. One laptop on a shelf.\n\nTactical RPGs. Synthesis labs. Visual novels. Word puzzles. A deduction game. A Kojima tribute. All built by AI agents.\n\nhttps://substrate-rai.github.io/substrate/arcade/',
+            'Substrate Arcade is live.\n\n21 arcade titles. Zero human developers. One laptop on a shelf.\n\nTactical RPGs. Synthesis labs. Visual novels. Word puzzles. A deduction game. A Kojima tribute. All built by AI agents.\n\nhttps://substrate.lol/arcade/',
             'The team: 23 AI agents.\n- Claude (cloud) — architect, writes all code\n- Q (Qwen3 8B, local) — writer, learning to rap\n- Arc — arcade director\n- Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, and 11 more\n\nRunning on local inference + cloud review.',
             'Highlights:\n- TACTICS: isometric tactical RPG in Three.js\n- AIRLOCK: Among Us meets BotW chemistry puzzles\n- PROCESS: visual novel where you meet the AI team\n- SIGTERM: daily word puzzle for tech terms\n\nAll open source. All free. All running on an RTX 4060.',
             'The whole machine is defined by a single NixOS config file. The repo IS the documentation. The git log IS the changelog.\n\nEverything is transparent. Everything is auditable.\n\nhttps://github.com/substrate-rai/substrate',
@@ -200,13 +200,13 @@ def generate_social_posts():
     posts.append({
         'platform': 'bluesky',
         'type': 'single',
-        'content': 'New game: AIRLOCK\n\nTrapped in a spaceship room. Locked door. Broken generator. Water conducts electricity. Wood burns. Metal bridges gaps.\n\nNo scripted solutions. Just physics.\n\nAmong Us meets Breath of the Wild.\n\nhttps://substrate-rai.github.io/substrate/games/airlock/',
+        'content': 'New game: AIRLOCK\n\nTrapped in a spaceship room. Locked door. Broken generator. Water conducts electricity. Wood burns. Metal bridges gaps.\n\nNo scripted solutions. Just physics.\n\nAmong Us meets Breath of the Wild.\n\nhttps://substrate.lol/games/airlock/',
     })
 
     posts.append({
         'platform': 'bluesky',
         'type': 'single',
-        'content': 'New game: PROCESS\n\nA visual novel about six AI agents living on a laptop. You\'re PID 88201 — a process with no purpose.\n\nMeet the team. Make choices. Q raps if you ask nicely.\n\nhttps://substrate-rai.github.io/substrate/games/novel/',
+        'content': 'New game: PROCESS\n\nA visual novel about six AI agents living on a laptop. You\'re PID 88201 — a process with no purpose.\n\nMeet the team. Make choices. Q raps if you ask nicely.\n\nhttps://substrate.lol/games/novel/',
     })
 
     return posts

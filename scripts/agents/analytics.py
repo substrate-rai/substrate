@@ -623,7 +623,7 @@ def _build_context(summary):
     else:
         lines.append("\nAnalytics tracking: NONE installed")
 
-    lines.append(f"\nSite URL: https://substrate-rai.github.io/substrate/")
+    lines.append(f"\nSite URL: https://substrate.lol/")
     lines.append(f"Fund page: /fund/")
     lines.append(f"Arcade: /arcade/")
     lines.append(f"Date: {datetime.now().strftime('%Y-%m-%d')}")

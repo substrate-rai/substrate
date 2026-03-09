@@ -43,7 +43,7 @@ mkdir -p "$(dirname "$LOG_FILE")"
     fi
 
     # Blog (check if site is up, get rough page count)
-    blog_status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://substrate-rai.github.io/substrate/" 2>/dev/null) || blog_status="error"
+    blog_status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://substrate.lol/" 2>/dev/null) || blog_status="error"
     echo "blog: status $blog_status"
 
     # Local stats

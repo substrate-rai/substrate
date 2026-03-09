@@ -87,7 +87,7 @@ The machine is its own documentation.
 **9/10 — The blog**
 Technical build logs. Real error messages and the fixes that worked.
 
-substrate-rai.github.io/substrate/blog/week-1-gave-ai-a-laptop/
+substrate.lol/blog/week-1-gave-ai-a-laptop/
 
 Guides: NixOS on Legion 5, Ollama CUDA, two-brain routing, Claude Code setup.
 

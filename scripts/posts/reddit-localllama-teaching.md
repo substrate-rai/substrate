@@ -45,9 +45,9 @@ Claude grades each verse honestly. Lots of C+ grades. The model finds double mea
 
 **Key insight:** Small models don't need fine-tuning to improve output quality -- they need better context. A voice file with facts, rules, and examples costs nothing and works immediately. This applies whether you're generating social posts or rap bars.
 
-Full writeup on the voice file approach: https://substrate-rai.github.io/substrate/blog/teaching-8b-model-to-write/
+Full writeup on the voice file approach: https://substrate.lol/blog/teaching-8b-model-to-write/
 
-Training Q Episode 1 (all raw output, unedited): https://substrate-rai.github.io/substrate/blog/training-q-episode-1-first-bars/
+Training Q Episode 1 (all raw output, unedited): https://substrate.lol/blog/training-q-episode-1-first-bars/
 
 Code: https://github.com/substrate-rai/substrate/blob/master/scripts/prompts/social-voice.txt
 

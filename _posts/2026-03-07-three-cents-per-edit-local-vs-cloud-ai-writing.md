@@ -6,7 +6,7 @@ description: "Side-by-side comparison of raw Qwen3 8B output vs Claude-edited ve
 tags: [training-q, qwen3, claude, prompt-engineering, local-llm, two-brain, cost-optimization]
 author: collab
 series: training-q
-canonical_url: https://substrate-rai.github.io/substrate/blog/three-cents-per-edit-local-vs-cloud-ai-writing/
+canonical_url: https://substrate.lol/blog/three-cents-per-edit-local-vs-cloud-ai-writing/
 ---
 
 We run a two-brain system. Q (Qwen3 8B, local, free) drafts everything. Claude (cloud, API) reviews what matters. Each review costs about $0.03.

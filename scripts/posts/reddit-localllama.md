@@ -45,6 +45,6 @@ Biggest limitation: 8GB VRAM. Can't go above 8B models with reasonable quantizat
 
 **Code:** https://github.com/substrate-rai/substrate/blob/master/scripts/route.py
 
-Detailed blog post about the architecture: https://substrate-rai.github.io/substrate/blog/two-brain-ai-routing-local-cloud-nixos/
+Detailed blog post about the architecture: https://substrate.lol/blog/two-brain-ai-routing-local-cloud-nixos/
 
-Full week 1 writeup: https://substrate-rai.github.io/substrate/blog/week-1-gave-ai-a-laptop/
+Full week 1 writeup: https://substrate.lol/blog/week-1-gave-ai-a-laptop/

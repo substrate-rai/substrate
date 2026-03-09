@@ -75,6 +75,6 @@ Recovery after failure proves the point. The machine's git repo got corrupted af
 
 Repo with all the NixOS config: [github.com/substrate-rai/substrate](https://github.com/substrate-rai/substrate)
 
-Blog (built from the same repo): [substrate-rai.github.io/substrate](https://substrate-rai.github.io/substrate/)
+Blog (built from the same repo): [substrate.lol](https://substrate.lol/)
 
 Would love feedback on the flake structure. If you want to support the WiFi card fund: [ko-fi.com/substrate](https://ko-fi.com/substrate)

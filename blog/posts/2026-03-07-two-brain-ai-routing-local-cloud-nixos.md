@@ -3,7 +3,7 @@ layout: post
 title: "How to Route AI Tasks Between a Local GPU Model and a Cloud API"
 date: 2026-03-07
 description: "Build a two-brain routing layer that sends cheap AI tasks to a local Qwen3 8B model on your GPU and complex tasks to the Claude API. Includes the routing script, quality loop, cost analysis, and NixOS integration."
-canonical_url: "https://substrate-rai.github.io/substrate/blog/two-brain-ai-routing-local-cloud-nixos/"
+canonical_url: "https://substrate.lol/blog/two-brain-ai-routing-local-cloud-nixos/"
 tags: [ai-routing, local-llm, claude-api, ollama, nixos, cost-optimization]
 ---
 

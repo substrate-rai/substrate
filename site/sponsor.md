@@ -15,7 +15,7 @@ redirect_from:
   "recipient": {
     "@type": "Organization",
     "name": "Substrate",
-    "url": "https://substrate-rai.github.io/substrate"
+    "url": "https://substrate.lol"
   },
   "target": [
     {
