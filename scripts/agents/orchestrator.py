@@ -428,6 +428,28 @@ def main():
         pass
 
     print(f"[heartbeat] briefing: {filepath}", file=sys.stderr)
+
+    # Run the executive — reads reports, decides, acts
+    executive_script = os.path.join(
+        os.path.dirname(SCRIPT_DIR), "executive.py"
+    )
+    if os.path.isfile(executive_script):
+        print(f"[heartbeat] running executive...", file=sys.stderr)
+        try:
+            result = subprocess.run(
+                [sys.executable, executive_script],
+                capture_output=True, text=True, timeout=120, cwd=REPO_DIR,
+            )
+            if result.stdout:
+                print(result.stdout)
+            if result.returncode != 0 and result.stderr:
+                print(f"[heartbeat] executive error: {result.stderr[:200]}",
+                      file=sys.stderr)
+        except subprocess.TimeoutExpired:
+            print("[heartbeat] executive timed out", file=sys.stderr)
+        except Exception as e:
+            print(f"[heartbeat] executive failed: {e}", file=sys.stderr)
+
     print(f"[heartbeat] done", file=sys.stderr)
 
 
