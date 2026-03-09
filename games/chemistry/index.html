@@ -388,7 +388,7 @@ redirect_from:
   #btn-reset { bottom: 20px; right: 96px; }
   #btn-delete { bottom: 96px; right: 96px; }
 
-  /* === MOBILE LAYOUT === */
+  /* === MOBILE LAYOUT — Minecraft-style hotbar === */
   @media (max-width: 768px) {
     #legend {
       top: auto;
@@ -399,25 +399,39 @@ redirect_from:
       border: none;
       border-top: 3px solid #2a3a1a;
       border-radius: 0;
-      padding: 8px 12px;
-      padding-bottom: calc(8px + env(safe-area-inset-bottom));
+      padding: 6px 8px;
+      padding-bottom: calc(6px + env(safe-area-inset-bottom));
       display: flex;
-      flex-wrap: wrap;
-      gap: 2px;
+      flex-wrap: nowrap;
+      gap: 0;
       align-items: center;
+      justify-content: center;
       box-shadow: 0 -4px 0 #000;
       z-index: 15;
     }
-    #legend h3 {
-      width: 100%;
-      margin-bottom: 4px;
-      font-size: 0.65rem;
-    }
+    #legend h3 { display: none; }
     #legend .item {
-      min-height: 36px;
-      padding: 4px 8px;
-      font-size: 0.68rem;
+      min-height: 0;
+      padding: 6px;
+      font-size: 0;
+      color: transparent;
       flex: 0 0 auto;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #1a2a1a;
+      background: rgba(10, 20, 10, 0.7);
+    }
+    #legend .item.selected {
+      border-color: #88cc44;
+      background: rgba(100, 180, 50, 0.2);
+      box-shadow: 0 0 8px rgba(136, 204, 68, 0.3);
+    }
+    #legend .swatch {
+      width: 20px;
+      height: 20px;
     }
     #legend .key { display: none; }
 
@@ -446,12 +460,12 @@ redirect_from:
     #controls-bar { display: none !important; }
     #description { display: none; }
 
-    /* Move mobile buttons above the legend bar */
-    #btn-jump { bottom: 180px; }
-    #btn-wind { bottom: 256px; }
-    #btn-reset { bottom: 180px; }
-    #btn-delete { bottom: 256px; }
-    #joystick-zone { bottom: 180px; }
+    /* Move mobile buttons above the compact hotbar */
+    #btn-jump { bottom: calc(72px + env(safe-area-inset-bottom)); }
+    #btn-wind { bottom: calc(148px + env(safe-area-inset-bottom)); }
+    #btn-reset { bottom: calc(72px + env(safe-area-inset-bottom)); }
+    #btn-delete { bottom: calc(148px + env(safe-area-inset-bottom)); }
+    #joystick-zone { bottom: calc(72px + env(safe-area-inset-bottom)); }
   }
 </style>
 <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
@@ -545,6 +559,7 @@ redirect_from:
   <span><kbd>R</kbd> reset world</span>
 </div>
 
+<div id="hotbar-label" style="display:none;position:fixed;bottom:calc(56px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:16;background:rgba(10,20,10,0.9);border:2px solid #88cc44;padding:3px 10px;font-size:11px;color:#88cc44;letter-spacing:1px;font-family:'IBM Plex Mono',monospace;pointer-events:none;white-space:nowrap;box-shadow:2px 2px 0 #000">WOOD</div>
 <div id="mobile-controls">
   <div id="joystick-zone">
     <div id="joystick-knob"></div>
@@ -1984,6 +1999,14 @@ function selectMaterial(index) {
   const descEl = document.querySelector('#description div:last-child');
   nameEl.textContent = capNames[type] || type.replace('_', ' ').toUpperCase();
   descEl.textContent = descriptions[type] || '';
+  // Update mobile hotbar label
+  const hbl = document.getElementById('hotbar-label');
+  if (hbl && window.innerWidth <= 768) {
+    hbl.textContent = capNames[type] || type.toUpperCase();
+    hbl.style.display = 'block';
+    clearTimeout(hbl._timer);
+    hbl._timer = setTimeout(() => { hbl.style.display = 'none'; }, 1500);
+  }
 }
 
 function updateWindUI() {
