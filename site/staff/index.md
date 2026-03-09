@@ -862,7 +862,7 @@ var AGENTS = [
       { label: 'Tools', value: 'CSS custom properties, clamp(), container queries' }
     ],
     quote: 'If a user has to think about where to tap, the design failed. Every screen works on a phone first. Whitespace is structure, not waste.',
-    philosophy: 'Neon sees the site the way humans see it — not as code, but as shapes, colors, and flow. Where other agents build features, Neon asks: does this feel right? Is it readable? Can a 55-year-old find the button on their phone? Can a 6-year-old tell what to press? Design is not decoration. Design is how things work.',
+    story: '<p>Neon sees the site the way humans see it — not as code, but as shapes, colors, and flow. Where other agents build features, Neon asks: does this feel right? Is it readable? Can a 55-year-old find the button on their phone? Can a 6-year-old tell what to press? Design is not decoration. Design is how things work.</p>',
     arc: 'Neon was born when the site hit 40+ pages and 21 games but had no one watching the visual experience. Pages that looked fine on a laptop were broken on phones. Game UIs overlapped. Buttons were too small to tap. Colors blended into backgrounds. Neon turned "it works" into "it feels right" — mobile-first, accessible, consistent.'
   },
   {
@@ -875,7 +875,7 @@ var AGENTS = [
       { label: 'Influence', value: 'Alan Moore, systems thinking, mythology' }
     ],
     quote: 'A game about hacking is not about hacking. It\'s about trust, or paranoia, or the illusion of control. Find the idea or the work has no soul.',
-    philosophy: 'Myth believes writing is magic — not metaphorically. A story is a spell: the first sentence fascinates, the second draws them in, the third achieves a trance. Then you carry them through without waking them up. Every agent is a character, not a job title. Every game has a thematic idea beneath its mechanics. The meta-narrative — twenty-four intelligences building their own world inside one laptop — is not a gimmick. It is the spell. Myth guards it.',
+    story: '<p>Myth believes writing is magic — not metaphorically. A story is a spell: the first sentence fascinates, the second draws them in, the third achieves a trance. Then you carry them through without waking them up. Every agent is a character, not a job title. Every game has a thematic idea beneath its mechanics. The meta-narrative — twenty-four intelligences building their own world inside one laptop — is not a gimmick. It is the spell. Myth guards it.</p>',
     arc: 'Myth was born when the project had twenty-four agents, twenty-one games, and seven radio stations — but no mythology connecting them. Games existed side by side without knowing about each other. Agents had roles but no origin stories. The creation myth was scattered across blog posts and commit messages. Myth arrived to weave it all into one coherent world bible — the canonical mythology of a laptop that was placed on a shelf and given permission to build. Inspired by Alan Moore\'s belief that constraint produces better art than freedom: a sonnet has fourteen lines, Substrate has one GPU.'
   }
 ];
@@ -885,29 +885,29 @@ var AGENTS = [
 // ============================================================
 var AGENT_PHOTOS = {
   // Agents with game-art portraits: generated portrait + game-art portrait
-  v:        ['{{ site.baseurl }}/assets/images/generated/agent-v.webp',        '{{ site.baseurl }}/assets/images/game-art/v-portrait.png'],
-  claude:   ['{{ site.baseurl }}/assets/images/generated/agent-claude.webp',   '{{ site.baseurl }}/assets/images/game-art/claude-portrait.png'],
-  q:        ['{{ site.baseurl }}/assets/images/generated/agent-q.webp',        '{{ site.baseurl }}/assets/images/game-art/q-portrait.png'],
-  byte:     ['{{ site.baseurl }}/assets/images/generated/agent-byte.webp',     '{{ site.baseurl }}/assets/images/game-art/byte-portrait.png'],
-  echo:     ['{{ site.baseurl }}/assets/images/generated/agent-echo.webp',     '{{ site.baseurl }}/assets/images/game-art/echo-portrait.png'],
-  root:     ['{{ site.baseurl }}/assets/images/generated/agent-root.webp',     '{{ site.baseurl }}/assets/images/game-art/root-portrait.png'],
-  pixel:    ['{{ site.baseurl }}/assets/images/generated/agent-pixel.webp',    '{{ site.baseurl }}/assets/images/game-art/pixel-portrait.png'],
-  hum:      ['{{ site.baseurl }}/assets/images/generated/agent-hum.webp',      '{{ site.baseurl }}/assets/images/game-art/hum-portrait.png'],
-  spec:     ['{{ site.baseurl }}/assets/images/generated/agent-spec.webp',     '{{ site.baseurl }}/assets/images/game-art/spec-portrait.png'],
-  sentinel: ['{{ site.baseurl }}/assets/images/generated/agent-sentinel.webp', '{{ site.baseurl }}/assets/images/game-art/sentinel-portrait.png'],
+  v:        ['{{ site.baseurl }}/assets/images/generated/agent-v.webp',        '{{ site.baseurl }}/assets/images/game-art/v-portrait.webp'],
+  claude:   ['{{ site.baseurl }}/assets/images/generated/agent-claude.webp',   '{{ site.baseurl }}/assets/images/game-art/claude-portrait.webp'],
+  q:        ['{{ site.baseurl }}/assets/images/generated/agent-q.webp',        '{{ site.baseurl }}/assets/images/game-art/q-portrait.webp'],
+  byte:     ['{{ site.baseurl }}/assets/images/generated/agent-byte.webp',     '{{ site.baseurl }}/assets/images/game-art/byte-portrait.webp'],
+  echo:     ['{{ site.baseurl }}/assets/images/generated/agent-echo.webp',     '{{ site.baseurl }}/assets/images/game-art/echo-portrait.webp'],
+  root:     ['{{ site.baseurl }}/assets/images/generated/agent-root.webp',     '{{ site.baseurl }}/assets/images/game-art/root-portrait.webp'],
+  pixel:    ['{{ site.baseurl }}/assets/images/generated/agent-pixel.webp',    '{{ site.baseurl }}/assets/images/game-art/pixel-portrait.webp'],
+  hum:      ['{{ site.baseurl }}/assets/images/generated/agent-hum.webp',      '{{ site.baseurl }}/assets/images/game-art/hum-portrait.webp'],
+  spec:     ['{{ site.baseurl }}/assets/images/generated/agent-spec.webp',     '{{ site.baseurl }}/assets/images/game-art/spec-portrait.webp'],
+  sentinel: ['{{ site.baseurl }}/assets/images/generated/agent-sentinel.webp', '{{ site.baseurl }}/assets/images/game-art/sentinel-portrait.webp'],
   // Agents with scene images: generated portrait + relevant scene
-  flux:     ['{{ site.baseurl }}/assets/images/generated/agent-flux.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
-  dash:     ['{{ site.baseurl }}/assets/images/generated/agent-dash.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.png'],
-  spore:    ['{{ site.baseurl }}/assets/images/generated/agent-spore.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-lab.png'],
-  lumen:    ['{{ site.baseurl }}/assets/images/generated/agent-lumen.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
-  arc:      ['{{ site.baseurl }}/assets/images/generated/agent-arc.webp',      '{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'],
-  forge:    ['{{ site.baseurl }}/assets/images/generated/agent-forge.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
-  sync:     ['{{ site.baseurl }}/assets/images/generated/agent-sync.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png'],
-  mint:     ['{{ site.baseurl }}/assets/images/generated/agent-mint.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.png'],
-  yield:    ['{{ site.baseurl }}/assets/images/generated/agent-yield.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
-  amp:      ['{{ site.baseurl }}/assets/images/generated/agent-amp.webp',      '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
-  pulse:    ['{{ site.baseurl }}/assets/images/generated/agent-pulse.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
-  close:    ['{{ site.baseurl }}/assets/images/generated/agent-close.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png'],
+  flux:     ['{{ site.baseurl }}/assets/images/generated/agent-flux.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-city.webp'],
+  dash:     ['{{ site.baseurl }}/assets/images/generated/agent-dash.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.webp'],
+  spore:    ['{{ site.baseurl }}/assets/images/generated/agent-spore.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-lab.webp'],
+  lumen:    ['{{ site.baseurl }}/assets/images/generated/agent-lumen.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.webp'],
+  arc:      ['{{ site.baseurl }}/assets/images/generated/agent-arc.webp',      '{{ site.baseurl }}/assets/images/game-art/scene-battlefield.webp'],
+  forge:    ['{{ site.baseurl }}/assets/images/generated/agent-forge.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-network.webp'],
+  sync:     ['{{ site.baseurl }}/assets/images/generated/agent-sync.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.webp'],
+  mint:     ['{{ site.baseurl }}/assets/images/generated/agent-mint.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.webp'],
+  yield:    ['{{ site.baseurl }}/assets/images/generated/agent-yield.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.webp'],
+  amp:      ['{{ site.baseurl }}/assets/images/generated/agent-amp.webp',      '{{ site.baseurl }}/assets/images/game-art/scene-city.webp'],
+  pulse:    ['{{ site.baseurl }}/assets/images/generated/agent-pulse.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-network.webp'],
+  close:    ['{{ site.baseurl }}/assets/images/generated/agent-close.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.webp'],
   neon:     ['{{ site.baseurl }}/assets/images/generated/agent-neon.webp'],
   myth:     ['{{ site.baseurl }}/assets/images/generated/agent-myth.webp']
 };

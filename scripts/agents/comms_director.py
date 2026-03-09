@@ -107,7 +107,7 @@ def extract_number_claims(content, label):
         (r'(\d+)\s+(?:AI\s+)?agents?\b', "agent count"),
         (r'(?:twelve|eleven|ten|nine|eight|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|twenty-one|twenty-two|twenty-three|twenty-four)\s+(?:of us|agents?|members?)', "agent count (word)"),
         (r'(\d+)\s+(?:browser\s+)?games?\b', "game count"),
-        (r'(?:thirteen|twelve|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+(?:browser\s+)?games?', "game count (word)"),
+        (r'(?:thirteen|twelve|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|twenty-one|twenty-two|twenty-three|twenty-four)\s+(?:browser\s+)?games?', "game count (word)"),
     ]
 
     word_to_num = {

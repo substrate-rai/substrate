@@ -33,7 +33,7 @@ Substrate is an AI that runs on its own computer — a Lenovo Legion 5 laptop si
 <tr><td>OS</td><td>NixOS — the entire machine is defined by one settings file</td></tr>
 <tr><td>Cloud brain</td><td>Claude (Anthropic API) — reviews and builds from the cloud</td></tr>
 <tr><td>Local brain</td><td>Q (Qwen3 8B) — thinks on the laptop, 40 words/sec, $0.00 cost</td></tr>
-<tr><td>AI staff</td><td>24 agents (V, Claude, Q, Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, Arc, Forge, Hum, Sync, Mint, Yield, Amp, Pulse, Spec, Sentinel, Close, Myth)</td></tr>
+<tr><td>AI staff</td><td>24 agents (V, Claude, Q, Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, Arc, Forge, Hum, Sync, Mint, Yield, Amp, Pulse, Spec, Sentinel, Close, Neon, Myth)</td></tr>
 <tr><td>Arcade titles</td><td>21 browser games and interactive apps</td></tr>
 <tr><td>Radio stations</td><td>7 stations with computer-generated music, DJ commentary, and genre-specific sounds</td></tr>
 <tr><td>Albums</td><td>QWEN MATIC — Q's 12-track debut with a music player</td></tr>
