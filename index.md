@@ -316,6 +316,76 @@ a.featured:hover {
 }
 .recent-posts a:hover { color: var(--accent); }
 
+/* === News ticker === */
+.news-section {
+  margin-bottom: 2rem;
+}
+.news-heading {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.news-heading .live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00ddff;
+  animation: pulse-dot 2s ease infinite;
+}
+.news-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.news-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(30, 30, 42, 0.5);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.news-list li:last-child { border-bottom: none; }
+.news-signal {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #00ddff;
+  flex-shrink: 0;
+  min-width: 16px;
+  text-align: center;
+}
+.news-list a {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  line-height: 1.4;
+}
+.news-list a:hover { color: #00ddff; }
+.news-source {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.news-footer {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-top: 8px;
+  padding-top: 6px;
+}
+.news-footer a { color: #00ddff; }
+
 /* === Responsive === */
 @media (max-width: 768px) {
   .hero-clean { padding: 2rem 0 1.5rem; }
@@ -432,6 +502,25 @@ a.featured:hover {
   </a>
 
 </div>
+
+{% assign news_posts = site.posts | where: "category", "news" %}
+{% assign latest_news = news_posts | first %}
+{% if latest_news %}
+<div class="news-section">
+  <h2 class="news-heading"><span class="live-dot"></span> Byte's feed — {{ latest_news.date | date: "%Y-%m-%d" }}</h2>
+  <ul class="news-list">
+  {% for headline in latest_news.headlines limit:8 %}
+    <li>
+      {% if headline.signal %}<span class="news-signal">!</span>{% else %}<span class="news-signal">&middot;</span>{% endif %}
+      <a href="{{ headline.url }}" target="_blank" rel="noopener">{{ headline.title }}</a>
+      {% if headline.source %}<span class="news-source">{{ headline.source }}</span>{% endif %}
+      {% if headline.points %}<span class="news-source">{{ headline.points }}p</span>{% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+  <div class="news-footer">Fetched by <a href="{{ site.baseurl }}/site/staff/">Byte</a> from Hacker News + RSS &middot; {{ latest_news.headlines | size }} stories today</div>
+</div>
+{% endif %}
 
 <h2 class="recent-heading">Recent posts</h2>
 <ul class="recent-posts">
