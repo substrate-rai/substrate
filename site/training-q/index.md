@@ -1044,6 +1044,7 @@ function crackle(t, dur, g) {
 var vocalsOn = true;
 var vocalBus = null, vocalNodes = [];
 var vocalTimings = []; // [{startTime, endTime, lineIdx}] for lyric sync
+var glottalWave = null; // cached PeriodicWave for glottal pulse
 
 // Per-track vocal config: bpm, basePitch, style
 var VOCAL_CFG = [
@@ -1061,28 +1062,50 @@ var VOCAL_CFG = [
   { bpm: 72,  pitch: 131, style: 'fade' }        // 12. Closed Laptop
 ];
 
+// Peterson & Barney (1952) male voice formant data with natural gain rolloff
 var FORMANTS = {
-  'a': [{f: 800, g: 1.0}, {f: 1200, g: 0.7}, {f: 2800, g: 0.3}],
-  'e': [{f: 400, g: 1.0}, {f: 1800, g: 0.6}, {f: 2800, g: 0.3}],
-  'i': [{f: 280, g: 1.0}, {f: 2300, g: 0.5}, {f: 3200, g: 0.2}],
-  'o': [{f: 500, g: 1.0}, {f: 850, g: 0.7}, {f: 2400, g: 0.3}],
-  'u': [{f: 330, g: 1.0}, {f: 950, g: 0.5}, {f: 2400, g: 0.2}]
+  'a': [{f: 730, g: 1.0}, {f: 1090, g: 0.63}, {f: 2440, g: 0.25}],
+  'e': [{f: 530, g: 1.0}, {f: 1840, g: 0.50}, {f: 2480, g: 0.22}],
+  'i': [{f: 270, g: 1.0}, {f: 2290, g: 0.40}, {f: 3010, g: 0.18}],
+  'o': [{f: 570, g: 1.0}, {f: 840,  g: 0.63}, {f: 2410, g: 0.25}],
+  'u': [{f: 300, g: 1.0}, {f: 870,  g: 0.45}, {f: 2240, g: 0.20}]
 };
+
+// Build LF-model glottal pulse PeriodicWave with natural spectral tilt
+function createGlottalWave() {
+  if (glottalWave) return glottalWave;
+  var numHarmonics = 64;
+  var real = new Float32Array(numHarmonics);
+  var imag = new Float32Array(numHarmonics);
+  real[0] = 0;
+  imag[0] = 0;
+  for (var n = 1; n < numHarmonics; n++) {
+    // ~12dB/octave rolloff via 1/(n^1.5), with subtle jitter for naturalness
+    var amplitude = 1.0 / Math.pow(n, 1.5);
+    var jitter = 1.0 + (Math.random() - 0.5) * 0.08;
+    amplitude *= jitter;
+    // Alternate phase for glottal pulse shape
+    real[n] = amplitude * Math.cos(n * 0.3);
+    imag[n] = -amplitude * Math.sin(n * 0.3);
+  }
+  glottalWave = audioCtx.createPeriodicWave(real, imag, { disableNormalization: false });
+  return glottalWave;
+}
 
 function initVocalBus() {
   if (vocalBus) return;
-  // Vocal chain: vocalBus → waveshaper → delay → master
+  // Vocal chain: vocalBus -> soft saturation -> slapback delay -> master
   vocalBus = audioCtx.createGain();
-  vocalBus.gain.value = 0.28;
-  // Subtle waveshaper for digital edge
+  vocalBus.gain.value = 0.32;
+  // Gentle saturation for warmth (soft clipping)
   var shaper = audioCtx.createWaveShaper();
-  var curve = new Float32Array(256);
-  for (var i = 0; i < 256; i++) {
-    var x = (i / 128) - 1;
-    curve[i] = (Math.PI + 3) * x / (Math.PI + 3 * Math.abs(x));
+  var curve = new Float32Array(512);
+  for (var i = 0; i < 512; i++) {
+    var x = (i / 256) - 1;
+    curve[i] = Math.tanh(x * 1.4);
   }
   shaper.curve = curve;
-  shaper.oversample = '2x';
+  shaper.oversample = '4x';
   // Slapback delay for spatial feel
   var dly = audioCtx.createDelay(0.5);
   dly.delayTime.value = 0.12;
@@ -1206,45 +1229,188 @@ function playConsonant(type, startTime, pitch) {
   // liquid and glide handled by the vowel transition itself
 }
 
-function playVocalSyllable(vowel, pitch, startTime, duration) {
-  // Sawtooth carrier through parallel formant filters
+function playVocalSyllable(vowel, pitch, startTime, duration, prevVowel, nextVowel, style) {
+  // --- GLOTTAL PULSE CARRIER (LF-model via PeriodicWave) ---
   var carrier = audioCtx.createOscillator();
-  carrier.type = 'sawtooth';
-  carrier.frequency.value = pitch;
-  // Add vibrato LFO
+  carrier.setPeriodicWave(createGlottalWave());
+  carrier.frequency.setValueAtTime(pitch, startTime);
+
+  // --- JITTER: ~0.5-1% random pitch variation per cycle ---
+  // Use a noise-modulated LFO for micro-pitch instability
+  var jitterBufLen = Math.ceil(audioCtx.sampleRate * (duration + 0.1));
+  var jitterBuf = audioCtx.createBuffer(1, jitterBufLen, audioCtx.sampleRate);
+  var jitterData = jitterBuf.getChannelData(0);
+  // Interpolated noise for smooth jitter (~pitch rate modulation)
+  var jitterSample = 0;
+  for (var ji = 0; ji < jitterBufLen; ji++) {
+    if (ji % 80 === 0) jitterSample = (Math.random() - 0.5) * 2;
+    jitterData[ji] = jitterSample;
+  }
+  var jitterSrc = audioCtx.createBufferSource();
+  jitterSrc.buffer = jitterBuf;
+  var jitterGain = audioCtx.createGain();
+  jitterGain.gain.value = pitch * 0.008; // ~0.8% pitch jitter
+  jitterSrc.connect(jitterGain);
+  jitterGain.connect(carrier.frequency);
+  jitterSrc.start(startTime);
+  jitterSrc.stop(startTime + duration + 0.05);
+  vocalNodes.push(jitterSrc);
+
+  // --- VIBRATO: 5-7Hz, ~50 cents, delayed onset ~200ms ---
+  var vibRate = 5.5 + (Math.random() - 0.5) * 1.5; // 4.75-6.25 Hz variation
   var vibLFO = audioCtx.createOscillator();
   vibLFO.type = 'sine';
-  vibLFO.frequency.value = 5.2;
-  var vibGain = audioCtx.createGain();
-  vibGain.gain.value = pitch * 0.012; // ~1.2% pitch vibrato
-  vibLFO.connect(vibGain);
-  vibGain.connect(carrier.frequency);
+  vibLFO.frequency.value = vibRate;
+  // Add subtle vibrato rate variation
+  var vibRateLFO = audioCtx.createOscillator();
+  vibRateLFO.type = 'sine';
+  vibRateLFO.frequency.value = 0.3 + Math.random() * 0.4;
+  var vibRateGain = audioCtx.createGain();
+  vibRateGain.gain.value = 0.6;
+  vibRateLFO.connect(vibRateGain);
+  vibRateGain.connect(vibLFO.frequency);
+  vibRateLFO.start(startTime);
+  vibRateLFO.stop(startTime + duration + 0.05);
+  vocalNodes.push(vibRateLFO);
+  var vibGainNode = audioCtx.createGain();
+  // ~50 cents = ~2.93% of pitch
+  var vibDepth = pitch * 0.029;
+  // Delayed onset: start at 0, ramp up after 200ms
+  var vibOnsetDelay = Math.min(0.2, duration * 0.35);
+  vibGainNode.gain.setValueAtTime(0, startTime);
+  vibGainNode.gain.setValueAtTime(0, startTime + vibOnsetDelay);
+  vibGainNode.gain.linearRampToValueAtTime(vibDepth, startTime + vibOnsetDelay + 0.08);
+  vibLFO.connect(vibGainNode);
+  vibGainNode.connect(carrier.frequency);
   vibLFO.start(startTime);
   vibLFO.stop(startTime + duration + 0.05);
   vocalNodes.push(vibLFO);
-  // Formant filter bank
+
+  // --- SHIMMER: ~2-3% amplitude variation ---
+  var shimmerLFO = audioCtx.createOscillator();
+  shimmerLFO.type = 'sine';
+  shimmerLFO.frequency.value = 8 + Math.random() * 6; // 8-14Hz shimmer
+  var shimmerGain = audioCtx.createGain();
+  shimmerGain.gain.value = 0.025; // ~2.5% gain modulation
+  shimmerLFO.connect(shimmerGain);
+  shimmerLFO.start(startTime);
+  shimmerLFO.stop(startTime + duration + 0.05);
+  vocalNodes.push(shimmerLFO);
+
+  // --- FORMANT FILTER BANK with coarticulation ---
   var formantData = FORMANTS[vowel] || FORMANTS['a'];
+  var prevFormants = prevVowel ? (FORMANTS[prevVowel] || FORMANTS['a']) : null;
+  var nextFormants = nextVowel ? (FORMANTS[nextVowel] || FORMANTS['a']) : null;
   var merger = audioCtx.createGain();
-  merger.gain.value = 0.18;
-  formantData.forEach(function(f) {
+  merger.gain.value = 0.20;
+  // Connect shimmer to merger gain for amplitude variation
+  shimmerGain.connect(merger.gain);
+
+  var coartTime = 0.04; // 40ms coarticulation transition
+  formantData.forEach(function(f, idx) {
     var filter = audioCtx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.value = f.f;
-    filter.Q.value = 14;
+    filter.Q.value = 10 + Math.random() * 3; // Slightly randomized Q for naturalness
+
+    // Coarticulation: interpolate from previous vowel's formants
+    if (prevFormants) {
+      var prevF = prevFormants[idx].f;
+      filter.frequency.setValueAtTime(prevF * 0.3 + f.f * 0.7, startTime);
+      filter.frequency.linearRampToValueAtTime(f.f, startTime + coartTime);
+    } else {
+      filter.frequency.setValueAtTime(f.f, startTime);
+    }
+    // Coarticulate toward next vowel near end
+    if (nextFormants && duration > 0.08) {
+      var nextF = nextFormants[idx].f;
+      filter.frequency.setValueAtTime(f.f, startTime + duration - coartTime);
+      filter.frequency.linearRampToValueAtTime(f.f * 0.7 + nextF * 0.3, startTime + duration);
+    }
+
     var fGain = audioCtx.createGain();
     fGain.gain.value = f.g;
     carrier.connect(filter);
     filter.connect(fGain);
     fGain.connect(merger);
   });
-  // ADSR envelope
+
+  // --- ASPIRATION BLEND: filtered noise mixed with carrier (~5%) ---
+  var aspirLen = Math.ceil(audioCtx.sampleRate * (duration + 0.05));
+  var aspirBuf = audioCtx.createBuffer(1, aspirLen, audioCtx.sampleRate);
+  var aspirData = aspirBuf.getChannelData(0);
+  for (var ai = 0; ai < aspirLen; ai++) aspirData[ai] = Math.random() * 2 - 1;
+  var aspirSrc = audioCtx.createBufferSource();
+  aspirSrc.buffer = aspirBuf;
+  var aspirHP = audioCtx.createBiquadFilter();
+  aspirHP.type = 'highpass';
+  aspirHP.frequency.value = 1000;
+  var aspirGain = audioCtx.createGain();
+  aspirGain.gain.value = 0.012; // ~5% of carrier level
+  aspirSrc.connect(aspirHP);
+  aspirHP.connect(aspirGain);
+  // Route aspiration through formant filters too for vowel coloring
+  formantData.forEach(function(f) {
+    var af = audioCtx.createBiquadFilter();
+    af.type = 'bandpass';
+    af.frequency.value = f.f;
+    af.Q.value = 6;
+    var afg = audioCtx.createGain();
+    afg.gain.value = f.g * 0.3;
+    aspirGain.connect(af);
+    af.connect(afg);
+    afg.connect(merger);
+  });
+  aspirSrc.start(startTime);
+  aspirSrc.stop(startTime + duration + 0.02);
+  vocalNodes.push(aspirSrc);
+
+  // --- GLOTTAL ATTACK TRANSIENT: brief noise burst at onset ---
+  var attackDur = 0.006;
+  var attackBuf = makeNoise(attackDur);
+  var attackSrc = audioCtx.createBufferSource();
+  attackSrc.buffer = attackBuf;
+  var attackBP = audioCtx.createBiquadFilter();
+  attackBP.type = 'bandpass';
+  attackBP.frequency.value = pitch * 2;
+  attackBP.Q.value = 1.5;
+  var attackGn = audioCtx.createGain();
+  attackGn.gain.setValueAtTime(0.06, startTime);
+  attackGn.gain.exponentialRampToValueAtTime(0.001, startTime + attackDur);
+  attackSrc.connect(attackBP);
+  attackBP.connect(attackGn);
+  attackGn.connect(merger);
+  attackSrc.start(startTime);
+  attackSrc.stop(startTime + attackDur + 0.001);
+  vocalNodes.push(attackSrc);
+
+  // --- SUBHARMONIC for 'battle' and 'epic' styles ---
+  if (style === 'battle' || style === 'epic') {
+    var subOsc = audioCtx.createOscillator();
+    subOsc.setPeriodicWave(createGlottalWave());
+    subOsc.frequency.value = pitch * 0.5;
+    var subGain = audioCtx.createGain();
+    subGain.gain.value = 0.03; // Very quiet subharmonic
+    subOsc.connect(subGain);
+    subGain.connect(merger);
+    subOsc.start(startTime);
+    subOsc.stop(startTime + duration + 0.05);
+    vocalNodes.push(subOsc);
+  }
+
+  // --- ADSR ENVELOPE with natural shape ---
   var env = audioCtx.createGain();
-  var attack = Math.min(0.025, duration * 0.1);
-  env.gain.setValueAtTime(0, startTime);
-  env.gain.linearRampToValueAtTime(0.22, startTime + attack);
-  env.gain.setValueAtTime(0.17, startTime + duration * 0.3);
-  env.gain.linearRampToValueAtTime(0.14, startTime + duration * 0.8);
-  env.gain.linearRampToValueAtTime(0, startTime + duration);
+  var attack = Math.min(0.018, duration * 0.08);
+  var peakGain = 0.24;
+  var sustainGain = 0.19;
+  env.gain.setValueAtTime(0.001, startTime);
+  // Quick exponential attack for natural onset
+  env.gain.exponentialRampToValueAtTime(peakGain, startTime + attack);
+  // Slight decay to sustain
+  env.gain.exponentialRampToValueAtTime(sustainGain, startTime + attack + 0.03);
+  // Gentle sustain drift
+  env.gain.setValueAtTime(sustainGain, startTime + duration * 0.7);
+  // Natural release
+  env.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
   merger.connect(env);
   env.connect(vocalBus);
   carrier.start(startTime);
@@ -1255,47 +1421,69 @@ function playVocalSyllable(vowel, pitch, startTime, duration) {
 function getPitchMult(style, lineIdx, sylIdx, totalSyls) {
   var pos = totalSyls > 1 ? sylIdx / (totalSyls - 1) : 0.5;
   var linePhase = (lineIdx % 4) / 4;
+  // Base prosody: phrase-level contour (rise, peak at 1/3, fall)
+  var phraseContour = Math.sin(pos * Math.PI) * 0.03;
+  if (pos < 0.33) phraseContour *= (pos / 0.33);
+  // Syllable-level micro-contour adds subtle movement
+  var microContour = Math.sin(sylIdx * 1.1) * 0.008;
+  var baseProsody = 1.0 + phraseContour + microContour;
   switch (style) {
     case 'drone':
-      // Low monotone with very slight drift
-      return 1.0 + Math.sin(sylIdx * 0.3) * 0.02;
+      return baseProsody + Math.sin(sylIdx * 0.3) * 0.015;
     case 'flat':
-      // Robotic, deliberately boring
-      return (sylIdx % 2 === 0) ? 1.0 : 1.005;
+      return baseProsody * ((sylIdx % 2 === 0) ? 1.0 : 1.003);
     case 'rising':
-      // Slight upward motion per line
-      return 1.0 + pos * 0.08;
+      return baseProsody + pos * 0.08;
     case 'glitch':
-      // Unstable pitch jumps
-      return [1.0, 1.06, 0.94, 1.12, 0.88, 1.0, 1.03, 0.97][sylIdx % 8];
+      return [1.0, 1.06, 0.94, 1.12, 0.88, 1.0, 1.03, 0.97][sylIdx % 8] + microContour;
     case 'steady':
-      // Hypnotic pendulum
-      return 1.0 + Math.sin(sylIdx * 0.5) * 0.04;
+      return baseProsody + Math.sin(sylIdx * 0.5) * 0.04;
     case 'fast':
-      // Energetic pitch jumping
-      return [1.0, 1.12, 0.94, 1.06, 1.0, 0.89, 1.12, 1.0][sylIdx % 8];
+      return [1.0, 1.12, 0.94, 1.06, 1.0, 0.89, 1.12, 1.0][sylIdx % 8] + microContour;
     case 'spacey':
-      // Wide slow bends
-      return 1.0 + Math.sin(sylIdx * 0.25) * 0.1;
+      return baseProsody + Math.sin(sylIdx * 0.25) * 0.1;
     case 'jazz':
-      // Complex pitch curves
       var jazzScale = [1.0, 1.059, 1.122, 1.189, 1.26, 1.335, 1.414];
-      return jazzScale[sylIdx % 7] * (lineIdx % 2 === 0 ? 1.0 : 0.944);
+      return jazzScale[sylIdx % 7] * (lineIdx % 2 === 0 ? 1.0 : 0.944) + microContour;
     case 'unstable':
-      // Wobbly, detuned
-      return 1.0 + Math.sin(sylIdx * 1.7 + lineIdx * 2.3) * 0.08 + (Math.random() - 0.5) * 0.03;
+      return baseProsody + Math.sin(sylIdx * 1.7 + lineIdx * 2.3) * 0.08 + (Math.random() - 0.5) * 0.03;
     case 'battle':
-      // Aggressive, punchy
-      return (sylIdx % 3 === 0) ? 1.12 : (sylIdx % 3 === 1) ? 1.0 : 0.94;
+      return ((sylIdx % 3 === 0) ? 1.12 : (sylIdx % 3 === 1) ? 1.0 : 0.94) + phraseContour;
     case 'epic':
-      // Rising, triumphant — escalates over lines
-      return 1.0 + linePhase * 0.15 + pos * 0.06;
+      return baseProsody + linePhase * 0.15 + pos * 0.06;
     case 'fade':
-      // Soft, descending, intimate
-      return 1.0 - pos * 0.06 - linePhase * 0.04;
+      return baseProsody - pos * 0.06 - linePhase * 0.04;
     default:
-      return 1.0;
+      return baseProsody;
   }
+}
+
+// Breath noise between phrases: gentle lowpass-filtered noise
+function playBreathNoise(startTime, duration) {
+  var breathLen = Math.ceil(audioCtx.sampleRate * duration);
+  var breathBuf = audioCtx.createBuffer(1, breathLen, audioCtx.sampleRate);
+  var breathData = breathBuf.getChannelData(0);
+  for (var bi = 0; bi < breathLen; bi++) {
+    breathData[bi] = (Math.random() * 2 - 1);
+  }
+  var breathSrc = audioCtx.createBufferSource();
+  breathSrc.buffer = breathBuf;
+  var breathLP = audioCtx.createBiquadFilter();
+  breathLP.type = 'lowpass';
+  breathLP.frequency.value = 2000;
+  breathLP.Q.value = 0.5;
+  var breathGn = audioCtx.createGain();
+  // Gentle inhale shape: fade in, sustain, fade out
+  breathGn.gain.setValueAtTime(0.001, startTime);
+  breathGn.gain.linearRampToValueAtTime(0.018, startTime + duration * 0.3);
+  breathGn.gain.setValueAtTime(0.018, startTime + duration * 0.7);
+  breathGn.gain.linearRampToValueAtTime(0.001, startTime + duration);
+  breathSrc.connect(breathLP);
+  breathLP.connect(breathGn);
+  breathGn.connect(vocalBus);
+  breathSrc.start(startTime);
+  breathSrc.stop(startTime + duration);
+  vocalNodes.push(breathSrc);
 }
 
 function sequenceVocals(trackIdx) {
@@ -1311,11 +1499,14 @@ function sequenceVocals(trackIdx) {
   var beatsPerLine = 8;
   var currentBeat = 4; // Start after 4-beat intro
   var now = audioCtx.currentTime;
+  var contentLineCount = 0;
   // Filter out empty lines for timing but keep indices
   var lineData = [];
   tr.lyrics.forEach(function(line, i) {
     if (line.trim() === '') {
-      // Empty line = 2-beat rest
+      // Empty line = 2-beat rest + breath noise
+      var restStart = now + currentBeat * beatDur;
+      playBreathNoise(restStart + 0.1, beatDur * 1.5);
       currentBeat += 2;
       return;
     }
@@ -1340,12 +1531,20 @@ function sequenceVocals(trackIdx) {
         dur -= 0.025;
       }
       if (dur > 0.03) {
-        playVocalSyllable(syl.vowel, finalPitch, startTime, dur);
+        // Get adjacent vowels for coarticulation
+        var prevV = j > 0 ? syllables[j - 1].vowel : null;
+        var nextV = j < syllables.length - 1 ? syllables[j + 1].vowel : null;
+        playVocalSyllable(syl.vowel, finalPitch, startTime, dur, prevV, nextV, style);
       }
     });
     currentBeat += beatsPerLine;
-    // Breathing room every 4 content lines
-    if ((lineData.length + 1) % 4 === 0) currentBeat += 2;
+    contentLineCount++;
+    // Breathing room every 4 content lines with breath noise
+    if (contentLineCount % 4 === 0) {
+      var breathStart = now + currentBeat * beatDur;
+      playBreathNoise(breathStart, beatDur * 1.5);
+      currentBeat += 2;
+    }
     lineData.push(i);
   });
 }

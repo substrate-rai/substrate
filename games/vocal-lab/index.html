@@ -464,10 +464,11 @@ input[type="range"]::-moz-range-thumb {
       <button class="btn stop-btn" id="stopBtn" onclick="stopSpeaking()">Stop</button>
       <span class="carrier-label">Carrier:</span>
       <select class="carrier-select" id="carrierSelect" onchange="updateCarrier()">
+        <option value="glottal" selected>Glottal Pulse</option>
         <option value="sawtooth">Sawtooth</option>
         <option value="pulse">Pulse</option>
         <option value="noise">Noise</option>
-        <option value="blend">Saw + Noise</option>
+        <option value="blend">Glottal + Noise</option>
         <option value="square">Square</option>
       </select>
     </div>
@@ -542,26 +543,27 @@ var masterGain = null;
 var isSpeaking = false;
 var stopRequested = false;
 var animFrameId = null;
-var currentPreset = 'vocaloid';
+var currentPreset = 'human';
 
 // --- PRESETS ---
 var PRESETS = {
   robot:    { pitch: 165, speed: 0.12, vibrato: 0,  vibDepth: 0, breathiness: 0,    nasality: 0,   clarity: 25, attack: 5,  release: 10,  humanize: 0,  carrier: 'sawtooth', contour: 0 },
-  vocaloid: { pitch: 220, speed: 0.15, vibrato: 5,  vibDepth: 4, breathiness: 0.1,  nasality: 0.2, clarity: 18, attack: 15, release: 40,  humanize: 10, carrier: 'sawtooth', contour: 50 },
+  human:    { pitch: 140, speed: 0.16, vibrato: 5.5,vibDepth: 5, breathiness: 0.12, nasality: 0.15,clarity: 11, attack: 12, release: 45,  humanize: 20, carrier: 'glottal',  contour: 60 },
+  vocaloid: { pitch: 220, speed: 0.15, vibrato: 5,  vibDepth: 4, breathiness: 0.1,  nasality: 0.2, clarity: 14, attack: 15, release: 40,  humanize: 10, carrier: 'glottal',  contour: 50 },
   whisper:  { pitch: 165, speed: 0.18, vibrato: 0,  vibDepth: 0, breathiness: 0.8,  nasality: 0,   clarity: 5,  attack: 30, release: 80,  humanize: 25, carrier: 'noise',    contour: 30 },
-  choir:    { pitch: 330, speed: 0.25, vibrato: 6,  vibDepth: 8, breathiness: 0.15, nasality: 0.3, clarity: 12, attack: 50, release: 100, humanize: 15, carrier: 'sawtooth', contour: 70 },
-  rap:      { pitch: 130, speed: 0.10, vibrato: 2,  vibDepth: 2, breathiness: 0.05, nasality: 0.15,clarity: 20, attack: 10, release: 20,  humanize: 20, carrier: 'pulse',    contour: 40 },
-  deep:     { pitch: 82,  speed: 0.18, vibrato: 3,  vibDepth: 5, breathiness: 0.1,  nasality: 0.4, clarity: 15, attack: 20, release: 50,  humanize: 15, carrier: 'sawtooth', contour: 25 },
+  choir:    { pitch: 330, speed: 0.25, vibrato: 6,  vibDepth: 8, breathiness: 0.15, nasality: 0.3, clarity: 10, attack: 50, release: 100, humanize: 15, carrier: 'glottal',  contour: 70 },
+  rap:      { pitch: 130, speed: 0.10, vibrato: 2,  vibDepth: 2, breathiness: 0.05, nasality: 0.15,clarity: 16, attack: 10, release: 20,  humanize: 20, carrier: 'glottal',  contour: 40 },
+  deep:     { pitch: 82,  speed: 0.18, vibrato: 3,  vibDepth: 5, breathiness: 0.1,  nasality: 0.4, clarity: 12, attack: 20, release: 50,  humanize: 15, carrier: 'glottal',  contour: 25 },
   helium:   { pitch: 440, speed: 0.08, vibrato: 8,  vibDepth: 6, breathiness: 0,    nasality: 0,   clarity: 20, attack: 8,  release: 15,  humanize: 5,  carrier: 'square',   contour: 60 }
 };
 
-// --- FORMANT DATA ---
+// --- FORMANT DATA (Peterson & Barney 1952, male voice) ---
 var FORMANTS = {
-  a: { f1: 800,  f2: 1200, f3: 2800, q1: 15, q2: 12, q3: 8 },
-  e: { f1: 400,  f2: 2200, f3: 2800, q1: 15, q2: 12, q3: 8 },
-  i: { f1: 270,  f2: 2300, f3: 3000, q1: 15, q2: 12, q3: 8 },
-  o: { f1: 500,  f2: 800,  f3: 2800, q1: 15, q2: 12, q3: 8 },
-  u: { f1: 300,  f2: 700,  f3: 2800, q1: 15, q2: 12, q3: 8 }
+  a: { f1: 730,  f2: 1090, f3: 2440, q1: 12, q2: 10, q3: 7 },
+  e: { f1: 530,  f2: 1840, f3: 2480, q1: 12, q2: 10, q3: 7 },
+  i: { f1: 270,  f2: 2290, f3: 3010, q1: 12, q2: 10, q3: 7 },
+  o: { f1: 570,  f2: 840,  f3: 2410, q1: 12, q2: 10, q3: 7 },
+  u: { f1: 300,  f2: 870,  f3: 2240, q1: 12, q2: 10, q3: 7 }
 };
 
 // Current custom formant overrides per vowel
@@ -1176,6 +1178,28 @@ function initAudio() {
   if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
+// Cached PeriodicWave for glottal pulse model
+var glottalWaveCache = null;
+
+function createGlottalWave(ctx) {
+  if (glottalWaveCache) return glottalWaveCache;
+  var numHarmonics = 64;
+  var real = new Float32Array(numHarmonics);
+  var imag = new Float32Array(numHarmonics);
+  real[0] = 0;
+  imag[0] = 0;
+  for (var n = 1; n < numHarmonics; n++) {
+    // LF-model: ~12dB/octave rolloff via 1/(n^1.5), with subtle jitter
+    var amplitude = 1.0 / Math.pow(n, 1.5);
+    var jitter = 1.0 + (Math.random() - 0.5) * 0.08;
+    amplitude *= jitter;
+    real[n] = amplitude * Math.cos(n * 0.3);
+    imag[n] = -amplitude * Math.sin(n * 0.3);
+  }
+  glottalWaveCache = ctx.createPeriodicWave(real, imag, { disableNormalization: false });
+  return glottalWaveCache;
+}
+
 function createCarrierNode(ctx, type, freq, time, duration) {
   if (type === 'noise') {
     var bufLen = Math.ceil(ctx.sampleRate * (duration + 0.2));
@@ -1187,10 +1211,17 @@ function createCarrierNode(ctx, type, freq, time, duration) {
     return { node: src, isNoise: true };
   }
 
-  if (type === 'blend') {
-    // We return the sawtooth; noise is added separately in the synth chain
+  if (type === 'glottal') {
     var osc = ctx.createOscillator();
-    osc.type = 'sawtooth';
+    osc.setPeriodicWave(createGlottalWave(ctx));
+    osc.frequency.value = freq;
+    return { node: osc, isNoise: false };
+  }
+
+  if (type === 'blend') {
+    // Glottal pulse carrier; noise added separately in synth chain
+    var osc = ctx.createOscillator();
+    osc.setPeriodicWave(createGlottalWave(ctx));
     osc.frequency.value = freq;
     return { node: osc, isNoise: false, blend: true };
   }
@@ -1272,24 +1303,33 @@ function speakText() {
     var attackTime = params.attack / 1000;
     var releaseTime = params.release / 1000;
 
-    // --- PITCH CONTOUR ---
+    // --- PROSODY CONTOURS (smooth pitch curves) ---
     var pitchHz = params.pitch;
     var contourAmount = params.contour / 100;
 
     // Position in total utterance (0 to 1)
     var position = pi / Math.max(1, totalPhonemes - 1);
 
-    // Declarative: gentle fall
+    // Phrase-level: rise at start, peak 1/3 through, gentle fall to end
+    var phraseContour = 0;
+    if (position < 0.33) {
+      phraseContour = contourAmount * 18 * (position / 0.33);
+    } else {
+      phraseContour = contourAmount * 18 * (1.0 - (position - 0.33) / 0.67);
+    }
+
     var contourShift = 0;
     if (p.sentenceQuestion) {
       // Questions: rise at the end
-      contourShift = contourAmount * 30 * (position - 0.3);
+      contourShift = phraseContour + contourAmount * 30 * Math.pow(position, 2);
     } else {
-      // Statements: slight rise then fall
-      contourShift = contourAmount * 15 * Math.sin(position * Math.PI) - contourAmount * 10 * position;
+      // Statements: phrase arch with gentle fall
+      contourShift = phraseContour - contourAmount * 12 * position;
     }
     // Stressed syllables get slight rise
     if (p.stressed) contourShift += contourAmount * 8;
+    // Syllable-level micro-variation
+    contourShift += Math.sin(syllableCount * 1.1) * contourAmount * 3;
 
     pitchHz += contourShift;
 
@@ -1297,7 +1337,7 @@ function speakText() {
     var syllableGain = 0.5;
     // Stressed 15% louder
     if (p.stressed) syllableGain *= 1.15;
-    // Random ±10%
+    // Random +/-10%
     syllableGain *= 0.9 + Math.random() * 0.2;
 
     // --- JAW SIMULATION: faster = less clarity ---
@@ -1317,6 +1357,16 @@ function speakText() {
     // --- VOWEL FORMANT SYNTHESIS ---
     var formant = getFormantForVowel(p.vowel);
 
+    // Get adjacent vowels for coarticulation transitions
+    var prevVowelFormant = null;
+    var nextVowelFormant = null;
+    if (pi > 0 && phonemes[pi - 1].vowel) {
+      prevVowelFormant = getFormantForVowel(phonemes[pi - 1].vowel);
+    }
+    if (pi + 1 < phonemes.length && phonemes[pi + 1].vowel) {
+      nextVowelFormant = getFormantForVowel(phonemes[pi + 1].vowel);
+    }
+
     // Coarticulation: blend toward adjacent consonants
     var coartF1 = formant.f1;
     var coartF2 = formant.f2;
@@ -1331,15 +1381,50 @@ function speakText() {
     var carrier = createCarrierNode(audioCtx, params.carrier, pitchHz, vowelStart, vowelDur + 0.1);
     var carrierNode = carrier.node;
 
-    // Vibrato (if not noise)
+    // --- JITTER: ~0.8% random pitch micro-variation ---
+    if (!carrier.isNoise) {
+      var jitterBufLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.1));
+      var jitterBuf = audioCtx.createBuffer(1, jitterBufLen, audioCtx.sampleRate);
+      var jitterData = jitterBuf.getChannelData(0);
+      var jSamp = 0;
+      for (var ji = 0; ji < jitterBufLen; ji++) {
+        if (ji % 80 === 0) jSamp = (Math.random() - 0.5) * 2;
+        jitterData[ji] = jSamp;
+      }
+      var jitterSrc = audioCtx.createBufferSource();
+      jitterSrc.buffer = jitterBuf;
+      var jitterGain = audioCtx.createGain();
+      jitterGain.gain.value = pitchHz * 0.008;
+      jitterSrc.connect(jitterGain);
+      jitterGain.connect(carrierNode.frequency);
+      jitterSrc.start(vowelStart);
+      jitterSrc.stop(vowelStart + vowelDur + 0.05);
+      allNodes.push(jitterSrc);
+    }
+
+    // --- VIBRATO: delayed onset, rate variation ---
     if (!carrier.isNoise && params.vibrato > 0) {
+      var vibRate = params.vibrato + (Math.random() - 0.5) * 1.5;
       var vibLfo = audioCtx.createOscillator();
       vibLfo.type = 'sine';
-      vibLfo.frequency.value = params.vibrato;
+      vibLfo.frequency.value = vibRate;
+      // Subtle vibrato rate variation
+      var vibRateLfo = audioCtx.createOscillator();
+      vibRateLfo.type = 'sine';
+      vibRateLfo.frequency.value = 0.3 + Math.random() * 0.4;
+      var vibRateGn = audioCtx.createGain();
+      vibRateGn.gain.value = 0.6;
+      vibRateLfo.connect(vibRateGn);
+      vibRateGn.connect(vibLfo.frequency);
+      vibRateLfo.start(vowelStart);
+      vibRateLfo.stop(vowelStart + vowelDur + 0.05);
+      allNodes.push(vibRateLfo);
       var vibGain = audioCtx.createGain();
-      // Vibrato increases toward end of syllable
-      vibGain.gain.setValueAtTime(params.vibDepth * 0.5, vowelStart);
-      vibGain.gain.linearRampToValueAtTime(params.vibDepth, vowelStart + vowelDur * 0.8);
+      // Delayed onset: ~200ms before vibrato kicks in
+      var vibOnsetDelay = Math.min(0.2, vowelDur * 0.35);
+      vibGain.gain.setValueAtTime(0, vowelStart);
+      vibGain.gain.setValueAtTime(0, vowelStart + vibOnsetDelay);
+      vibGain.gain.linearRampToValueAtTime(params.vibDepth, vowelStart + vibOnsetDelay + 0.08);
       vibLfo.connect(vibGain);
       vibGain.connect(carrierNode.frequency);
       vibLfo.start(vowelStart);
@@ -1347,27 +1432,74 @@ function speakText() {
       allNodes.push(vibLfo);
     }
 
-    // Pitch portamento (slide from previous pitch)
+    // --- SHIMMER: ~2.5% amplitude modulation ---
+    var shimmerLfo = audioCtx.createOscillator();
+    shimmerLfo.type = 'sine';
+    shimmerLfo.frequency.value = 8 + Math.random() * 6;
+    var shimmerGn = audioCtx.createGain();
+    shimmerGn.gain.value = 0.025;
+    shimmerLfo.connect(shimmerGn);
+    shimmerLfo.start(vowelStart);
+    shimmerLfo.stop(vowelStart + vowelDur + 0.05);
+    allNodes.push(shimmerLfo);
+
+    // Pitch portamento with exponential curve for natural feel
     if (!carrier.isNoise && contourAmount > 0) {
-      carrierNode.frequency.setValueAtTime(pitchHz - contourShift * 0.3, vowelStart);
-      carrierNode.frequency.linearRampToValueAtTime(pitchHz, vowelStart + Math.min(0.03, vowelDur * 0.2));
+      var portaStart = Math.max(pitchHz - contourShift * 0.3, 20);
+      carrierNode.frequency.setValueAtTime(portaStart, vowelStart);
+      carrierNode.frequency.exponentialRampToValueAtTime(pitchHz, vowelStart + Math.min(0.04, vowelDur * 0.2));
+      // Syllable-level: slight fall at end
+      if (vowelDur > 0.08) {
+        carrierNode.frequency.setValueAtTime(pitchHz, vowelStart + vowelDur * 0.75);
+        carrierNode.frequency.exponentialRampToValueAtTime(Math.max(pitchHz * 0.98, 20), vowelStart + vowelDur);
+      }
     }
 
-    // Formant filters
+    // --- FORMANT FILTERS with smooth coarticulation transitions ---
+    var coartTime = 0.04; // 40ms transition
+
     var f1 = audioCtx.createBiquadFilter();
     f1.type = 'bandpass';
-    f1.frequency.value = coartF1;
     f1.Q.value = effectiveClarity * (formant.q1 / 15);
+    // Coarticulate from previous vowel
+    if (prevVowelFormant) {
+      f1.frequency.setValueAtTime(prevVowelFormant.f1 * 0.3 + coartF1 * 0.7, vowelStart);
+      f1.frequency.linearRampToValueAtTime(coartF1, vowelStart + coartTime);
+    } else {
+      f1.frequency.setValueAtTime(coartF1, vowelStart);
+    }
+    // Coarticulate toward next vowel
+    if (nextVowelFormant && vowelDur > 0.08) {
+      f1.frequency.setValueAtTime(coartF1, vowelStart + vowelDur - coartTime);
+      f1.frequency.linearRampToValueAtTime(coartF1 * 0.7 + nextVowelFormant.f1 * 0.3, vowelStart + vowelDur);
+    }
 
     var f2 = audioCtx.createBiquadFilter();
     f2.type = 'bandpass';
-    f2.frequency.value = coartF2;
     f2.Q.value = effectiveClarity * (formant.q2 / 15);
+    if (prevVowelFormant) {
+      f2.frequency.setValueAtTime(prevVowelFormant.f2 * 0.3 + coartF2 * 0.7, vowelStart);
+      f2.frequency.linearRampToValueAtTime(coartF2, vowelStart + coartTime);
+    } else {
+      f2.frequency.setValueAtTime(coartF2, vowelStart);
+    }
+    if (nextVowelFormant && vowelDur > 0.08) {
+      f2.frequency.setValueAtTime(coartF2, vowelStart + vowelDur - coartTime);
+      f2.frequency.linearRampToValueAtTime(coartF2 * 0.7 + nextVowelFormant.f2 * 0.3, vowelStart + vowelDur);
+    }
 
     var f3 = audioCtx.createBiquadFilter();
     f3.type = 'bandpass';
     f3.frequency.value = formant.f3;
     f3.Q.value = effectiveClarity * (formant.q3 / 15);
+    if (prevVowelFormant) {
+      f3.frequency.setValueAtTime(prevVowelFormant.f3 * 0.3 + formant.f3 * 0.7, vowelStart);
+      f3.frequency.linearRampToValueAtTime(formant.f3, vowelStart + coartTime);
+    }
+    if (nextVowelFormant && vowelDur > 0.08) {
+      f3.frequency.setValueAtTime(formant.f3, vowelStart + vowelDur - coartTime);
+      f3.frequency.linearRampToValueAtTime(formant.f3 * 0.7 + nextVowelFormant.f3 * 0.3, vowelStart + vowelDur);
+    }
 
     // Nasality filter
     var nasalFilter = null;
@@ -1378,24 +1510,28 @@ function speakText() {
       nasalFilter.Q.value = 5;
     }
 
-    // Gain envelope
+    // Gain envelope with natural exponential attack
     var vowelGain = audioCtx.createGain();
-    vowelGain.gain.setValueAtTime(0.0001, vowelStart);
-    vowelGain.gain.linearRampToValueAtTime(syllableGain, vowelStart + attackTime);
-    vowelGain.gain.setValueAtTime(syllableGain, vowelStart + vowelDur - releaseTime);
-    vowelGain.gain.linearRampToValueAtTime(0.0001, vowelStart + vowelDur);
+    vowelGain.gain.setValueAtTime(0.001, vowelStart);
+    vowelGain.gain.exponentialRampToValueAtTime(syllableGain, vowelStart + attackTime);
+    // Slight decay after attack
+    vowelGain.gain.exponentialRampToValueAtTime(syllableGain * 0.85, vowelStart + attackTime + 0.03);
+    vowelGain.gain.setValueAtTime(syllableGain * 0.85, vowelStart + vowelDur - releaseTime);
+    vowelGain.gain.exponentialRampToValueAtTime(0.001, vowelStart + vowelDur);
 
     // Build formant mixing
     var formantMerger = audioCtx.createGain();
     formantMerger.gain.value = 1.0;
+    // Connect shimmer for amplitude variation
+    shimmerGn.connect(formantMerger.gain);
 
     // Route carrier through formants in parallel
     var f1Gain = audioCtx.createGain();
     f1Gain.gain.value = 1.0;
     var f2Gain = audioCtx.createGain();
-    f2Gain.gain.value = 0.7;
+    f2Gain.gain.value = 0.63;
     var f3Gain = audioCtx.createGain();
-    f3Gain.gain.value = 0.4;
+    f3Gain.gain.value = 0.32;
 
     carrierNode.connect(f1);
     f1.connect(f1Gain);
@@ -1409,6 +1545,28 @@ function speakText() {
     f3.connect(f3Gain);
     f3Gain.connect(formantMerger);
 
+    // --- GLOTTAL ATTACK TRANSIENT: brief noise burst at onset ---
+    var glottalAttackDur = 0.006;
+    var gaBufLen = Math.ceil(audioCtx.sampleRate * glottalAttackDur);
+    var gaBuf = audioCtx.createBuffer(1, gaBufLen, audioCtx.sampleRate);
+    var gaData = gaBuf.getChannelData(0);
+    for (var gai = 0; gai < gaBufLen; gai++) gaData[gai] = Math.random() * 2 - 1;
+    var gaSrc = audioCtx.createBufferSource();
+    gaSrc.buffer = gaBuf;
+    var gaBP = audioCtx.createBiquadFilter();
+    gaBP.type = 'bandpass';
+    gaBP.frequency.value = pitchHz * 2;
+    gaBP.Q.value = 1.5;
+    var gaGn = audioCtx.createGain();
+    gaGn.gain.setValueAtTime(0.06, vowelStart);
+    gaGn.gain.exponentialRampToValueAtTime(0.001, vowelStart + glottalAttackDur);
+    gaSrc.connect(gaBP);
+    gaBP.connect(gaGn);
+    gaGn.connect(formantMerger);
+    gaSrc.start(vowelStart);
+    gaSrc.stop(vowelStart + glottalAttackDur + 0.001);
+    allNodes.push(gaSrc);
+
     // Nasal path
     if (nasalFilter && params.nasality > 0) {
       var nasalGain2 = audioCtx.createGain();
@@ -1419,7 +1577,28 @@ function speakText() {
       allNodes.push(nasalFilter);
     }
 
-    // Breathiness: add filtered noise
+    // --- ASPIRATION BLEND: highpass noise at ~5% of carrier ---
+    var aspirLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.05));
+    var aspirBuf = audioCtx.createBuffer(1, aspirLen, audioCtx.sampleRate);
+    var aspirData = aspirBuf.getChannelData(0);
+    for (var asi = 0; asi < aspirLen; asi++) aspirData[asi] = Math.random() * 2 - 1;
+    var aspirSrc = audioCtx.createBufferSource();
+    aspirSrc.buffer = aspirBuf;
+    var aspirHP = audioCtx.createBiquadFilter();
+    aspirHP.type = 'highpass';
+    aspirHP.frequency.value = 1000;
+    var aspirGn = audioCtx.createGain();
+    aspirGn.gain.value = 0.012 + params.breathiness * 0.02;
+    aspirSrc.connect(aspirHP);
+    aspirHP.connect(aspirGn);
+    aspirGn.connect(f1);
+    aspirGn.connect(f2);
+    aspirGn.connect(f3);
+    aspirSrc.start(vowelStart);
+    aspirSrc.stop(vowelStart + vowelDur + 0.02);
+    allNodes.push(aspirSrc);
+
+    // Breathiness: add filtered noise (in addition to aspiration)
     if (params.breathiness > 0) {
       var breathLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.05));
       var breathBuf = audioCtx.createBuffer(1, breathLen, audioCtx.sampleRate);
@@ -1454,7 +1633,7 @@ function speakText() {
       blendSrc.buffer = blendBuf;
 
       var blendGain = audioCtx.createGain();
-      blendGain.gain.value = 0.15;
+      blendGain.gain.value = 0.12;
 
       blendSrc.connect(f1);
       blendSrc.connect(f2);
@@ -1478,9 +1657,10 @@ function speakText() {
       synthesizeConsonant(audioCtx, p.endConsonant, vowelStart + vowelDur - 0.01, syllableDur * endConsDur, effectsOutput, consonantCfg, consonantCfg.volume * syllableGain * 0.8);
     }
 
-    // --- BREATH SOUND every ~8 syllables ---
+    // --- BREATH NOISE between phrases: lowpass-filtered gentle inhale ---
     if (syllableCount % 8 === 0 && consonantCfg.breaths) {
-      var breathInhaleLen = Math.ceil(audioCtx.sampleRate * 0.15);
+      var breathInhaleDur = 0.2;
+      var breathInhaleLen = Math.ceil(audioCtx.sampleRate * breathInhaleDur);
       var breathInhaleBuf = audioCtx.createBuffer(1, breathInhaleLen, audioCtx.sampleRate);
       var breathInhaleData = breathInhaleBuf.getChannelData(0);
       for (var bii = 0; bii < breathInhaleLen; bii++) breathInhaleData[bii] = Math.random() * 2 - 1;
@@ -1488,23 +1668,24 @@ function speakText() {
       breathInhaleSrc.buffer = breathInhaleBuf;
 
       var breathInhaleFilter = audioCtx.createBiquadFilter();
-      breathInhaleFilter.type = 'bandpass';
-      breathInhaleFilter.frequency.value = 800;
+      breathInhaleFilter.type = 'lowpass';
+      breathInhaleFilter.frequency.value = 2000;
       breathInhaleFilter.Q.value = 0.5;
 
       var breathInhaleGain = audioCtx.createGain();
-      breathInhaleGain.gain.setValueAtTime(0.0001, vowelStart + vowelDur);
-      breathInhaleGain.gain.linearRampToValueAtTime(0.08, vowelStart + vowelDur + 0.05);
-      breathInhaleGain.gain.linearRampToValueAtTime(0.0001, vowelStart + vowelDur + 0.14);
+      breathInhaleGain.gain.setValueAtTime(0.001, vowelStart + vowelDur);
+      breathInhaleGain.gain.linearRampToValueAtTime(0.022, vowelStart + vowelDur + breathInhaleDur * 0.3);
+      breathInhaleGain.gain.setValueAtTime(0.022, vowelStart + vowelDur + breathInhaleDur * 0.7);
+      breathInhaleGain.gain.linearRampToValueAtTime(0.001, vowelStart + vowelDur + breathInhaleDur);
 
       breathInhaleSrc.connect(breathInhaleFilter);
       breathInhaleFilter.connect(breathInhaleGain);
       breathInhaleGain.connect(effectsOutput);
       breathInhaleSrc.start(vowelStart + vowelDur);
-      breathInhaleSrc.stop(vowelStart + vowelDur + 0.15);
+      breathInhaleSrc.stop(vowelStart + vowelDur + breathInhaleDur);
       allNodes.push(breathInhaleSrc);
 
-      currentTime = vowelStart + vowelDur + 0.18;
+      currentTime = vowelStart + vowelDur + breathInhaleDur + 0.03;
     } else {
       currentTime = vowelStart + vowelDur;
     }
@@ -1531,6 +1712,7 @@ function stopSpeaking() {
     audioCtx = null;
     analyser = null;
     masterGain = null;
+    glottalWaveCache = null;
   }
   document.getElementById('statusBar').textContent = 'Stopped';
   document.getElementById('statusBar').className = 'status-bar';
@@ -1749,7 +1931,7 @@ function drawGridLines(ctx2d, canvas) {
 // ========================================
 
 buildUI();
-loadPreset('vocaloid');
+loadPreset('human');
 
 // Resize canvas on window resize
 window.addEventListener('resize', function() {
