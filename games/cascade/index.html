@@ -9,13 +9,23 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>CASCADE — Go Go Go! | Substrate Arcade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
 
   :root {
     --bg: #060810;
@@ -126,7 +136,7 @@ redirect_from:
     top: -14px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 7px;
+    font-size: 12px;
     color: var(--dim);
     white-space: nowrap;
   }
@@ -323,7 +333,7 @@ redirect_from:
     position: absolute;
     top: 4px;
     right: 6px;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: var(--momentum);
     font-weight: 700;
   }
@@ -386,7 +396,7 @@ redirect_from:
   }
 
   .history-item {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: var(--dim);
     padding: 2px 0;
     display: flex;
@@ -476,7 +486,7 @@ redirect_from:
   .title-credit {
     position: absolute;
     bottom: 16px;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: #334;
   }
   .title-credit a { color: #445566; text-decoration: none; }
@@ -529,7 +539,7 @@ redirect_from:
     text-align: center;
   }
   .end-stat .es-val { font-size: 1.4rem; font-weight: 700; color: var(--momentum); }
-  .end-stat .es-label { font-size: 0.65rem; color: var(--dim); margin-top: 4px; }
+  .end-stat .es-label { font-size: 0.75rem; color: var(--dim); margin-top: 4px; }
 
   #end-lesson {
     max-width: 440px;
@@ -591,13 +601,14 @@ redirect_from:
 
 <div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-city.png') center/cover no-repeat;opacity:0.12;pointer-events:none;"></div>
 
-<a href="#game" class="sr-only">Skip to game</a>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
+<main id="game-main" role="main">
 <!-- RESTART BUTTON (always visible during play) -->
 <button id="restart-btn" onclick="confirmRestart()" aria-label="Start over (R)">RESTART</button>
 
 <!-- TITLE -->
-<div id="title-screen" role="main" aria-label="CASCADE title screen">
+<div id="title-screen" aria-label="CASCADE title screen">
   <div class="title-name">CASCADE</div>
   <div class="title-sub">GO GO GO!</div>
   <div class="title-philosophy">
@@ -1386,7 +1397,7 @@ redirect_from:
 <div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
   <span style="color:#c8c8d0">This game runs on one laptop.</span>
   <a href="/substrate/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;">&times;</button>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){
@@ -1396,9 +1407,10 @@ function showFundPrompt(){
   if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
 }
 </script>
+</main>
 
 <!-- Procedural Music: Building tension, escalating arpeggios -->
-<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<button id="music-toggle" onclick="toggleMusic()" aria-label="Toggle music" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;min-width:44px;min-height:44px;">&#9835; OFF</button>
 <script>
 (function(){
 var musicPlaying = false;

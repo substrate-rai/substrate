@@ -39,6 +39,15 @@ redirect_from:
     transform: translate(2px, 2px) !important;
     box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   html, body {
     overscroll-behavior: none;
   }
@@ -88,7 +97,7 @@ redirect_from:
 
   /* DIALOGUE */
   .dialogue-area { padding:1rem; min-height:160px; position:relative; }
-  .dialogue-speaker { font-size:0.65rem; color:var(--accent); letter-spacing:0.15em; font-weight:700; margin-bottom:0.3rem; }
+  .dialogue-speaker { font-size:0.75rem; color:var(--accent); letter-spacing:0.15em; font-weight:700; margin-bottom:0.3rem; }
   .dialogue-text { font-size:0.82rem; color:var(--text-mid); line-height:1.7; min-height:60px; }
   .dialogue-text em { color:var(--accent); font-style:italic; }
 
@@ -110,7 +119,7 @@ redirect_from:
   .dossier { border:1px solid var(--border); border-radius:0; padding:1rem; margin:0.5rem 1rem; background:var(--surface); }
   .dossier-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
   .dossier-name { font-size:0.9rem; color:var(--text-bright); font-weight:700; }
-  .dossier-rarity { font-size:0.6rem; padding:2px 6px; border-radius:0; font-weight:700; letter-spacing:0.1em; }
+  .dossier-rarity { font-size:0.75rem; padding:2px 6px; border-radius:0; font-weight:700; letter-spacing:0.1em; }
   .rarity-common { color:#888; border:1px solid #444; }
   .rarity-uncommon { color:var(--int-blue); border:1px solid rgba(68,136,255,0.4); }
   .rarity-rare { color:var(--rare-purple); border:1px solid rgba(204,102,255,0.4); }
@@ -144,22 +153,22 @@ redirect_from:
   .roster-slot { border:1px solid var(--border); border-radius:0; padding:8px; background:rgba(0,0,0,0.2); min-height:80px; cursor:pointer; transition:none; }
   .roster-slot:hover { border-color:var(--accent); }
   .roster-slot .slot-name { font-size:0.75rem; color:var(--text-bright); font-weight:700; }
-  .roster-slot .slot-dept { font-size:0.6rem; color:var(--text-dim); margin-top:2px; }
-  .roster-slot .slot-primary { font-size:0.65rem; margin-top:4px; }
+  .roster-slot .slot-dept { font-size:0.75rem; color:var(--text-dim); margin-top:2px; }
+  .roster-slot .slot-primary { font-size:0.75rem; margin-top:4px; }
   .roster-slot.empty { display:flex; align-items:center; justify-content:center; }
   .roster-slot.empty span { color:var(--text-dim); font-size:0.7rem; }
 
   /* DISPATCH */
   .mission-card { border:1px solid var(--border); border-radius:0; padding:1rem; margin:8px 0; background:var(--surface); }
   .mission-card h3 { font-size:0.85rem; color:var(--text-bright); margin:0 0 0.3rem; }
-  .mission-type { font-size:0.6rem; color:var(--accent); letter-spacing:0.1em; font-weight:700; }
+  .mission-type { font-size:0.75rem; color:var(--accent); letter-spacing:0.1em; font-weight:700; }
   .mission-desc { font-size:0.75rem; color:var(--text-dim); margin:0.3rem 0; }
   .mission-req { font-size:0.7rem; color:var(--text-mid); }
   .mission-team { display:flex; gap:6px; margin:0.5rem 0; flex-wrap:wrap; }
-  .team-slot { width:60px; height:60px; border:1px dashed var(--border); border-radius:0; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.6rem; color:var(--text-dim); transition:none; }
+  .team-slot { width:60px; height:60px; border:1px dashed var(--border); border-radius:0; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.75rem; color:var(--text-dim); transition:none; }
   .team-slot:hover { border-color:var(--accent); }
   .team-slot.filled { border-style:solid; border-color:var(--accent); }
-  .team-slot.filled .slot-mini-name { font-size:0.55rem; color:var(--text-mid); text-align:center; word-break:break-all; }
+  .team-slot.filled .slot-mini-name { font-size:0.75rem; color:var(--text-mid); text-align:center; word-break:break-all; }
   .success-preview { font-size:0.75rem; color:var(--gold); margin:0.3rem 0; }
 
   /* CANDIDATE POOL */
@@ -169,8 +178,8 @@ redirect_from:
   .candidate-card .cand-portrait { width:50px; height:50px; flex-shrink:0; overflow:hidden; border-radius:0; }
   .candidate-card .cand-info { flex:1; }
   .candidate-card .cand-name { font-size:0.8rem; color:var(--text-bright); font-weight:700; }
-  .candidate-card .cand-origin { font-size:0.65rem; color:var(--text-dim); margin-top:2px; }
-  .candidate-card .cand-rarity { font-size:0.55rem; }
+  .candidate-card .cand-origin { font-size:0.75rem; color:var(--text-dim); margin-top:2px; }
+  .candidate-card .cand-rarity { font-size:0.75rem; }
 
   /* QUESTION MENU */
   .question-menu { display:flex; flex-direction:column; gap:6px; padding:0 1rem; }
@@ -200,14 +209,14 @@ redirect_from:
 
   /* QUERY TOKEN DISPLAY */
   .token-display { display:flex; align-items:center; gap:6px; padding:8px 1rem; }
-  .token-display .token-label { font-size:0.65rem; color:var(--text-dim); letter-spacing:0.1em; }
+  .token-display .token-label { font-size:0.75rem; color:var(--text-dim); letter-spacing:0.1em; }
   .token-pip { width:12px; height:12px; border-radius:0; border:1px solid var(--gold); }
   .token-pip.filled { background:var(--gold); }
   .token-pip.empty { background:transparent; }
 
   /* CHAPTER HEADER */
   .chapter-header { text-align:center; padding:2rem 1rem 1rem; }
-  .chapter-header .ch-label { font-size:0.6rem; color:var(--text-dim); letter-spacing:0.3em; }
+  .chapter-header .ch-label { font-size:0.75rem; color:var(--text-dim); letter-spacing:0.3em; }
   .chapter-header .ch-title { font-size:1.2rem; color:var(--accent); margin:0.3rem 0; }
   .chapter-header .ch-sub { font-size:0.75rem; color:var(--text-dim); }
 
@@ -222,7 +231,7 @@ redirect_from:
   .dept-option { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border:1px solid var(--border); border-radius:0; margin:6px 0; cursor:pointer; min-height:48px; transition:none; }
   .dept-option:hover { border-color:var(--accent); }
   .dept-option .dept-name { font-size:0.8rem; font-weight:700; }
-  .dept-option .dept-fit { font-size:0.65rem; }
+  .dept-option .dept-fit { font-size:0.75rem; }
   .fit-good { color:var(--rd-green); }
   .fit-ok { color:var(--text-dim); }
   .fit-bad { color:var(--accent); }
@@ -1115,7 +1124,7 @@ function renderDepartments(){
       '<span class="dept-label" style="color:'+DEPT_COLORS[k]+'">'+k+'</span>'+
       '<div class="dept-bar-track"><div class="dept-bar-fill" style="width:'+pct+'%;background:'+DEPT_COLORS[k]+';"></div></div>'+
       '<span class="dept-level">'+grade+'</span>'+
-      '<span style="font-size:0.6rem;color:var(--text-dim);min-width:20px;text-align:right;">'+count+'</span>'+
+      '<span style="font-size:0.75rem;color:var(--text-dim);min-width:20px;text-align:right;">'+count+'</span>'+
     '</div>';
   });
   html+='<div style="margin-top:1rem;font-size:0.7rem;color:var(--text-dim);">Roster: '+totalRoster()+'/'+state.recruitSlots+' | Reserve: '+state.reserve.length+'/'+state.reserveSlots+'</div>';
@@ -1131,7 +1140,7 @@ function renderRoster(){
       '<div class="slot-name">'+agent.designation+'</div>'+
       '<div class="slot-dept" style="color:'+deptColor+'">'+deptName+'</div>'+
       '<div class="slot-primary"><span class="stat-badge '+DEPT_CSS[agent.primaryKey]+'">'+agent.primaryKey+': '+statGrade(agent.stats[agent.primaryKey])+'</span></div>'+
-      '<div style="font-size:0.6rem;color:var(--text-dim);margin-top:2px;">Morale: '+agent.morale+'</div>'+
+      '<div style="font-size:0.75rem;color:var(--text-dim);margin-top:2px;">Morale: '+agent.morale+'</div>'+
     '</div>';
   });
   for(var i=state.roster.length;i<state.recruitSlots;i++){
@@ -1498,7 +1507,7 @@ showScreen = function(id) {
 <div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
   <span style="color:#c8c8d0">This game runs on one laptop.</span>
   <a href="/substrate/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;">&times;</button>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){
@@ -1510,7 +1519,7 @@ function showFundPrompt(){
 </script>
 
 <!-- Procedural Music: Military march, steady drums, brass-like synths -->
-<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:0;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<button id="music-toggle" onclick="toggleMusic()" aria-label="Toggle music" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:8px 12px;border-radius:0;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;min-width:44px;min-height:44px;">&#9835; OFF</button>
 <script>
 (function(){
 var musicPlaying = false;

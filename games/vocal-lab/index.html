@@ -7,7 +7,7 @@ title: "Vocal Lab"
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Substrate Vocal Lab — Formant Speech Synthesizer</title>
   <meta name="description" content="Interactive vocal synthesis tuning tool. Adjust formant parameters, test presets, export settings for QWEN MATIC.">
   <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/games/vocal-lab/">
@@ -22,6 +22,16 @@ title: "Vocal Lab"
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
 
 body {
   font-family: 'Inter', 'Verdana', sans-serif;
@@ -99,7 +109,7 @@ a:hover { color: #fff; }
 
 .panel-label {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #555;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -195,7 +205,7 @@ a:hover { color: #fff; }
 
 .carrier-label {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #555;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -408,7 +418,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .effect-value {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #00ffaa;
   width: 50px;
   flex-shrink: 0;
@@ -418,7 +428,7 @@ input[type="range"]::-moz-range-thumb {
 /* === STATUS === */
 .status-bar {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #444;
   text-align: center;
   padding: 8px;
@@ -431,7 +441,7 @@ input[type="range"]::-moz-range-thumb {
   .container { padding: 0 12px 30px; }
   .panel { padding: 16px 14px; }
   .slider-row { flex-wrap: wrap; gap: 6px; }
-  .slider-label { width: 100%; text-align: left; font-size: 0.65rem; }
+  .slider-label { width: 100%; text-align: left; font-size: 0.75rem; }
   .slider-value { width: auto; }
   .controls-row { flex-direction: column; align-items: stretch; }
   .controls-row .btn { width: 100%; text-align: center; }
@@ -442,7 +452,9 @@ input[type="range"]::-moz-range-thumb {
 </style>
 </head>
 <body>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
+<main id="game" role="main">
 <div class="topbar">
   <a href="{{ site.baseurl }}/">&larr; substrate</a>
   <a href="{{ site.baseurl }}/games/radio/">radio</a>
@@ -1955,6 +1967,7 @@ setTimeout(function() {
   drawGridLines(ctx2d, canvas);
 }, 50);
 </script>
+</main>
 
 </body>
 </html>

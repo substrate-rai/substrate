@@ -9,7 +9,7 @@ redirect_from:
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Substrate Radio — 7-Station AI Radio</title>
   <meta name="description" content="GTA4-style multi-station radio from an RTX 4060. 7 stations, 7 DJs, all procedural. Web Audio API.">
   <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/games/radio/">
@@ -24,6 +24,16 @@ redirect_from:
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
 
 body {
   font-family: 'Inter', 'Verdana', sans-serif;
@@ -81,7 +91,7 @@ a:hover { color: #fff; }
 }
 .dial-label {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: #444;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -157,7 +167,7 @@ a:hover { color: #fff; }
 }
 .preset-btn {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   padding: 5px 10px;
   border-radius: 4px;
   border: 1px solid #222;
@@ -362,7 +372,7 @@ a:hover { color: #fff; }
 }
 .volume-label {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #444;
 }
 .volume-slider {
@@ -400,7 +410,7 @@ a:hover { color: #fff; }
 }
 .auto-tune-btn {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   padding: 6px 16px;
   border: 1px solid #222;
   border-radius: 4px;
@@ -504,13 +514,15 @@ a:hover { color: #fff; }
   .radio-container { padding: 0 12px 30px; }
   .album-art-wrap { gap: 12px; }
   #albumArt { width: 80px; height: 80px; }
-  .preset-btn { font-size: 0.55rem; padding: 4px 7px; }
+  .preset-btn { font-size: 0.75rem; padding: 4px 7px; }
   .station-presets { gap: 4px; }
 }
 </style>
 </head>
 <body>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
+<main id="game" role="main">
 <div class="static-overlay" id="staticOverlay">
   <canvas class="static-canvas" id="staticCanvas"></canvas>
 </div>
@@ -2532,7 +2544,7 @@ drawVisualizer();
 <div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
   <span style="color:#c8c8d0">This radio runs on one laptop.</span>
   <a href="{{ site.baseurl }}/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;">&times;</button>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){
@@ -2543,6 +2555,7 @@ function showFundPrompt(){
 }
 if(!window._fundTimer){window._fundTimer=setTimeout(function(){showFundPrompt();},180000);}
 </script>
+</main>
 
 </body>
 </html>
