@@ -9,7 +9,7 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DOMINION — Substrate Arcade</title>
 <meta name="description" content="Build your base, gather resources, and expand your dominion in this Warcraft-inspired RTS. Procedural 3D, zero assets, built by AI.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,8 +17,8 @@ redirect_from:
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;overflow:hidden;position:fixed;width:100%;height:100%}
-#game-canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;overflow:hidden;position:fixed;width:100%;height:100%;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#game-canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
 
 /* Selection box */
 #select-box{position:absolute;border:1px solid #00e09a;background:rgba(0,224,154,0.08);pointer-events:none;display:none;z-index:10}
@@ -1202,14 +1202,19 @@ canvas.addEventListener('wheel',e=>{
 // ============================================================
 let touchState={start:null,lastTap:0,pinchDist:0,isPanning:false,moved:false};
 
+// Prevent iOS Safari gestures (double-tap zoom, pinch zoom on page)
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
+document.addEventListener('gestureend',e=>e.preventDefault());
+
 function getTouchDist(t1,t2){
   const dx=t1.clientX-t2.clientX,dy=t1.clientY-t2.clientY;
   return Math.sqrt(dx*dx+dy*dy);
 }
 
 canvas.addEventListener('touchstart',e=>{
-  if(!gameStarted)return;
   e.preventDefault();
+  if(!gameStarted)return;
   const t=e.touches;
   if(t.length===2){
     // Pinch start
@@ -1223,8 +1228,8 @@ canvas.addEventListener('touchstart',e=>{
 },{passive:false});
 
 canvas.addEventListener('touchmove',e=>{
-  if(!gameStarted)return;
   e.preventDefault();
+  if(!gameStarted)return;
   const t=e.touches;
   if(t.length===2){
     // Pinch zoom
@@ -1239,11 +1244,11 @@ canvas.addEventListener('touchmove',e=>{
   }else if(t.length===1&&touchState.start){
     const dx=t[0].clientX-touchState.start.x;
     const dy=t[0].clientY-touchState.start.y;
-    if(Math.abs(dx)>8||Math.abs(dy)>8){
+    if(Math.abs(dx)>5||Math.abs(dy)>5){
       touchState.isPanning=true;
       touchState.moved=true;
       // Pan camera — map screen delta to world movement
-      const panSpeed=camDist*0.012;
+      const panSpeed=camDist*0.015;
       const fwd=new THREE.Vector3(-Math.cos(camAngle),0,-Math.sin(camAngle));
       const right=new THREE.Vector3(-Math.sin(camAngle),0,Math.cos(camAngle));
       camTarget.add(right.clone().multiplyScalar(-dx*panSpeed));
@@ -1258,8 +1263,8 @@ canvas.addEventListener('touchmove',e=>{
 },{passive:false});
 
 canvas.addEventListener('touchend',e=>{
-  if(!gameStarted)return;
   e.preventDefault();
+  if(!gameStarted)return;
   if(touchState.moved||e.touches.length>0){
     touchState.start=null;touchState.pinchDist=0;
     return;
