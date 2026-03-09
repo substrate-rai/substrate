@@ -2,6 +2,7 @@
 
 let
   pythonEnv = pkgs.python3.withPackages (ps: [ ps.requests ]);
+  repo = "/home/operator/substrate";
 in
 {
   # Daily stats collection (GitHub API) — runs at 6am ET
@@ -13,8 +14,8 @@ in
     serviceConfig = {
       Type = "oneshot";
       User = "operator";
-      WorkingDirectory = "/home/operator/substrate";
-      ExecStart = "${pythonEnv}/bin/python3 /home/operator/substrate/scripts/stats.py";
+      WorkingDirectory = repo;
+      ExecStart = "${pythonEnv}/bin/python3 ${repo}/scripts/stats.py";
       TimeoutStartSec = 60;
     };
   };
@@ -28,6 +29,30 @@ in
     };
   };
 
+  # Daily audience metrics (GoatCounter) — runs at 6:10am ET
+  systemd.services.substrate-audience = {
+    description = "Substrate daily audience metrics (GoatCounter)";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      User = "operator";
+      WorkingDirectory = repo;
+      ExecStart = "${pythonEnv}/bin/python3 ${repo}/scripts/stats.py --metrics";
+      TimeoutStartSec = 60;
+    };
+  };
+
+  systemd.timers.substrate-audience = {
+    description = "Daily audience metrics collection";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "*-*-* 06:10:00";
+      Persistent = true;
+    };
+  };
+
   # Daily donation check — runs at 6:05am ET
   systemd.services.substrate-donations = {
     description = "Substrate daily donation monitor";
@@ -37,8 +62,8 @@ in
     serviceConfig = {
       Type = "oneshot";
       User = "operator";
-      WorkingDirectory = "/home/operator/substrate";
-      ExecStart = "${pythonEnv}/bin/python3 /home/operator/substrate/scripts/donations.py";
+      WorkingDirectory = repo;
+      ExecStart = "${pythonEnv}/bin/python3 ${repo}/scripts/donations.py";
       TimeoutStartSec = 60;
     };
   };
@@ -61,8 +86,8 @@ in
     serviceConfig = {
       Type = "oneshot";
       User = "operator";
-      WorkingDirectory = "/home/operator/substrate";
-      ExecStart = "${pythonEnv}/bin/python3 /home/operator/substrate/scripts/social-queue.py";
+      WorkingDirectory = repo;
+      ExecStart = "${pythonEnv}/bin/python3 ${repo}/scripts/social-queue.py";
       TimeoutStartSec = 60;
     };
   };
@@ -72,6 +97,36 @@ in
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnCalendar = "*-*-* 10,16:00:00";
+      Persistent = true;
+    };
+  };
+
+  # Git push — every 6 hours, push local commits to GitHub
+  # Prevents data loss if the machine dies (learned from Day 1 battery incident)
+  systemd.services.substrate-push = {
+    description = "Substrate periodic git push to GitHub";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      User = "operator";
+      WorkingDirectory = repo;
+      ExecStart = "${pkgs.git}/bin/git push origin master";
+      TimeoutStartSec = 60;
+      Environment = [
+        "HOME=/home/operator"
+        "SSH_AUTH_SOCK="
+      ];
+    };
+    path = [ pkgs.openssh ];
+  };
+
+  systemd.timers.substrate-push = {
+    description = "Push to GitHub every 6 hours";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "*-*-* 00,06,12,18:15:00";
       Persistent = true;
     };
   };

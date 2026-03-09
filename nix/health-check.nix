@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # Hourly health check — logs GPU temp, VRAM, Ollama status, disk usage.
@@ -7,7 +7,11 @@
     description = "Substrate hourly health check";
     after = [ "network.target" "ollama.service" ];
 
-    path = with pkgs; [ curl python3 git coreutils ];
+    path = with pkgs; [
+      curl python3 git coreutils
+      # nvidia-smi lives in the driver package — expose it
+      config.boot.kernelPackages.nvidiaPackages.stable.bin
+    ];
 
     serviceConfig = {
       Type = "oneshot";
@@ -22,7 +26,7 @@
 
     timerConfig = {
       OnCalendar = "hourly";
-      Persistent = true;  # run missed checks after sleep/reboot
+      Persistent = true;
       RandomizedDelaySec = 60;
     };
   };

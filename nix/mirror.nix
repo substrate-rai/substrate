@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  python = pkgs.python3;
+  pythonEnv = pkgs.python3.withPackages (ps: [ ps.requests ]);
   repoDir = "/home/operator/substrate";
 in
 {
@@ -12,10 +12,10 @@ in
       User = "operator";
       Group = "users";
       WorkingDirectory = repoDir;
-      ExecStart = "${python}/bin/python3 ${repoDir}/scripts/mirror.py";
+      ExecStart = "${pythonEnv}/bin/python3 ${repoDir}/scripts/mirror.py";
       Environment = "HOME=/home/operator";
     };
-    path = with pkgs; [ git coreutils systemd util-linux ] ++ [ "/run/current-system/sw" ];
+    path = with pkgs; [ git coreutils systemd util-linux ];
   };
 
   systemd.timers.substrate-mirror = {

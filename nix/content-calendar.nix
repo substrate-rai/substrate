@@ -16,14 +16,13 @@ in
     after = [ "network-online.target" "ollama.service" ];
     wants = [ "network-online.target" ];
 
-    path = with pkgs; [ curl git coreutils findutils ];
+    path = [ pythonEnv pkgs.curl pkgs.git pkgs.coreutils pkgs.findutils ];
 
     serviceConfig = {
       Type = "oneshot";
       User = "operator";
       WorkingDirectory = "/home/operator/substrate";
       ExecStart = "${pkgs.bash}/bin/bash /home/operator/substrate/scripts/content-calendar.sh monday";
-      Environment = [ "PATH=${pythonEnv}/bin:${pkgs.curl}/bin:${pkgs.git}/bin:${pkgs.coreutils}/bin" ];
       TimeoutStartSec = 300;
     };
   };
@@ -43,14 +42,13 @@ in
     after = [ "network-online.target" "ollama.service" ];
     wants = [ "network-online.target" ];
 
-    path = with pkgs; [ curl git coreutils findutils ];
+    path = [ pythonEnv pkgs.curl pkgs.git pkgs.coreutils pkgs.findutils ];
 
     serviceConfig = {
       Type = "oneshot";
       User = "operator";
       WorkingDirectory = "/home/operator/substrate";
       ExecStart = "${pkgs.bash}/bin/bash /home/operator/substrate/scripts/content-calendar.sh wednesday";
-      Environment = [ "PATH=${pythonEnv}/bin:${pkgs.curl}/bin:${pkgs.git}/bin:${pkgs.coreutils}/bin" ];
       TimeoutStartSec = 300;
     };
   };
@@ -70,14 +68,13 @@ in
     after = [ "network-online.target" "ollama.service" ];
     wants = [ "network-online.target" ];
 
-    path = with pkgs; [ curl git coreutils findutils ];
+    path = [ pythonEnv pkgs.curl pkgs.git pkgs.coreutils pkgs.findutils ];
 
     serviceConfig = {
       Type = "oneshot";
       User = "operator";
       WorkingDirectory = "/home/operator/substrate";
       ExecStart = "${pkgs.bash}/bin/bash /home/operator/substrate/scripts/content-calendar.sh friday";
-      Environment = [ "PATH=${pythonEnv}/bin:${pkgs.curl}/bin:${pkgs.git}/bin:${pkgs.coreutils}/bin" ];
       TimeoutStartSec = 300;
     };
   };
@@ -97,7 +94,7 @@ in
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
 
-    path = with pkgs; [ curl git coreutils findutils ];
+    path = [ pythonEnv pkgs.curl pkgs.git pkgs.coreutils pkgs.findutils ];
 
     serviceConfig = {
       Type = "oneshot";
