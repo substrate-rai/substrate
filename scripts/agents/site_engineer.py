@@ -106,6 +106,9 @@ def is_internal_link(url):
     # Skip javascript
     if url.startswith("javascript:"):
         return False
+    # Skip JS variable references parsed as links (e.g., "audioCtx.currentTime, dur")
+    if " " in url or "," in url or "." in url.split("/")[0]:
+        return False
     return True
 
 
@@ -298,6 +301,9 @@ def check_layouts():
         match = layout_pattern.search(head)
         if match:
             layout_name = match.group(1).strip().strip('"').strip("'")
+            # null/none/nil/empty = valid Jekyll directive meaning "no layout"
+            if layout_name.lower() in ("null", "none", "nil", ""):
+                continue
             if layout_name not in available_layouts:
                 rel_path = os.path.relpath(filepath, REPO_DIR)
                 missing_layouts.append((rel_path, layout_name))
@@ -305,16 +311,149 @@ def check_layouts():
     return missing_layouts
 
 
+def check_images(content_files):
+    """Check that local image references in content files resolve to existing files."""
+    missing_images = []
+    total_refs = 0
+
+    # Patterns for image references
+    src_pattern = re.compile(r'src=["\']([^"\']+)["\']', re.IGNORECASE)
+    css_url_pattern = re.compile(r'url\(["\']?([^"\')\s]+)["\']?\)', re.IGNORECASE)
+    image_exts = (".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico", ".avif", ".bmp")
+
+    for filepath in content_files:
+        try:
+            with open(filepath, "r", errors="replace") as f:
+                content = f.read()
+        except Exception:
+            continue
+
+        refs = []
+        for match in src_pattern.finditer(content):
+            refs.append(match.group(1))
+        for match in css_url_pattern.finditer(content):
+            refs.append(match.group(1))
+
+        for ref in refs:
+            # Only check image file references
+            ref_lower = ref.lower().split("?")[0].split("#")[0]
+            if not any(ref_lower.endswith(ext) for ext in image_exts):
+                continue
+            # Skip external URLs
+            if ref.startswith(("http://", "https://", "//")):
+                continue
+            # Skip data URIs
+            if ref.startswith("data:"):
+                continue
+            # Skip Liquid/Jekyll template variables
+            if "{{" in ref or "{%" in ref:
+                continue
+
+            total_refs += 1
+
+            # Resolve the reference to a file on disk
+            clean_ref = ref.split("?")[0].split("#")[0]
+            if clean_ref.startswith("/"):
+                target = os.path.join(REPO_DIR, clean_ref.lstrip("/"))
+            else:
+                source_dir = os.path.dirname(filepath)
+                target = os.path.join(source_dir, clean_ref)
+
+            target = os.path.normpath(target)
+            if not os.path.isfile(target):
+                rel_source = os.path.relpath(filepath, REPO_DIR)
+                missing_images.append((rel_source, ref))
+
+    return total_refs, missing_images
+
+
+def check_meta_tags(content_files):
+    """Check pages for essential meta tags (title, description, og:title).
+
+    Skips standalone HTML pages that use layout:null/none/nil (games, tools).
+    """
+    missing_meta = []
+    no_layout_values = {"null", "none", "nil", ""}
+    layout_pattern = re.compile(r"^layout:\s*(\S+)", re.MULTILINE)
+    # Skip non-web files that don't need meta tags
+    skip_filenames = {"README.md", "CLAUDE.md", "SUPPORTERS.md", "LICENSE", "CHANGELOG.md"}
+
+    for filepath in content_files:
+        if os.path.basename(filepath) in skip_filenames:
+            continue
+        try:
+            with open(filepath, "r", errors="replace") as f:
+                content = f.read()
+        except Exception:
+            continue
+
+        # Check front matter for layout: null/none/nil — skip those files
+        # Front matter is between leading --- lines
+        fm_match = re.match(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
+        if fm_match:
+            fm = fm_match.group(1)
+            layout_match = layout_pattern.search(fm)
+            if layout_match:
+                layout_val = layout_match.group(1).strip().strip('"').strip("'")
+                if layout_val.lower() in no_layout_values:
+                    continue
+
+        rel_path = os.path.relpath(filepath, REPO_DIR)
+        page_issues = []
+
+        # For markdown files, title can come from front matter "title:" field
+        has_title = False
+        if fm_match:
+            fm = fm_match.group(1)
+            if re.search(r"^title:", fm, re.MULTILINE):
+                has_title = True
+        if not has_title and "<title" in content.lower():
+            has_title = True
+        if not has_title:
+            page_issues.append("title")
+
+        # Check for meta description — front matter "description:" or <meta name="description">
+        has_desc = False
+        if fm_match:
+            fm = fm_match.group(1)
+            if re.search(r"^description:", fm, re.MULTILINE):
+                has_desc = True
+        if not has_desc and re.search(r'<meta\s[^>]*name=["\']description["\']', content, re.IGNORECASE):
+            has_desc = True
+        if not has_desc:
+            page_issues.append("description")
+
+        # Check for og:title — front matter "title:" counts if layout injects it,
+        # but explicitly check for og:title meta tag
+        has_og = False
+        if re.search(r'<meta\s[^>]*property=["\']og:title["\']', content, re.IGNORECASE):
+            has_og = True
+        # Front matter title + layout would inject og:title, so also count front matter title
+        if fm_match:
+            fm = fm_match.group(1)
+            if re.search(r"^title:", fm, re.MULTILINE):
+                has_og = True
+        if not has_og:
+            page_issues.append("og:title")
+
+        if page_issues:
+            missing_meta.append((rel_path, page_issues))
+
+    return missing_meta
+
+
 def build_report(date_str, total_links, broken_links, config_issues,
                  total_assets, total_asset_size, large_files, counts,
-                 missing_layouts):
+                 missing_layouts, total_image_refs, missing_images,
+                 missing_meta):
     """Build the site health report."""
     lines = []
     lines.append(f"# Site Health Report — {date_str}")
     lines.append("")
 
     # Overall status
-    issue_count = len(broken_links) + len(config_issues) + len(large_files) + len(missing_layouts)
+    issue_count = (len(broken_links) + len(config_issues) + len(large_files)
+                   + len(missing_layouts) + len(missing_images) + len(missing_meta))
     if issue_count == 0:
         lines.append("**Status:** 200 OK — all systems nominal")
     else:
@@ -362,6 +501,31 @@ def build_report(date_str, total_links, broken_links, config_issues,
             lines.append(f"- **404** layout `{layout}` referenced in `{source}`")
     else:
         lines.append("- All referenced layouts exist. 200 OK.")
+    lines.append("")
+
+    # Image references
+    lines.append("## Image References")
+    lines.append("")
+    lines.append(f"- **Local image references scanned:** {total_image_refs}")
+    lines.append(f"- **Missing images:** {len(missing_images)}")
+    if missing_images:
+        lines.append("")
+        for source, ref in missing_images:
+            lines.append(f"  - 404 `{ref}` in `{source}`")
+    else:
+        lines.append("- All image references resolve. 200 OK.")
+    lines.append("")
+
+    # Meta tags
+    lines.append("## Meta Tags")
+    lines.append("")
+    if missing_meta:
+        lines.append(f"- **{len(missing_meta)} page(s) with missing meta tags:**")
+        lines.append("")
+        for source, tags in missing_meta:
+            lines.append(f"  - `{source}` — missing: {', '.join(tags)}")
+    else:
+        lines.append("- All pages have title, description, and og:title. 200 OK.")
     lines.append("")
 
     # Asset audit
@@ -425,6 +589,22 @@ def main():
     else:
         print("[Forge] Layouts: 200 OK")
 
+    # Check image references
+    print("[Forge] Checking image references...")
+    total_image_refs, missing_images = check_images(content_files)
+    if missing_images:
+        print(f"[Forge] 404 — {len(missing_images)} missing image(s)")
+    else:
+        print(f"[Forge] Images: {total_image_refs} references checked, all resolve")
+
+    # Check meta tags
+    print("[Forge] Checking meta tags...")
+    missing_meta = check_meta_tags(content_files)
+    if missing_meta:
+        print(f"[Forge] WARNING: {len(missing_meta)} page(s) missing meta tags")
+    else:
+        print("[Forge] Meta tags: 200 OK")
+
     # Audit assets
     print("[Forge] Auditing assets...")
     total_assets, total_asset_size, large_files = audit_assets()
@@ -441,7 +621,8 @@ def main():
     report = build_report(
         date_str, total_links, broken_links, config_issues,
         total_assets, total_asset_size, large_files, counts,
-        missing_layouts,
+        missing_layouts, total_image_refs, missing_images,
+        missing_meta,
     )
 
     if args.dry_run:
@@ -455,7 +636,8 @@ def main():
         print(f"[Forge] Report saved: {report_path}")
 
     # Summary
-    issue_count = len(broken_links) + len(config_issues) + len(large_files) + len(missing_layouts)
+    issue_count = (len(broken_links) + len(config_issues) + len(large_files)
+                   + len(missing_layouts) + len(missing_images) + len(missing_meta))
     if issue_count == 0:
         print("[Forge] 200 OK — site is healthy")
     else:

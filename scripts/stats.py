@@ -1,26 +1,51 @@
 #!/usr/bin/env python3
-"""Scrape GitHub repo stats and log them. Runs without authentication for
-public data (stars, forks, watchers). Traffic/clones require a GitHub token.
+"""Scrape GitHub repo stats and audience metrics. Runs without authentication
+for public data (stars, forks, watchers, page views). Traffic/clones require
+a GitHub token.
 
 Usage:
-    python3 scripts/stats.py                  # log stats
+    python3 scripts/stats.py                  # log GitHub stats
     python3 scripts/stats.py --dry-run        # print without writing
+    python3 scripts/stats.py --metrics        # fetch audience metrics from GoatCounter
+    python3 scripts/stats.py --metrics --dry-run  # print metrics without writing
 
-Logs to memory/stats.log. Designed to run from a systemd timer (daily).
+Logs GitHub stats to memory/stats.log.
+Logs audience metrics to memory/metrics/YYYY-MM-DD.md.
+Designed to run from a systemd timer (daily).
 """
 
 import json
 import os
 import sys
-from datetime import datetime
+import urllib.request
+import urllib.error
+from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(SCRIPT_DIR)
 LOG_FILE = os.path.join(REPO_DIR, "memory", "stats.log")
 LEDGER_FILE = os.path.join(REPO_DIR, "ledger", "revenue.txt")
+METRICS_DIR = os.path.join(REPO_DIR, "memory", "metrics")
 
 REPO = "substrate-rai/substrate"
 API_BASE = f"https://api.github.com/repos/{REPO}"
+
+GOATCOUNTER_BASE = "https://substrate.goatcounter.com"
+
+# Pages to track — paths as they appear in GoatCounter
+TRACKED_PAGES = [
+    "/",
+    "/blog/",
+    "/about/",
+    "/fund/",
+    "/staff/",
+    "/arcade/",
+    "/press/",
+    "/puzzle/",
+    "/sponsor/",
+    "/training-q/",
+    "/3d/",
+]
 
 
 def load_env(path=None):
@@ -131,14 +156,367 @@ def check_sponsors():
     return None
 
 
+def _fetch_json(url, timeout=10, token=None):
+    """Fetch JSON from a URL using urllib (stdlib). Returns dict or None."""
+    headers = {
+        "User-Agent": "substrate-stats/1.0",
+        "Accept": "application/json",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, json.JSONDecodeError) as e:
+        print(f"  warning: failed to fetch {url}: {e}", file=sys.stderr)
+        return None
+
+
+def _parse_count(s):
+    """Parse a count string like '1,234' to int."""
+    if s is None:
+        return 0
+    return int(str(s).replace(",", "").replace("\u00a0", "").strip() or "0")
+
+
+def fetch_goatcounter_page(path):
+    """Fetch view count for a single page from GoatCounter's public counter API.
+
+    GoatCounter exposes /counter/PATH.json which returns:
+        {"count": "1,234", "count_unique": "567"}
+    The path must be URL-encoded (/ becomes %2F).
+
+    Requires "Allow adding visitor counts on your website" to be enabled
+    in GoatCounter site settings.
+    """
+    encoded = urllib.request.quote(path, safe="")
+    url = f"{GOATCOUNTER_BASE}/counter/{encoded}.json"
+    data = _fetch_json(url)
+    if data is None:
+        return None
+
+    return {
+        "path": path,
+        "count": _parse_count(data.get("count")),
+        "count_unique": _parse_count(data.get("count_unique")),
+    }
+
+
+def fetch_goatcounter_api(token):
+    """Fetch page stats via GoatCounter's authenticated API (v1).
+
+    Uses GET /api/v1/stats/hits with the API token.
+    Returns a list of per-page dicts or None on failure.
+    """
+    url = f"{GOATCOUNTER_BASE}/api/v1/stats/hits"
+    data = _fetch_json(url, token=token)
+    if data is None:
+        return None
+
+    results = []
+    for entry in data.get("hits", []):
+        path = entry.get("path", "")
+        count = entry.get("count", 0)
+        results.append({
+            "path": path,
+            "count": int(count) if isinstance(count, (int, float)) else _parse_count(count),
+            "count_unique": 0,  # API v1 hits endpoint doesn't split unique
+        })
+
+    return results
+
+
+def fetch_goatcounter_metrics():
+    """Fetch audience metrics from GoatCounter.
+
+    Tries two methods in order:
+    1. Authenticated API (if GOATCOUNTER_TOKEN is set) — most reliable
+    2. Public counter endpoint (per-page, no auth needed but must be enabled)
+
+    Returns a dict with total views, per-page breakdown, and metadata.
+    """
+    print("  fetching GoatCounter metrics...", file=sys.stderr)
+
+    token = os.environ.get("GOATCOUNTER_TOKEN")
+
+    # Method 1: authenticated API
+    if token:
+        print("  using authenticated API...", file=sys.stderr)
+        api_results = fetch_goatcounter_api(token)
+        if api_results is not None:
+            total_views = sum(r["count"] for r in api_results)
+            total_unique = sum(r["count_unique"] for r in api_results)
+            api_results.sort(key=lambda x: x["count"], reverse=True)
+            return {
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "total_views": total_views,
+                "total_unique": total_unique,
+                "pages": api_results[:20],  # top 20
+                "pages_tracked": len(api_results),
+                "pages_with_data": len(api_results),
+                "errors": 0,
+                "method": "api",
+            }
+        print("  API request failed, falling back to public endpoint...", file=sys.stderr)
+
+    # Method 2: public counter endpoint (per-page)
+    results = []
+    total_views = 0
+    total_unique = 0
+    errors = 0
+
+    for path in TRACKED_PAGES:
+        data = fetch_goatcounter_page(path)
+        if data is not None:
+            results.append(data)
+            total_views += data["count"]
+            total_unique += data["count_unique"]
+        else:
+            errors += 1
+
+    # Sort by view count descending
+    results.sort(key=lambda x: x["count"], reverse=True)
+
+    if errors == len(TRACKED_PAGES):
+        print(
+            "  all pages returned errors. If using the public counter endpoint,\n"
+            "  enable 'Allow adding visitor counts on your website' in GoatCounter settings,\n"
+            "  or set GOATCOUNTER_TOKEN in .env for authenticated API access.",
+            file=sys.stderr,
+        )
+
+    return {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "total_views": total_views,
+        "total_unique": total_unique,
+        "pages": results,
+        "pages_tracked": len(TRACKED_PAGES),
+        "pages_with_data": len(results),
+        "errors": errors,
+        "method": "public",
+    }
+
+
+def load_previous_metrics(days_ago=7):
+    """Load metrics from a previous day for trend comparison.
+
+    Returns the parsed metrics dict or None if not found.
+    """
+    target_date = (datetime.now() - timedelta(days=days_ago)).strftime("%Y-%m-%d")
+    path = os.path.join(METRICS_DIR, f"{target_date}.md")
+    if not os.path.exists(path):
+        return None
+
+    # Parse the markdown file to extract numbers
+    try:
+        with open(path) as f:
+            content = f.read()
+
+        metrics = {"date": target_date, "pages": {}}
+
+        for line in content.splitlines():
+            line = line.strip()
+            if line.startswith("- **Total views:**"):
+                metrics["total_views"] = int(
+                    line.split("**")[2].strip().replace(",", "")
+                )
+            elif line.startswith("- **Unique visitors:**"):
+                metrics["total_unique"] = int(
+                    line.split("**")[2].strip().replace(",", "")
+                )
+            elif line.startswith("| `") and "|" in line:
+                # Table row: | `/path/` | 123 | 45 |
+                parts = [p.strip() for p in line.split("|")]
+                # parts: ['', '`/path/`', '123', '45', '']
+                if len(parts) >= 4:
+                    pg_path = parts[1].strip("`")
+                    try:
+                        pg_views = int(parts[2].replace(",", ""))
+                        metrics["pages"][pg_path] = pg_views
+                    except (ValueError, IndexError):
+                        pass
+
+        return metrics
+    except (OSError, ValueError):
+        return None
+
+
+def compute_trends(current, previous):
+    """Compare current metrics against previous period.
+
+    Returns a list of trend observations.
+    """
+    trends = []
+
+    if previous is None:
+        trends.append("No previous data available for comparison.")
+        return trends
+
+    prev_date = previous.get("date", "unknown")
+    prev_total = previous.get("total_views", 0)
+    curr_total = current.get("total_views", 0)
+
+    if prev_total > 0:
+        pct = ((curr_total - prev_total) / prev_total) * 100
+        direction = "up" if pct > 0 else "down"
+        if abs(pct) >= 20:
+            trends.append(
+                f"SIGNIFICANT: Total views {direction} {abs(pct):.0f}% "
+                f"vs {prev_date} ({prev_total:,} -> {curr_total:,})"
+            )
+        elif abs(pct) >= 5:
+            trends.append(
+                f"Total views {direction} {abs(pct):.0f}% "
+                f"vs {prev_date} ({prev_total:,} -> {curr_total:,})"
+            )
+        else:
+            trends.append(
+                f"Total views stable vs {prev_date} "
+                f"({prev_total:,} -> {curr_total:,}, {pct:+.0f}%)"
+            )
+    elif curr_total > 0:
+        trends.append(f"First data point: {curr_total:,} total views")
+
+    prev_unique = previous.get("total_unique", 0)
+    curr_unique = current.get("total_unique", 0)
+    if prev_unique > 0:
+        pct = ((curr_unique - prev_unique) / prev_unique) * 100
+        direction = "up" if pct > 0 else "down"
+        if abs(pct) >= 20:
+            trends.append(
+                f"SIGNIFICANT: Unique visitors {direction} {abs(pct):.0f}% "
+                f"vs {prev_date} ({prev_unique:,} -> {curr_unique:,})"
+            )
+
+    # Per-page trends
+    prev_pages = previous.get("pages", {})
+    for page_data in current.get("pages", []):
+        pg = page_data["path"]
+        curr_count = page_data["count"]
+        prev_count = prev_pages.get(pg, 0)
+        if prev_count > 0 and curr_count > 0:
+            pct = ((curr_count - prev_count) / prev_count) * 100
+            if abs(pct) >= 50:
+                direction = "up" if pct > 0 else "down"
+                trends.append(
+                    f"  {pg}: {direction} {abs(pct):.0f}% "
+                    f"({prev_count:,} -> {curr_count:,})"
+                )
+
+    return trends
+
+
+def format_metrics_markdown(metrics, trends):
+    """Format metrics as a clean markdown report for memory/metrics/."""
+    date = datetime.now().strftime("%Y-%m-%d")
+    time = datetime.now().strftime("%H:%M")
+
+    lines = [
+        f"# Audience Metrics — {date}",
+        f"",
+        f"Generated: {date} {time}",
+        f"Source: GoatCounter (substrate.goatcounter.com)",
+        f"",
+        f"## Summary",
+        f"",
+        f"- **Total views:** {metrics['total_views']:,}",
+        f"- **Unique visitors:** {metrics['total_unique']:,}",
+        f"- **Pages tracked:** {metrics['pages_with_data']}/{metrics['pages_tracked']}",
+        f"",
+        f"## Top Pages",
+        f"",
+        f"| Page | Views | Unique |",
+        f"|------|------:|-------:|",
+    ]
+
+    for page in metrics["pages"]:
+        lines.append(
+            f"| `{page['path']}` | {page['count']:,} | {page['count_unique']:,} |"
+        )
+
+    lines.append("")
+    lines.append("## Trends")
+    lines.append("")
+
+    if trends:
+        for t in trends:
+            lines.append(f"- {t}")
+    else:
+        lines.append("- No trend data available yet.")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def run_metrics(dry_run=False):
+    """Fetch audience metrics from GoatCounter and save to memory/metrics/."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    date_str = datetime.now().strftime("%Y-%m-%d")
+
+    print(f"[metrics] {timestamp}", file=sys.stderr)
+
+    metrics = fetch_goatcounter_metrics()
+
+    # Load previous week's data for trends
+    previous = load_previous_metrics(days_ago=7)
+    trends = compute_trends(metrics, previous)
+
+    # Also try yesterday for short-term trends
+    yesterday = load_previous_metrics(days_ago=1)
+    if yesterday is not None:
+        prev_total = yesterday.get("total_views", 0)
+        curr_total = metrics["total_views"]
+        if prev_total > 0:
+            pct = ((curr_total - prev_total) / prev_total) * 100
+            if abs(pct) >= 10:
+                direction = "up" if pct > 0 else "down"
+                trends.insert(0,
+                    f"Day-over-day: views {direction} {abs(pct):.0f}% "
+                    f"vs yesterday ({prev_total:,} -> {curr_total:,})"
+                )
+
+    report = format_metrics_markdown(metrics, trends)
+
+    if dry_run:
+        print(report)
+        return
+
+    # Save to memory/metrics/
+    os.makedirs(METRICS_DIR, exist_ok=True)
+    metrics_file = os.path.join(METRICS_DIR, f"{date_str}.md")
+    with open(metrics_file, "w") as f:
+        f.write(report)
+
+    print(f"  saved: memory/metrics/{date_str}.md", file=sys.stderr)
+
+    # Print summary to stdout
+    print(f"[metrics] {timestamp}")
+    print(f"  total views: {metrics['total_views']:,}")
+    print(f"  unique visitors: {metrics['total_unique']:,}")
+    if metrics["pages"]:
+        top = metrics["pages"][0]
+        print(f"  top page: {top['path']} ({top['count']:,} views)")
+    for t in trends:
+        if t.startswith("SIGNIFICANT") or t.startswith("Day-over-day"):
+            print(f"  ** {t}")
+
+
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Substrate GitHub stats scraper.")
-    parser.add_argument("--dry-run", action="store_true")
+    parser = argparse.ArgumentParser(description="Substrate stats and audience metrics.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="print output without writing files")
+    parser.add_argument("--metrics", action="store_true",
+                        help="fetch audience metrics from GoatCounter")
     args = parser.parse_args()
 
     load_env()
+
+    if args.metrics:
+        run_metrics(dry_run=args.dry_run)
+        return
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
