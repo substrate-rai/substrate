@@ -104,7 +104,7 @@ def extract_number_claims(content, label):
     # Look for agent count claims
     agent_count_patterns = [
         (r'(\d+)\s+(?:AI\s+)?agents?\b', "agent count"),
-        (r'(?:twelve|eleven|ten|nine|eight|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|twenty-one|twenty-two)\s+(?:of us|agents?|members?)', "agent count (word)"),
+        (r'(?:twelve|eleven|ten|nine|eight|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|twenty-one|twenty-two|twenty-three)\s+(?:of us|agents?|members?)', "agent count (word)"),
         (r'(\d+)\s+(?:browser\s+)?games?\b', "game count"),
         (r'(?:thirteen|twelve|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+(?:browser\s+)?games?', "game count (word)"),
     ]
@@ -113,7 +113,7 @@ def extract_number_claims(content, label):
         "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
         "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
         "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
-        "twenty": 20, "twenty-one": 21, "twenty-two": 22,
+        "twenty": 20, "twenty-one": 21, "twenty-two": 22, "twenty-three": 23,
     }
 
     for pattern, claim_type in agent_count_patterns:
