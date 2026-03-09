@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "Substrate Arcade — 20 Games, 7 Radio Stations, Built by AI"
-description: "20 games. 7 radio stations. 1 album. Built by 22 AI agents on one laptop with an RTX 4060. Free forever."
+title: "Substrate Arcade — 21 Games, 7 Radio Stations, Built by AI"
+description: "21 games. 7 radio stations. 1 album. Built by 22 AI agents on one laptop with an RTX 4060. Free forever."
 permalink: /arcade/
 ---
 
@@ -1055,6 +1055,233 @@ permalink: /arcade/
     .suggest-form { flex-direction: column; }
     .fund-banner { padding: 20px 16px; }
     .fund-banner-title { font-size: 1rem; }
+    .deals-scroll { flex-direction: column; }
+    .deal-banner { min-width: unset; }
+    .deal-banner-img { height: 140px; }
+    .category-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* === FEATURED DEALS CAROUSEL (horizontal scroll) === */
+  .deals-section { margin-bottom: 24px; }
+  .deals-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.15) transparent;
+  }
+  .deals-scroll::-webkit-scrollbar { height: 4px; }
+  .deals-scroll::-webkit-scrollbar-track { background: transparent; }
+  .deals-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+  .deal-banner {
+    scroll-snap-align: start;
+    min-width: 320px;
+    max-width: 400px;
+    flex-shrink: 0;
+    background: var(--steam-card);
+    border-radius: 6px;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .deal-banner:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .deal-banner-img {
+    width: 100%;
+    height: 170px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  .deal-banner-img::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+  }
+  .deal-banner-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 3px;
+    z-index: 2;
+    letter-spacing: 0.05em;
+  }
+  .deal-banner-badge.editor { background: var(--steam-gold); color: #000; }
+  .deal-banner-badge.bot { background: var(--steam-accent); color: #000; }
+  .deal-banner-badge.hit { background: #ff6666; color: #fff; }
+  .deal-banner-info {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .deal-banner-title {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .deal-banner-genre {
+    font-size: 0.68rem;
+    color: var(--steam-text-dim);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+  .deal-banner-price {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--steam-green);
+    background: rgba(76,175,80,0.12);
+    padding: 4px 12px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  /* === VIEW TOGGLE (grid/list) === */
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: auto;
+  }
+  .view-toggle button {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--steam-text-dim);
+    padding: 6px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    transition: all 0.2s;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .view-toggle button.active {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border-color: rgba(255,255,255,0.2);
+  }
+  .view-toggle button:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+
+  /* === LIST VIEW === */
+  .game-list { display: none; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+  .game-list.active { display: flex; }
+  .game-grid.hidden { display: none; }
+  .game-list-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 12px;
+    background: var(--steam-card);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .game-list-item:hover {
+    background: var(--steam-card-hover);
+    transform: translateX(2px);
+  }
+  .game-list-thumb {
+    width: 120px;
+    height: 56px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .game-list-info { flex: 1; min-width: 0; }
+  .game-list-title {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+  .game-list-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .game-list-price {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--steam-green);
+    flex-shrink: 0;
+  }
+
+  /* === BROWSE BY CATEGORY === */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .category-card {
+    position: relative;
+    height: 100px;
+    border-radius: 6px;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .category-card-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.3s;
+  }
+  .category-card:hover .category-card-bg { transform: scale(1.05); }
+  .category-card-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.4));
+  }
+  .category-card-label {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.1em;
+    z-index: 1;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .category-card-count {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: rgba(255,255,255,0.6);
+    z-index: 1;
   }
 </style>
 
@@ -1236,13 +1463,139 @@ permalink: /arcade/
 </div>
 
 <!-- ============================================================ -->
+<!-- FEATURED PICKS (horizontal scrollable) -->
+<!-- ============================================================ -->
+
+<div class="deals-section">
+  <div class="section-heading">
+    <span class="section-heading-text">FEATURED PICKS</span>
+    <div class="section-heading-line"></div>
+    <span class="section-heading-count">Editor's choice</span>
+  </div>
+  <div class="deals-scroll">
+    <a class="deal-banner" href="{{ site.baseurl }}/games/objection/">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #2a1010, #1a0808); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-objection.png'); background-size: cover; background-position: center;">
+        <span class="deal-banner-badge editor">EDITOR'S PICK</span>
+      </div>
+      <div class="deal-banner-info">
+        <div>
+          <div class="deal-banner-title">OBJECTION!</div>
+          <div class="deal-banner-genre">Courtroom Drama, Narrative</div>
+        </div>
+        <span class="deal-banner-price">FREE</span>
+      </div>
+    </a>
+    <a class="deal-banner" href="{{ site.baseurl }}/games/signal/">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-network.png'); background-size: cover; background-position: center;">
+        <span class="deal-banner-badge bot">BOT-PLAYABLE</span>
+      </div>
+      <div class="deal-banner-info">
+        <div>
+          <div class="deal-banner-title">SIGNAL</div>
+          <div class="deal-banner-genre">Deduction, Strategy</div>
+        </div>
+        <span class="deal-banner-price">FREE</span>
+      </div>
+    </a>
+    <a class="deal-banner" href="{{ site.baseurl }}/games/adventure/">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #1a0a0a, #2a1020); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-subprocess.png'); background-size: cover; background-position: center;">
+        <span class="deal-banner-badge hit">FAN FAVORITE</span>
+      </div>
+      <div class="deal-banner-info">
+        <div>
+          <div class="deal-banner-title">SUBPROCESS</div>
+          <div class="deal-banner-genre">Text Adventure, Action</div>
+        </div>
+        <span class="deal-banner-price">FREE</span>
+      </div>
+    </a>
+    <a class="deal-banner" href="{{ site.baseurl }}/games/deckbuilder/">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'); background-size: cover; background-position: center;">
+        <span class="deal-banner-badge editor">EDITOR'S PICK</span>
+      </div>
+      <div class="deal-banner-info">
+        <div>
+          <div class="deal-banner-title">STACK OVERFLOW</div>
+          <div class="deal-banner-genre">Deckbuilder, Roguelike</div>
+        </div>
+        <span class="deal-banner-price">FREE</span>
+      </div>
+    </a>
+    <a class="deal-banner" href="{{ site.baseurl }}/games/dragonforce/">
+      <div class="deal-banner-img" style="background: linear-gradient(135deg, #2a0a1a, #1a0820, #3a1020);">
+        <span class="deal-banner-badge bot">NEW</span>
+      </div>
+      <div class="deal-banner-info">
+        <div>
+          <div class="deal-banner-title">DRAGONFORCE</div>
+          <div class="deal-banner-genre">Army Battle, Strategy</div>
+        </div>
+        <span class="deal-banner-price">FREE</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- NEW & TRENDING -->
 <!-- ============================================================ -->
 
 <div class="section-heading" id="trending">
   <span class="section-heading-text">NEW & TRENDING</span>
   <div class="section-heading-line"></div>
+  <div class="view-toggle" id="view-toggle">
+    <button class="active" data-view="grid" aria-label="Grid view">&#9638; Grid</button>
+    <button data-view="list" aria-label="List view">&#9776; List</button>
+  </div>
   <span class="section-heading-count">Latest additions</span>
+</div>
+
+<!-- List view (hidden by default) -->
+<div class="game-list" id="trending-list">
+  <a class="game-list-item" href="{{ site.baseurl }}/games/signal/">
+    <div class="game-list-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-network.png'); background-size: cover; background-position: center;"></div>
+    <div class="game-list-info">
+      <div class="game-list-title">SIGNAL</div>
+      <div class="game-list-tags">
+        <span class="game-tag tag-strategy">DEDUCTION</span>
+        <span class="game-tag tag-strategy">BOT-PLAYABLE</span>
+      </div>
+    </div>
+    <span class="game-list-price">FREE</span>
+  </a>
+  <a class="game-list-item" href="{{ site.baseurl }}/games/deckbuilder/">
+    <div class="game-list-thumb" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.png'); background-size: cover; background-position: center;"></div>
+    <div class="game-list-info">
+      <div class="game-list-title">STACK OVERFLOW</div>
+      <div class="game-list-tags">
+        <span class="game-tag tag-strategy">DECKBUILDER</span>
+        <span class="game-tag tag-action">ROGUELIKE</span>
+      </div>
+    </div>
+    <span class="game-list-price">FREE</span>
+  </a>
+  <a class="game-list-item" href="{{ site.baseurl }}/games/cascade/">
+    <div class="game-list-thumb" style="background: linear-gradient(135deg, #2a1a0a, #3a2010);"></div>
+    <div class="game-list-info">
+      <div class="game-list-title">CASCADE</div>
+      <div class="game-list-tags">
+        <span class="game-tag tag-action">MOMENTUM</span>
+        <span class="game-tag tag-action">ARCADE</span>
+      </div>
+    </div>
+    <span class="game-list-price">FREE</span>
+  </a>
+  <a class="game-list-item" href="{{ site.baseurl }}/games/snatcher/">
+    <div class="game-list-thumb" style="background: linear-gradient(135deg, #1a1020, #2a1530); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-seeker.png'); background-size: cover; background-position: center;"></div>
+    <div class="game-list-info">
+      <div class="game-list-title">SEEKER</div>
+      <div class="game-list-tags">
+        <span class="game-tag tag-narrative">CYBERPUNK</span>
+        <span class="game-tag tag-narrative">ADVENTURE</span>
+      </div>
+    </div>
+    <span class="game-list-price">FREE</span>
+  </a>
 </div>
 
 <div class="game-grid" id="trending-grid">
@@ -1763,6 +2116,48 @@ permalink: /arcade/
 <!-- FUND THE ARCADE -->
 <!-- ============================================================ -->
 
+<!-- ============================================================ -->
+<!-- BROWSE BY CATEGORY -->
+<!-- ============================================================ -->
+
+<div class="section-heading">
+  <span class="section-heading-text">BROWSE BY CATEGORY</span>
+  <div class="section-heading-line"></div>
+</div>
+
+<div class="category-grid">
+  <a class="category-card" data-filter="narrative" href="#narrative">
+    <div class="category-card-bg" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/game-art/title-objection.png'); background-size: cover; background-position: center;"></div>
+    <span class="category-card-count">6 titles</span>
+    <span class="category-card-label">NARRATIVE</span>
+  </a>
+  <a class="category-card" data-filter="strategy" href="#strategy">
+    <div class="category-card-bg" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/game-art/scene-network.png'); background-size: cover; background-position: center;"></div>
+    <span class="category-card-count">4 titles</span>
+    <span class="category-card-label">STRATEGY</span>
+  </a>
+  <a class="category-card" data-filter="action" href="#action">
+    <div class="category-card-bg" style="background: linear-gradient(135deg, #2a1a0a, #3a2010, #1a1020);"></div>
+    <span class="category-card-count">3 titles</span>
+    <span class="category-card-label">ACTION</span>
+  </a>
+  <a class="category-card" data-filter="daily" href="#daily">
+    <div class="category-card-bg" style="background: linear-gradient(135deg, #1a1a0a, #2a2a10);"></div>
+    <span class="category-card-count">3 titles</span>
+    <span class="category-card-label">DAILY</span>
+  </a>
+  <a class="category-card" data-filter="creative" href="#creative">
+    <div class="category-card-bg" style="background: linear-gradient(135deg, #0a1a2a, #102040);"></div>
+    <span class="category-card-count">3 titles</span>
+    <span class="category-card-label">CREATIVE</span>
+  </a>
+  <a class="category-card" data-filter="radio" href="#radio-section">
+    <div class="category-card-bg" style="background: linear-gradient(135deg, #1a0a2a, #2a1040);"></div>
+    <span class="category-card-count">7 stations</span>
+    <span class="category-card-label">RADIO</span>
+  </a>
+</div>
+
 <div class="fund-banner" id="fund">
   <div class="fund-banner-title">KEEP THE GAMES FREE</div>
   <div class="fund-banner-desc">
@@ -1904,6 +2299,41 @@ permalink: /arcade/
 </script>
 
 <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
+
+<!-- View toggle + category card click -->
+<script>
+(function() {
+  // View toggle (grid/list)
+  var toggle = document.getElementById('view-toggle');
+  var grid = document.getElementById('trending-grid');
+  var list = document.getElementById('trending-list');
+  if (toggle && grid && list) {
+    toggle.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        toggle.querySelectorAll('button').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        if (btn.dataset.view === 'list') {
+          grid.classList.add('hidden');
+          list.classList.add('active');
+        } else {
+          grid.classList.remove('hidden');
+          list.classList.remove('active');
+        }
+      });
+    });
+  }
+
+  // Category cards trigger nav filter
+  document.querySelectorAll('.category-card[data-filter]').forEach(function(card) {
+    card.addEventListener('click', function(e) {
+      e.preventDefault();
+      var filter = card.dataset.filter;
+      var navLink = document.querySelector('.store-nav-link[data-filter="' + filter + '"]');
+      if (navLink) navLink.click();
+    });
+  });
+})();
+</script>
 
 <script>
 (function() {
