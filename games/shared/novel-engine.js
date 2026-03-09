@@ -101,7 +101,6 @@ P.defineBackground=function(n,fn){this.bgs[n]=fn};
 P.loadScript=function(sc){this.script=sc;this.labels={};for(var i=0;i<sc.length;i++)if(sc[i].type==='label')this.labels[sc[i].name]=i};
 P.setTitle=function(t,s){this._gt=t;this._gs=s};
 P.setVar=function(n,v){this.vars[n]=v};P.getVar=function(n){return this.vars[n]};
-P.ifVar=function(n,op,v,tl,el){if(this._cd({var:n,op:op,val:v})){if(tl){var t=this.labels[tl];if(t!=null)this._run(t)}}else if(el){var e=this.labels[el];if(e!=null)this._run(e)}};
 P.start=function(){
  var T=this,h='<h1 style="'+MF+'font-size:3rem;font-weight:600;letter-spacing:.3em;color:#e8e8ef;margin:0 0 8px;border:none;padding:0">'+(T._gt||'NOVEL')+'</h1><div style="'+MF+'font-size:.9rem;color:#6a6a78;margin-bottom:48px">'+(T._gs||'')+'</div><button id="ne-s" style="'+SB+'">BEGIN</button>';
  if(T._hs())h+='<button id="ne-c" style="'+SB+';margin-top:12px;border-color:rgba(255,255,255,.08);color:#6a6a78">CONTINUE</button>';
@@ -166,10 +165,9 @@ P._adv=function(){if(this.s.end){this._rst();return}if(this.s.ty){this._st();ret
 P._cho=function(pr,choices){
  var T=this;T.$dl.style.display='none';T.$cl.innerHTML='';
  if(pr)mk('div',MF+'font-size:.8rem;color:rgba(255,255,255,.4);text-align:center;margin-bottom:8px',T.$cl).textContent=pr;
- var fc=[];for(var i=0;i<choices.length;i++)if(!choices[i].condition||T._cd(choices[i].condition))fc.push(choices[i]);
- fc.forEach(function(c,idx){
+ choices.forEach(function(c,idx){if(c.condition&&!T._cd(c.condition))return;
   var b=bt(c.text,MF+'font-size:.9rem;padding:14px 20px;background:rgba(20,20,30,.9);border:2px solid rgba(255,255,255,.1);color:#c8c8d0;cursor:pointer;text-align:left;min-height:48px;border-radius:0;transition:all .2s',T.$cl,function(){
-   T.s.ch.push({pc:T.s.pc,i:idx,text:c.text});T.$cl.innerHTML='';if(c.set)for(var k in c.set)T.vars[k]=c.set[k];T._as();
+   T.s.ch.push({pc:T.s.pc,i:idx});T.$cl.innerHTML='';if(c.set)for(var k in c.set)T.vars[k]=c.set[k];T._as();
    var t=c.next?T.labels[c.next]:null;T._run(t!=null?t:T.s.pc+1)});
   b.onmouseenter=function(){b.style.borderColor='rgba(255,255,255,.25)';b.style.color='#fff';b.style.transform='translateX(4px)'};
   b.onmouseleave=function(){b.style.borderColor='rgba(255,255,255,.1)';b.style.color='#c8c8d0';b.style.transform=''}})};
