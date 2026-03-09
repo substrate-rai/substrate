@@ -1483,6 +1483,20 @@ permalink: /arcade/
   </div>
 </a>
 
+<a class="game-card" data-game="dragonforce" data-genre="strategy" data-name="DRAGONFORCE" data-added="21" href="{{ site.baseurl }}/games/dragonforce/" aria-label="Play DRAGONFORCE — Army Battle, RTS — Free">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #2a1a0a, #1a0a00, #3a2010);">
+    <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
+  </div>
+  <div class="game-card-body">
+    <div class="game-card-title">DRAGONFORCE</div>
+    <div class="game-card-tags">
+      <span class="game-tag tag-strategy">ARMY BATTLE</span>
+      <span class="game-tag tag-strategy">100v100</span>
+    </div>
+    <div class="game-card-price"><span class="price-free">FREE</span></div>
+  </div>
+</a>
+
 </div>
 
 <!-- ============================================================ -->
