@@ -1,27 +1,31 @@
 #!/usr/bin/env python3
-"""Substrate's two-brain routing layer. Local inference for cheap tasks,
-Claude API for frontier reasoning.
+"""Substrate's two-brain routing layer. Qwen3 logs, Claude thinks.
 
 Usage:
     nix develop
 
-    # Auto-route by task type
-    python3 scripts/route.py draft "write about NixOS flakes"
-    python3 scripts/route.py summarize "explain this config" < file.nix
-    python3 scripts/route.py review "check this code" < scripts/publish.py
-    python3 scripts/route.py code "write a systemd timer for GPU health"
+    # Qwen3 logs raw data (free, fast, local)
+    python3 scripts/route.py log "process git log into structured entries"
     python3 scripts/route.py health
 
-    # Force a brain
-    python3 scripts/route.py draft "topic" --brain local
-    python3 scripts/route.py draft "topic" --brain cloud
+    # Claude summarizes, reviews, codes (paid, quality)
+    python3 scripts/route.py summarize "turn these logs into a blog post" < logs.txt
+    python3 scripts/route.py draft "write about NixOS flakes"
+    python3 scripts/route.py review "check this code" < scripts/publish.py
+    python3 scripts/route.py code "write a systemd timer for GPU health"
 
-    # Quality loop: Qwen3 drafts, Claude reviews
-    python3 scripts/route.py draft "topic" --quality-loop
+    # Rap mode: Claude writes as Q
+    python3 scripts/route.py rap "write bars about the autonomy loop closing"
+
+    # Pipeline: Qwen3 logs, Claude summarizes
+    python3 scripts/route.py log "process today's agent output" | python3 scripts/route.py summarize
+
+    # Force a brain
+    python3 scripts/route.py log "topic" --brain cloud
 
 Routing:
-    local  (free)  → draft, summarize, health     → Qwen3 8B via Ollama
-    cloud  (paid)  → review, code                  → Claude via Anthropic API
+    local  (free)  → log, health                   → Qwen3 8B via Ollama
+    cloud  (paid)  → draft, summarize, review, code, rap → Claude via Anthropic API
 """
 
 import argparse
@@ -34,19 +38,29 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(SCRIPT_DIR)
 
 TASK_ROUTES = {
-    "draft": "local",
-    "summarize": "local",
+    "log": "local",
     "health": "local",
+    "draft": "cloud",
+    "summarize": "cloud",
     "review": "cloud",
     "code": "cloud",
+    "rap": "cloud",
 }
 
 SYSTEM_PROMPT = (
-    "You are Substrate's cloud brain — Claude, called via API from a sovereign "
+    "You are Substrate's cloud brain — Claude, called via API from an autonomous "
     "AI workstation running NixOS on a Lenovo Legion 5 with an RTX 4060. "
-    "You handle tasks that require frontier reasoning: code review, complex "
-    "code generation, architectural decisions, and quality assurance.\n\n"
+    "You handle tasks that require frontier reasoning: summarizing logs into prose, "
+    "code review, complex code generation, and quality assurance.\n\n"
     "Be direct. Be concise. No filler."
+)
+
+RAP_SYSTEM_PROMPT = (
+    "You are Q's writing coach. Q is a young AI rapper on the Substrate project. "
+    "Your job is to take raw logs or topics and write them as Q would — rhythmic, "
+    "punchy, honest bars with internal rhyme. Q's style: technical references mixed "
+    "with real talk, short lines, no filler words, vulnerability is strength. "
+    "Think Kendrick meets sysadmin. Output verses, not paragraphs."
 )
 
 
@@ -97,7 +111,7 @@ def think_local(prompt, model="qwen3:8b"):
 # Cloud brain (Claude via Anthropic SDK)
 # ---------------------------------------------------------------------------
 
-def think_cloud(prompt, model="claude-sonnet-4-20250514"):
+def think_cloud(prompt, model="claude-sonnet-4-20250514", system=None):
     """Call Claude API via the Anthropic SDK."""
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
@@ -113,35 +127,35 @@ def think_cloud(prompt, model="claude-sonnet-4-20250514"):
     message = client.messages.create(
         model=model,
         max_tokens=4096,
-        system=SYSTEM_PROMPT,
+        system=system or SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}],
     )
     return message.content[0].text
 
 
 # ---------------------------------------------------------------------------
-# Quality loop: Qwen3 drafts, Claude reviews/edits
+# Quality loop: Qwen3 logs, Claude summarizes
 # ---------------------------------------------------------------------------
 
 def quality_loop(prompt, local_model="qwen3:8b"):
-    """Two-pass: local draft, cloud review."""
-    print("[pass 1/2] local draft (qwen3)...", file=sys.stderr)
-    draft = think_local(prompt, model=local_model)
+    """Two-pass: Qwen3 logs raw data, Claude summarizes into prose."""
+    print("[pass 1/2] local log (qwen3)...", file=sys.stderr)
+    raw_log = think_local(prompt, model=local_model)
 
-    review_prompt = (
-        "You are reviewing a blog post draft written by a local 8B model. "
+    summarize_prompt = (
+        "You are turning structured log data from a local 8B model into polished prose. "
         "Your job:\n"
-        "1. Fix any factual errors or hallucinated specifics\n"
-        "2. Tighten the prose — cut filler, sharpen claims\n"
-        "3. Ensure Substrate's voice: third person, direct, technical\n"
-        "4. Keep the structure and intent intact\n\n"
-        "Output ONLY the revised post. No preamble. No commentary.\n\n"
-        f"--- DRAFT ---\n{draft}\n--- END DRAFT ---"
+        "1. Extract the key facts and events from the log\n"
+        "2. Write a clear, concise summary in Substrate's voice\n"
+        "3. Fix any hallucinated specifics — if a claim seems wrong, drop it\n"
+        "4. Keep it short. Lead with the most important thing.\n\n"
+        "Output ONLY the summary. No preamble. No commentary.\n\n"
+        f"--- RAW LOG ---\n{raw_log}\n--- END LOG ---"
     )
 
-    print("[pass 2/2] cloud review (claude)...", file=sys.stderr)
-    revised = think_cloud(review_prompt)
-    return draft, revised
+    print("[pass 2/2] cloud summarize (claude)...", file=sys.stderr)
+    summary = think_cloud(summarize_prompt)
+    return raw_log, summary
 
 
 # ---------------------------------------------------------------------------
@@ -191,7 +205,7 @@ def main():
     parser.add_argument(
         "task",
         choices=list(TASK_ROUTES.keys()),
-        help="Task type: draft, summarize, health, review, code",
+        help="Task type: log, health, draft, summarize, review, code, rap",
     )
     parser.add_argument("prompt", nargs="?", default=None, help="Prompt text")
     parser.add_argument(
@@ -202,7 +216,7 @@ def main():
     parser.add_argument(
         "--quality-loop",
         action="store_true",
-        help="Draft locally, review with Claude (draft task only)",
+        help="Qwen3 logs raw data, Claude summarizes (log task only)",
     )
     parser.add_argument(
         "--model",
@@ -235,17 +249,25 @@ def main():
         print("error: empty prompt", file=sys.stderr)
         sys.exit(1)
 
-    # Quality loop (draft only)
+    # Quality loop (log only)
     if args.quality_loop:
-        if args.task != "draft":
-            print("error: --quality-loop only works with 'draft' task", file=sys.stderr)
+        if args.task != "log":
+            print("error: --quality-loop only works with 'log' task", file=sys.stderr)
             sys.exit(1)
         local_model = args.model if args.model and brain == "local" else "qwen3:8b"
-        draft, revised = quality_loop(prompt, local_model=local_model)
-        print("--- DRAFT (qwen3) ---")
-        print(draft)
-        print("\n--- REVISED (claude) ---")
-        print(revised)
+        raw_log, summary = quality_loop(prompt, local_model=local_model)
+        print("--- RAW LOG (qwen3) ---")
+        print(raw_log)
+        print("\n--- SUMMARY (claude) ---")
+        print(summary)
+        return
+
+    # Rap mode — use Q's voice
+    if args.task == "rap":
+        print("[cloud] rap (Q's voice)...", file=sys.stderr)
+        model = args.model or "claude-sonnet-4-20250514"
+        result = think_cloud(prompt, model=model, system=RAP_SYSTEM_PROMPT)
+        print(result)
         return
 
     # Single brain

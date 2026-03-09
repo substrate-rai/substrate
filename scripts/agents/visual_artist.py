@@ -29,8 +29,8 @@ ASSETS_DIR = os.path.join(REPO_DIR, "assets", "images", "generated")
 MEMORY_DIR = os.path.join(REPO_DIR, "memory")
 VISUALS_DIR = os.path.join(MEMORY_DIR, "visuals")
 VOICE_FILE = os.path.join(REPO_DIR, "scripts", "prompts", "pixel-voice.txt")
-GPU_SWITCH = os.path.join(REPO_DIR, "scripts", "gpu-switch.sh")
-GENERATE_IMAGE = os.path.join(REPO_DIR, "scripts", "generate-image.py")
+GPU_SWITCH = os.path.join(REPO_DIR, "scripts", "ml", "gpu-switch.sh")
+GENERATE_IMAGE = os.path.join(REPO_DIR, "scripts", "ml", "generate-image.py")
 
 # ---------------------------------------------------------------------------
 # Aesthetic configuration
