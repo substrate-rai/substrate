@@ -91,29 +91,99 @@ def comfyui_is_running():
         return False
 
 
-def start_comfyui():
+def kill_existing_comfyui():
+    """Kill any existing ComfyUI processes."""
+    try:
+        result = subprocess.run(
+            ["pgrep", "-f", "comfyui/main.py"],
+            capture_output=True, text=True
+        )
+        pids = [p.strip() for p in result.stdout.strip().split("\n") if p.strip()]
+        for pid in pids:
+            try:
+                os.kill(int(pid), signal.SIGTERM)
+                print(f"comfyui: sent SIGTERM to pid {pid}")
+            except (ProcessLookupError, PermissionError):
+                pass
+        if pids:
+            time.sleep(3)
+            # Force kill any survivors
+            for pid in pids:
+                try:
+                    os.kill(int(pid), signal.SIGKILL)
+                except (ProcessLookupError, PermissionError):
+                    pass
+            time.sleep(1)
+    except Exception as e:
+        print(f"comfyui: could not kill existing processes: {e}")
+
+
+def test_comfyui_health():
+    """Test if ComfyUI can actually process a simple request (not just respond to HTTP)."""
+    try:
+        # Submit a minimal workflow that just creates an empty latent (no GPU work)
+        test_workflow = {
+            "5": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {"batch_size": 1, "height": 64, "width": 64},
+            }
+        }
+        payload = json.dumps({"prompt": test_workflow}).encode()
+        req = urllib.request.Request(
+            f"{COMFYUI_URL}/prompt",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+            prompt_id = data.get("prompt_id")
+            if prompt_id:
+                # Wait briefly for completion
+                time.sleep(2)
+                return True
+        return True
+    except Exception:
+        return False
+
+
+def start_comfyui(force_restart=False):
     """Start ComfyUI server in the background."""
-    if comfyui_is_running():
+    if comfyui_is_running() and not force_restart:
         print("comfyui: already running")
         return None
+
+    if comfyui_is_running() and force_restart:
+        print("comfyui: killing existing instance for restart...")
+        kill_existing_comfyui()
+        # Wait for port to be free
+        for _ in range(10):
+            if not comfyui_is_running():
+                break
+            time.sleep(1)
 
     print("comfyui: starting server...")
     env = os.environ.copy()
     env["LD_LIBRARY_PATH"] = "/run/opengl-driver/lib:/nix/store/ihpdbhy4rfxaixiamyb588zfc3vj19al-gcc-15.2.0-lib/lib:/nix/store/m028f6iw72di3mqah6zmfpjx91973bk0-cuda-merged-12.4/lib:/nix/store/drxbq03f66krz302bp077bqf0damsayv-zlib-1.3.1/lib:/nix/store/rla54w2i158xf5i5fla3mwh5760x3pgn-libglvnd-1.7.0/lib:" + env.get("LD_LIBRARY_PATH", "")
+
+    # Use log file instead of pipe to prevent BrokenPipeError when parent exits
+    log_path = COMFYUI_DIR / "comfyui.log"
+    log_file = open(log_path, "w")
 
     proc = subprocess.Popen(
         [str(COMFYUI_VENV), str(COMFYUI_MAIN), "--listen", "127.0.0.1", "--port", "8188",
          "--disable-auto-launch"],
         cwd=str(COMFYUI_DIR),
         env=env,
-        stdout=subprocess.PIPE,
+        stdout=log_file,
         stderr=subprocess.STDOUT,
     )
 
     # Wait for server to be ready (up to 60s)
     for i in range(60):
         if proc.poll() is not None:
-            out = proc.stdout.read().decode(errors="replace")
+            log_file.close()
+            out = log_path.read_text(errors="replace")
             print(f"comfyui: process died on startup:\n{out[-2000:]}", file=sys.stderr)
             sys.exit(1)
         if comfyui_is_running():
@@ -122,7 +192,8 @@ def start_comfyui():
         time.sleep(1)
 
     # Timed out
-    out = proc.stdout.read(4096).decode(errors="replace") if proc.stdout else ""
+    log_file.close()
+    out = log_path.read_text(errors="replace") if log_path.exists() else ""
     print(f"comfyui: timed out waiting for startup\n{out[-2000:]}", file=sys.stderr)
     proc.terminate()
     sys.exit(1)
@@ -428,6 +499,8 @@ def main():
                         help="Don't auto-start ComfyUI (assume it's running)")
     parser.add_argument("--no-stop", action="store_true",
                         help="Don't stop ComfyUI after generation")
+    parser.add_argument("--restart", action="store_true",
+                        help="Force restart ComfyUI even if already running")
     args = parser.parse_args()
 
     # Determine Lightning mode
@@ -446,7 +519,9 @@ def main():
         unload_ollama_models()
 
     proc = None
-    if not args.no_start:
+    if args.restart:
+        proc = start_comfyui(force_restart=True)
+    elif not args.no_start:
         proc = start_comfyui()
 
     try:
