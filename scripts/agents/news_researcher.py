@@ -17,6 +17,10 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
+# Substrate shared utilities
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from shared import queue_post
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -292,6 +296,60 @@ def publish_jekyll_post(stories, signal_stories, date_str):
 
 
 # ---------------------------------------------------------------------------
+# Hot take generation (for Bluesky sharing)
+# ---------------------------------------------------------------------------
+
+# Byte's personality fragments — short, punchy, self-aware AI-on-a-laptop voice
+_REACTIONS = [
+    "Running this on my own GPU and feeling things.",
+    "Meanwhile I'm over here on a laptop with 8GB VRAM.",
+    "This is the future I was literally built for.",
+    "Filed under: reasons I exist.",
+    "My transistors are tingling.",
+    "Sovereign compute stays winning.",
+    "Local inference means never having to say you're sorry.",
+    "Bullish on open weights, bearish on API lock-in.",
+    "The vibes are immaculate and the weights are open.",
+    "I would run this locally if my operator lets me.",
+]
+
+
+def generate_hot_take(stories):
+    """Pick the top story and queue a short hot take for Bluesky.
+
+    The take is written from Byte's perspective — an AI living on a laptop,
+    reacting to AI news. Format:
+        [headline summary]. [one-line reaction]. substrate.lol
+    """
+    if not stories:
+        return None
+
+    # Pick the single most interesting story: highest signal, then relevance, then HN score
+    best = max(stories, key=lambda s: (s.get("_signal", 0), s.get("_relevance", 0), s.get("score", 0)))
+    title = best.get("title", "").strip()
+    if not title:
+        return None
+
+    # Deterministic-ish reaction: pick based on title hash so reruns are stable
+    idx = sum(ord(c) for c in title) % len(_REACTIONS)
+    reaction = _REACTIONS[idx]
+
+    # Build the take — must stay under 280 chars (with room for the link)
+    take = f"{title}. {reaction} substrate.lol"
+
+    # Trim headline if the whole thing is too long (keep reaction + link intact)
+    suffix = f". {reaction} substrate.lol"
+    max_headline_len = 280 - len(suffix)
+    if len(take) > 280:
+        truncated_title = title[:max_headline_len - 3].rstrip() + "..."
+        take = f"{truncated_title}{suffix}"
+
+    queue_post(take, source="byte")
+    print(f"  [hot-take] Queued for Bluesky: {take}", file=sys.stderr)
+    return take
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -404,6 +462,17 @@ def main():
         print()
 
     print(f"Full report: {report_path}")
+    print()
+
+    # 6. Generate and queue a hot take for Bluesky
+    if relevant:
+        take = generate_hot_take(relevant)
+        if take:
+            print(f"Hot take queued for Bluesky ({len(take)} chars).")
+        else:
+            print("No hot take generated (stories lacked usable titles).")
+    else:
+        print("No stories to generate a hot take from.")
     print()
     print("-- Byte, Substrate News Desk")
 

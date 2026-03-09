@@ -15,7 +15,9 @@ import glob
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
+
+from shared import queue_post
 
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 REPORT_DIR = os.path.join(REPO_DIR, "memory", "narrative")
@@ -391,6 +393,118 @@ def build_report(date_str, contradictions, xref_issues, outdated, blog_issues,
     return "\n".join(lines)
 
 
+def compile_daily_dispatch(date_str, orchestrator_agents):
+    """Compile a daily dispatch post from the latest briefing and queue it.
+
+    Reads the most recent briefing, extracts notable facts, and composes
+    a concise Bluesky post summarizing what agents did today.
+    """
+    briefings_dir = os.path.join(REPO_DIR, "memory", "briefings")
+    if not os.path.isdir(briefings_dir):
+        print("[Sync] No briefings directory — skipping daily dispatch")
+        return
+
+    # Find the most recent briefing file (exclude latest.md symlink-style file,
+    # prefer dated files sorted descending)
+    briefing_files = sorted(glob.glob(os.path.join(briefings_dir, "*.md")))
+    # Filter to dated files only (YYYY-MM-DD pattern)
+    dated = [f for f in briefing_files if re.search(r"\d{4}-\d{2}-\d{2}", os.path.basename(f))]
+    if not dated:
+        print("[Sync] No dated briefing files found — skipping daily dispatch")
+        return
+
+    latest_briefing_path = dated[-1]
+    content = read_file(latest_briefing_path)
+    if not content:
+        print("[Sync] Latest briefing is empty — skipping daily dispatch")
+        return
+
+    # Calculate day number (Day 0 = 2026-03-06)
+    origin = date(2026, 3, 6)
+    try:
+        today = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        today = date.today()
+    day_number = (today - origin).days
+
+    # Extract notable facts from the briefing
+    details = []
+
+    # Sentinel scan size
+    sentinel_match = re.search(r"HIGH SEVERITY \((\d+)\)", content)
+    if sentinel_match:
+        count = sentinel_match.group(1)
+        details.append(f"Sentinel flagged {count} security findings")
+
+    # Byte news count
+    byte_match = re.search(r"Found (\d+) relevant stories", content)
+    if byte_match:
+        count = byte_match.group(1)
+        details.append(f"Byte fetched {count} AI stories")
+
+    # Pixel art
+    pixel_match = re.search(r"Generated (\d+)/(\d+) images", content)
+    if pixel_match:
+        done, total = pixel_match.group(1), pixel_match.group(2)
+        if done == "0":
+            details.append(f"Pixel has {total} images queued")
+        else:
+            details.append(f"Pixel generated {done}/{total} images")
+
+    # Arc arcade count
+    arc_match = re.search(r"Arcade Status.*?(\d+) titles scanned", content)
+    if arc_match:
+        count = arc_match.group(1)
+        details.append(f"Arc scanned {count} arcade titles")
+
+    # Forge site issues
+    forge_match = re.search(r"\[Forge\] (\d+) issue\(s\) need attention", content)
+    if forge_match:
+        count = forge_match.group(1)
+        details.append(f"Forge found {count} site issues")
+
+    # Spec smoke test pass count
+    spec_pass = len(re.findall(r"PASS", content))
+    if spec_pass > 0:
+        details.append(f"Spec passed {spec_pass} smoke tests")
+
+    # Blog post count
+    blog_match = re.search(r"BLOG POSTS \((\d+) published\)", content)
+    if blog_match:
+        count = blog_match.group(1)
+        details.append(f"{count} blog posts published")
+
+    # Agent count from briefing header
+    agent_match = re.search(r"\*\*Agents:\*\*\s*(\d+)/(\d+)", content)
+    agent_count = len(orchestrator_agents)
+    if agent_match:
+        agent_count = int(agent_match.group(2))
+
+    if not details:
+        details.append(f"{agent_count} agents ran their daily routines")
+
+    # Compose the dispatch — pick 2-3 details that fit under 280 chars
+    # Format: "[Facts]. Day N of autonomous operations. substrate.lol"
+    suffix = f"Day {day_number} of {agent_count} agents on one laptop. substrate.lol"
+
+    # Try progressively fewer details until it fits
+    for count in range(min(3, len(details)), 0, -1):
+        facts = ". ".join(details[:count])
+        dispatch = f"{facts}. {suffix}"
+        if len(dispatch) <= 280:
+            break
+    else:
+        dispatch = f"{agent_count} agents completed today's cycle. {suffix}"
+
+    # Final safety trim
+    if len(dispatch) > 280:
+        dispatch = dispatch[:277] + "..."
+
+    print(f"[Sync] Daily dispatch ({len(dispatch)} chars): {dispatch}")
+    queue_post(dispatch, source="sync")
+    print("[Sync] Dispatch queued for Bluesky")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Sync — Communications Director")
     parser.add_argument("--date", default=None, help="Override date (YYYY-MM-DD)")
@@ -486,6 +600,11 @@ def main():
     # Summary
     total_issues = len(contradictions) + len(xref_issues) + len(outdated) + len(blog_issues)
     print(f"[Sync] {total_issues} issues found")
+
+    # Draft and queue daily dispatch (skip in dry-run mode)
+    if not args.dry_run:
+        compile_daily_dispatch(date_str, orchestrator_agents)
+
     print("-- Sync, Substrate Communications")
 
 

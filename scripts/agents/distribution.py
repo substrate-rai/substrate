@@ -21,6 +21,8 @@ from datetime import datetime
 
 import requests
 
+from shared import queue_post, get_pending_count
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -36,7 +38,7 @@ OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"
 
 SYSTEM_PROMPT = """\
-You are Amp, the distribution agent for Substrate — a sovereign AI workstation \
+You are Amp, the distribution agent for Substrate — an autonomous AI workstation \
 that runs on a single laptop with an RTX 4060, built entirely by AI agents.
 
 Your only job is making sure people see what Substrate builds. Every piece of \
@@ -340,6 +342,12 @@ def cmd_status():
         print(f"    \033[33mNo drafts for:\033[0m {', '.join(sorted(uncovered))}")
     print()
 
+    # Posting queue
+    pending = get_pending_count()
+    print(f"\033[1;37m  POSTING QUEUE\033[0m")
+    print(f"    Pending posts: \033[36m{pending}\033[0m")
+    print()
+
     # Gap assessment
     undistributed = len(posts) - len(drafts)
     if undistributed > 0:
@@ -523,6 +531,17 @@ def cmd_draft(platform, content):
         f.write(response)
         f.write("\n")
 
+    # For Bluesky drafts, extract the post text and queue it for posting
+    if platform == "bluesky":
+        # Use the raw AI response as the post text; strip markdown artifacts
+        post_text = response.strip()
+        # If the response contains multiple posts (thread), take the first one
+        lines = [l for l in post_text.split("\n") if l.strip() and not l.strip().startswith("#")]
+        if lines:
+            post_text = lines[0].strip()
+        queue_post(post_text, source="amp")
+        print(f"\033[36m  Queued for posting to Bluesky.\033[0m")
+
     print(response)
     print()
     print(f"\033[32m  Draft saved to: {filepath}\033[0m")
@@ -555,8 +574,12 @@ def cmd_report():
     context += f"Channels WITHOUT drafts: {', '.join(sorted(uncovered)) if uncovered else 'none'}\n"
     context += f"\nToday: {datetime.now().strftime('%Y-%m-%d')}\n"
 
+    pending = get_pending_count()
+
     print("\033[1;38;2;68;255;221m  A! AMP — COVERAGE REPORT\033[0m")
     print("\033[2m  Running gap analysis via Qwen3 8B...\033[0m")
+    print()
+    print(f"  Posting queue: \033[36m{pending} pending\033[0m")
     print()
 
     response = ask_local(

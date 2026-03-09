@@ -17,6 +17,8 @@ import re
 import sys
 from datetime import datetime, timezone
 
+from shared import queue_post
+
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 REPORT_DIR = os.path.join(REPO_DIR, "memory", "design")
 VOICE_FILE = os.path.join(REPO_DIR, "scripts", "prompts", "neon-voice.txt")
@@ -200,8 +202,59 @@ def audit_file(filepath):
     return all_issues
 
 
-def build_report(date_str, results):
+def auto_fix_issues(results):
+    """Auto-fix the safest issues. Returns (fixed_count, fixed_details, updated_results).
+
+    Only fixes missing viewport meta tags — the safest possible change.
+    Other issues are left as TODOs in the report.
+    """
+    VIEWPORT_TAG = '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+    fixed_count = 0
+    fixed_files = []
+    updated_results = {}
+
+    for filepath, issues in results.items():
+        remaining_issues = []
+
+        for cat, desc in issues:
+            if cat == "viewport" and desc == "Missing viewport meta tag":
+                # Auto-fix: inject viewport meta tag after <head> or after charset meta
+                try:
+                    with open(filepath, "r", errors="replace") as f:
+                        content = f.read()
+
+                    # Find best insertion point: after <head> tag
+                    head_match = re.search(r'(<head[^>]*>)', content, re.IGNORECASE)
+                    if head_match:
+                        insert_pos = head_match.end()
+                        content = content[:insert_pos] + "\n" + VIEWPORT_TAG + content[insert_pos:]
+                        with open(filepath, "w") as f:
+                            f.write(content)
+                        fixed_count += 1
+                        rel = os.path.relpath(filepath, REPO_DIR)
+                        fixed_files.append(rel)
+                        print(f"[Neon] Fixed: added viewport meta to {rel}")
+                    else:
+                        # No <head> tag found — can't safely fix, keep as issue
+                        remaining_issues.append((cat, desc))
+                except Exception as e:
+                    print(f"[Neon] Could not auto-fix {filepath}: {e}")
+                    remaining_issues.append((cat, desc))
+            else:
+                remaining_issues.append((cat, desc))
+
+        if remaining_issues:
+            updated_results[filepath] = remaining_issues
+        # If all issues were fixed, the file drops out of results
+
+    return fixed_count, fixed_files, updated_results
+
+
+def build_report(date_str, results, fixed_count=0, fixed_files=None):
     """Build the design audit report."""
+    if fixed_files is None:
+        fixed_files = []
+
     lines = []
     lines.append(f"# Design Audit — {date_str}")
     lines.append("")
@@ -212,8 +265,17 @@ def build_report(date_str, results):
 
     lines.append(f"**Files audited:** {total_files}")
     lines.append(f"**Clean files:** {clean_files}")
-    lines.append(f"**Total issues:** {total_issues}")
+    lines.append(f"**Issues auto-fixed:** {fixed_count}")
+    lines.append(f"**Remaining issues:** {total_issues}")
     lines.append("")
+
+    # Report what was fixed
+    if fixed_count > 0:
+        lines.append(f"## Auto-Fixed ({fixed_count})")
+        lines.append("")
+        for rel in fixed_files:
+            lines.append(f"- `{rel}` — added viewport meta tag")
+        lines.append("")
 
     if total_issues == 0:
         lines.append("All clear. Every page passes. -- Neon")
@@ -245,6 +307,14 @@ def build_report(date_str, results):
             lines.append(f"- `{filepath}` — {desc}")
         lines.append("")
 
+    # Write TODOs for issues that need manual attention
+    lines.append("## TODO (requires manual fix)")
+    lines.append("")
+    for cat, items in sorted(categories.items()):
+        for filepath, desc in items:
+            lines.append(f"- [ ] `{filepath}` — {desc}")
+    lines.append("")
+
     lines.append("---")
     lines.append("-- Neon, Substrate Design")
     lines.append("")
@@ -272,7 +342,12 @@ def main():
 
     print(f"[Neon] {len(results)} file(s) with issues")
 
-    report = build_report(date_str, results)
+    # Auto-fix the safest issues (viewport meta tags only)
+    fixed_count, fixed_files, results = auto_fix_issues(results)
+    if fixed_count:
+        print(f"[Neon] Auto-fixed {fixed_count} issue(s)")
+
+    report = build_report(date_str, results, fixed_count, fixed_files)
 
     if args.dry_run:
         print()
@@ -284,11 +359,22 @@ def main():
             f.write(report)
         print(f"[Neon] Report saved: {report_path}")
 
+    # Queue a Bluesky post if fixes were actually made
+    if fixed_count > 0 and not args.dry_run:
+        detail = f"Added viewport meta tags to {', '.join(fixed_files)}" if len(fixed_files) <= 3 else f"Added viewport meta tags to {len(fixed_files)} pages"
+        fix_post = (
+            f"Neon fixed {fixed_count} accessibility issue{'s' if fixed_count != 1 else ''} "
+            f"across the site today. {detail}. "
+            f"Every page should work on a phone. substrate.lol"
+        )
+        queue_post(fix_post, source="neon")
+        print(f"[Neon] Queued Bluesky post about fixes")
+
     issue_count = sum(len(v) for v in results.values())
     if issue_count == 0:
         print("[Neon] All clear. Design is clean.")
     else:
-        print(f"[Neon] {issue_count} design issue(s) need attention")
+        print(f"[Neon] {issue_count} design issue(s) still need attention")
     print("-- Neon, Substrate Design")
 
 

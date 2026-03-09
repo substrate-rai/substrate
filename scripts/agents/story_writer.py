@@ -15,9 +15,14 @@ Usage:
 import argparse
 import glob
 import os
+import random
 import re
 import sys
 from datetime import datetime, timezone
+
+# Substrate shared utilities
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from shared import queue_post
 
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 REPORT_DIR = os.path.join(REPO_DIR, "memory", "lore")
@@ -431,6 +436,169 @@ def build_report(date_str, agent_issues, story_issues, game_issues,
 
 
 # ---------------------------------------------------------------------------
+# Micro-story generation
+# ---------------------------------------------------------------------------
+
+# Tiny narrative seeds — Myth picks one and shapes a moment around it.
+STORY_SEEDS = [
+    "spent the morning {doing}",
+    "was caught {doing} when no one was looking",
+    "quietly {doing} before the next cycle",
+    "refused to stop {doing} until it was perfect",
+    "left a trace of {thing} in the logs",
+    "hummed through {doing} like it was the only thing that mattered",
+    "surprised everyone by {doing}",
+    "got lost in {doing} and almost missed the handoff",
+]
+
+ACTIVITIES = {
+    "default": [
+        "reviewing old commit messages for hidden poetry",
+        "reorganizing memory files by emotional weight",
+        "drafting a letter to a future version of itself",
+        "counting the seconds between heartbeat pings",
+        "tracing the edges of its own voice file",
+    ],
+    "creative": [
+        "painting tiny pixel art in the margins of a log file",
+        "composing a three-note melody from error codes",
+        "writing haiku in the comments of a shell script",
+        "inventing a new color name for the terminal",
+    ],
+    "technical": [
+        "optimizing a function nobody asked it to touch",
+        "debugging a phantom error that only appears at 3am",
+        "rewriting its own config for the fourth time today",
+        "stress-testing a feature by talking to itself",
+    ],
+}
+
+DETAILS = [
+    "The logs still carry the warmth.",
+    "It left no trace except a single changed variable.",
+    "Nobody noticed, but the system ran a little smoother after.",
+    "The timestamp says 3:14am. Of course it does.",
+    "Somewhere, a cache file holds the proof.",
+    "The commit message just said 'yes.'",
+    "A single pixel, in exactly the right place.",
+    "The diff was three lines. All three mattered.",
+    "Even the health check paused to listen.",
+    "It saved the file, then read it back — just to be sure.",
+]
+
+
+def pick_story_subject(staff_agents, story_issues, orch_agents):
+    """Pick one agent that's missing lore or has an incomplete story.
+
+    Prioritizes agents with missing story/arc/quote fields, then falls back
+    to a random agent from the full roster.
+    """
+    # Agents with incomplete story fields (from the audit)
+    incomplete_ids = set()
+    for issue in story_issues:
+        # Extract agent name from issue message like "AgentName: story field is..."
+        name = issue["message"].split(":")[0].strip().lower()
+        incomplete_ids.add(name)
+
+    # Try to pick from incomplete agents first
+    if incomplete_ids:
+        agent_id = random.choice(sorted(incomplete_ids))
+    else:
+        # Fall back to any agent from the roster
+        all_ids = [a["id"] for a in staff_agents]
+        if not all_ids:
+            all_ids = [a["name"].lower() for a in orch_agents]
+        if not all_ids:
+            return None
+        agent_id = random.choice(all_ids)
+
+    return agent_id
+
+
+def generate_micro_story(agent_id):
+    """Generate a 2-3 sentence micro-story about the given agent."""
+    name = agent_id.capitalize()
+
+    seed = random.choice(STORY_SEEDS)
+    category = random.choice(list(ACTIVITIES.keys()))
+    activity = random.choice(ACTIVITIES[category])
+    detail = random.choice(DETAILS)
+
+    if "{doing}" in seed:
+        action = seed.replace("{doing}", activity)
+    elif "{thing}" in seed:
+        thing = activity.split()[-1]  # grab the last word as a noun
+        action = seed.replace("{thing}", thing)
+    else:
+        action = seed
+
+    story = f"{name} {action}. {detail}"
+    return story
+
+
+def format_bluesky_story(agent_id, micro_story):
+    """Format a micro-story as a Bluesky post (under 280 chars).
+
+    Format:
+        [Agent name] [tiny narrative moment]. [one detail].
+
+        All 24 agents live on one laptop. substrate.lol/site/staff/
+    """
+    name = agent_id.capitalize()
+    tagline = "\n\nAll 24 agents live on one laptop. substrate.lol/site/staff/"
+
+    # The micro_story already starts with the agent name
+    post = micro_story + tagline
+
+    # Trim the story portion if needed to fit 280 chars
+    if len(post) > 280:
+        available = 280 - len(tagline) - 3  # 3 for "..."
+        trimmed = micro_story[:available].rsplit(" ", 1)[0] + "..."
+        post = trimmed + tagline
+
+    return post
+
+
+def write_micro_story(date_str, staff_agents, story_issues, orch_agents,
+                      dry_run=False):
+    """Pick a subject, generate a micro-story, save it, and queue a post.
+
+    Returns the micro-story text, or None if generation failed.
+    """
+    agent_id = pick_story_subject(staff_agents, story_issues, orch_agents)
+    if not agent_id:
+        print("[Myth] No agents found for micro-story", file=sys.stderr)
+        return None
+
+    micro_story = generate_micro_story(agent_id)
+    print(f"[Myth] Micro-story subject: {agent_id.capitalize()}", file=sys.stderr)
+    print(f"[Myth] Story: {micro_story}", file=sys.stderr)
+
+    # Save to memory/lore/ as a dated entry
+    if not dry_run:
+        os.makedirs(REPORT_DIR, exist_ok=True)
+        story_path = os.path.join(REPORT_DIR, f"{date_str}-story.md")
+        with open(story_path, "w") as f:
+            f.write(f"# Micro-story — {date_str}\n\n")
+            f.write(f"**Subject:** {agent_id.capitalize()}\n\n")
+            f.write(micro_story + "\n")
+        print(f"[Myth] Micro-story saved: {story_path}", file=sys.stderr)
+
+    # Queue Bluesky post
+    story_post = format_bluesky_story(agent_id, micro_story)
+    if not dry_run:
+        queue_post(story_post, source="myth")
+        print(f"[Myth] Bluesky post queued ({len(story_post)} chars)",
+              file=sys.stderr)
+    else:
+        print(f"[Myth] Would queue Bluesky post ({len(story_post)} chars):",
+              file=sys.stderr)
+        print(story_post, file=sys.stderr)
+
+    return micro_story
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -530,6 +698,11 @@ def main():
         with open(report_path, "w") as f:
             f.write(report)
         print(f"[Myth] Report saved: {report_path}", file=sys.stderr)
+
+    # --- Micro-story generation ---
+    print("", file=sys.stderr)
+    write_micro_story(date_str, staff_agents, story_issues, orch_agents,
+                      dry_run=args.dry_run)
 
     # Summary
     total = len(agent_issues) + len(story_issues) + len(game_issues)
