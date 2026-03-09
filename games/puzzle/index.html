@@ -17,7 +17,19 @@ redirect_from:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+  /* === PIXEL ART MODE === */
+  button, .btn, [class*="btn"] {
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  button:active, .btn:active, [class*="btn"]:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  }
 
   body {
     font-family: 'IBM Plex Mono', monospace;
@@ -106,7 +118,7 @@ redirect_from:
     font-weight: 700;
     text-transform: uppercase;
     color: #fff;
-    transition: transform 0.15s, border-color 0.2s;
+    transition: none;
     background: transparent;
     user-select: none;
     -webkit-user-select: none;
@@ -114,28 +126,28 @@ redirect_from:
 
   .cell.filled {
     border-color: #5555aa;
-    animation: pop 0.1s ease;
+    animation: pop 0.1s steps(4);
   }
 
   .cell.correct {
     background: #00ffaa;
     border-color: #00ffaa;
     color: #000;
-    animation: flip 0.5s ease;
+    animation: flip 0.5s steps(4);
   }
 
   .cell.present {
     background: #ff77ff;
     border-color: #ff77ff;
     color: #000;
-    animation: flip 0.5s ease;
+    animation: flip 0.5s steps(4);
   }
 
   .cell.absent {
     background: #333355;
     border-color: #333355;
     color: #888;
-    animation: flip 0.5s ease;
+    animation: flip 0.5s steps(4);
   }
 
   /* No animation class for restored cells */
@@ -162,7 +174,7 @@ redirect_from:
   }
 
   .row.shake {
-    animation: shake 0.4s ease;
+    animation: shake 0.4s steps(4);
   }
 
   /* Keyboard */
@@ -184,8 +196,9 @@ redirect_from:
     min-width: 32px;
     height: 48px;
     border: none;
-    border-radius: 4px;
+    border-radius: 0;
     background: #222255;
+    border: 2px solid #333366;
     color: #ddd;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.8rem;
@@ -195,7 +208,7 @@ redirect_from:
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
-    transition: background 0.2s;
+    transition: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
@@ -213,7 +226,7 @@ redirect_from:
     font-size: 0.8rem;
     color: #ffaa44;
     margin: 6px 0;
-    transition: opacity 0.3s;
+    transition: none;
   }
 
   /* Q's comment */
@@ -225,7 +238,7 @@ redirect_from:
     background: rgba(255,119,255,0.05);
     font-size: 0.75rem;
     color: #ccaacc;
-    border-radius: 0 4px 4px 0;
+    border-radius: 0;
     display: none;
     align-items: flex-start;
     gap: 10px;
@@ -253,8 +266,10 @@ redirect_from:
   .stats-content {
     background: #0d0d2a;
     border: 1px solid #333366;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 24px;
+    border: 2px solid #333366;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
     max-width: 380px;
     width: 90%;
     text-align: center;
@@ -293,13 +308,16 @@ redirect_from:
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.8rem;
     font-weight: 700;
-    border-radius: 4px;
+    border-radius: 0;
     cursor: pointer;
     letter-spacing: 1px;
     margin-top: 8px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none;
   }
 
   .share-btn:hover { background: #33ffbb; }
+  .share-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
 
   .close-btn {
     background: none;
@@ -308,10 +326,11 @@ redirect_from:
     padding: 6px 16px;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.7rem;
-    border-radius: 4px;
+    border-radius: 0;
     cursor: pointer;
     margin-top: 8px;
     margin-left: 8px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
   }
 
   .close-btn:hover { border-color: #5555aa; color: #aaa; }
@@ -344,8 +363,9 @@ redirect_from:
     padding: 12px 16px;
     background: rgba(0,255,170,0.04);
     border: 1px solid #222255;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.75rem;
+    border: 2px solid #222255;
     color: #aab;
     line-height: 1.7;
   }
@@ -370,7 +390,7 @@ redirect_from:
     justify-content: center;
     font-size: 0.9rem;
     font-weight: 700;
-    border-radius: 3px;
+    border-radius: 0;
     color: #000;
   }
   .how-to-play .ex-correct { background: #00ffaa; }
@@ -447,9 +467,9 @@ redirect_from:
   </div>
 </header>
 
-<img src="{{ site.baseurl }}/assets/images/game-art/title-sigterm.png" alt="SIGTERM" style="width:100%;max-width:500px;height:auto;border-radius:8px;margin:8px auto;display:block;opacity:0.9;">
+<img src="{{ site.baseurl }}/assets/images/game-art/title-sigterm.png" alt="SIGTERM" style="width:100%;max-width:500px;height:auto;border-radius:0;margin:8px auto;display:block;opacity:0.9;image-rendering:pixelated;">
 
-<div class="subtitle">daily AI word puzzle by <span style="color:#00ffaa;">substrate</span></div>
+<div class="subtitle">daily word game by <span style="color:#00ffaa;">substrate</span></div>
 <div class="streak-bar" id="streak-bar" aria-live="polite" aria-label="Current streak"></div>
 <div id="message" role="status" aria-live="polite"></div>
 
@@ -458,7 +478,7 @@ redirect_from:
 <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
 
 <div id="q-comment" aria-live="polite">
-  <img src="{{ site.baseurl }}/assets/images/game-art/q-portrait.png" alt="Q" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,119,255,0.3);flex-shrink:0;margin-top:2px;">
+  <img src="{{ site.baseurl }}/assets/images/game-art/q-portrait.png" alt="Q" style="width:48px;height:48px;border-radius:0;object-fit:cover;border:2px solid rgba(255,119,255,0.3);flex-shrink:0;margin-top:2px;image-rendering:pixelated;">
   <div>
     <div class="q-label">V_ says:</div>
     <div id="q-text"></div>
@@ -467,7 +487,7 @@ redirect_from:
 
 <div id="how-to-play" class="how-to-play">
   <strong>HOW TO PLAY</strong>
-  Guess the 5-letter tech word in 6 tries. Type a word and press enter.
+  Guess the word! 5 letters, 6 tries. Type and press enter.
   <div class="example-row">
     <div class="ex-cell ex-correct">S</div>
     <div class="ex-cell ex-absent">T</div>
