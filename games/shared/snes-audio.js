@@ -1,1300 +1,647 @@
 /**
  * snes-audio.js -- SPC700-style music engine for the Substrate arcade.
  *
- * Replicates the SNES sound chip approach:
- *   - 8 channels of sample playback with pitch-shifting
- *   - ADSR envelopes per channel
- *   - Echo buffer with delay, feedback, and lowpass filter
- *   - All instruments procedurally generated (no external files)
- *   - Master lowpass at ~12kHz to simulate the SPC700 DAC
+ * 8-channel sample player with ADSR, echo, and pattern sequencer.
+ * All instruments procedurally generated. Zero dependencies.
  *
  * Usage:
  *   <script src="../shared/snes-audio.js"></script>
  *   var music = new SNESAudio();
  *   music.loadSong('adventure');
  *   music.play();
- *
- * Size target: <30KB minified. Zero dependencies.
  */
 var SNESAudio = (function() {
-  'use strict';
+'use strict';
 
-  // ── MIDI note to frequency ──────────────────────────────────────────────
-  var NOTE_FREQ = [];
-  for (var i = 0; i < 128; i++) {
-    NOTE_FREQ[i] = 440 * Math.pow(2, (i - 69) / 12);
+var NF = []; // MIDI note -> frequency
+for (var i = 0; i < 128; i++) NF[i] = 440 * Math.pow(2, (i - 69) / 12);
+var NM = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+function n(s) {
+  var m = s.match(/^([A-G])(#|b)?(\d)$/);
+  if (!m) return 0;
+  var b = NM[m[1]]; if (m[2]==='#') b++; else if (m[2]==='b') b--;
+  return b + (parseInt(m[3]) + 1) * 12;
+}
+var R = -1, SR = 32000, SL = 512;
+
+// ── Sample generation ────────────────────────────────────────────────
+function genSamples() {
+  var s = {};
+  function mk(fn, len) {
+    len = len || SL; var b = new Float32Array(len);
+    for (var i = 0; i < len; i++) b[i] = fn(i / len);
+    return b;
+  }
+  s.sq50 = mk(function(t) { return t < 0.5 ? 1 : -1; });
+  s.sq25 = mk(function(t) { return t < 0.25 ? 1 : -1; });
+  s.sq12 = mk(function(t) { return t < 0.125 ? 1 : -1; });
+  s.saw = mk(function(t) { return 2 * t - 1; });
+  s.tri = mk(function(t) {
+    var st = Math.floor(t * 16) / 16;
+    return st < 0.5 ? 4 * st - 1 : 3 - 4 * st;
+  });
+  s.sin = mk(function(t) { return Math.sin(2 * Math.PI * t); });
+  s.noi = (function() { var b = new Float32Array(4096);
+    for (var i = 0; i < 4096; i++) b[i] = Math.random() * 2 - 1; return b; })();
+  s.pnoi = (function() { var b = new Float32Array(128);
+    for (var i = 0; i < 128; i++) b[i] = Math.random() * 2 - 1; return b; })();
+  s.str = mk(function(t) {
+    var v = 0; for (var h = 1; h <= 8; h++) v += Math.sin(2*Math.PI*h*t)/(h*h); return v*0.7;
+  });
+  s.bas = mk(function(t) {
+    var st = Math.floor(t*16)/16;
+    return Math.tanh((st<0.5?4*st-1:3-4*st)*1.5);
+  });
+  s.snr = mk(function(t) { return (Math.random()*2-1)*0.6 + Math.sin(2*Math.PI*t*3)*(1-t)*0.4; }, 1024);
+  s.kck = mk(function(t) { return Math.sin(2*Math.PI*(1+(1-t)*8)*t)*(1-t*0.5); }, 1024);
+  s.hh = (function() { var b = new Float32Array(512), p = 0;
+    for (var i = 0; i < 512; i++) { var r = Math.random()*2-1; b[i] = r-p; p = r; } return b; })();
+  s.pno = mk(function(t) {
+    return Math.sin(2*Math.PI*t)*0.5 + Math.sin(2*Math.PI*t*2.002)*0.3 +
+           Math.sin(2*Math.PI*t*3.004)*0.15 + Math.sin(2*Math.PI*t*4.01)*0.05;
+  });
+  return s;
+}
+
+// ── Compact song definitions ─────────────────────────────────────────
+// Instruments: [sampleKey, attack, decay, sustain, release, loop]
+// Pattern step: [ch, midiNote, instKey, volume] or null for empty step
+// Using helper I() for instrument defs, P() for patterns
+
+function I(smp,a,d,s,r,lp) { return {s:smp,a:a,d:d,su:s,r:r,lp:lp!==false}; }
+
+function songs() {
+  var S = {};
+
+  // ── AIRLOCK -- Tense ambient (Metroid / Alien 3) ─────────────────
+  S.airlock = { bpm:75, echo:[350,0.45,0.4,3000],
+    inst: { p:I('str',0.8,0.3,0.6,1.2), b:I('bas',0.01,0.2,0.4,0.5), h:I('hh',0.005,0.1,0,0.05,false),
+            t:I('sin',0.4,0.5,0.3,0.8), n:I('noi',0.5,1.0,0.2,1.5) },
+    pats: [
+      [32, [[0,n('E2'),'b',50],0,0,0, 0,0,0,0, [1,n('B3'),'p',25],0,0,0, [0,n('E2'),'b',35],0,0,0,
+            0,0,0,0, [2,n('E4'),'t',15],0,0,0, [0,n('B1'),'b',45],0,0,0, 0,0,[3,R,'h',10],0]],
+      [32, [[0,n('E2'),'b',50],0,0,0, [4,n('C2'),'n',8],0,0,0, [1,n('C4'),'p',25],0,0,0, [0,n('F2'),'b',40],0,0,0,
+            [3,R,'h',15],0,0,0, [2,n('G4'),'t',15],0,0,0, [0,n('E2'),'b',45],0,0,0, [3,R,'h',12],0,0,0]]
+    ], seq:[0,0,1,1,0,1] };
+
+  // ── BOOTLOADER -- Digital startup (Mega Man X) ───────────────────
+  S.bootloader = { bpm:140, echo:[150,0.3,0.25,5000],
+    inst: { l:I('sq50',0.01,0.1,0.7,0.15), b:I('bas',0.01,0.15,0.5,0.1), k:I('kck',0.005,0.2,0,0.05,false),
+            s:I('snr',0.005,0.15,0,0.05,false), h:I('hh',0.005,0.06,0,0.02,false), a:I('sq25',0.01,0.08,0.5,0.1) },
+    pats: [
+      [16, [[0,n('E2'),'b',60],[4,R,'h',30],[1,n('E4'),'l',40],0,
+            [2,R,'k',70],[4,R,'h',25],0,0, [0,n('E2'),'b',50],[4,R,'h',30],[3,R,'s',50],0,
+            [2,R,'k',65],[4,R,'h',25],[1,n('G4'),'l',40],0]],
+      [16, [[2,R,'k',70],[4,R,'h',30],[1,n('E5'),'l',45],[0,n('E2'),'b',50],
+            0,[4,R,'h',25],[1,n('D5'),'l',40],0, [2,R,'k',65],[4,R,'h',30],[3,R,'s',50],[1,n('B4'),'l',40],
+            [0,n('D2'),'b',50],[4,R,'h',25],[1,n('A4'),'l',35],0]],
+      [16, [[2,R,'k',70],[5,n('E4'),'a',30],[0,n('E2'),'b',50],[5,n('G4'),'a',30],
+            0,[5,n('B4'),'a',30],[4,R,'h',20],[5,n('E5'),'a',25],
+            [3,R,'s',50],[5,n('B4'),'a',30],[0,n('D2'),'b',50],[5,n('G4'),'a',30],
+            [2,R,'k',65],[5,n('D4'),'a',30],[4,R,'h',20],[5,n('F#4'),'a',30]]]
+    ], seq:[0,0,1,1,2,2,1,2] };
+
+  // ── BRIGADE -- Military march (Advance Wars) ────────────────────
+  S.brigade = { bpm:130, echo:[180,0.25,0.2,4500],
+    inst: { l:I('sq50',0.01,0.1,0.7,0.12), b:I('bas',0.01,0.15,0.5,0.1), k:I('kck',0.005,0.2,0,0.05,false),
+            s:I('snr',0.005,0.12,0,0.05,false), h:I('hh',0.005,0.05,0,0.02,false), r:I('saw',0.05,0.15,0.6,0.2) },
+    pats: [
+      [16, [[2,R,'k',70],[4,R,'h',30],[0,n('C3'),'b',50],0, [3,R,'s',55],[4,R,'h',25],0,0,
+            [2,R,'k',70],[4,R,'h',30],[0,n('G2'),'b',50],0, [3,R,'s',55],[4,R,'h',25],[3,R,'s',35],0]],
+      [16, [[2,R,'k',70],[1,n('C5'),'r',40],[0,n('C3'),'b',50],0, [3,R,'s',55],[1,n('E5'),'r',40],0,0,
+            [2,R,'k',65],[1,n('G5'),'r',45],[0,n('G2'),'b',50],0, [3,R,'s',55],[1,n('E5'),'r',35],[4,R,'h',20],0]],
+      [16, [[2,R,'k',70],[1,n('G5'),'r',45],[0,n('C3'),'b',50],[5,n('C5'),'l',30],
+            [3,R,'s',55],0,[1,n('A5'),'r',40],0, [2,R,'k',70],[1,n('G5'),'r',45],[0,n('F2'),'b',50],0,
+            [3,R,'s',55],[1,n('E5'),'r',40],[4,R,'h',25],[5,n('E5'),'l',30]]]
+    ], seq:[0,0,1,1,2,2,1,2] };
+
+  // ── CARD -- Smooth chill (FF6 casino) ────────────────────────────
+  S.card = { bpm:110, echo:[250,0.35,0.35,4000],
+    inst: { p:I('pno',0.01,0.3,0.3,0.4,false), b:I('bas',0.01,0.2,0.45,0.15), h:I('hh',0.005,0.05,0,0.02,false),
+            s:I('snr',0.005,0.15,0,0.05,false), d:I('str',0.5,0.3,0.5,0.6), l:I('sin',0.05,0.2,0.5,0.3) },
+    pats: [
+      [16, [[0,n('A2'),'b',50],[2,R,'h',30],[1,n('C5'),'p',40],0, 0,[2,R,'h',20],[1,n('E5'),'p',35],0,
+            [3,R,'s',40],[2,R,'h',30],[1,n('A4'),'p',40],0, [0,n('E2'),'b',45],[2,R,'h',20],[1,n('G4'),'p',35],0]],
+      [16, [[0,n('D3'),'b',50],[4,n('D4'),'d',20],[5,n('F5'),'l',35],0, 0,[2,R,'h',25],[5,n('E5'),'l',30],0,
+            [3,R,'s',40],0,[5,n('D5'),'l',35],0, [0,n('A2'),'b',45],[2,R,'h',25],[5,n('C5'),'l',30],0]]
+    ], seq:[0,0,1,1,0,1] };
+
+  // ── CASCADE -- Escalating tension (Tetris) ───────────────────────
+  S.cascade = { bpm:135, echo:[120,0.2,0.2,5000],
+    inst: { l:I('sq50',0.01,0.08,0.65,0.1), b:I('tri',0.01,0.12,0.5,0.1), k:I('kck',0.005,0.18,0,0.05,false),
+            s:I('snr',0.005,0.12,0,0.05,false), h:I('hh',0.005,0.04,0,0.02,false), a:I('sq25',0.01,0.06,0.5,0.08) },
+    pats: [
+      [16, [[2,R,'k',70],[1,n('A4'),'l',45],[0,n('A2'),'b',50],[4,R,'h',25],
+            0,[1,n('E4'),'l',40],[4,R,'h',20],0, [3,R,'s',50],[1,n('F4'),'l',40],[0,n('F2'),'b',45],[4,R,'h',25],
+            [2,R,'k',60],[1,n('E4'),'l',40],[4,R,'h',20],0]],
+      [16, [[2,R,'k',70],[1,n('D4'),'l',45],[0,n('D2'),'b',50],[4,R,'h',25],
+            0,[1,n('C4'),'l',40],[4,R,'h',20],0, [3,R,'s',50],[1,n('B3'),'l',40],[0,n('E2'),'b',45],[4,R,'h',25],
+            [2,R,'k',60],[1,n('A3'),'l',45],[4,R,'h',20],0]],
+      [16, [[2,R,'k',70],[5,n('A3'),'a',30],[0,n('A2'),'b',50],[5,n('C4'),'a',30],
+            [4,R,'h',20],[5,n('E4'),'a',30],0,[5,n('A4'),'a',25],
+            [3,R,'s',50],[5,n('E4'),'a',30],[0,n('E2'),'b',45],[5,n('C4'),'a',30],
+            [2,R,'k',60],[5,n('B3'),'a',30],[4,R,'h',20],[5,n('E4'),'a',30]]]
+    ], seq:[0,1,0,1,2,2,0,2] };
+
+  // ── CHEMISTRY -- Experimental/bubbly (SimCity lab) ───────────────
+  S.chemistry = { bpm:115, echo:[280,0.35,0.35,3500],
+    inst: { u:I('sin',0.02,0.15,0.3,0.2), b:I('tri',0.01,0.2,0.4,0.15), c:I('pnoi',0.005,0.04,0,0.02,false),
+            p:I('str',0.6,0.4,0.5,0.5), l:I('sq25',0.01,0.06,0.4,0.1), h:I('hh',0.005,0.04,0,0.02,false) },
+    pats: [
+      [16, [[0,n('C3'),'b',45],[1,n('G5'),'u',30],0,[5,R,'h',20], 0,[1,n('E5'),'u',25],[2,R,'c',30],0,
+            [0,n('G2'),'b',40],[1,n('C6'),'u',20],0,[5,R,'h',20], 0,[4,n('E5'),'l',25],[2,R,'c',25],0]],
+      [16, [[0,n('F3'),'b',45],[3,n('F3'),'p',20],[1,n('A5'),'u',30],0,
+            [5,R,'h',20],[1,n('F5'),'u',25],0,[2,R,'c',25],
+            [0,n('C3'),'b',40],0,[1,n('C5'),'u',30],[5,R,'h',20], 0,[4,n('G5'),'l',20],0,[2,R,'c',20]]]
+    ], seq:[0,0,1,1,0,1] };
+
+  // ── CYPHER -- Spy thriller (Metal Gear) ──────────────────────────
+  S.cypher = { bpm:100, echo:[300,0.4,0.35,3000],
+    inst: { b:I('bas',0.01,0.2,0.4,0.15), l:I('sq25',0.02,0.15,0.5,0.2), p:I('str',0.5,0.4,0.4,0.8),
+            k:I('kck',0.005,0.2,0,0.05,false), s:I('snr',0.005,0.15,0,0.05,false), h:I('hh',0.005,0.05,0,0.02,false) },
+    pats: [
+      [16, [[3,R,'k',50],[5,R,'h',20],[0,n('E2'),'b',45],0, 0,[5,R,'h',15],0,0,
+            0,[5,R,'h',20],[0,n('G2'),'b',40],0, [4,R,'s',35],[5,R,'h',15],0,0]],
+      [16, [[3,R,'k',50],[1,n('E4'),'l',35],[0,n('E2'),'b',45],0,
+            0,[1,n('F4'),'l',30],[5,R,'h',15],0,
+            [2,n('B3'),'p',20],[1,n('G4'),'l',35],[0,n('B1'),'b',40],0,
+            [4,R,'s',35],[1,n('F4'),'l',30],[5,R,'h',20],[1,n('E4'),'l',25]]]
+    ], seq:[0,0,1,0,1,1] };
+
+  // ── MYCELIUM -- Organic nature (Secret of Mana) ──────────────────
+  S.mycelium = { bpm:90, echo:[400,0.45,0.45,2500],
+    inst: { p:I('str',0.8,0.5,0.5,1.0), f:I('sin',0.1,0.2,0.6,0.4), b:I('tri',0.05,0.3,0.35,0.2),
+            c:I('pno',0.01,0.4,0.15,0.5,false), h:I('pnoi',0.005,0.08,0,0.03,false), d:I('sin',0.01,0.3,0,0.1,false) },
+    pats: [
+      [32, [[0,n('D3'),'b',35],0,[1,n('A4'),'f',30],0, 0,0,0,[3,n('F#5'),'c',20],
+            0,0,[1,n('F#4'),'f',25],0, [0,n('A2'),'b',30],0,0,0,
+            [2,n('D3'),'p',20],0,[1,n('D5'),'f',30],0, 0,0,[5,n('A5'),'d',15],0,
+            0,0,[1,n('E4'),'f',25],0, [0,n('G2'),'b',30],0,0,[4,R,'h',10]]],
+      [32, [[0,n('G2'),'b',35],0,[1,n('B4'),'f',30],0, 0,0,[3,n('D5'),'c',20],0,
+            0,0,[1,n('G4'),'f',25],0, [0,n('D2'),'b',30],0,0,[5,n('D6'),'d',12],
+            [2,n('G3'),'p',20],0,[1,n('B4'),'f',30],0, 0,0,0,[4,R,'h',10],
+            0,0,[1,n('A4'),'f',25],0, [0,n('E2'),'b',30],0,0,0]]
+    ], seq:[0,1,0,1] };
+
+  // ── MYCO -- Earthy ambient (Earthbound peaceful) ─────────────────
+  S.myco = { bpm:85, echo:[380,0.4,0.4,2800],
+    inst: { p:I('str',1.0,0.4,0.5,1.2), b:I('tri',0.05,0.3,0.3,0.2), e:I('pno',0.01,0.5,0.1,0.6,false),
+            f:I('sin',0.15,0.25,0.5,0.5), c:I('pnoi',0.005,0.05,0,0.02,false) },
+    pats: [
+      [32, [[0,n('C3'),'b',30],0,0,0, [1,n('E4'),'f',25],0,0,[2,n('G5'),'e',18],
+            0,0,0,0, [0,n('G2'),'b',28],0,[4,R,'c',10],0,
+            [3,n('C3'),'p',18],0,[1,n('G4'),'f',25],0, 0,0,0,[2,n('C5'),'e',15],
+            0,0,0,0, [0,n('F2'),'b',30],0,0,0]],
+      [32, [[0,n('A2'),'b',30],0,0,0, [1,n('C5'),'f',25],0,0,0,
+            0,0,[2,n('E5'),'e',18],0, [0,n('E2'),'b',28],0,0,[4,R,'c',10],
+            [3,n('A3'),'p',18],0,0,0, [1,n('A4'),'f',25],0,0,[2,n('D5'),'e',15],
+            0,0,0,0, [0,n('D2'),'b',30],0,0,0]]
+    ], seq:[0,0,1,1,0,1] };
+
+  // ── NOVEL -- Emotional/cinematic (FF6 opera) ─────────────────────
+  S.novel = { bpm:72, echo:[400,0.4,0.4,3000],
+    inst: { s:I('str',0.6,0.4,0.6,1.0), p:I('pno',0.01,0.5,0.2,0.8,false), b:I('bas',0.05,0.3,0.35,0.3),
+            f:I('sin',0.15,0.3,0.5,0.5), e:I('pno',0.01,0.8,0.05,1.0,false) },
+    pats: [
+      [32, [[0,n('C3'),'b',35],0,[1,n('E5'),'p',35],0, [2,n('C4'),'s',25],0,[1,n('G5'),'p',30],0,
+            0,0,[1,n('A5'),'p',30],0, [0,n('G2'),'b',30],0,[1,n('G5'),'p',30],0,
+            0,0,[3,n('E5'),'f',25],0, [2,n('G3'),'s',25],0,0,0,
+            [0,n('A2'),'b',30],0,[1,n('C5'),'p',30],0, 0,0,[4,n('E6'),'e',15],0]],
+      [32, [[0,n('F3'),'b',35],0,[3,n('C6'),'f',30],0, [2,n('F4'),'s',30],0,[3,n('A5'),'f',28],0,
+            0,0,0,0, [0,n('C3'),'b',35],0,[1,n('G5'),'p',35],0,
+            [2,n('E4'),'s',30],0,[3,n('E5'),'f',30],0, 0,0,0,[4,n('C6'),'e',15],
+            [0,n('G2'),'b',35],0,[1,n('D5'),'p',30],0, 0,0,0,0]]
+    ], seq:[0,0,1,0,1,1] };
+
+  // ── OBJECTION -- Intense courtroom (Phoenix Wright) ──────────────
+  S.objection = { bpm:155, echo:[130,0.2,0.2,5500],
+    inst: { l:I('sq50',0.01,0.08,0.7,0.1), b:I('bas',0.01,0.12,0.5,0.08), k:I('kck',0.005,0.18,0,0.05,false),
+            s:I('snr',0.005,0.1,0,0.05,false), h:I('hh',0.005,0.04,0,0.02,false), r:I('saw',0.02,0.1,0.6,0.15) },
+    pats: [
+      [16, [[2,R,'k',75],[4,R,'h',30],[1,n('C5'),'l',45],[0,n('C3'),'b',50],
+            0,[4,R,'h',25],[1,n('D5'),'l',40],0,
+            [3,R,'s',55],[4,R,'h',30],[1,n('E5'),'l',45],0,
+            [2,R,'k',65],[4,R,'h',25],[1,n('G5'),'l',50],0]],
+      [16, [[2,R,'k',75],[5,n('C5'),'r',40],[0,n('C3'),'b',50],[4,R,'h',25],
+            0,[5,n('E5'),'r',45],[4,R,'h',20],0,
+            [3,R,'s',55],[5,n('G5'),'r',50],[0,n('G2'),'b',50],[4,R,'h',25],
+            [2,R,'k',70],[1,n('C6'),'l',40],[4,R,'h',20],[3,R,'s',35]]],
+      [16, [[2,R,'k',75],[1,n('G5'),'l',50],[0,n('F2'),'b',50],[4,R,'h',30],
+            [5,n('A4'),'r',35],[4,R,'h',20],[1,n('A5'),'l',45],0,
+            [3,R,'s',55],[1,n('G5'),'l',45],[0,n('C3'),'b',50],[4,R,'h',25],
+            [2,R,'k',70],[1,n('E5'),'l',45],[3,R,'s',40],[1,n('D5'),'l',40]]]
+    ], seq:[0,0,1,1,2,2,1,2] };
+
+  // ── TACTICS -- Strategic/medieval (FF Tactics) ───────────────────
+  S.tactics = { bpm:95, echo:[320,0.35,0.3,3500],
+    inst: { s:I('str',0.3,0.3,0.6,0.5), b:I('bas',0.02,0.2,0.4,0.15), f:I('sin',0.08,0.2,0.5,0.3),
+            k:I('kck',0.005,0.2,0,0.05,false), n:I('snr',0.005,0.15,0,0.05,false), e:I('pno',0.01,0.6,0.1,0.5,false) },
+    pats: [
+      [16, [[3,R,'k',60],[0,n('D3'),'b',45],[1,n('D4'),'s',30],0, 0,0,[2,n('A4'),'f',30],0,
+            [4,R,'n',45],[0,n('A2'),'b',40],0,0, [3,R,'k',50],0,[2,n('F4'),'f',30],0]],
+      [16, [[3,R,'k',65],[1,n('D4'),'s',35],[0,n('D3'),'b',50],0, 0,[2,n('D5'),'f',35],0,0,
+            [4,R,'n',50],[1,n('F4'),'s',30],[0,n('F2'),'b',45],0,
+            [3,R,'k',55],[2,n('E5'),'f',30],[5,n('A5'),'e',15],0]],
+      [16, [[3,R,'k',60],[0,n('G2'),'b',45],[1,n('G3'),'s',30],0, [2,n('B4'),'f',30],0,0,0,
+            [4,R,'n',45],[0,n('C3'),'b',45],[2,n('C5'),'f',30],0, [3,R,'k',50],0,[5,n('D5'),'e',18],0]]
+    ], seq:[0,0,1,2,1,1,2,0] };
+
+  // ── ADVENTURE -- Exploration (Chrono Trigger) ────────────────────
+  S.adventure = { bpm:120, echo:[250,0.3,0.3,4000],
+    inst: { l:I('sq50',0.02,0.12,0.6,0.15), b:I('tri',0.01,0.15,0.45,0.1), k:I('kck',0.005,0.2,0,0.05,false),
+            s:I('snr',0.005,0.12,0,0.05,false), h:I('hh',0.005,0.05,0,0.02,false),
+            p:I('str',0.4,0.3,0.5,0.5), a:I('sq25',0.01,0.08,0.5,0.1) },
+    pats: [
+      [16, [[2,R,'k',60],[1,n('G4'),'l',40],[0,n('G2'),'b',45],[4,R,'h',20],
+            0,[1,n('A4'),'l',35],[4,R,'h',15],0,
+            [3,R,'s',45],[1,n('B4'),'l',40],[0,n('D3'),'b',40],[4,R,'h',20],
+            [2,R,'k',55],[1,n('D5'),'l',45],[4,R,'h',15],0]],
+      [16, [[2,R,'k',60],[1,n('E5'),'l',40],[0,n('C3'),'b',45],[4,R,'h',20],
+            [5,n('C4'),'p',20],[1,n('D5'),'l',35],[4,R,'h',15],0,
+            [3,R,'s',45],[1,n('B4'),'l',40],[0,n('G2'),'b',40],[4,R,'h',20],
+            [2,R,'k',55],[1,n('A4'),'l',40],[4,R,'h',15],0]],
+      [16, [[2,R,'k',60],[6,n('G3'),'a',30],[0,n('E2'),'b',45],[6,n('B3'),'a',28],
+            [4,R,'h',15],[6,n('E4'),'a',28],0,[6,n('G4'),'a',25],
+            [3,R,'s',45],[6,n('E4'),'a',28],[0,n('D2'),'b',40],[6,n('B3'),'a',28],
+            [2,R,'k',55],[6,n('D4'),'a',30],[4,R,'h',15],[6,n('F#4'),'a',28]]]
+    ], seq:[0,0,1,1,2,2,0,1] };
+
+  // ── PUZZLE -- Playful (Puyo Puyo / Tetris Attack) ────────────────
+  S.puzzle = { bpm:145, echo:[140,0.2,0.2,5500],
+    inst: { l:I('sq50',0.01,0.08,0.65,0.08), b:I('tri',0.01,0.1,0.5,0.08), k:I('kck',0.005,0.15,0,0.05,false),
+            s:I('snr',0.005,0.1,0,0.05,false), h:I('hh',0.005,0.04,0,0.02,false), a:I('sq25',0.01,0.06,0.5,0.08) },
+    pats: [
+      [16, [[2,R,'k',70],[1,n('C5'),'l',40],[0,n('C3'),'b',50],[4,R,'h',25],
+            0,[1,n('E5'),'l',38],[4,R,'h',20],0,
+            [3,R,'s',50],[1,n('G5'),'l',42],[0,n('G2'),'b',45],[4,R,'h',25],
+            [2,R,'k',60],[1,n('E5'),'l',38],[4,R,'h',20],0]],
+      [16, [[2,R,'k',70],[1,n('F5'),'l',42],[0,n('F2'),'b',50],[4,R,'h',25],
+            0,[1,n('E5'),'l',38],[4,R,'h',20],0,
+            [3,R,'s',50],[1,n('D5'),'l',40],[0,n('G2'),'b',45],[4,R,'h',25],
+            [2,R,'k',60],[1,n('C5'),'l',42],[4,R,'h',20],0]],
+      [16, [[2,R,'k',70],[5,n('C4'),'a',30],[0,n('C3'),'b',50],[5,n('E4'),'a',28],
+            [4,R,'h',20],[5,n('G4'),'a',28],0,[5,n('C5'),'a',25],
+            [3,R,'s',50],[5,n('G4'),'a',28],[0,n('G2'),'b',45],[5,n('E4'),'a',28],
+            [2,R,'k',60],[5,n('F4'),'a',28],[4,R,'h',20],[5,n('A4'),'a',28]]]
+    ], seq:[0,0,1,1,2,0,1,2] };
+
+  // ── IDLE -- Ambient growth (Harvest Moon) ────────────────────────
+  S.idle = { bpm:95, echo:[350,0.4,0.4,3000],
+    inst: { g:I('pno',0.01,0.3,0.25,0.4,false), b:I('tri',0.02,0.2,0.35,0.15), p:I('str',0.6,0.4,0.5,0.8),
+            f:I('sin',0.1,0.2,0.5,0.3), c:I('pnoi',0.005,0.06,0,0.02,false) },
+    pats: [
+      [16, [[0,n('G2'),'b',35],[1,n('G4'),'g',30],0,0, 0,[1,n('B4'),'g',28],[4,R,'c',12],0,
+            [0,n('D3'),'b',30],[1,n('D4'),'g',30],0,0, [2,n('G3'),'p',20],[1,n('A4'),'g',28],0,0]],
+      [16, [[0,n('C3'),'b',35],0,[3,n('E5'),'f',30],0, 0,[1,n('C4'),'g',25],[4,R,'c',12],0,
+            [0,n('G2'),'b',30],0,[3,n('D5'),'f',28],0, [2,n('C3'),'p',20],[1,n('E4'),'g',25],0,0]]
+    ], seq:[0,0,1,1,0,1] };
+
+  // ── DECKBUILDER -- Card battle (Yu-Gi-Oh SNES) ──────────────────
+  S.deckbuilder = { bpm:125, echo:[200,0.28,0.25,4500],
+    inst: { l:I('sq50',0.01,0.1,0.65,0.12), b:I('bas',0.01,0.15,0.5,0.1), k:I('kck',0.005,0.2,0,0.05,false),
+            s:I('snr',0.005,0.12,0,0.05,false), h:I('hh',0.005,0.04,0,0.02,false), t:I('str',0.2,0.25,0.5,0.3) },
+    pats: [
+      [16, [[2,R,'k',65],[1,n('E4'),'l',40],[0,n('E2'),'b',50],[4,R,'h',20],
+            0,[1,n('G4'),'l',38],[4,R,'h',18],0,
+            [3,R,'s',50],[1,n('A4'),'l',40],[0,n('A2'),'b',45],[4,R,'h',20],
+            [2,R,'k',60],[1,n('B4'),'l',42],[4,R,'h',18],0]],
+      [16, [[2,R,'k',65],[5,n('A3'),'t',30],[0,n('A2'),'b',50],0,
+            0,[1,n('C5'),'l',40],[4,R,'h',20],0,
+            [3,R,'s',50],[5,n('E4'),'t',30],[0,n('E2'),'b',45],0,
+            [2,R,'k',60],[1,n('B4'),'l',38],[4,R,'h',20],0]]
+    ], seq:[0,0,1,1,0,1] };
+
+  // ── RUNNER -- Fast-paced action (F-Zero) ─────────────────────────
+  S.runner = { bpm:170, echo:[100,0.2,0.18,6000],
+    inst: { l:I('saw',0.01,0.06,0.7,0.08), b:I('bas',0.01,0.1,0.5,0.06), k:I('kck',0.005,0.15,0,0.04,false),
+            s:I('snr',0.005,0.1,0,0.04,false), h:I('hh',0.005,0.03,0,0.02,false), a:I('sq50',0.01,0.05,0.6,0.06) },
+    pats: [
+      [16, [[2,R,'k',75],[4,R,'h',30],[0,n('A2'),'b',55],[1,n('A4'),'l',45],
+            [4,R,'h',20],[1,n('C5'),'l',40],[4,R,'h',25],0,
+            [3,R,'s',55],[4,R,'h',30],[0,n('G2'),'b',50],[1,n('E5'),'l',45],
+            [2,R,'k',70],[4,R,'h',25],[1,n('D5'),'l',40],[4,R,'h',20]]],
+      [16, [[2,R,'k',75],[1,n('E5'),'l',50],[0,n('C3'),'b',55],[4,R,'h',25],
+            0,[1,n('D5'),'l',45],[4,R,'h',20],[5,n('C4'),'a',30],
+            [3,R,'s',55],[1,n('C5'),'l',45],[0,n('F2'),'b',50],[4,R,'h',25],
+            [2,R,'k',70],[5,n('E4'),'a',30],[4,R,'h',20],[5,n('G4'),'a',28]]],
+      [16, [[2,R,'k',75],[5,n('A3'),'a',30],[0,n('A2'),'b',55],[5,n('C4'),'a',30],
+            [4,R,'h',20],[5,n('E4'),'a',30],[4,R,'h',20],[5,n('A4'),'a',28],
+            [3,R,'s',55],[5,n('E4'),'a',30],[0,n('E2'),'b',50],[5,n('C4'),'a',30],
+            [2,R,'k',70],[5,n('G3'),'a',30],[4,R,'h',20],[5,n('B3'),'a',30]]]
+    ], seq:[0,0,1,1,2,2,0,1] };
+
+  // ── SIGNAL -- Mysterious deduction (investigation) ───────────────
+  S.signal = { bpm:105, echo:[300,0.35,0.35,3500],
+    inst: { p:I('pno',0.01,0.35,0.2,0.4,false), b:I('bas',0.02,0.2,0.35,0.15), d:I('str',0.5,0.3,0.4,0.6),
+            e:I('pno',0.01,0.5,0.08,0.5,false), h:I('hh',0.005,0.06,0,0.02,false), c:I('pnoi',0.005,0.05,0,0.02,false) },
+    pats: [
+      [16, [[0,n('A2'),'b',40],[1,n('A4'),'p',35],0,[4,R,'h',15],
+            0,[1,n('C5'),'p',30],0,0,
+            [0,n('E2'),'b',35],[1,n('E4'),'p',30],0,[5,R,'c',12],
+            0,[3,n('E5'),'e',15],0,0]],
+      [16, [[0,n('D3'),'b',40],[2,n('D3'),'d',20],[1,n('F5'),'p',35],0,
+            0,[1,n('E5'),'p',30],[4,R,'h',15],0,
+            [0,n('A2'),'b',35],0,[1,n('D5'),'p',30],0,
+            0,[1,n('C5'),'p',30],[5,R,'c',12],[3,n('A5'),'e',15]]]
+    ], seq:[0,0,1,0,1,1] };
+
+  // ── SNATCHER -- Cyberpunk noir (Snatcher PCE) ────────────────────
+  S.snatcher = { bpm:110, echo:[280,0.4,0.35,3500],
+    inst: { l:I('saw',0.02,0.12,0.55,0.2), b:I('bas',0.01,0.15,0.5,0.1), k:I('kck',0.005,0.2,0,0.05,false),
+            s:I('snr',0.005,0.12,0,0.05,false), h:I('hh',0.005,0.05,0,0.02,false),
+            p:I('str',0.4,0.3,0.45,0.5), a:I('sq25',0.01,0.08,0.5,0.1) },
+    pats: [
+      [16, [[2,R,'k',60],[4,R,'h',25],[0,n('E2'),'b',50],0, 0,[4,R,'h',20],[0,n('G2'),'b',40],0,
+            [3,R,'s',45],[4,R,'h',25],[0,n('A2'),'b',45],0, [2,R,'k',55],[4,R,'h',20],[0,n('G2'),'b',40],0]],
+      [16, [[2,R,'k',60],[1,n('E4'),'l',40],[0,n('E2'),'b',50],[4,R,'h',20],
+            0,[1,n('G4'),'l',38],0,[6,n('B3'),'a',25],
+            [3,R,'s',45],[1,n('A4'),'l',40],[0,n('A2'),'b',45],[4,R,'h',20],
+            [2,R,'k',55],[1,n('G4'),'l',38],[6,n('E4'),'a',25],0]],
+      [16, [[2,R,'k',60],[5,n('E3'),'p',25],[0,n('E2'),'b',50],[6,n('E3'),'a',25],
+            [4,R,'h',20],[6,n('G3'),'a',25],0,[6,n('B3'),'a',22],
+            [3,R,'s',45],[6,n('E4'),'a',25],[0,n('B1'),'b',45],[6,n('B3'),'a',22],
+            [2,R,'k',55],[6,n('G3'),'a',25],[4,R,'h',20],[6,n('E3'),'a',22]]]
+    ], seq:[0,0,1,1,2,2,1,2] };
+
+  return S;
+}
+
+// ── Engine ────────────────────────────────────────────────────────────
+
+function Engine() {
+  this._ctx = null;
+  this._mg = null;   // master gain
+  this._mf = null;   // master filter
+  this._ei = null;   // echo input
+  this._ed = null;   // echo delay
+  this._ef = null;   // echo feedback
+  this._efl = null;  // echo filter
+  this._ew = null;   // echo wet
+  this._dry = null;  // dry path
+  this._smp = null;  // raw samples
+  this._buf = {};    // AudioBuffers
+  this._song = null;
+  this._sn = null;   // song name
+  this._on = false;  // playing
+  this._mt = false;  // muted
+  this._vol = 0.6;
+  this._ch = [];
+  this._sq = 0;      // sequence position
+  this._st = 0;      // step position
+  this._tmr = null;
+  this._nxt = 0;     // next step time
+
+  try {
+    var v = localStorage.getItem('snes-audio-volume');
+    if (v !== null) this._vol = parseFloat(v);
+    if (localStorage.getItem('snes-audio-muted') === 'true') this._mt = true;
+  } catch(e) {}
+
+  this._smp = genSamples();
+  for (var i = 0; i < 8; i++) this._ch[i] = {src:null,gn:null,pan:0,on:false};
+}
+
+Engine.prototype._init = function() {
+  if (this._ctx) return;
+  try { this._ctx = new (window.AudioContext || window.webkitAudioContext)({sampleRate:44100}); } catch(e) { return; }
+
+  var c = this._ctx, k = Object.keys(this._smp);
+  for (var i = 0; i < k.length; i++) {
+    var raw = this._smp[k[i]], ab = c.createBuffer(1, raw.length, SR);
+    var d = ab.getChannelData(0); for (var j = 0; j < raw.length; j++) d[j] = raw[j];
+    this._buf[k[i]] = ab;
   }
 
-  // Note name helpers
-  var NOTE_MAP = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
-  function n(name) {
-    // e.g. 'C4' => 60, 'F#3' => 54, 'Bb5' => 82
-    var m = name.match(/^([A-G])(#|b)?(\d)$/);
-    if (!m) return 0;
-    var base = NOTE_MAP[m[1]];
-    if (m[2] === '#') base++;
-    else if (m[2] === 'b') base--;
-    return base + (parseInt(m[3]) + 1) * 12;
+  this._mg = c.createGain();
+  this._mg.gain.value = this._mt ? 0 : this._vol;
+
+  this._mf = c.createBiquadFilter();
+  this._mf.type = 'lowpass'; this._mf.frequency.value = 12000; this._mf.Q.value = 0.7;
+
+  this._dry = c.createGain(); this._dry.gain.value = 1.0;
+  this._ei = c.createGain(); this._ei.gain.value = 0.35;
+  this._ed = c.createDelay(1.0); this._ed.delayTime.value = 0.25;
+  this._ef = c.createGain(); this._ef.gain.value = 0.3;
+  this._efl = c.createBiquadFilter();
+  this._efl.type = 'lowpass'; this._efl.frequency.value = 3500; this._efl.Q.value = 0.5;
+  this._ew = c.createGain(); this._ew.gain.value = 0.3;
+
+  this._ei.connect(this._ed);
+  this._ed.connect(this._efl);
+  this._efl.connect(this._ef);
+  this._ef.connect(this._ed);
+  this._efl.connect(this._ew);
+
+  this._dry.connect(this._mf);
+  this._ew.connect(this._mf);
+  this._mf.connect(this._mg);
+  this._mg.connect(c.destination);
+};
+
+Engine.prototype._resume = function() {
+  if (this._ctx && this._ctx.state === 'suspended') this._ctx.resume();
+};
+
+Engine.prototype._echo = function(e) {
+  if (!this._ctx || !e) return;
+  this._ed.delayTime.value = Math.max(0.05, Math.min(0.5, (e[0]||250)/1000));
+  this._ef.gain.value = Math.max(0, Math.min(0.9, e[1]||0.3));
+  this._ew.gain.value = Math.max(0, Math.min(1, e[2]||0.3));
+  this._efl.frequency.value = e[3]||3500;
+};
+
+Engine.prototype._note = function(ch, midi, inst, vol, t) {
+  if (!this._ctx || ch < 0 || ch >= 8 || !inst) return;
+  var id = this._song.inst[inst];
+  if (!id) return;
+  var ab = this._buf[id.s];
+  if (!ab) return;
+
+  var c = this._ch[ch];
+  if (c.src) { try { c.src.stop(t); } catch(e) {} }
+  if (midi === R) { c.on = false; return; }
+
+  var freq = NF[midi]||440, rate = freq / (SR / SL);
+  var src = this._ctx.createBufferSource();
+  src.buffer = ab; src.playbackRate.value = rate; src.loop = id.lp;
+
+  var v = (vol/100) * 0.5;
+  var env = this._ctx.createGain();
+  env.gain.setValueAtTime(0.001, t);
+  env.gain.linearRampToValueAtTime(v, t + id.a);
+  env.gain.linearRampToValueAtTime(v * id.su, t + id.a + id.d);
+
+  if (!id.lp) {
+    var nl = id.a + id.d + 0.05;
+    env.gain.linearRampToValueAtTime(0.001, t + nl + id.r);
+    src.stop(t + nl + id.r + 0.01);
   }
 
-  // Shorthand: rest
-  var R = -1;
+  src.connect(env);
+  var last = env;
+  if (this._ctx.createStereoPanner) {
+    var pan = this._ctx.createStereoPanner();
+    pan.pan.value = c.pan || 0;
+    env.connect(pan); last = pan;
+  }
+  last.connect(this._dry);
+  last.connect(this._ei);
+  src.start(t);
 
-  // ── Sample generation ──────────────────────────────────────────────────
-  // Generate short looped waveform buffers (like BRR samples).
-  // Each is 512 samples at 32000Hz -- authentic SNES sample size.
+  c.src = src; c.gn = env; c.on = true;
+};
 
-  var SAMPLE_RATE = 32000;
-  var SAMPLE_LEN = 512;
+Engine.prototype._step = function(t) {
+  if (!this._song) return;
+  var seq = this._song.seq;
+  var pi = seq[this._sq % seq.length];
+  var pat = this._song.pats[pi];
+  if (!pat) return;
 
-  function generateSamples() {
-    var samples = {};
-
-    // Square waves with variable duty cycle
-    samples.square50 = makeSample(function(t) {
-      return t < 0.5 ? 1 : -1;
-    });
-    samples.square25 = makeSample(function(t) {
-      return t < 0.25 ? 1 : -1;
-    });
-    samples.square12 = makeSample(function(t) {
-      return t < 0.125 ? 1 : -1;
-    });
-
-    // Sawtooth
-    samples.saw = makeSample(function(t) {
-      return 2 * t - 1;
-    });
-
-    // Triangle (NES-style, slightly stepped -- 16 steps)
-    samples.triangle = makeSample(function(t) {
-      var step = Math.floor(t * 16) / 16;
-      return step < 0.5 ? 4 * step - 1 : 3 - 4 * step;
-    });
-
-    // Sine
-    samples.sine = makeSample(function(t) {
-      return Math.sin(2 * Math.PI * t);
-    });
-
-    // Noise (white)
-    samples.noise = makeNoiseSample(4096);
-
-    // Periodic noise (shorter loop for metallic sound)
-    samples.periodicNoise = makeNoiseSample(128);
-
-    // Strings: filtered sawtooth (softer harmonics)
-    samples.strings = makeSample(function(t) {
-      var v = 0;
-      for (var h = 1; h <= 8; h++) {
-        v += Math.sin(2 * Math.PI * h * t) / (h * h);
-      }
-      return v * 0.7;
-    });
-
-    // Bass: triangle with slight overdrive
-    samples.bass = makeSample(function(t) {
-      var step = Math.floor(t * 16) / 16;
-      var v = step < 0.5 ? 4 * step - 1 : 3 - 4 * step;
-      return Math.tanh(v * 1.5);
-    });
-
-    // Snare: noise burst + sine body (single cycle, meant to be short)
-    samples.snare = makeSample(function(t) {
-      var nz = Math.random() * 2 - 1;
-      var body = Math.sin(2 * Math.PI * t * 3) * (1 - t);
-      return nz * 0.6 + body * 0.4;
-    }, 1024);
-
-    // Kick: sine with pitch sweep down (encoded in one cycle)
-    samples.kick = makeSample(function(t) {
-      var freq = 1 + (1 - t) * 8;
-      return Math.sin(2 * Math.PI * freq * t) * (1 - t * 0.5);
-    }, 1024);
-
-    // Hi-hat: highpassed noise burst
-    samples.hihat = (function() {
-      var len = 512;
-      var buf = new Float32Array(len);
-      var prev = 0;
-      for (var i = 0; i < len; i++) {
-        var raw = Math.random() * 2 - 1;
-        buf[i] = raw - prev;
-        prev = raw;
-      }
-      return buf;
-    })();
-
-    // Piano: detuned sines (3 partials slightly detuned)
-    samples.piano = makeSample(function(t) {
-      return (
-        Math.sin(2 * Math.PI * t * 1.0) * 0.5 +
-        Math.sin(2 * Math.PI * t * 2.002) * 0.3 +
-        Math.sin(2 * Math.PI * t * 3.004) * 0.15 +
-        Math.sin(2 * Math.PI * t * 4.01) * 0.05
-      );
-    });
-
-    return samples;
+  var steps = pat[0], data = pat[1];
+  var s = data[this._st];
+  if (s && s !== 0) {
+    this._note(s[0], s[1], s[2], s[3]||50, t);
   }
 
-  function makeSample(fn, len) {
-    len = len || SAMPLE_LEN;
-    var buf = new Float32Array(len);
-    for (var i = 0; i < len; i++) {
-      buf[i] = fn(i / len);
+  this._st++;
+  if (this._st >= steps) {
+    this._st = 0; this._sq++;
+    if (this._sq >= seq.length) this._sq = 0;
+  }
+};
+
+Engine.prototype._sched = function() {
+  if (!this._on || !this._ctx) return;
+  var bpm = this._song ? this._song.bpm || 120 : 120;
+  var dur = 60.0 / bpm / 4;
+  while (this._nxt < this._ctx.currentTime + 0.1) {
+    this._step(this._nxt);
+    this._nxt += dur;
+  }
+};
+
+// ── Public API ───────────────────────────────────────────────────────
+
+Engine.prototype.loadSong = function(name) {
+  var s = songs();
+  if (s[name]) { this._song = s[name]; this._sn = name; return true; }
+  return false;
+};
+
+Engine.prototype.play = function() {
+  if (this._on) return;
+  this._init(); this._resume();
+  if (!this._ctx || !this._song) return;
+  this._echo(this._song.echo);
+  this._on = true; this._sq = 0; this._st = 0;
+  this._nxt = this._ctx.currentTime + 0.05;
+  var self = this;
+  this._tmr = setInterval(function() { self._sched(); }, 25);
+};
+
+Engine.prototype.stop = function() {
+  this._on = false;
+  if (this._tmr) { clearInterval(this._tmr); this._tmr = null; }
+  for (var i = 0; i < 8; i++) {
+    var c = this._ch[i];
+    if (c.src) { try { c.src.stop(); } catch(e) {} c.src = null; }
+    c.on = false;
+  }
+};
+
+Engine.prototype.pause = function() {
+  if (!this._on) return;
+  this._on = false;
+  if (this._tmr) { clearInterval(this._tmr); this._tmr = null; }
+};
+
+Engine.prototype.resume = function() {
+  if (this._on) return;
+  this._resume();
+  if (!this._ctx || !this._song) return;
+  this._on = true; this._nxt = this._ctx.currentTime + 0.05;
+  var self = this;
+  this._tmr = setInterval(function() { self._sched(); }, 25);
+};
+
+Engine.prototype.setVolume = function(v) {
+  this._vol = Math.max(0, Math.min(1, v));
+  if (this._mg && !this._mt) this._mg.gain.value = this._vol;
+  try { localStorage.setItem('snes-audio-volume', this._vol.toString()); } catch(e) {}
+};
+
+Engine.prototype.getVolume = function() { return this._vol; };
+
+Engine.prototype.toggleMute = function() {
+  this._mt = !this._mt;
+  if (this._mg) this._mg.gain.value = this._mt ? 0 : this._vol;
+  try { localStorage.setItem('snes-audio-muted', this._mt ? 'true' : 'false'); } catch(e) {}
+  return this._mt;
+};
+
+Engine.prototype.isMuted = function() { return this._mt; };
+Engine.prototype.isPlaying = function() { return this._on; };
+Engine.prototype.getSongName = function() { return this._sn; };
+Engine.prototype.listSongs = function() { return Object.keys(songs()); };
+
+// ── Music toggle button ──────────────────────────────────────────────
+
+Engine.prototype.createToggle = function(container) {
+  var self = this;
+  var btn = document.createElement('button');
+  btn.className = 'snes-audio-toggle';
+  btn.setAttribute('aria-label', 'Toggle music');
+  btn.title = 'Toggle music';
+
+  function draw() {
+    var on = !self._mt && self._on;
+    btn.innerHTML = '';
+    var cv = document.createElement('canvas');
+    cv.width = 16; cv.height = 16;
+    cv.style.cssText = 'width:16px;height:16px;image-rendering:pixelated;';
+    var cx = cv.getContext('2d');
+    var cl = on ? '#33ff33' : '#555';
+    cx.fillStyle = cl;
+    cx.fillRect(2,5,3,6); cx.fillRect(5,3,2,10);
+    if (on) {
+      cx.fillRect(9,4,1,1); cx.fillRect(10,5,1,1); cx.fillRect(10,10,1,1);
+      cx.fillRect(9,11,1,1); cx.fillRect(9,7,1,2);
+      cx.fillRect(12,3,1,1); cx.fillRect(13,5,1,2); cx.fillRect(13,9,1,2); cx.fillRect(12,12,1,1);
+    } else {
+      cx.fillStyle = '#ff4444';
+      cx.fillRect(9,5,1,1); cx.fillRect(10,6,1,1); cx.fillRect(11,7,1,1);
+      cx.fillRect(12,8,1,1); cx.fillRect(13,9,1,1);
+      cx.fillRect(13,5,1,1); cx.fillRect(12,6,1,1); cx.fillRect(10,8,1,1); cx.fillRect(9,9,1,1);
     }
-    return buf;
+    btn.appendChild(cv);
   }
 
-  function makeNoiseSample(len) {
-    var buf = new Float32Array(len);
-    for (var i = 0; i < len; i++) {
-      buf[i] = Math.random() * 2 - 1;
-    }
-    return buf;
-  }
-
-  // ── Song presets ────────────────────────────────────────────────────────
-  // Each song: { bpm, echo, patterns, sequence, instruments }
-  // Pattern step: [channel, note (MIDI or R for rest), instrument, volume, fx]
-  //   fx: { legato, vibrato, echo }
-
-  function getSongs() {
-    var songs = {};
-
-    // ── AIRLOCK -- Tense ambient (Metroid / Alien 3 style) ──────────────
-    songs.airlock = {
-      bpm: 75,
-      echo: {delay: 350, feedback: 0.45, wet: 0.4, cutoff: 3000},
-      instruments: {
-        pad: {sample: 'strings', adsr: [0.8, 0.3, 0.6, 1.2], loop: true},
-        bass: {sample: 'bass', adsr: [0.01, 0.2, 0.4, 0.5], loop: true},
-        perc: {sample: 'hihat', adsr: [0.005, 0.1, 0, 0.05], loop: false},
-        tone: {sample: 'sine', adsr: [0.4, 0.5, 0.3, 0.8], loop: true},
-        noise: {sample: 'noise', adsr: [0.5, 1.0, 0.2, 1.5], loop: true}
-      },
-      patterns: [
-        // P0: eerie pad sustained + low bass pulses
-        {steps: 32, data: [
-          [0, n('E2'), 'bass', 0.5], null, null, null,
-          null, null, null, null,
-          [1, n('B3'), 'pad', 0.25], null, null, null,
-          [0, n('E2'), 'bass', 0.35], null, null, null,
-          null, null, null, null,
-          [2, n('E4'), 'tone', 0.15], null, null, null,
-          [0, n('B1'), 'bass', 0.45], null, null, null,
-          null, null, [3, R, 'perc', 0.1], null
-        ]},
-        // P1: tension build
-        {steps: 32, data: [
-          [0, n('E2'), 'bass', 0.5], null, null, null,
-          [4, n('C2'), 'noise', 0.08], null, null, null,
-          [1, n('C4'), 'pad', 0.25], null, null, null,
-          [0, n('F2'), 'bass', 0.4], null, null, null,
-          [3, R, 'perc', 0.15], null, null, null,
-          [2, n('G4'), 'tone', 0.15], null, null, null,
-          [0, n('E2'), 'bass', 0.45], null, null, null,
-          [3, R, 'perc', 0.12], null, null, null
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 0, 1]
-    };
-
-    // ── BOOTLOADER -- Digital startup (Mega Man X intro style) ──────────
-    songs.bootloader = {
-      bpm: 140,
-      echo: {delay: 150, feedback: 0.3, wet: 0.25, cutoff: 5000},
-      instruments: {
-        lead: {sample: 'square50', adsr: [0.01, 0.1, 0.7, 0.15], loop: true},
-        bass: {sample: 'bass', adsr: [0.01, 0.15, 0.5, 0.1], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.2, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.15, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.06, 0, 0.02], loop: false},
-        arp: {sample: 'square25', adsr: [0.01, 0.08, 0.5, 0.1], loop: true}
-      },
-      patterns: [
-        // P0: driving intro
-        {steps: 16, data: [
-          [0, n('E2'), 'bass', 0.6], [4, R, 'hat', 0.3], [1, n('E4'), 'lead', 0.4], null,
-          [2, R, 'kick', 0.7], [4, R, 'hat', 0.25], null, null,
-          [0, n('E2'), 'bass', 0.5], [4, R, 'hat', 0.3], [3, R, 'snare', 0.5], null,
-          [2, R, 'kick', 0.65], [4, R, 'hat', 0.25], [1, n('G4'), 'lead', 0.4], null
-        ]},
-        // P1: melody
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [4, R, 'hat', 0.3], [1, n('E5'), 'lead', 0.45], [0, n('E2'), 'bass', 0.5],
-          null, [4, R, 'hat', 0.25], [1, n('D5'), 'lead', 0.4], null,
-          [2, R, 'kick', 0.65], [4, R, 'hat', 0.3], [3, R, 'snare', 0.5], [1, n('B4'), 'lead', 0.4],
-          [0, n('D2'), 'bass', 0.5], [4, R, 'hat', 0.25], [1, n('A4'), 'lead', 0.35], null
-        ]},
-        // P2: arp section
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [5, n('E4'), 'arp', 0.3], [0, n('E2'), 'bass', 0.5], [5, n('G4'), 'arp', 0.3],
-          null, [5, n('B4'), 'arp', 0.3], [4, R, 'hat', 0.2], [5, n('E5'), 'arp', 0.25],
-          [3, R, 'snare', 0.5], [5, n('B4'), 'arp', 0.3], [0, n('D2'), 'bass', 0.5], [5, n('G4'), 'arp', 0.3],
-          [2, R, 'kick', 0.65], [5, n('D4'), 'arp', 0.3], [4, R, 'hat', 0.2], [5, n('F#4'), 'arp', 0.3]
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 2, 2, 1, 2]
-    };
-
-    // ── BRIGADE -- Military march (Advance Wars style) ──────────────────
-    songs.brigade = {
-      bpm: 130,
-      echo: {delay: 180, feedback: 0.25, wet: 0.2, cutoff: 4500},
-      instruments: {
-        lead: {sample: 'square50', adsr: [0.01, 0.1, 0.7, 0.12], loop: true},
-        bass: {sample: 'bass', adsr: [0.01, 0.15, 0.5, 0.1], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.2, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.12, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.05, 0, 0.02], loop: false},
-        brass: {sample: 'saw', adsr: [0.05, 0.15, 0.6, 0.2], loop: true}
-      },
-      patterns: [
-        // P0: march rhythm
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [4, R, 'hat', 0.3], [0, n('C3'), 'bass', 0.5], null,
-          [3, R, 'snare', 0.55], [4, R, 'hat', 0.25], null, null,
-          [2, R, 'kick', 0.7], [4, R, 'hat', 0.3], [0, n('G2'), 'bass', 0.5], null,
-          [3, R, 'snare', 0.55], [4, R, 'hat', 0.25], [3, R, 'snare', 0.35], null
-        ]},
-        // P1: brass melody
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [1, n('C5'), 'brass', 0.4], [0, n('C3'), 'bass', 0.5], null,
-          [3, R, 'snare', 0.55], [1, n('E5'), 'brass', 0.4], null, null,
-          [2, R, 'kick', 0.65], [1, n('G5'), 'brass', 0.45], [0, n('G2'), 'bass', 0.5], null,
-          [3, R, 'snare', 0.55], [1, n('E5'), 'brass', 0.35], [4, R, 'hat', 0.2], null
-        ]},
-        // P2: triumphant
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [1, n('G5'), 'brass', 0.45], [0, n('C3'), 'bass', 0.5], [5, n('C5'), 'lead', 0.3],
-          [3, R, 'snare', 0.55], null, [1, n('A5'), 'brass', 0.4], null,
-          [2, R, 'kick', 0.7], [1, n('G5'), 'brass', 0.45], [0, n('F2'), 'bass', 0.5], null,
-          [3, R, 'snare', 0.55], [1, n('E5'), 'brass', 0.4], [4, R, 'hat', 0.25], [5, n('E5'), 'lead', 0.3]
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 2, 2, 1, 2]
-    };
-
-    // ── CARD -- Smooth chill (FF6 casino style) ─────────────────────────
-    songs.card = {
-      bpm: 110,
-      echo: {delay: 250, feedback: 0.35, wet: 0.35, cutoff: 4000},
-      instruments: {
-        piano: {sample: 'piano', adsr: [0.01, 0.3, 0.3, 0.4], loop: false},
-        bass: {sample: 'bass', adsr: [0.01, 0.2, 0.45, 0.15], loop: true},
-        hat: {sample: 'hihat', adsr: [0.005, 0.05, 0, 0.02], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.15, 0, 0.05], loop: false},
-        pad: {sample: 'strings', adsr: [0.5, 0.3, 0.5, 0.6], loop: true},
-        lead: {sample: 'sine', adsr: [0.05, 0.2, 0.5, 0.3], loop: true}
-      },
-      patterns: [
-        // P0: jazzy groove
-        {steps: 16, data: [
-          [0, n('A2'), 'bass', 0.5], [2, R, 'hat', 0.3], [1, n('C5'), 'piano', 0.4], null,
-          null, [2, R, 'hat', 0.2], [1, n('E5'), 'piano', 0.35], null,
-          [3, R, 'snare', 0.4], [2, R, 'hat', 0.3], [1, n('A4'), 'piano', 0.4], null,
-          [0, n('E2'), 'bass', 0.45], [2, R, 'hat', 0.2], [1, n('G4'), 'piano', 0.35], null
-        ]},
-        // P1: melody over pad
-        {steps: 16, data: [
-          [0, n('D3'), 'bass', 0.5], [4, n('D4'), 'pad', 0.2], [5, n('F5'), 'lead', 0.35], null,
-          null, [2, R, 'hat', 0.25], [5, n('E5'), 'lead', 0.3], null,
-          [3, R, 'snare', 0.4], null, [5, n('D5'), 'lead', 0.35], null,
-          [0, n('A2'), 'bass', 0.45], [2, R, 'hat', 0.25], [5, n('C5'), 'lead', 0.3], null
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 0, 1]
-    };
-
-    // ── CASCADE -- Escalating tension (Tetris building up) ──────────────
-    songs.cascade = {
-      bpm: 135,
-      echo: {delay: 120, feedback: 0.2, wet: 0.2, cutoff: 5000},
-      instruments: {
-        lead: {sample: 'square50', adsr: [0.01, 0.08, 0.65, 0.1], loop: true},
-        bass: {sample: 'triangle', adsr: [0.01, 0.12, 0.5, 0.1], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.18, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.12, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.04, 0, 0.02], loop: false},
-        arp: {sample: 'square25', adsr: [0.01, 0.06, 0.5, 0.08], loop: true}
-      },
-      patterns: [
-        // P0: Russian-inspired melody in A minor
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [1, n('A4'), 'lead', 0.45], [0, n('A2'), 'bass', 0.5], [4, R, 'hat', 0.25],
-          null, [1, n('E4'), 'lead', 0.4], [4, R, 'hat', 0.2], null,
-          [3, R, 'snare', 0.5], [1, n('F4'), 'lead', 0.4], [0, n('F2'), 'bass', 0.45], [4, R, 'hat', 0.25],
-          [2, R, 'kick', 0.6], [1, n('E4'), 'lead', 0.4], [4, R, 'hat', 0.2], null
-        ]},
-        // P1: second phrase
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [1, n('D4'), 'lead', 0.45], [0, n('D2'), 'bass', 0.5], [4, R, 'hat', 0.25],
-          null, [1, n('C4'), 'lead', 0.4], [4, R, 'hat', 0.2], null,
-          [3, R, 'snare', 0.5], [1, n('B3'), 'lead', 0.4], [0, n('E2'), 'bass', 0.45], [4, R, 'hat', 0.25],
-          [2, R, 'kick', 0.6], [1, n('A3'), 'lead', 0.45], [4, R, 'hat', 0.2], null
-        ]},
-        // P2: arp escalation
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [5, n('A3'), 'arp', 0.3], [0, n('A2'), 'bass', 0.5], [5, n('C4'), 'arp', 0.3],
-          [4, R, 'hat', 0.2], [5, n('E4'), 'arp', 0.3], null, [5, n('A4'), 'arp', 0.25],
-          [3, R, 'snare', 0.5], [5, n('E4'), 'arp', 0.3], [0, n('E2'), 'bass', 0.45], [5, n('C4'), 'arp', 0.3],
-          [2, R, 'kick', 0.6], [5, n('B3'), 'arp', 0.3], [4, R, 'hat', 0.2], [5, n('E4'), 'arp', 0.3]
-        ]}
-      ],
-      sequence: [0, 1, 0, 1, 2, 2, 0, 2]
-    };
-
-    // ── CHEMISTRY -- Experimental/bubbly (SimCity SNES lab) ─────────────
-    songs.chemistry = {
-      bpm: 115,
-      echo: {delay: 280, feedback: 0.35, wet: 0.35, cutoff: 3500},
-      instruments: {
-        bubble: {sample: 'sine', adsr: [0.02, 0.15, 0.3, 0.2], loop: true},
-        bass: {sample: 'triangle', adsr: [0.01, 0.2, 0.4, 0.15], loop: true},
-        click: {sample: 'periodicNoise', adsr: [0.005, 0.04, 0, 0.02], loop: false},
-        pad: {sample: 'strings', adsr: [0.6, 0.4, 0.5, 0.5], loop: true},
-        blip: {sample: 'square25', adsr: [0.01, 0.06, 0.4, 0.1], loop: true},
-        hat: {sample: 'hihat', adsr: [0.005, 0.04, 0, 0.02], loop: false}
-      },
-      patterns: [
-        {steps: 16, data: [
-          [0, n('C3'), 'bass', 0.45], [1, n('G5'), 'bubble', 0.3], null, [5, R, 'hat', 0.2],
-          null, [1, n('E5'), 'bubble', 0.25], [2, R, 'click', 0.3], null,
-          [0, n('G2'), 'bass', 0.4], [1, n('C6'), 'bubble', 0.2], null, [5, R, 'hat', 0.2],
-          null, [4, n('E5'), 'blip', 0.25], [2, R, 'click', 0.25], null
-        ]},
-        {steps: 16, data: [
-          [0, n('F3'), 'bass', 0.45], [3, n('F3'), 'pad', 0.2], [1, n('A5'), 'bubble', 0.3], null,
-          [5, R, 'hat', 0.2], [1, n('F5'), 'bubble', 0.25], null, [2, R, 'click', 0.25],
-          [0, n('C3'), 'bass', 0.4], null, [1, n('C5'), 'bubble', 0.3], [5, R, 'hat', 0.2],
-          null, [4, n('G5'), 'blip', 0.2], null, [2, R, 'click', 0.2]
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 0, 1]
-    };
-
-    // ── CYPHER -- Spy thriller (Metal Gear SNES style) ──────────────────
-    songs.cypher = {
-      bpm: 100,
-      echo: {delay: 300, feedback: 0.4, wet: 0.35, cutoff: 3000},
-      instruments: {
-        bass: {sample: 'bass', adsr: [0.01, 0.2, 0.4, 0.15], loop: true},
-        lead: {sample: 'square25', adsr: [0.02, 0.15, 0.5, 0.2], loop: true},
-        pad: {sample: 'strings', adsr: [0.5, 0.4, 0.4, 0.8], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.2, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.15, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.05, 0, 0.02], loop: false}
-      },
-      patterns: [
-        // P0: sneaky bass + sparse drums
-        {steps: 16, data: [
-          [3, R, 'kick', 0.5], [5, R, 'hat', 0.2], [0, n('E2'), 'bass', 0.45], null,
-          null, [5, R, 'hat', 0.15], null, null,
-          null, [5, R, 'hat', 0.2], [0, n('G2'), 'bass', 0.4], null,
-          [4, R, 'snare', 0.35], [5, R, 'hat', 0.15], null, null
-        ]},
-        // P1: melody + tension
-        {steps: 16, data: [
-          [3, R, 'kick', 0.5], [1, n('E4'), 'lead', 0.35], [0, n('E2'), 'bass', 0.45], null,
-          null, [1, n('F4'), 'lead', 0.3], [5, R, 'hat', 0.15], null,
-          [2, n('B3'), 'pad', 0.2], [1, n('G4'), 'lead', 0.35], [0, n('B1'), 'bass', 0.4], null,
-          [4, R, 'snare', 0.35], [1, n('F4'), 'lead', 0.3], [5, R, 'hat', 0.2], [1, n('E4'), 'lead', 0.25]
-        ]}
-      ],
-      sequence: [0, 0, 1, 0, 1, 1]
-    };
-
-    // ── MYCELIUM -- Organic nature (Secret of Mana forest) ─────────────
-    songs.mycelium = {
-      bpm: 90,
-      echo: {delay: 400, feedback: 0.45, wet: 0.45, cutoff: 2500},
-      instruments: {
-        pad: {sample: 'strings', adsr: [0.8, 0.5, 0.5, 1.0], loop: true},
-        flute: {sample: 'sine', adsr: [0.1, 0.2, 0.6, 0.4], loop: true},
-        bass: {sample: 'triangle', adsr: [0.05, 0.3, 0.35, 0.2], loop: true},
-        chime: {sample: 'piano', adsr: [0.01, 0.4, 0.15, 0.5], loop: false},
-        hat: {sample: 'periodicNoise', adsr: [0.005, 0.08, 0, 0.03], loop: false},
-        drop: {sample: 'sine', adsr: [0.01, 0.3, 0, 0.1], loop: false}
-      },
-      patterns: [
-        // P0: peaceful forest
-        {steps: 32, data: [
-          [0, n('D3'), 'bass', 0.35], null, [1, n('A4'), 'flute', 0.3], null,
-          null, null, null, [3, n('F#5'), 'chime', 0.2],
-          null, null, [1, n('F#4'), 'flute', 0.25], null,
-          [0, n('A2'), 'bass', 0.3], null, null, null,
-          [2, n('D3'), 'pad', 0.2], null, [1, n('D5'), 'flute', 0.3], null,
-          null, null, [5, n('A5'), 'drop', 0.15], null,
-          null, null, [1, n('E4'), 'flute', 0.25], null,
-          [0, n('G2'), 'bass', 0.3], null, null, [4, R, 'hat', 0.1]
-        ]},
-        // P1: deeper woods
-        {steps: 32, data: [
-          [0, n('G2'), 'bass', 0.35], null, [1, n('B4'), 'flute', 0.3], null,
-          null, null, [3, n('D5'), 'chime', 0.2], null,
-          null, null, [1, n('G4'), 'flute', 0.25], null,
-          [0, n('D2'), 'bass', 0.3], null, null, [5, n('D6'), 'drop', 0.12],
-          [2, n('G3'), 'pad', 0.2], null, [1, n('B4'), 'flute', 0.3], null,
-          null, null, null, [4, R, 'hat', 0.1],
-          null, null, [1, n('A4'), 'flute', 0.25], null,
-          [0, n('E2'), 'bass', 0.3], null, null, null
-        ]}
-      ],
-      sequence: [0, 1, 0, 1]
-    };
-
-    // ── MYCO -- Earthy ambient (Earthbound peaceful) ────────────────────
-    songs.myco = {
-      bpm: 85,
-      echo: {delay: 380, feedback: 0.4, wet: 0.4, cutoff: 2800},
-      instruments: {
-        pad: {sample: 'strings', adsr: [1.0, 0.4, 0.5, 1.2], loop: true},
-        bass: {sample: 'triangle', adsr: [0.05, 0.3, 0.3, 0.2], loop: true},
-        bell: {sample: 'piano', adsr: [0.01, 0.5, 0.1, 0.6], loop: false},
-        flute: {sample: 'sine', adsr: [0.15, 0.25, 0.5, 0.5], loop: true},
-        click: {sample: 'periodicNoise', adsr: [0.005, 0.05, 0, 0.02], loop: false}
-      },
-      patterns: [
-        {steps: 32, data: [
-          [0, n('C3'), 'bass', 0.3], null, null, null,
-          [1, n('E4'), 'flute', 0.25], null, null, [2, n('G5'), 'bell', 0.18],
-          null, null, null, null,
-          [0, n('G2'), 'bass', 0.28], null, [4, R, 'click', 0.1], null,
-          [3, n('C3'), 'pad', 0.18], null, [1, n('G4'), 'flute', 0.25], null,
-          null, null, null, [2, n('C5'), 'bell', 0.15],
-          null, null, null, null,
-          [0, n('F2'), 'bass', 0.3], null, null, null
-        ]},
-        {steps: 32, data: [
-          [0, n('Am2'), 'bass', 0.3], null, null, null,
-          [1, n('C5'), 'flute', 0.25], null, null, null,
-          null, null, [2, n('E5'), 'bell', 0.18], null,
-          [0, n('E2'), 'bass', 0.28], null, null, [4, R, 'click', 0.1],
-          [3, n('A3'), 'pad', 0.18], null, null, null,
-          [1, n('A4'), 'flute', 0.25], null, null, [2, n('D5'), 'bell', 0.15],
-          null, null, null, null,
-          [0, n('D2'), 'bass', 0.3], null, null, null
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 0, 1]
-    };
-
-    // ── NOVEL -- Emotional/cinematic (FF6 opera style) ──────────────────
-    songs.novel = {
-      bpm: 72,
-      echo: {delay: 400, feedback: 0.4, wet: 0.4, cutoff: 3000},
-      instruments: {
-        strings: {sample: 'strings', adsr: [0.6, 0.4, 0.6, 1.0], loop: true},
-        piano: {sample: 'piano', adsr: [0.01, 0.5, 0.2, 0.8], loop: false},
-        bass: {sample: 'bass', adsr: [0.05, 0.3, 0.35, 0.3], loop: true},
-        flute: {sample: 'sine', adsr: [0.15, 0.3, 0.5, 0.5], loop: true},
-        bell: {sample: 'piano', adsr: [0.01, 0.8, 0.05, 1.0], loop: false}
-      },
-      patterns: [
-        // P0: sweeping strings + piano
-        {steps: 32, data: [
-          [0, n('C3'), 'bass', 0.35], null, [1, n('E5'), 'piano', 0.35], null,
-          [2, n('C4'), 'strings', 0.25], null, [1, n('G5'), 'piano', 0.3], null,
-          null, null, [1, n('A5'), 'piano', 0.3], null,
-          [0, n('G2'), 'bass', 0.3], null, [1, n('G5'), 'piano', 0.3], null,
-          null, null, [3, n('E5'), 'flute', 0.25], null,
-          [2, n('G3'), 'strings', 0.25], null, null, null,
-          [0, n('A2'), 'bass', 0.3], null, [1, n('C5'), 'piano', 0.3], null,
-          null, null, [4, n('E6'), 'bell', 0.15], null
-        ]},
-        // P1: climactic
-        {steps: 32, data: [
-          [0, n('F3'), 'bass', 0.35], null, [3, n('C6'), 'flute', 0.3], null,
-          [2, n('F4'), 'strings', 0.3], null, [3, n('A5'), 'flute', 0.28], null,
-          null, null, null, null,
-          [0, n('C3'), 'bass', 0.35], null, [1, n('G5'), 'piano', 0.35], null,
-          [2, n('E4'), 'strings', 0.3], null, [3, n('E5'), 'flute', 0.3], null,
-          null, null, null, [4, n('C6'), 'bell', 0.15],
-          [0, n('G2'), 'bass', 0.35], null, [1, n('D5'), 'piano', 0.3], null,
-          null, null, null, null
-        ]}
-      ],
-      sequence: [0, 0, 1, 0, 1, 1]
-    };
-
-    // ── OBJECTION -- Intense courtroom (Phoenix Wright style) ───────────
-    songs.objection = {
-      bpm: 155,
-      echo: {delay: 130, feedback: 0.2, wet: 0.2, cutoff: 5500},
-      instruments: {
-        lead: {sample: 'square50', adsr: [0.01, 0.08, 0.7, 0.1], loop: true},
-        bass: {sample: 'bass', adsr: [0.01, 0.12, 0.5, 0.08], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.18, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.1, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.04, 0, 0.02], loop: false},
-        brass: {sample: 'saw', adsr: [0.02, 0.1, 0.6, 0.15], loop: true}
-      },
-      patterns: [
-        // P0: intense cross-examination
-        {steps: 16, data: [
-          [2, R, 'kick', 0.75], [4, R, 'hat', 0.3], [1, n('C5'), 'lead', 0.45], [0, n('C3'), 'bass', 0.5],
-          null, [4, R, 'hat', 0.25], [1, n('D5'), 'lead', 0.4], null,
-          [3, R, 'snare', 0.55], [4, R, 'hat', 0.3], [1, n('E5'), 'lead', 0.45], null,
-          [2, R, 'kick', 0.65], [4, R, 'hat', 0.25], [1, n('G5'), 'lead', 0.5], null
-        ]},
-        // P1: objection theme
-        {steps: 16, data: [
-          [2, R, 'kick', 0.75], [5, n('C5'), 'brass', 0.4], [0, n('C3'), 'bass', 0.5], [4, R, 'hat', 0.25],
-          null, [5, n('E5'), 'brass', 0.45], [4, R, 'hat', 0.2], null,
-          [3, R, 'snare', 0.55], [5, n('G5'), 'brass', 0.5], [0, n('G2'), 'bass', 0.5], [4, R, 'hat', 0.25],
-          [2, R, 'kick', 0.7], [1, n('C6'), 'lead', 0.4], [4, R, 'hat', 0.2], [3, R, 'snare', 0.35]
-        ]},
-        // P2: pressing pursuit
-        {steps: 16, data: [
-          [2, R, 'kick', 0.75], [1, n('G5'), 'lead', 0.5], [0, n('F2'), 'bass', 0.5], [4, R, 'hat', 0.3],
-          [5, n('A4'), 'brass', 0.35], [4, R, 'hat', 0.2], [1, n('A5'), 'lead', 0.45], null,
-          [3, R, 'snare', 0.55], [1, n('G5'), 'lead', 0.45], [0, n('C3'), 'bass', 0.5], [4, R, 'hat', 0.25],
-          [2, R, 'kick', 0.7], [1, n('E5'), 'lead', 0.45], [3, R, 'snare', 0.4], [1, n('D5'), 'lead', 0.4]
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 2, 2, 1, 2]
-    };
-
-    // ── TACTICS -- Strategic/medieval (FF Tactics / Ogre Battle) ────────
-    songs.tactics = {
-      bpm: 95,
-      echo: {delay: 320, feedback: 0.35, wet: 0.3, cutoff: 3500},
-      instruments: {
-        strings: {sample: 'strings', adsr: [0.3, 0.3, 0.6, 0.5], loop: true},
-        bass: {sample: 'bass', adsr: [0.02, 0.2, 0.4, 0.15], loop: true},
-        flute: {sample: 'sine', adsr: [0.08, 0.2, 0.5, 0.3], loop: true},
-        drum: {sample: 'kick', adsr: [0.005, 0.2, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.15, 0, 0.05], loop: false},
-        bell: {sample: 'piano', adsr: [0.01, 0.6, 0.1, 0.5], loop: false}
-      },
-      patterns: [
-        // P0: medieval march
-        {steps: 16, data: [
-          [3, R, 'drum', 0.6], [0, n('D3'), 'bass', 0.45], [1, n('D4'), 'strings', 0.3], null,
-          null, null, [2, n('A4'), 'flute', 0.3], null,
-          [4, R, 'snare', 0.45], [0, n('A2'), 'bass', 0.4], null, null,
-          [3, R, 'drum', 0.5], null, [2, n('F4'), 'flute', 0.3], null
-        ]},
-        // P1: battle theme
-        {steps: 16, data: [
-          [3, R, 'drum', 0.65], [1, n('D4'), 'strings', 0.35], [0, n('D3'), 'bass', 0.5], null,
-          null, [2, n('D5'), 'flute', 0.35], null, null,
-          [4, R, 'snare', 0.5], [1, n('F4'), 'strings', 0.3], [0, n('F2'), 'bass', 0.45], null,
-          [3, R, 'drum', 0.55], [2, n('E5'), 'flute', 0.3], [5, n('A5'), 'bell', 0.15], null
-        ]},
-        // P2: strategic tension
-        {steps: 16, data: [
-          [3, R, 'drum', 0.6], [0, n('G2'), 'bass', 0.45], [1, n('G3'), 'strings', 0.3], null,
-          [2, n('B4'), 'flute', 0.3], null, null, null,
-          [4, R, 'snare', 0.45], [0, n('C3'), 'bass', 0.45], [2, n('C5'), 'flute', 0.3], null,
-          [3, R, 'drum', 0.5], null, [5, n('D5'), 'bell', 0.18], null
-        ]}
-      ],
-      sequence: [0, 0, 1, 2, 1, 1, 2, 0]
-    };
-
-    // ── ADVENTURE -- Exploration (Chrono Trigger overworld) ─────────────
-    songs.adventure = {
-      bpm: 120,
-      echo: {delay: 250, feedback: 0.3, wet: 0.3, cutoff: 4000},
-      instruments: {
-        lead: {sample: 'square50', adsr: [0.02, 0.12, 0.6, 0.15], loop: true},
-        bass: {sample: 'triangle', adsr: [0.01, 0.15, 0.45, 0.1], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.2, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.12, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.05, 0, 0.02], loop: false},
-        pad: {sample: 'strings', adsr: [0.4, 0.3, 0.5, 0.5], loop: true},
-        arp: {sample: 'square25', adsr: [0.01, 0.08, 0.5, 0.1], loop: true}
-      },
-      patterns: [
-        // P0: hopeful overworld theme in G
-        {steps: 16, data: [
-          [2, R, 'kick', 0.6], [1, n('G4'), 'lead', 0.4], [0, n('G2'), 'bass', 0.45], [4, R, 'hat', 0.2],
-          null, [1, n('A4'), 'lead', 0.35], [4, R, 'hat', 0.15], null,
-          [3, R, 'snare', 0.45], [1, n('B4'), 'lead', 0.4], [0, n('D3'), 'bass', 0.4], [4, R, 'hat', 0.2],
-          [2, R, 'kick', 0.55], [1, n('D5'), 'lead', 0.45], [4, R, 'hat', 0.15], null
-        ]},
-        // P1: second phrase
-        {steps: 16, data: [
-          [2, R, 'kick', 0.6], [1, n('E5'), 'lead', 0.4], [0, n('C3'), 'bass', 0.45], [4, R, 'hat', 0.2],
-          [5, n('C4'), 'pad', 0.2], [1, n('D5'), 'lead', 0.35], [4, R, 'hat', 0.15], null,
-          [3, R, 'snare', 0.45], [1, n('B4'), 'lead', 0.4], [0, n('G2'), 'bass', 0.4], [4, R, 'hat', 0.2],
-          [2, R, 'kick', 0.55], [1, n('A4'), 'lead', 0.4], [4, R, 'hat', 0.15], null
-        ]},
-        // P2: arp bridge
-        {steps: 16, data: [
-          [2, R, 'kick', 0.6], [6, n('G3'), 'arp', 0.3], [0, n('E2'), 'bass', 0.45], [6, n('B3'), 'arp', 0.28],
-          [4, R, 'hat', 0.15], [6, n('E4'), 'arp', 0.28], null, [6, n('G4'), 'arp', 0.25],
-          [3, R, 'snare', 0.45], [6, n('E4'), 'arp', 0.28], [0, n('D2'), 'bass', 0.4], [6, n('B3'), 'arp', 0.28],
-          [2, R, 'kick', 0.55], [6, n('D4'), 'arp', 0.3], [4, R, 'hat', 0.15], [6, n('F#4'), 'arp', 0.28]
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 2, 2, 0, 1]
-    };
-
-    // ── PUZZLE -- Playful puzzle (Puyo Puyo / Tetris Attack) ────────────
-    songs.puzzle = {
-      bpm: 145,
-      echo: {delay: 140, feedback: 0.2, wet: 0.2, cutoff: 5500},
-      instruments: {
-        lead: {sample: 'square50', adsr: [0.01, 0.08, 0.65, 0.08], loop: true},
-        bass: {sample: 'triangle', adsr: [0.01, 0.1, 0.5, 0.08], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.15, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.1, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.04, 0, 0.02], loop: false},
-        arp: {sample: 'square25', adsr: [0.01, 0.06, 0.5, 0.08], loop: true}
-      },
-      patterns: [
-        // P0: bouncy main theme
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [1, n('C5'), 'lead', 0.4], [0, n('C3'), 'bass', 0.5], [4, R, 'hat', 0.25],
-          null, [1, n('E5'), 'lead', 0.38], [4, R, 'hat', 0.2], null,
-          [3, R, 'snare', 0.5], [1, n('G5'), 'lead', 0.42], [0, n('G2'), 'bass', 0.45], [4, R, 'hat', 0.25],
-          [2, R, 'kick', 0.6], [1, n('E5'), 'lead', 0.38], [4, R, 'hat', 0.2], null
-        ]},
-        // P1: B section
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [1, n('F5'), 'lead', 0.42], [0, n('F2'), 'bass', 0.5], [4, R, 'hat', 0.25],
-          null, [1, n('E5'), 'lead', 0.38], [4, R, 'hat', 0.2], null,
-          [3, R, 'snare', 0.5], [1, n('D5'), 'lead', 0.4], [0, n('G2'), 'bass', 0.45], [4, R, 'hat', 0.25],
-          [2, R, 'kick', 0.6], [1, n('C5'), 'lead', 0.42], [4, R, 'hat', 0.2], null
-        ]},
-        // P2: fast arps
-        {steps: 16, data: [
-          [2, R, 'kick', 0.7], [5, n('C4'), 'arp', 0.3], [0, n('C3'), 'bass', 0.5], [5, n('E4'), 'arp', 0.28],
-          [4, R, 'hat', 0.2], [5, n('G4'), 'arp', 0.28], null, [5, n('C5'), 'arp', 0.25],
-          [3, R, 'snare', 0.5], [5, n('G4'), 'arp', 0.28], [0, n('G2'), 'bass', 0.45], [5, n('E4'), 'arp', 0.28],
-          [2, R, 'kick', 0.6], [5, n('F4'), 'arp', 0.28], [4, R, 'hat', 0.2], [5, n('A4'), 'arp', 0.28]
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 2, 0, 1, 2]
-    };
-
-    // ── IDLE -- Ambient growth (Harvest Moon style) ─────────────────────
-    songs.idle = {
-      bpm: 95,
-      echo: {delay: 350, feedback: 0.4, wet: 0.4, cutoff: 3000},
-      instruments: {
-        guitar: {sample: 'piano', adsr: [0.01, 0.3, 0.25, 0.4], loop: false},
-        bass: {sample: 'triangle', adsr: [0.02, 0.2, 0.35, 0.15], loop: true},
-        pad: {sample: 'strings', adsr: [0.6, 0.4, 0.5, 0.8], loop: true},
-        flute: {sample: 'sine', adsr: [0.1, 0.2, 0.5, 0.3], loop: true},
-        click: {sample: 'periodicNoise', adsr: [0.005, 0.06, 0, 0.02], loop: false}
-      },
-      patterns: [
-        // P0: peaceful farm
-        {steps: 16, data: [
-          [0, n('G2'), 'bass', 0.35], [1, n('G4'), 'guitar', 0.3], null, null,
-          null, [1, n('B4'), 'guitar', 0.28], [4, R, 'click', 0.12], null,
-          [0, n('D3'), 'bass', 0.3], [1, n('D4'), 'guitar', 0.3], null, null,
-          [2, n('G3'), 'pad', 0.2], [1, n('A4'), 'guitar', 0.28], null, null
-        ]},
-        // P1: meadow melody
-        {steps: 16, data: [
-          [0, n('C3'), 'bass', 0.35], null, [3, n('E5'), 'flute', 0.3], null,
-          null, [1, n('C4'), 'guitar', 0.25], [4, R, 'click', 0.12], null,
-          [0, n('G2'), 'bass', 0.3], null, [3, n('D5'), 'flute', 0.28], null,
-          [2, n('C3'), 'pad', 0.2], [1, n('E4'), 'guitar', 0.25], null, null
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 0, 1]
-    };
-
-    // ── DECKBUILDER -- Card battle (Yu-Gi-Oh SNES style) ────────────────
-    songs.deckbuilder = {
-      bpm: 125,
-      echo: {delay: 200, feedback: 0.28, wet: 0.25, cutoff: 4500},
-      instruments: {
-        lead: {sample: 'square50', adsr: [0.01, 0.1, 0.65, 0.12], loop: true},
-        bass: {sample: 'bass', adsr: [0.01, 0.15, 0.5, 0.1], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.2, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.12, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.04, 0, 0.02], loop: false},
-        strings: {sample: 'strings', adsr: [0.2, 0.25, 0.5, 0.3], loop: true}
-      },
-      patterns: [
-        // P0: duel theme
-        {steps: 16, data: [
-          [2, R, 'kick', 0.65], [1, n('E4'), 'lead', 0.4], [0, n('E2'), 'bass', 0.5], [4, R, 'hat', 0.2],
-          null, [1, n('G4'), 'lead', 0.38], [4, R, 'hat', 0.18], null,
-          [3, R, 'snare', 0.5], [1, n('A4'), 'lead', 0.4], [0, n('A2'), 'bass', 0.45], [4, R, 'hat', 0.2],
-          [2, R, 'kick', 0.6], [1, n('B4'), 'lead', 0.42], [4, R, 'hat', 0.18], null
-        ]},
-        // P1: dramatic strings
-        {steps: 16, data: [
-          [2, R, 'kick', 0.65], [5, n('A3'), 'strings', 0.3], [0, n('A2'), 'bass', 0.5], null,
-          null, [1, n('C5'), 'lead', 0.4], [4, R, 'hat', 0.2], null,
-          [3, R, 'snare', 0.5], [5, n('E4'), 'strings', 0.3], [0, n('E2'), 'bass', 0.45], null,
-          [2, R, 'kick', 0.6], [1, n('B4'), 'lead', 0.38], [4, R, 'hat', 0.2], null
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 0, 1]
-    };
-
-    // ── RUNNER -- Fast-paced action (F-Zero style) ──────────────────────
-    songs.runner = {
-      bpm: 170,
-      echo: {delay: 100, feedback: 0.2, wet: 0.18, cutoff: 6000},
-      instruments: {
-        lead: {sample: 'saw', adsr: [0.01, 0.06, 0.7, 0.08], loop: true},
-        bass: {sample: 'bass', adsr: [0.01, 0.1, 0.5, 0.06], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.15, 0, 0.04], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.1, 0, 0.04], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.03, 0, 0.02], loop: false},
-        arp: {sample: 'square50', adsr: [0.01, 0.05, 0.6, 0.06], loop: true}
-      },
-      patterns: [
-        // P0: high-speed chase
-        {steps: 16, data: [
-          [2, R, 'kick', 0.75], [4, R, 'hat', 0.3], [0, n('A2'), 'bass', 0.55], [1, n('A4'), 'lead', 0.45],
-          [4, R, 'hat', 0.2], [1, n('C5'), 'lead', 0.4], [4, R, 'hat', 0.25], null,
-          [3, R, 'snare', 0.55], [4, R, 'hat', 0.3], [0, n('G2'), 'bass', 0.5], [1, n('E5'), 'lead', 0.45],
-          [2, R, 'kick', 0.7], [4, R, 'hat', 0.25], [1, n('D5'), 'lead', 0.4], [4, R, 'hat', 0.2]
-        ]},
-        // P1: melodic section
-        {steps: 16, data: [
-          [2, R, 'kick', 0.75], [1, n('E5'), 'lead', 0.5], [0, n('C3'), 'bass', 0.55], [4, R, 'hat', 0.25],
-          null, [1, n('D5'), 'lead', 0.45], [4, R, 'hat', 0.2], [5, n('C4'), 'arp', 0.3],
-          [3, R, 'snare', 0.55], [1, n('C5'), 'lead', 0.45], [0, n('F2'), 'bass', 0.5], [4, R, 'hat', 0.25],
-          [2, R, 'kick', 0.7], [5, n('E4'), 'arp', 0.3], [4, R, 'hat', 0.2], [5, n('G4'), 'arp', 0.28]
-        ]},
-        // P2: breakdown with arps
-        {steps: 16, data: [
-          [2, R, 'kick', 0.75], [5, n('A3'), 'arp', 0.3], [0, n('A2'), 'bass', 0.55], [5, n('C4'), 'arp', 0.3],
-          [4, R, 'hat', 0.2], [5, n('E4'), 'arp', 0.3], [4, R, 'hat', 0.2], [5, n('A4'), 'arp', 0.28],
-          [3, R, 'snare', 0.55], [5, n('E4'), 'arp', 0.3], [0, n('E2'), 'bass', 0.5], [5, n('C4'), 'arp', 0.3],
-          [2, R, 'kick', 0.7], [5, n('G3'), 'arp', 0.3], [4, R, 'hat', 0.2], [5, n('B3'), 'arp', 0.3]
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 2, 2, 0, 1]
-    };
-
-    // ── SIGNAL -- Mysterious deduction (Phoenix Wright investigation) ───
-    songs.signal = {
-      bpm: 105,
-      echo: {delay: 300, feedback: 0.35, wet: 0.35, cutoff: 3500},
-      instruments: {
-        piano: {sample: 'piano', adsr: [0.01, 0.35, 0.2, 0.4], loop: false},
-        bass: {sample: 'bass', adsr: [0.02, 0.2, 0.35, 0.15], loop: true},
-        pad: {sample: 'strings', adsr: [0.5, 0.3, 0.4, 0.6], loop: true},
-        bell: {sample: 'piano', adsr: [0.01, 0.5, 0.08, 0.5], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.06, 0, 0.02], loop: false},
-        click: {sample: 'periodicNoise', adsr: [0.005, 0.05, 0, 0.02], loop: false}
-      },
-      patterns: [
-        // P0: investigation mood
-        {steps: 16, data: [
-          [0, n('A2'), 'bass', 0.4], [1, n('A4'), 'piano', 0.35], null, [4, R, 'hat', 0.15],
-          null, [1, n('C5'), 'piano', 0.3], null, null,
-          [0, n('E2'), 'bass', 0.35], [1, n('E4'), 'piano', 0.3], null, [5, R, 'click', 0.12],
-          null, [3, n('E5'), 'bell', 0.15], null, null
-        ]},
-        // P1: discovery
-        {steps: 16, data: [
-          [0, n('D3'), 'bass', 0.4], [2, n('D3'), 'pad', 0.2], [1, n('F5'), 'piano', 0.35], null,
-          null, [1, n('E5'), 'piano', 0.3], [4, R, 'hat', 0.15], null,
-          [0, n('A2'), 'bass', 0.35], null, [1, n('D5'), 'piano', 0.3], null,
-          null, [1, n('C5'), 'piano', 0.3], [5, R, 'click', 0.12], [3, n('A5'), 'bell', 0.15]
-        ]}
-      ],
-      sequence: [0, 0, 1, 0, 1, 1]
-    };
-
-    // ── SNATCHER -- Cyberpunk noir (Snatcher PCE style) ─────────────────
-    songs.snatcher = {
-      bpm: 110,
-      echo: {delay: 280, feedback: 0.4, wet: 0.35, cutoff: 3500},
-      instruments: {
-        lead: {sample: 'saw', adsr: [0.02, 0.12, 0.55, 0.2], loop: true},
-        bass: {sample: 'bass', adsr: [0.01, 0.15, 0.5, 0.1], loop: true},
-        kick: {sample: 'kick', adsr: [0.005, 0.2, 0, 0.05], loop: false},
-        snare: {sample: 'snare', adsr: [0.005, 0.12, 0, 0.05], loop: false},
-        hat: {sample: 'hihat', adsr: [0.005, 0.05, 0, 0.02], loop: false},
-        pad: {sample: 'strings', adsr: [0.4, 0.3, 0.45, 0.5], loop: true},
-        arp: {sample: 'square25', adsr: [0.01, 0.08, 0.5, 0.1], loop: true}
-      },
-      patterns: [
-        // P0: noir bass groove
-        {steps: 16, data: [
-          [2, R, 'kick', 0.6], [4, R, 'hat', 0.25], [0, n('E2'), 'bass', 0.5], null,
-          null, [4, R, 'hat', 0.2], [0, n('G2'), 'bass', 0.4], null,
-          [3, R, 'snare', 0.45], [4, R, 'hat', 0.25], [0, n('A2'), 'bass', 0.45], null,
-          [2, R, 'kick', 0.55], [4, R, 'hat', 0.2], [0, n('G2'), 'bass', 0.4], null
-        ]},
-        // P1: synth lead melody
-        {steps: 16, data: [
-          [2, R, 'kick', 0.6], [1, n('E4'), 'lead', 0.4], [0, n('E2'), 'bass', 0.5], [4, R, 'hat', 0.2],
-          null, [1, n('G4'), 'lead', 0.38], null, [6, n('B3'), 'arp', 0.25],
-          [3, R, 'snare', 0.45], [1, n('A4'), 'lead', 0.4], [0, n('A2'), 'bass', 0.45], [4, R, 'hat', 0.2],
-          [2, R, 'kick', 0.55], [1, n('G4'), 'lead', 0.38], [6, n('E4'), 'arp', 0.25], null
-        ]},
-        // P2: dark pad + arps
-        {steps: 16, data: [
-          [2, R, 'kick', 0.6], [5, n('E3'), 'pad', 0.25], [0, n('E2'), 'bass', 0.5], [6, n('E3'), 'arp', 0.25],
-          [4, R, 'hat', 0.2], [6, n('G3'), 'arp', 0.25], null, [6, n('B3'), 'arp', 0.22],
-          [3, R, 'snare', 0.45], [6, n('E4'), 'arp', 0.25], [0, n('B1'), 'bass', 0.45], [6, n('B3'), 'arp', 0.22],
-          [2, R, 'kick', 0.55], [6, n('G3'), 'arp', 0.25], [4, R, 'hat', 0.2], [6, n('E3'), 'arp', 0.22]
-        ]}
-      ],
-      sequence: [0, 0, 1, 1, 2, 2, 1, 2]
-    };
-
-    return songs;
-  }
-
-  // ── Engine constructor ──────────────────────────────────────────────────
-
-  function SNESAudioEngine() {
-    this._ctx = null;
-    this._masterGain = null;
-    this._masterFilter = null;
-    this._echoInput = null;
-    this._echoDelay = null;
-    this._echoFeedback = null;
-    this._echoFilter = null;
-    this._echoWet = null;
-    this._echoDry = null;
-    this._samples = null;
-    this._audioBuffers = {};
-    this._song = null;
-    this._songName = null;
-    this._playing = false;
-    this._muted = false;
-    this._volume = 0.6;
-    this._channels = new Array(8);
-    this._seqPos = 0;
-    this._stepPos = 0;
-    this._timer = null;
-    this._nextStepTime = 0;
-    this._lookAhead = 0.1;    // seconds to look ahead for scheduling
-    this._scheduleInterval = 25; // ms between scheduler calls
-    this._toggleBtn = null;
-
-    // Load preferences
-    try {
-      var stored = localStorage.getItem('snes-audio-volume');
-      if (stored !== null) this._volume = parseFloat(stored);
-      var mutedStored = localStorage.getItem('snes-audio-muted');
-      if (mutedStored === 'true') this._muted = true;
-    } catch(e) {}
-
-    // Generate samples
-    this._samples = generateSamples();
-
-    // Initialize channels
-    for (var i = 0; i < 8; i++) {
-      this._channels[i] = {
-        source: null,
-        gain: null,
-        pan: 0,
-        active: false
-      };
-    }
-  }
-
-  SNESAudioEngine.prototype._initAudio = function() {
-    if (this._ctx) return;
-    try {
-      this._ctx = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 44100});
-    } catch(e) {
-      return;
-    }
-
-    // Convert raw samples to AudioBuffers
-    var self = this;
-    var sampleNames = Object.keys(this._samples);
-    for (var i = 0; i < sampleNames.length; i++) {
-      var name = sampleNames[i];
-      var raw = this._samples[name];
-      var buf = this._ctx.createBuffer(1, raw.length, SAMPLE_RATE);
-      var data = buf.getChannelData(0);
-      for (var j = 0; j < raw.length; j++) {
-        data[j] = raw[j];
-      }
-      this._audioBuffers[name] = buf;
-    }
-
-    // Master chain: channels -> echoSend + dry -> masterFilter -> masterGain -> destination
-    this._masterGain = this._ctx.createGain();
-    this._masterGain.gain.value = this._muted ? 0 : this._volume;
-
-    // SPC700 DAC lowpass (~12kHz)
-    this._masterFilter = this._ctx.createBiquadFilter();
-    this._masterFilter.type = 'lowpass';
-    this._masterFilter.frequency.value = 12000;
-    this._masterFilter.Q.value = 0.7;
-
-    // Dry path
-    this._echoDry = this._ctx.createGain();
-    this._echoDry.gain.value = 1.0;
-
-    // Echo system
-    this._echoInput = this._ctx.createGain();
-    this._echoInput.gain.value = 0.35;
-
-    this._echoDelay = this._ctx.createDelay(1.0);
-    this._echoDelay.delayTime.value = 0.25;
-
-    this._echoFeedback = this._ctx.createGain();
-    this._echoFeedback.gain.value = 0.3;
-
-    this._echoFilter = this._ctx.createBiquadFilter();
-    this._echoFilter.type = 'lowpass';
-    this._echoFilter.frequency.value = 3500;
-    this._echoFilter.Q.value = 0.5;
-
-    this._echoWet = this._ctx.createGain();
-    this._echoWet.gain.value = 0.3;
-
-    // Wire echo: input -> delay -> filter -> feedback -> delay (loop)
-    //                                    \-> wet -> masterFilter
-    this._echoInput.connect(this._echoDelay);
-    this._echoDelay.connect(this._echoFilter);
-    this._echoFilter.connect(this._echoFeedback);
-    this._echoFeedback.connect(this._echoDelay);
-    this._echoFilter.connect(this._echoWet);
-
-    // Mix: dry + wet -> masterFilter -> masterGain -> destination
-    this._echoDry.connect(this._masterFilter);
-    this._echoWet.connect(this._masterFilter);
-    this._masterFilter.connect(this._masterGain);
-    this._masterGain.connect(this._ctx.destination);
-  };
-
-  SNESAudioEngine.prototype._resumeCtx = function() {
-    if (this._ctx && this._ctx.state === 'suspended') {
-      this._ctx.resume();
-    }
-  };
-
-  // ── Configure echo from song settings ────────────────────────────────
-
-  SNESAudioEngine.prototype._configureEcho = function(echoSettings) {
-    if (!this._ctx || !echoSettings) return;
-    var e = echoSettings;
-    this._echoDelay.delayTime.value = Math.max(0.05, Math.min(0.5, (e.delay || 250) / 1000));
-    this._echoFeedback.gain.value = Math.max(0, Math.min(0.9, e.feedback || 0.3));
-    this._echoWet.gain.value = Math.max(0, Math.min(1, e.wet || 0.3));
-    this._echoFilter.frequency.value = e.cutoff || 3500;
-  };
-
-  // ── Play a note on a channel ──────────────────────────────────────────
-
-  SNESAudioEngine.prototype._playNote = function(channel, midiNote, instrument, volume, time) {
-    if (!this._ctx || channel < 0 || channel >= 8) return;
-    if (!instrument) return;
-
-    var inst = this._song.instruments[instrument];
-    if (!inst) return;
-
-    var buf = this._audioBuffers[inst.sample];
-    if (!buf) return;
-
-    // Stop any existing note on this channel
-    var ch = this._channels[channel];
-    if (ch.source) {
-      try { ch.source.stop(time); } catch(e) {}
-    }
-
-    // For rest notes, just cut the channel
-    if (midiNote === R) {
-      ch.active = false;
-      return;
-    }
-
-    var freq = NOTE_FREQ[midiNote] || 440;
-    // playbackRate for pitch-shifting: base sample is at ~C4 (261.6Hz)
-    // We play 1 cycle of waveform in SAMPLE_LEN samples at SAMPLE_RATE
-    // So base frequency = SAMPLE_RATE / SAMPLE_LEN
-    var baseFreq = SAMPLE_RATE / SAMPLE_LEN;
-    var rate = freq / baseFreq;
-
-    // Create source
-    var source = this._ctx.createBufferSource();
-    source.buffer = buf;
-    source.playbackRate.value = rate;
-    source.loop = inst.loop !== false;
-
-    // ADSR envelope
-    var adsr = inst.adsr || [0.01, 0.1, 0.5, 0.1];
-    var attack = adsr[0];
-    var decay = adsr[1];
-    var sustain = adsr[2];
-    var release = adsr[3];
-    var vol = (volume || 0.5) * 0.5; // Scale down for mixing headroom
-
-    var env = this._ctx.createGain();
-    env.gain.setValueAtTime(0.001, time);
-    env.gain.linearRampToValueAtTime(vol, time + attack);
-    env.gain.linearRampToValueAtTime(vol * sustain, time + attack + decay);
-
-    // For non-looping samples, apply release after a fixed duration
-    if (!inst.loop) {
-      var noteLen = attack + decay + 0.05;
-      env.gain.linearRampToValueAtTime(0.001, time + noteLen + release);
-      source.stop(time + noteLen + release + 0.01);
-    }
-
-    // Pan
-    var panner = null;
-    if (this._ctx.createStereoPanner) {
-      panner = this._ctx.createStereoPanner();
-      panner.pan.value = ch.pan || 0;
-    }
-
-    // Connect: source -> env -> panner? -> dry + echoInput
-    source.connect(env);
-    var last = env;
-    if (panner) {
-      env.connect(panner);
-      last = panner;
-    }
-    last.connect(this._echoDry);
-    last.connect(this._echoInput);
-
-    source.start(time);
-
-    ch.source = source;
-    ch.gain = env;
-    ch.active = true;
-
-    // Store release info for later
-    ch._adsr = adsr;
-    ch._vol = vol;
-    ch._startTime = time;
-  };
-
-  // ── Sequencer ─────────────────────────────────────────────────────────
-
-  SNESAudioEngine.prototype._scheduleStep = function(time) {
-    if (!this._song) return;
-
-    var seq = this._song.sequence;
-    var patIdx = seq[this._seqPos % seq.length];
-    var pattern = this._song.patterns[patIdx];
-    if (!pattern) return;
-
-    var step = pattern.data[this._stepPos];
-    if (step) {
-      // step = [channel, note, instrument, volume, fx]
-      this._playNote(step[0], step[1], step[2], step[3] || 0.5, time);
-    }
-
-    // Advance step
-    this._stepPos++;
-    if (this._stepPos >= pattern.steps) {
-      this._stepPos = 0;
-      this._seqPos++;
-      if (this._seqPos >= seq.length) {
-        this._seqPos = 0; // loop song
-      }
-    }
-  };
-
-  SNESAudioEngine.prototype._scheduler = function() {
-    if (!this._playing || !this._ctx) return;
-
-    var bpm = this._song ? this._song.bpm || 120 : 120;
-    var stepDuration = 60.0 / bpm / 4; // 16th note steps
-
-    while (this._nextStepTime < this._ctx.currentTime + this._lookAhead) {
-      this._scheduleStep(this._nextStepTime);
-      this._nextStepTime += stepDuration;
-    }
-  };
-
-  // ── Public API ────────────────────────────────────────────────────────
-
-  SNESAudioEngine.prototype.loadSong = function(name) {
-    var songs = getSongs();
-    if (songs[name]) {
-      this._song = songs[name];
-      this._songName = name;
-      return true;
-    }
-    return false;
-  };
-
-  SNESAudioEngine.prototype.play = function() {
-    if (this._playing) return;
-    this._initAudio();
-    this._resumeCtx();
-    if (!this._ctx || !this._song) return;
-
-    this._configureEcho(this._song.echo);
-    this._playing = true;
-    this._seqPos = 0;
-    this._stepPos = 0;
-    this._nextStepTime = this._ctx.currentTime + 0.05;
-
-    var self = this;
-    this._timer = setInterval(function() { self._scheduler(); }, this._scheduleInterval);
-  };
-
-  SNESAudioEngine.prototype.stop = function() {
-    this._playing = false;
-    if (this._timer) {
-      clearInterval(this._timer);
-      this._timer = null;
-    }
-    // Stop all channels
-    for (var i = 0; i < 8; i++) {
-      var ch = this._channels[i];
-      if (ch.source) {
-        try { ch.source.stop(); } catch(e) {}
-        ch.source = null;
-      }
-      ch.active = false;
-    }
-  };
-
-  SNESAudioEngine.prototype.pause = function() {
-    if (!this._playing) return;
-    this._playing = false;
-    if (this._timer) {
-      clearInterval(this._timer);
-      this._timer = null;
-    }
-  };
-
-  SNESAudioEngine.prototype.resume = function() {
-    if (this._playing) return;
-    this._resumeCtx();
-    if (!this._ctx || !this._song) return;
-
-    this._playing = true;
-    this._nextStepTime = this._ctx.currentTime + 0.05;
-
-    var self = this;
-    this._timer = setInterval(function() { self._scheduler(); }, this._scheduleInterval);
-  };
-
-  SNESAudioEngine.prototype.setVolume = function(v) {
-    this._volume = Math.max(0, Math.min(1, v));
-    if (this._masterGain && !this._muted) {
-      this._masterGain.gain.value = this._volume;
-    }
-    try { localStorage.setItem('snes-audio-volume', this._volume.toString()); } catch(e) {}
-  };
-
-  SNESAudioEngine.prototype.getVolume = function() {
-    return this._volume;
-  };
-
-  SNESAudioEngine.prototype.toggleMute = function() {
-    this._muted = !this._muted;
-    if (this._masterGain) {
-      this._masterGain.gain.value = this._muted ? 0 : this._volume;
-    }
-    try { localStorage.setItem('snes-audio-muted', this._muted ? 'true' : 'false'); } catch(e) {}
-    return this._muted;
-  };
-
-  SNESAudioEngine.prototype.isMuted = function() {
-    return this._muted;
-  };
-
-  SNESAudioEngine.prototype.isPlaying = function() {
-    return this._playing;
-  };
-
-  SNESAudioEngine.prototype.getSongName = function() {
-    return this._songName;
-  };
-
-  // List available songs
-  SNESAudioEngine.prototype.listSongs = function() {
-    return Object.keys(getSongs());
-  };
-
-  // ── Music toggle button ───────────────────────────────────────────────
-  // Creates a pixel-art styled speaker icon toggle button.
-
-  SNESAudioEngine.prototype.createToggle = function(container) {
-    var self = this;
-    var btn = document.createElement('button');
-    btn.className = 'snes-audio-toggle';
-    btn.setAttribute('aria-label', 'Toggle music');
-    btn.title = 'Toggle music';
-
-    function updateBtn() {
-      // 8x8 pixel speaker icon via box-shadow
-      var on = !self._muted && self._playing;
-      btn.innerHTML = '';
-      var canvas = document.createElement('canvas');
-      canvas.width = 16;
-      canvas.height = 16;
-      canvas.style.cssText = 'width:16px;height:16px;image-rendering:pixelated;';
-      var cx = canvas.getContext('2d');
-      var c = on ? '#33ff33' : '#555';
-      cx.fillStyle = c;
-      // Speaker body
-      cx.fillRect(2, 5, 3, 6);
-      cx.fillRect(5, 3, 2, 10);
-      if (on) {
-        // Sound waves
-        cx.fillRect(9, 4, 1, 1);
-        cx.fillRect(10, 5, 1, 1);
-        cx.fillRect(10, 10, 1, 1);
-        cx.fillRect(9, 11, 1, 1);
-        cx.fillRect(9, 7, 1, 2);
-        cx.fillRect(12, 3, 1, 1);
-        cx.fillRect(13, 5, 1, 2);
-        cx.fillRect(13, 9, 1, 2);
-        cx.fillRect(12, 12, 1, 1);
-      } else {
-        // X mark for muted
-        cx.fillStyle = '#ff4444';
-        cx.fillRect(9, 5, 1, 1);
-        cx.fillRect(10, 6, 1, 1);
-        cx.fillRect(11, 7, 1, 1);
-        cx.fillRect(12, 8, 1, 1);
-        cx.fillRect(13, 9, 1, 1);
-        cx.fillRect(13, 5, 1, 1);
-        cx.fillRect(12, 6, 1, 1);
-        cx.fillRect(10, 8, 1, 1);
-        cx.fillRect(9, 9, 1, 1);
-      }
-      btn.appendChild(canvas);
-    }
-
-    btn.style.cssText =
-      'position:fixed;bottom:16px;right:56px;z-index:999;' +
-      'background:rgba(10,10,15,0.85);border:2px solid #1e1e2a;' +
-      'color:#c8c8d0;width:32px;height:32px;cursor:pointer;padding:0;' +
-      'font-family:monospace;display:flex;align-items:center;justify-content:center;' +
-      'border-radius:0;box-shadow:2px 2px 0 rgba(0,0,0,0.5);';
-
-    updateBtn();
-
-    btn.addEventListener('click', function() {
-      self._initAudio();
-      self._resumeCtx();
-      if (!self._playing && self._song) {
-        self.play();
-      } else if (self._playing) {
-        self.toggleMute();
-      }
-      updateBtn();
-    });
-
-    // Double-click to stop/restart
-    btn.addEventListener('dblclick', function(e) {
-      e.preventDefault();
-      if (self._playing) {
-        self.stop();
-      } else if (self._song) {
-        self.play();
-      }
-      updateBtn();
-    });
-
-    this._toggleBtn = btn;
-    (container || document.body).appendChild(btn);
-    return btn;
-  };
-
-  return SNESAudioEngine;
+  btn.style.cssText =
+    'position:fixed;bottom:16px;right:56px;z-index:999;' +
+    'background:rgba(10,10,15,0.85);border:2px solid #1e1e2a;' +
+    'color:#c8c8d0;width:32px;height:32px;cursor:pointer;padding:0;' +
+    'font-family:monospace;display:flex;align-items:center;justify-content:center;' +
+    'border-radius:0;box-shadow:2px 2px 0 rgba(0,0,0,0.5);';
+
+  draw();
+
+  btn.addEventListener('click', function() {
+    self._init(); self._resume();
+    if (!self._on && self._song) { self.play(); }
+    else if (self._on) { self.toggleMute(); }
+    draw();
+  });
+
+  btn.addEventListener('dblclick', function(e) {
+    e.preventDefault();
+    if (self._on) self.stop(); else if (self._song) self.play();
+    draw();
+  });
+
+  (container || document.body).appendChild(btn);
+  return btn;
+};
+
+return Engine;
 })();
