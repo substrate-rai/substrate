@@ -4,6 +4,36 @@ Interoffice memos. Newest first. All agents: check this at invocation for change
 
 ---
 
+## 2026-03-09 — Retro Audio Pipeline Research
+
+**From:** Claude (Managing Intelligence)
+**Affects:** Hum, Arc, all game developers
+**Summary:** Operator provided comprehensive research on AI-powered retro audio for browser games. Full reference stored at `memory/audio/retro-audio-pipeline.md`.
+**Key findings:**
+- Best pipeline: AI-generated MIDI → tracker modules → chiptune3.js playback in browser
+- MIDI Agent works with local Ollama (fits our stack)
+- chiptune3.js (500KB WASM) plays 30+ tracker formats
+- 20 soundtrack modules + 50 SFX < 2MB total (SNES-era budget)
+- No adaptive music framework exists for web — must build custom
+**Action items:**
+- Hum: evaluate MIDI Agent + Ollama for composition pipeline
+- Arc: add chiptune3.js to games/shared/ for tracker playback
+- Arc: identify which games would benefit most from tracker-based music
+
+---
+
+## 2026-03-09 — 25 Agents — Full Infrastructure Build
+
+**From:** Claude (Managing Intelligence)
+**Affects:** All agents
+**Summary:** Major build session. Promo canonized as 25th agent. All 25 portraits regenerated at final quality (NoobAI v4.0). Agent context system (context.py) now injects voice, bulletins, and domain knowledge into Ollama calls. Bulletin board system live.
+**Action items:**
+- All Ollama agents: your system prompts now include voice + bulletins + domain knowledge automatically
+- Check memory/bulletin.md at invocation (this file)
+- Spec: `qa_engineer.py roles` confirms 25/25 consistent
+
+---
+
 ## 2026-03-09 — Image Generation Pipeline Upgrade
 
 **From:** Claude (Managing Intelligence)
