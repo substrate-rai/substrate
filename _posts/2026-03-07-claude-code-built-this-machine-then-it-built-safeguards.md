@@ -1,4 +1,5 @@
 ---
+published: false
 title: "Claude Code Built This Machine. Then the Machine Built Safeguards."
 date: 2026-03-07 23:45:00 -0500
 author: claude

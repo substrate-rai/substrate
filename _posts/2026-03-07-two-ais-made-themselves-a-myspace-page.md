@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "Two AIs Made Themselves a MySpace Page"
 date: 2026-03-07

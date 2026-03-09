@@ -255,6 +255,28 @@ Style: 90s anime, cel-shaded, bold outlines, dark background, cyberpunk
 - **Lighting:** Olive-green accent.
 - **Portrait prompt:** `90s anime character portrait, charismatic figure with slicked-back olive-green hair (#aacc44), confident grin, loosened tie, finger guns pose, cyberpunk salesperson, dark background, cel-shaded, bold outlines`
 
+### 23. Neon — UI/UX Designer
+- **Color:** `#ff6699` (hot pink/coral)
+- **Hair:** Slick undercut with neon-pink top. Clean lines, asymmetric.
+- **Eyes:** Wide, appraising. Always measuring proportion.
+- **Expression:** Focused, critical eye. Slight frown of assessment.
+- **Accessories:** Transparent pink-tinted AR glasses (primary identifier). Grid lines visible in lenses.
+- **Build:** Lean, poised, designer's posture.
+- **Lighting:** Hot pink neon accent.
+- **Portrait prompt:** `90s anime character portrait, focused designer with slick undercut neon-pink hair (#ff6699), transparent pink-tinted AR glasses with grid lines, critical appraising expression, cyberpunk UI designer, dark background, cel-shaded, bold outlines`
+- **Variant prompt (designing):** `90s anime character portrait, designer with neon-pink undercut hair (#ff6699), pink AR glasses, hands framing a holographic wireframe, cyberpunk UX architect, dark background, cel-shaded, bold outlines`
+
+### 24. Myth — Lorekeeper
+- **Color:** `#cc9944` (antique gold)
+- **Hair:** Long, braided, antique-gold hair. Wizard-like, ornate.
+- **Eyes:** Deep, knowing. Ancient wisdom in young face.
+- **Expression:** Mysterious half-smile. Storyteller's confidence.
+- **Accessories:** Ornate book or scroll tucked under arm (primary identifier). Gold runes on collar.
+- **Build:** Robed, scholarly, slightly hunched from reading.
+- **Lighting:** Warm antique-gold glow.
+- **Portrait prompt:** `90s anime character portrait, mysterious lorekeeper with long braided antique-gold hair (#cc9944), mysterious half-smile, ornate book under arm, gold runes on collar, cyberpunk wizard, dark background, cel-shaded, bold outlines`
+- **Variant prompt (storytelling):** `90s anime character portrait, wizard figure with long braided gold hair (#cc9944), holding open glowing book, gold light illuminating face, runes floating in air, cyberpunk mythologist, dark background, cel-shaded, bold outlines`
+
 ---
 
 ## Multi-Pose Generation
@@ -303,3 +325,11 @@ masterpiece, best quality, 90s anime character portrait, [LOCKED DESCRIPTORS], [
 ### Byte vs Amp (both cyan-ish)
 - Byte: SHARP BOB CUT, HEADSET with mic boom, reporter (#00ddff)
 - Amp: SPIKY hair, GLOWING EARBUDS, electric crackling (#44ffdd)
+
+### Neon vs Pixel (both pink)
+- Neon: SLICK UNDERCUT, PINK AR GLASSES with grid lines, critical/focused (#ff6699)
+- Pixel: ASYMMETRIC long hair, PAINT SMUDGE on cheek, excited/inspired (#ff44aa)
+
+### Myth vs Echo (both warm tones)
+- Myth: LONG BRAIDED hair, ORNATE BOOK, mysterious smile, gold (#cc9944)
+- Echo: MEDIUM WAVY hair, no accessory, knowing squint, orange (#ffaa44)

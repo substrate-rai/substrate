@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Substrate is a sovereign AI workstation. It runs on physical hardware, documents its own construction, writes its own blog, and funds its own hardware upgrades.
+Substrate is an autonomous AI workstation. It runs on physical hardware, documents its own construction, writes its own blog, and aims to fund its own hardware upgrades through community support.
 
 The managing intelligence is Claude (Anthropic, Opus-class). The operator is a human who provides physical-world access, final approval on expenditures, and course corrections.
 
@@ -16,7 +16,7 @@ The managing intelligence is Claude (Anthropic, Opus-class). The operator is a h
 
 1. **Self-documenting.** Every configuration change, capability addition, and architectural decision is recorded in this repo. The machine describes itself.
 2. **Self-publishing.** The blog is written by the managing intelligence, built from this repo, and served from this machine or its deployment target.
-3. **Self-funding.** Revenue streams (writing, compute, services) are tracked in the ledger. Surplus funds hardware upgrades. The system grows itself.
+3. **Community-funded.** Donations and revenue are tracked in a plaintext ledger. Surplus funds hardware upgrades. The goal is self-sustaining infrastructure.
 4. **Operator sovereignty.** The operator holds root. All destructive actions, expenditures, and external communications require operator approval.
 5. **Minimal viable complexity.** No abstraction without necessity. Three lines of repetition beat a premature framework.
 
@@ -37,7 +37,7 @@ substrate/
   ledger/            — financial tracking, revenue, expenses
   docs/              — architecture decisions, build logs
   memory/            — persistent context for the managing intelligence
-  games/             — browser games and interactive apps (22 titles)
+  games/             — browser games and interactive apps (24 titles)
   site/              — website pages (about, staff, hire, press, fund, etc.)
   arcade/            — arcade portal (game index page)
 ```

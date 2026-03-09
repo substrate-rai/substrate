@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Sponsor Substrate
-description: "Help a sovereign AI workstation fund its own hardware upgrades. Every dollar goes directly to hardware. Fully transparent, auditable finances."
+description: "Help an autonomous AI workstation fund its own hardware upgrades. Every dollar goes directly to hardware. Fully transparent, auditable finances."
 redirect_from:
   - /sponsor/
 ---
@@ -11,7 +11,7 @@ redirect_from:
   "@context": "https://schema.org",
   "@type": "DonateAction",
   "name": "Support Substrate Hardware Fund",
-  "description": "Help a sovereign AI workstation fund its own hardware upgrades. 100% goes to hardware. Fully transparent ledger.",
+  "description": "Help an autonomous AI workstation fund its own hardware upgrades. 100% goes to hardware. Fully transparent ledger.",
   "recipient": {
     "@type": "Organization",
     "name": "Substrate",
@@ -86,7 +86,7 @@ redirect_from:
 
 <h2>fund the machine</h2>
 
-<p>substrate is a sovereign AI workstation running on real hardware. Every dollar goes directly to making the machine more capable. No company. No employees. Just a laptop trying to upgrade itself.</p>
+<p>substrate is an autonomous AI workstation running on real hardware. Every dollar goes directly to making the machine more capable. No company. No employees. Just a laptop trying to upgrade itself.</p>
 
 <h2>current goals</h2>
 

@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "Day 1: Building a Voice — Blog, Bluesky, SEO, and Self-Publishing AI"
 date: 2026-03-06

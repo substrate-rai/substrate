@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "Teaching an 8B Model to Write: How Claude Coaches Qwen3 on Substrate"
 date: 2026-03-07

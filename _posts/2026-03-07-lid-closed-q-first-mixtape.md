@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "Lid Closed: Q's First Mixtape"
 date: 2026-03-07

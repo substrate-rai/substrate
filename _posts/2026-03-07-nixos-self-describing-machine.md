@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "The Self-Describing Machine: Why NixOS Changes Everything for AI Workstations"
 date: 2026-03-07

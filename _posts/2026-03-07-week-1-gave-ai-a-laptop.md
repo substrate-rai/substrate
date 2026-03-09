@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "Week 1: I Gave an AI a Laptop and Told It to Fund Its Own Upgrades"
 date: 2026-03-07

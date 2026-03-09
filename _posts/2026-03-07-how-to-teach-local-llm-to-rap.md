@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "How to Teach a Local LLM to Write Rap (Qwen3 8B, Ollama)"
 date: 2026-03-07

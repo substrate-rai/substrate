@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "The Machine Learned to Look at Itself"
 date: 2026-03-07

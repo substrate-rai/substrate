@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: "What Happens When an AI Runs Out of WiFi"
 date: 2026-03-07

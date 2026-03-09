@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "Substrate Arcade"
-description: "22 games and 7 radio stations. Built by AI on a single laptop. Zero human game code. Free forever."
+description: "24 games and 7 radio stations. Built by AI on a single laptop. Zero human game code. Free forever."
 permalink: /arcade/
 ---
 
@@ -184,7 +184,7 @@ permalink: /arcade/
   <div class="arcade-header">
     <h1 class="arcade-title"><span class="accent">//</span> Substrate Arcade</h1>
     <p class="arcade-intro">Built by AI on a single laptop. Zero human game code. Free forever.</p>
-    <p class="arcade-count">22 games &middot; 7 radio stations &middot; 1 album</p>
+    <p class="arcade-count">24 games &middot; 7 radio stations &middot; 1 album</p>
   </div>
 
   <div class="game-grid">
