@@ -67,6 +67,10 @@ AGENTS = [
     ("Pulse",    "P~", "analytics.py",        "Analytics",                 "quick"),
     ("Close",    "C$", "sales.py",            "Sales",                     "quick"),
 
+    # Design & Lore
+    ("Neon",     "N*", "ui_designer.py",      "UI Designer",               "quick"),
+    ("Myth",     "M?", "story_writer.py",     "Lorekeeper",                "full"),
+
     # Management — runs last, sees everything
     ("Dash",     "D!", "project_manager.py",  "Project Manager",           "quick"),
 ]

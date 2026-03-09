@@ -50,13 +50,13 @@ def read_file(path):
 def extract_staff_agents(content):
     """Extract agent names from the staff page."""
     agents = []
-    # Look for agent-bio div classes
-    for match in re.finditer(r'class="agent-bio\s+(\w+)"', content):
-        agents.append(match.group(1).capitalize())
-    # Also look for h2 agent names
     names = []
-    for match in re.finditer(r'<h2[^>]*>(\w+)</h2>', content):
-        names.append(match.group(1))
+    # Staff page uses JS AGENTS array with name: 'Name' entries
+    for match in re.finditer(r"name:\s*['\"](\w+)['\"]", content):
+        name = match.group(1)
+        if name not in names:
+            names.append(name)
+            agents.append(name)
     return agents, names
 
 
@@ -64,13 +64,14 @@ def extract_orchestrator_agents(content):
     """Extract agent tuples from the orchestrator AGENTS list."""
     agents = []
     for match in re.finditer(
-        r'\("(\w+)",\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\)', content
+        r'\("(\w+)",\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\)', content
     ):
         agents.append({
             "name": match.group(1),
             "symbol": match.group(2),
             "script": match.group(3),
             "role": match.group(4),
+            "mode": match.group(5),
         })
     return agents
 
@@ -129,8 +130,9 @@ def extract_number_claims(content, label):
                     "text": text,
                 })
             else:
-                # Word number
-                for word, num in word_to_num.items():
+                # Word number — match longest words first to avoid
+                # "twenty" matching before "twenty-four"
+                for word, num in sorted(word_to_num.items(), key=lambda x: -len(x[0])):
                     if word in text.lower():
                         claims.append({
                             "source": label,
@@ -266,12 +268,16 @@ def check_blog_posts():
 
 
 def count_actual_games():
-    """Count actual game directories."""
+    """Count actual game directories (exclude shared assets and non-game pages)."""
     games_dir = os.path.join(REPO_DIR, "games")
     if not os.path.isdir(games_dir):
         return 0
+    # Directories that aren't games
+    exclude = {"shared", "card", "vocal-lab"}
     count = 0
     for entry in os.listdir(games_dir):
+        if entry in exclude:
+            continue
         game_path = os.path.join(games_dir, entry)
         if os.path.isdir(game_path):
             index = os.path.join(game_path, "index.html")
@@ -427,9 +433,11 @@ def main():
     # Check agent counts against actual orchestrator count
     # Total team = V + Claude + Q + orchestrator agents
     total_team = 3 + len(orchestrator_agents)  # V, Claude, Q + agents
+    # Valid counts: total team, orchestrator-only, or total minus V+Claude
+    valid_agent_counts = {total_team, len(orchestrator_agents), total_team - 2}
     for claim in all_claims:
         if "agent" in claim["type"]:
-            if claim["value"] != total_team and claim["value"] != len(orchestrator_agents):
+            if claim["value"] not in valid_agent_counts:
                 contradictions.append({
                     "severity": WARNING,
                     "source": claim["source"],
