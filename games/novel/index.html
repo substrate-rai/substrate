@@ -10,6 +10,17 @@ redirect_from:
 <style>
   /* Hide the info bar on this page */
   .info-bar { display: none !important; }
+  /* === PIXEL ART MODE === */
+  * { image-rendering: pixelated; }
+  button, .btn, [class*="btn"] {
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none !important;
+  }
+  button:active, .btn:active, [class*="btn"]:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  }
 
   .vn-container {
     max-width: 100%;
@@ -17,7 +28,7 @@ redirect_from:
     min-height: 80vh;
     position: relative;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: 0;
     background: #08080d;
   }
 
@@ -25,7 +36,7 @@ redirect_from:
   .vn-scene {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    transition: background 1s ease, opacity 0.8s ease;
+    transition: none;
     z-index: 1;
   }
 
@@ -38,11 +49,11 @@ redirect_from:
     justify-content: center;
     gap: 40px;
     z-index: 2;
-    transition: opacity 0.5s ease;
+    transition: none;
   }
   .vn-char {
     text-align: center;
-    transition: transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
+    transition: none;
     filter: brightness(0.5);
   }
   .vn-char.speaking {
@@ -60,7 +71,7 @@ redirect_from:
   .vn-char-portrait {
     width: 100px;
     height: 100px;
-    border-radius: 8px;
+    border-radius: 0;
     border: 2px solid rgba(255,255,255,0.1);
     object-fit: cover;
     image-rendering: auto;
@@ -76,7 +87,7 @@ redirect_from:
   .vn-speaker-portrait {
     width: 64px;
     height: 64px;
-    border-radius: 6px;
+    border-radius: 0;
     border: 2px solid rgba(255,255,255,0.1);
     object-fit: cover;
     image-rendering: auto;
@@ -100,7 +111,7 @@ redirect_from:
     opacity: 0.15;
     z-index: 0;
     pointer-events: none;
-    transition: opacity 0.8s ease;
+    transition: none;
   }
 
   /* Dialogue box */
@@ -108,7 +119,7 @@ redirect_from:
     position: absolute;
     bottom: 0; left: 0; right: 0;
     background: linear-gradient(to top, rgba(8,8,13,0.98) 70%, rgba(8,8,13,0.85));
-    backdrop-filter: blur(8px);
+    /* backdrop-filter removed for pixel art */
     padding: 24px 32px 28px;
     padding-bottom: calc(28px + env(safe-area-inset-bottom));
     z-index: 10;
@@ -174,12 +185,12 @@ redirect_from:
     padding: 14px 20px;
     background: rgba(20, 20, 30, 0.9);
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
+    border-radius: 0;
     color: #c8c8d0;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: none;
     text-align: left;
-    backdrop-filter: blur(4px);
+    /* backdrop-filter removed for pixel art */
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     min-height: 48px;
@@ -201,7 +212,7 @@ redirect_from:
     justify-content: center;
     z-index: 50;
     background: radial-gradient(ellipse at center, #0d0d18 0%, #08080d 70%);
-    transition: opacity 1s ease;
+    transition: none;
   }
   .vn-title-screen.hidden { opacity: 0; pointer-events: none; }
   .vn-title, h1.vn-title {
@@ -228,9 +239,9 @@ redirect_from:
     background: transparent;
     border: 1px solid rgba(255,255,255,0.15);
     color: #c8c8d0;
-    border-radius: 8px;
+    border-radius: 0;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: none;
     letter-spacing: 2px;
     margin-bottom: 12px;
   }
@@ -246,9 +257,9 @@ redirect_from:
     background: transparent;
     border: 1px solid rgba(255,255,255,0.08);
     color: #6a6a78;
-    border-radius: 6px;
+    border-radius: 0;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: none;
   }
   .vn-continue-btn:hover { border-color: rgba(255,255,255,0.2); color: #c8c8d0; }
   .vn-continue-btn.hidden { display: none; }
@@ -276,7 +287,7 @@ redirect_from:
     color: rgba(0, 224, 154, 0.4);
     z-index: 5;
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: none;
   }
   .vn-save-indicator.show { opacity: 1; }
 
