@@ -284,6 +284,7 @@ redirect_from:
     }
   </style>
 <script src="{{ site.baseurl }}/assets/js/substrate-audio.js"></script>
+<script src="{{ site.baseurl }}/games/shared/snes-audio.js"></script>
 <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
@@ -1323,6 +1324,27 @@ updateStats();
 input.focus();
 </script>
 <script>if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.createToggle();</script>
+<script>
+(function() {
+  if (typeof SNESAudio === 'undefined') return;
+  var music = new SNESAudio();
+  music.loadSong('adventure');
+  music.createToggle();
+  // Auto-play on first user interaction (required by browsers)
+  var started = false;
+  function tryStart() {
+    if (started) return;
+    started = true;
+    if (!music.isMuted()) music.play();
+    document.removeEventListener('click', tryStart);
+    document.removeEventListener('keydown', tryStart);
+  }
+  document.addEventListener('click', tryStart);
+  document.addEventListener('keydown', tryStart);
+  // Expose for console debugging
+  window._snesMusic = music;
+})();
+</script>
 
 <!-- Anime Effects: CRT frame, encounter splashes -->
 <script>
