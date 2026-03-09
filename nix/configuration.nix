@@ -10,6 +10,7 @@
     ./feedback-loop.nix
     ./mirror.nix
     ./heartbeat.nix
+    ./build-executor.nix
   ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

@@ -28,14 +28,14 @@ Items are checked when operational and verified.
 - [x] Mirror system operational (scripts/mirror.py)
 - [x] Capability inventory auto-generated from repo scan
 - [x] Gap analysis produces actionable build specs
-- [ ] Build specs can be executed without operator input (scripts/build.py)
+- [x] Build specs can be executed without operator input (scripts/build.py)
 
 ## Tier 2: Self-Modification
 
-- [ ] Automated NixOS module generation from build specs
-- [ ] Script scaffolding from mirror proposals
-- [ ] Test harness for new capabilities (verify before commit)
-- [ ] Rollback on failed builds (revert commit + log incident)
+- [x] Automated NixOS module generation from build specs
+- [x] Script scaffolding from mirror proposals
+- [x] Test harness for new capabilities (verify before commit)
+- [x] Rollback on failed builds (revert commit + log incident)
 - [x] Stable Diffusion operational (SDXL on CUDA, image generation)
 - [x] Image pipeline integrated with blog posts
 
