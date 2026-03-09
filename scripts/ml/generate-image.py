@@ -32,11 +32,22 @@ COMFYUI_MAIN = COMFYUI_DIR / "main.py"
 COMFYUI_URL = "http://127.0.0.1:8188"
 COMFYUI_OUTPUT = COMFYUI_DIR / "output"
 CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors"
+LIGHTNING_LORA = "sdxl_lightning_4step_lora.safetensors"
 
 SCRIPT_DIR = Path(__file__).parent
 OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "assets" / "images" / "generated"
 
 NEGATIVE_PROMPT = "text, watermark, human face, realistic photo, blurry, low quality, signature, words, letters"
+
+# Style prefix for consistent art across the project
+STYLE_PREFIX = "anime style, cel shaded, vibrant colors, clean linework, digital illustration, "
+QUALITY_SUFFIX = ", masterpiece, best quality, highly detailed"
+
+
+def has_lightning_lora():
+    """Check if SDXL Lightning LoRA is available."""
+    lora_path = COMFYUI_DIR / "models" / "loras" / LIGHTNING_LORA
+    return lora_path.exists()
 
 
 def unload_ollama_models():
@@ -132,70 +143,144 @@ def stop_comfyui(proc):
 
 
 def build_workflow(prompt, negative=NEGATIVE_PROMPT, width=512, height=512,
-                   steps=4, cfg=1.0, seed=None):
-    """Build a ComfyUI workflow dict for SDXL Turbo generation."""
+                   steps=4, cfg=1.0, seed=None, use_lightning=False):
+    """Build a ComfyUI workflow dict for SDXL Turbo or Lightning generation."""
     if seed is None:
         seed = random.randint(0, 2**32 - 1)
 
-    return {
-        "3": {
-            "class_type": "KSampler",
-            "inputs": {
-                "cfg": cfg,
-                "denoise": 1.0,
-                "latent_image": ["5", 0],
-                "model": ["4", 0],
-                "negative": ["7", 0],
-                "positive": ["6", 0],
-                "sampler_name": "euler_ancestral",
-                "scheduler": "normal",
-                "seed": seed,
-                "steps": steps,
+    if use_lightning:
+        # SDXL Lightning via LoRA — supports negative prompts, 1024x1024
+        # Model source is "10" (LoRA-patched), not "4" (raw checkpoint)
+        return {
+            "3": {
+                "class_type": "KSampler",
+                "inputs": {
+                    "cfg": cfg,
+                    "denoise": 1.0,
+                    "latent_image": ["5", 0],
+                    "model": ["10", 0],
+                    "negative": ["7", 0],
+                    "positive": ["6", 0],
+                    "sampler_name": "euler",
+                    "scheduler": "sgm_uniform",
+                    "seed": seed,
+                    "steps": steps,
+                },
             },
-        },
-        "4": {
-            "class_type": "CheckpointLoaderSimple",
-            "inputs": {
-                "ckpt_name": CHECKPOINT,
+            "4": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                    "ckpt_name": CHECKPOINT,
+                },
             },
-        },
-        "5": {
-            "class_type": "EmptyLatentImage",
-            "inputs": {
-                "batch_size": 1,
-                "height": height,
-                "width": width,
+            "5": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                    "batch_size": 1,
+                    "height": height,
+                    "width": width,
+                },
             },
-        },
-        "6": {
-            "class_type": "CLIPTextEncode",
-            "inputs": {
-                "clip": ["4", 1],
-                "text": prompt,
+            "6": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                    "clip": ["4", 1],
+                    "text": prompt,
+                },
             },
-        },
-        "7": {
-            "class_type": "CLIPTextEncode",
-            "inputs": {
-                "clip": ["4", 1],
-                "text": negative,
+            "7": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                    "clip": ["4", 1],
+                    "text": negative,
+                },
             },
-        },
-        "8": {
-            "class_type": "VAEDecode",
-            "inputs": {
-                "samples": ["3", 0],
-                "vae": ["4", 2],
+            "8": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                    "samples": ["3", 0],
+                    "vae": ["4", 2],
+                },
             },
-        },
-        "9": {
-            "class_type": "SaveImage",
-            "inputs": {
-                "filename_prefix": "generate",
-                "images": ["8", 0],
+            "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                    "filename_prefix": "generate",
+                    "images": ["8", 0],
+                },
             },
-        },
-    }
+            "10": {
+                "class_type": "LoraLoader",
+                "inputs": {
+                    "lora_name": LIGHTNING_LORA,
+                    "model": ["4", 0],
+                    "clip": ["4", 1],
+                    "strength_model": 1.0,
+                    "strength_clip": 1.0,
+                },
+            },
+        }
+    else:
+        # SDXL Turbo — no negative prompts at CFG 1.0, 512x512 only
+        return {
+            "3": {
+                "class_type": "KSampler",
+                "inputs": {
+                    "cfg": cfg,
+                    "denoise": 1.0,
+                    "latent_image": ["5", 0],
+                    "model": ["4", 0],
+                    "negative": ["7", 0],
+                    "positive": ["6", 0],
+                    "sampler_name": "euler_ancestral",
+                    "scheduler": "normal",
+                    "seed": seed,
+                    "steps": steps,
+                },
+            },
+            "4": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                    "ckpt_name": CHECKPOINT,
+                },
+            },
+            "5": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                    "batch_size": 1,
+                    "height": height,
+                    "width": width,
+                },
+            },
+            "6": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                    "clip": ["4", 1],
+                    "text": prompt,
+                },
+            },
+            "7": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                    "clip": ["4", 1],
+                    "text": "" if cfg <= 1.0 else negative,
+                },
+            },
+            "8": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                    "samples": ["3", 0],
+                    "vae": ["4", 2],
+                },
+            },
+            "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                    "filename_prefix": "generate",
+                    "images": ["8", 0],
+                },
+            },
+        }
 
 
 def submit_workflow(workflow):
@@ -249,11 +334,33 @@ def download_image(filename, subfolder=""):
 
 
 def generate(prompt, width=512, height=512, steps=4, cfg=1.0, seed=None,
-             output=None, negative=NEGATIVE_PROMPT):
+             output=None, negative=NEGATIVE_PROMPT, use_lightning=None,
+             add_style=False):
     """Generate an image via ComfyUI API and save it."""
-    workflow = build_workflow(prompt, negative=negative, width=width, height=height,
-                              steps=steps, cfg=cfg, seed=seed)
+    # Auto-detect Lightning if available
+    if use_lightning is None:
+        use_lightning = has_lightning_lora()
 
+    # Apply style prefix/suffix if requested
+    if add_style:
+        prompt = STYLE_PREFIX + prompt + QUALITY_SUFFIX
+
+    # Lightning defaults: 1024x1024, CFG 1.5, 4 steps
+    if use_lightning:
+        if width == 512 and height == 512:
+            width, height = 1024, 1024
+        if cfg == 1.0:
+            cfg = 1.5
+        mode = "Lightning"
+    else:
+        # Turbo: empty negative at CFG 1.0 (it does nothing anyway)
+        mode = "Turbo"
+
+    workflow = build_workflow(prompt, negative=negative, width=width, height=height,
+                              steps=steps, cfg=cfg, seed=seed,
+                              use_lightning=use_lightning)
+
+    print(f"  mode: SDXL {mode}")
     print(f"  prompt: {prompt[:80]}{'...' if len(prompt) > 80 else ''}")
     print(f"  size: {width}x{height}, steps: {steps}, cfg: {cfg}")
 
@@ -309,6 +416,12 @@ def main():
     parser.add_argument("--output", help="Output filename or path")
     parser.add_argument("--seed", type=int, help="Random seed for reproducibility")
     parser.add_argument("--negative", default=NEGATIVE_PROMPT, help="Negative prompt")
+    parser.add_argument("--lightning", action="store_true",
+                        help="Force SDXL Lightning mode (auto-detected if LoRA exists)")
+    parser.add_argument("--turbo", action="store_true",
+                        help="Force SDXL Turbo mode (skip Lightning even if available)")
+    parser.add_argument("--style", action="store_true",
+                        help="Add Substrate anime style prefix/suffix to prompt")
     parser.add_argument("--no-unload", action="store_true",
                         help="Skip unloading Ollama models")
     parser.add_argument("--no-start", action="store_true",
@@ -316,6 +429,18 @@ def main():
     parser.add_argument("--no-stop", action="store_true",
                         help="Don't stop ComfyUI after generation")
     args = parser.parse_args()
+
+    # Determine Lightning mode
+    use_lightning = None  # auto-detect
+    if args.lightning:
+        use_lightning = True
+    elif args.turbo:
+        use_lightning = False
+
+    if use_lightning and not has_lightning_lora():
+        print("error: --lightning specified but LoRA not found at "
+              f"{COMFYUI_DIR / 'models' / 'loras' / LIGHTNING_LORA}", file=sys.stderr)
+        sys.exit(1)
 
     if not args.no_unload:
         unload_ollama_models()
@@ -326,7 +451,8 @@ def main():
 
     try:
         result = generate(args.prompt, args.width, args.height, args.steps,
-                          args.cfg, args.seed, args.output, args.negative)
+                          args.cfg, args.seed, args.output, args.negative,
+                          use_lightning=use_lightning, add_style=args.style)
         if result is None:
             sys.exit(1)
     finally:
