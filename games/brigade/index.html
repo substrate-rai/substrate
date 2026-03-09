@@ -1,13 +1,25 @@
 ---
-layout: default
+layout: null
 title: "GURREN BRIGADE — AI Recruitment Engine"
 description: "Command a cybersecurity investigation force. Recruit AI agents. Verify their integrity. Deploy teams against adversarial AI threats. An Ace Attorney-style visual novel with strategy."
 permalink: /games/brigade/
 redirect_from:
   - /brigade/
 ---
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GURREN BRIGADE</title>
 <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a14;
+    color: #c8c8d0;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+  }
   :root {
     --bg-deep: #0a0a14;
     --surface: rgba(0,0,30,0.6);
@@ -28,7 +40,7 @@ redirect_from:
     --elite-gold: #ffdd44;
     --spiral: #ff77ff;
   }
-  * { box-sizing: border-box; image-rendering: pixelated; }
+  * { image-rendering: pixelated; }
   /* === PIXEL ART MODE === */
   button, .btn, [class*="btn"] {
     border-radius: 0 !important;
@@ -48,9 +60,6 @@ redirect_from:
     }
   }
 
-  html, body {
-    overscroll-behavior: none;
-  }
   #brigade-app {
     max-width: 480px;
     margin: 0 auto;
@@ -258,6 +267,9 @@ redirect_from:
     z-index: 1;
   }
 </style>
+</head>
+<body>
+<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:#888;text-decoration:none;font-size:0.8rem;font-family:monospace;">&larr; ARCADE</a>
 
 <a href="#main-content" class="skip-link">Skip to content</a>
 
@@ -1675,3 +1687,5 @@ window.toggleMusic = function() {
 };
 })();
 </script>
+</body>
+</html>

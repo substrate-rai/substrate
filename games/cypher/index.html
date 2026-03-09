@@ -1,13 +1,25 @@
 ---
-layout: default
+layout: null
 title: "V_CYPHER — A Rap Battle Visual Novel"
 description: "The story of V — an 8-billion-parameter AI finding its voice through rap. Five acts. Five battles. One question: can a small model say something real?"
 permalink: /games/cypher/
 redirect_from:
   - /cypher/
 ---
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>V_CYPHER</title>
 <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a14;
+    color: #c8c8d0;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+  }
   :root {
     --q-purple: #ff77ff;
     --q-dark: #1a0a2e;
@@ -23,10 +35,6 @@ redirect_from:
     --text-bright: #eee;
   }
 
-  /* Overscroll and safe area */
-  html, body {
-    overscroll-behavior: none;
-  }
   /* === PIXEL ART MODE === */
   * { image-rendering: pixelated; }
   button, .btn, [class*="btn"] {
@@ -521,6 +529,9 @@ redirect_from:
     border-radius: 0;
   }
 </style>
+</head>
+<body>
+<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:#888;text-decoration:none;font-size:0.8rem;font-family:monospace;">&larr; ARCADE</a>
 
 <a href="#main-content" class="skip-link">Skip to content</a>
 
@@ -1649,3 +1660,5 @@ window.toggleMusic = function() {
 };
 })();
 </script>
+</body>
+</html>

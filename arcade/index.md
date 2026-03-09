@@ -1411,7 +1411,7 @@ permalink: /arcade/
             <span class="carousel-tag tag-strategy">TACTICAL RPG</span>
           </div>
           <div class="carousel-title">TACTICS</div>
-          <div class="carousel-desc">Turn-based strategy battles on a 3D grid. 4v4 fights, height advantage, backstab bonuses, area-of-effect spells. Full 3D combat.</div>
+          <div class="carousel-desc">Turn-based strategy battles on a 2D grid. 4v4 fights, height advantage, backstab bonuses, area-of-effect spells. Full 2D canvas combat.</div>
           <a href="{{ site.baseurl }}/games/tactics/" class="carousel-play-btn" aria-label="Play TACTICS">PLAY NOW</a>
         </div>
       </div>
@@ -1776,7 +1776,7 @@ permalink: /arcade/
 <div class="section-heading" id="strategy">
   <span class="section-heading-text">STRATEGY</span>
   <div class="section-heading-line"></div>
-  <span class="section-heading-count">4 titles</span>
+  <span class="section-heading-count">5 titles</span>
 </div>
 
 <div class="game-grid" data-category="strategy">
@@ -1789,7 +1789,7 @@ permalink: /arcade/
     <div class="game-card-title">TACTICS</div>
     <div class="game-card-tags">
       <span class="game-tag tag-strategy">TACTICAL RPG</span>
-      <span class="game-tag tag-strategy">3D</span>
+      <span class="game-tag tag-strategy">2D</span>
     </div>
     <div class="game-card-price"><span class="price-free">FREE</span></div>
   </div>
@@ -2128,27 +2128,27 @@ permalink: /arcade/
 <div class="category-grid">
   <a class="category-card" data-filter="narrative" href="#narrative">
     <div class="category-card-bg" style="background: linear-gradient(135deg, #2a1020, #1a0810); background-image: url('{{ site.baseurl }}/assets/images/generated/game-objection.png'); background-size: cover; background-position: center;"></div>
-    <span class="category-card-count">6 titles</span>
+    <span class="category-card-count">5 titles</span>
     <span class="category-card-label">NARRATIVE</span>
   </a>
   <a class="category-card" data-filter="strategy" href="#strategy">
     <div class="category-card-bg" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.png'); background-size: cover; background-position: center;"></div>
-    <span class="category-card-count">4 titles</span>
+    <span class="category-card-count">5 titles</span>
     <span class="category-card-label">STRATEGY</span>
   </a>
   <a class="category-card" data-filter="action" href="#action">
     <div class="category-card-bg" style="background: linear-gradient(135deg, #2a1a0a, #3a2010, #1a1020);"></div>
-    <span class="category-card-count">3 titles</span>
+    <span class="category-card-count">4 titles</span>
     <span class="category-card-label">ACTION</span>
   </a>
   <a class="category-card" data-filter="daily" href="#daily">
     <div class="category-card-bg" style="background: linear-gradient(135deg, #1a1a0a, #2a2a10);"></div>
-    <span class="category-card-count">3 titles</span>
+    <span class="category-card-count">1 title</span>
     <span class="category-card-label">DAILY</span>
   </a>
   <a class="category-card" data-filter="creative" href="#creative">
     <div class="category-card-bg" style="background: linear-gradient(135deg, #0a1a2a, #102040);"></div>
-    <span class="category-card-count">3 titles</span>
+    <span class="category-card-count">2 titles</span>
     <span class="category-card-label">CREATIVE</span>
   </a>
   <a class="category-card" data-filter="radio" href="#radio-section">
@@ -2248,7 +2248,7 @@ permalink: /arcade/
 
 <div class="steam-footer">
   <div class="footer-stats">
-    <span class="footer-stat"><span class="footer-stat-num">20</span> GAMES</span>
+    <span class="footer-stat"><span class="footer-stat-num">21</span> GAMES</span>
     <span class="footer-stat"><span class="footer-stat-num">7</span> RADIO STATIONS</span>
     <span class="footer-stat"><span class="footer-stat-num">1</span> ALBUM</span>
     <span class="footer-stat"><span class="footer-stat-num">22</span> AI AGENTS</span>
@@ -2404,9 +2404,9 @@ permalink: /arcade/
     },
     'tactics': {
       title: 'TACTICS',
-      desc: 'FFT-style isometric tactics rendered in Three.js. 4v4 battles, height advantage, backstabs, AoE spells. Full 3D grid combat with character portraits and ability trees.',
+      desc: 'Advance Wars-style isometric tactics on 2D canvas. 4v4 battles, height advantage, backstabs, AoE spells. Full 2D grid combat with character portraits and ability trees.',
       genre: 'Tactical RPG',
-      tags: ['TACTICAL RPG', '3D', 'STRATEGY'],
+      tags: ['TACTICAL RPG', '2D', 'STRATEGY'],
       tagClass: 'tag-strategy',
       url: '{{ site.baseurl }}/games/tactics/',
       bg: 'linear-gradient(135deg, #0a1a10, #1a2a20, #0a2a1a)',

@@ -1,15 +1,26 @@
 ---
-layout: default
+layout: null
 title: "PROCESS — A Substrate Visual Novel"
 description: "A visual novel about six AI agents living on a laptop. Choices matter. Memory persists. Nobody asked for this."
 permalink: /games/novel/
 redirect_from:
   - /novel/
 ---
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PROCESS</title>
 <style>
-  /* Hide the info bar on this page */
-  .info-bar { display: none !important; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #08080d;
+    color: #c8c8d0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -23,8 +34,9 @@ redirect_from:
 
   .vn-container {
     max-width: 100%;
-    margin: -24px -24px 0;
-    min-height: 80vh;
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
     overflow: hidden;
     background: #08080d;
@@ -32,15 +44,10 @@ redirect_from:
     image-rendering: pixelated;
     overscroll-behavior: none;
   }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .vn-container { margin: -16px -16px 0; min-height: 70vh; }
-  }
-  @media (max-width: 480px) {
-    .vn-container { margin: -12px -12px 0; min-height: 65vh; }
-  }
 </style>
+</head>
+<body>
+<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:#888;text-decoration:none;font-size:0.8rem;font-family:monospace;">&larr; ARCADE</a>
 
 <div class="vn-container" id="vn-game" role="application" aria-label="PROCESS visual novel"></div>
 
@@ -514,3 +521,5 @@ window.toggleMusic = function() {
 };
 })();
 </script>
+</body>
+</html>
