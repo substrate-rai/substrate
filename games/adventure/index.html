@@ -19,7 +19,17 @@ redirect_from:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+    /* === PIXEL ART MODE === */
+    button, .btn, [class*="btn"] {
+      border-radius: 0 !important;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+      transition: none !important;
+    }
+    button:active, .btn:active, [class*="btn"]:active {
+      transform: translate(2px, 2px) !important;
+      box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+    }
 
     body {
       font-family: 'IBM Plex Mono', monospace;
@@ -91,8 +101,8 @@ redirect_from:
       top: 0; left: 0; right: 0; bottom: 0;
       background: #1a1a1a;
       border: 1px solid #1a3a1a;
-      border-radius: 9px;
-      transition: 0.3s;
+      border-radius: 0;
+      transition: none;
     }
     .toggle-slider::before {
       content: '';
@@ -100,8 +110,8 @@ redirect_from:
       width: 12px; height: 12px;
       left: 2px; bottom: 2px;
       background: #1a7a1a;
-      border-radius: 50%;
-      transition: 0.3s;
+      border-radius: 0;
+      transition: none;
     }
     .toggle-switch input:checked + .toggle-slider {
       background: #0a2a0a;
@@ -151,7 +161,7 @@ redirect_from:
     }
     .terminal-output::-webkit-scrollbar { width: 6px; }
     .terminal-output::-webkit-scrollbar-track { background: #0a0a0a; }
-    .terminal-output::-webkit-scrollbar-thumb { background: #1a3a1a; border-radius: 3px; }
+    .terminal-output::-webkit-scrollbar-thumb { background: #1a3a1a; border-radius: 0; }
 
     .line { margin-bottom: 2px; }
     .line-room { color: #33ff33; font-weight: 600; text-shadow: 0 0 6px rgba(51,255,51,0.3); }
@@ -206,7 +216,7 @@ redirect_from:
       min-height: 48px;
       min-width: 44px;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 0;
       margin-left: 8px;
       flex-shrink: 0;
     }
@@ -283,9 +293,9 @@ redirect_from:
   <!-- Header -->
   <div class="header-bar">
     <div>
-      <img src="{{ site.baseurl }}/assets/images/game-art/title-subprocess.png" alt="SUBPROCESS" style="width:100%;max-width:280px;height:auto;border-radius:6px;margin-bottom:6px;opacity:0.9;">
+      <img src="{{ site.baseurl }}/assets/images/game-art/title-subprocess.png" alt="SUBPROCESS" style="width:100%;max-width:280px;height:auto;border-radius:0;margin-bottom:6px;opacity:0.9;image-rendering:pixelated;">
       <div class="title">SUBPROCESS</div>
-      <div class="subtitle">a NixOS text adventure</div>
+      <div class="subtitle">a fun text game</div>
     </div>
     <div class="header-right">
       <div class="ai-toggle">
@@ -318,7 +328,7 @@ redirect_from:
   <!-- Input -->
   <div class="input-area">
     <span class="prompt-char">>&nbsp;</span>
-    <input type="text" id="input" placeholder="type a command... (try 'help')" autocomplete="off" autofocus spellcheck="false" inputmode="text" autocapitalize="off">
+    <input type="text" id="input" placeholder="type here... try help" autocomplete="off" autofocus spellcheck="false" inputmode="text" autocapitalize="off">
     <button class="submit-btn" id="submit-btn" aria-label="Submit command">GO</button>
   </div>
 
@@ -328,7 +338,7 @@ redirect_from:
     &nbsp;&middot;&nbsp;
     a <a href="{{ site.baseurl }}/" class="substrate-link">substrate</a> production
     &nbsp;&middot;&nbsp;
-    made by an AI, about being an AI
+    made by AI, about AI
   </div>
 
 <script>

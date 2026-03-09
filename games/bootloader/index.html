@@ -16,7 +16,17 @@ redirect_from:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+  /* === PIXEL ART MODE === */
+  button, .btn, [class*="btn"] {
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none !important;
+  }
+  button:active, .btn:active, [class*="btn"]:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  }
 
   :root {
     --bg: #060810;
@@ -106,7 +116,7 @@ redirect_from:
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 0;
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -147,7 +157,7 @@ redirect_from:
     padding: 6px 8px;
     background: rgba(255, 102, 68, 0.06);
     border: 1px solid rgba(255, 102, 68, 0.15);
-    border-radius: 4px;
+    border-radius: 0;
     margin-bottom: 8px;
   }
 
@@ -157,7 +167,7 @@ redirect_from:
     padding: 6px 8px;
     background: rgba(0, 224, 154, 0.06);
     border: 1px solid rgba(0, 224, 154, 0.15);
-    border-radius: 4px;
+    border-radius: 0;
   }
 
   /* Blockers panel */
@@ -176,7 +186,7 @@ redirect_from:
     padding: 8px;
     background: rgba(255, 102, 68, 0.05);
     border: 1px solid rgba(255, 102, 68, 0.12);
-    border-radius: 4px;
+    border-radius: 0;
     color: var(--warn);
     display: flex;
     justify-content: space-between;
@@ -193,7 +203,7 @@ redirect_from:
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.65rem;
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: 0;
     cursor: pointer;
     min-width: 30px;
     min-height: 30px;
@@ -226,13 +236,13 @@ redirect_from:
     padding: 12px 8px;
     background: var(--surface);
     border: 2px solid var(--border);
-    border-radius: 8px;
+    border-radius: 0;
     color: var(--text);
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: none;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -315,7 +325,7 @@ redirect_from:
   .modal-box {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 0;
     padding: 24px;
     width: 100%;
     max-width: 440px;
@@ -344,12 +354,12 @@ redirect_from:
     padding: 10px 12px;
     background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 0;
     color: var(--text);
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.85rem;
     outline: none;
-    transition: border-color 0.2s;
+    transition: none;
   }
   .modal-box input:focus, .modal-box textarea:focus {
     border-color: var(--accent);
@@ -368,7 +378,7 @@ redirect_from:
   .modal-btn {
     flex: 1;
     padding: 12px;
-    border-radius: 6px;
+    border-radius: 0;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.8rem;
     font-weight: 600;
@@ -376,7 +386,7 @@ redirect_from:
     min-height: 48px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    transition: all 0.15s;
+    transition: none;
   }
 
   .modal-btn.confirm {
@@ -457,14 +467,14 @@ redirect_from:
     padding: 16px 48px;
     background: transparent;
     border: 2px solid var(--accent);
-    border-radius: 8px;
+    border-radius: 0;
     color: var(--accent);
     font-family: 'IBM Plex Mono', monospace;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
     letter-spacing: 3px;
-    transition: all 0.15s;
+    transition: none;
     min-height: 52px;
   }
   .t-start-btn:hover { background: var(--accent); color: var(--bg); }
@@ -519,7 +529,7 @@ redirect_from:
   .log-close {
     padding: 8px 16px;
     border: 1px solid var(--dim);
-    border-radius: 4px;
+    border-radius: 0;
     background: transparent;
     color: var(--dim);
     font-family: 'IBM Plex Mono', monospace;
@@ -530,7 +540,7 @@ redirect_from:
   .log-entry {
     padding: 12px;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 0;
     margin-bottom: 8px;
     background: var(--panel);
     font-size: 0.75rem;
@@ -553,7 +563,7 @@ redirect_from:
     padding: 10px;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 0;
     text-align: center;
   }
   .log-stat .ls-val { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
@@ -603,7 +613,7 @@ redirect_from:
     padding: 10px 12px;
     background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 0;
     color: var(--gold);
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.85rem;
@@ -617,7 +627,7 @@ redirect_from:
     padding: 14px 36px;
     background: transparent;
     border: 2px solid var(--accent);
-    border-radius: 6px;
+    border-radius: 0;
     color: var(--accent);
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.85rem;
@@ -625,7 +635,7 @@ redirect_from:
     cursor: pointer;
     min-height: 48px;
     letter-spacing: 2px;
-    transition: all 0.15s;
+    transition: none;
   }
   .end-next-btn:hover { background: var(--accent); color: var(--bg); }
 
@@ -1165,7 +1175,7 @@ function showFundPrompt(){
 </script>
 
 <!-- Procedural Music: Digital startup sounds, ascending tones, data stream pulses -->
-<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:0;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
 <script>
 (function(){
 var musicPlaying = false;

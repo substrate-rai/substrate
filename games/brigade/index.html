@@ -28,7 +28,17 @@ redirect_from:
     --elite-gold: #ffdd44;
     --spiral: #ff77ff;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; image-rendering: pixelated; }
+  /* === PIXEL ART MODE === */
+  button, .btn, [class*="btn"] {
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none !important;
+  }
+  button:active, .btn:active, [class*="btn"]:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  }
   html, body {
     overscroll-behavior: none;
   }
@@ -60,7 +70,7 @@ redirect_from:
   .title-screen .premise em { color:var(--accent); font-style:normal; }
 
   /* BUTTONS */
-  .btn { display:inline-block; padding:12px 28px; border:1px solid var(--accent); background:rgba(255,68,68,0.08); color:var(--accent); font-family:inherit; font-size:0.85rem; font-weight:600; cursor:pointer; border-radius:4px; transition:all 0.2s; min-height:48px; min-width:48px; letter-spacing:0.1em; -webkit-tap-highlight-color:transparent; }
+  .btn { display:inline-block; padding:12px 28px; border:1px solid var(--accent); background:rgba(255,68,68,0.08); color:var(--accent); font-family:inherit; font-size:0.85rem; font-weight:600; cursor:pointer; border-radius:0; transition:none; min-height:48px; min-width:48px; letter-spacing:0.1em; -webkit-tap-highlight-color:transparent; }
   .btn:hover { background:rgba(255,68,68,0.2); }
   .btn:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
   .btn-sm { padding:8px 16px; font-size:0.75rem; }
@@ -87,7 +97,7 @@ redirect_from:
   .action-area .btn { flex:1; min-width:100px; text-align:center; }
 
   /* STAT BADGES */
-  .stat-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:3px; font-size:0.7rem; font-weight:700; border:1px solid; margin:2px; }
+  .stat-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:0; font-size:0.7rem; font-weight:700; border:1px solid; margin:2px; }
   .stat-ops { color:var(--ops-red); border-color:rgba(255,68,68,0.3); background:rgba(255,68,68,0.06); }
   .stat-rd { color:var(--rd-green); border-color:rgba(68,221,136,0.3); background:rgba(68,221,136,0.06); }
   .stat-int { color:var(--int-blue); border-color:rgba(68,136,255,0.3); background:rgba(68,136,255,0.06); }
@@ -97,10 +107,10 @@ redirect_from:
   .stat-hidden { color:var(--text-dim); border-color:var(--border); background:rgba(0,0,0,0.2); }
 
   /* DOSSIER CARD */
-  .dossier { border:1px solid var(--border); border-radius:6px; padding:1rem; margin:0.5rem 1rem; background:var(--surface); }
+  .dossier { border:1px solid var(--border); border-radius:0; padding:1rem; margin:0.5rem 1rem; background:var(--surface); }
   .dossier-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
   .dossier-name { font-size:0.9rem; color:var(--text-bright); font-weight:700; }
-  .dossier-rarity { font-size:0.6rem; padding:2px 6px; border-radius:2px; font-weight:700; letter-spacing:0.1em; }
+  .dossier-rarity { font-size:0.6rem; padding:2px 6px; border-radius:0; font-weight:700; letter-spacing:0.1em; }
   .rarity-common { color:#888; border:1px solid #444; }
   .rarity-uncommon { color:var(--int-blue); border:1px solid rgba(68,136,255,0.4); }
   .rarity-rare { color:var(--rare-purple); border:1px solid rgba(204,102,255,0.4); }
@@ -125,13 +135,13 @@ redirect_from:
   /* DEPARTMENT BARS */
   .dept-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
   .dept-label { font-size:0.7rem; font-weight:700; min-width:36px; }
-  .dept-bar-track { flex:1; height:12px; background:rgba(0,0,0,0.3); border-radius:3px; overflow:hidden; border:1px solid var(--border); }
-  .dept-bar-fill { height:100%; border-radius:2px; transition:width 0.5s; }
+  .dept-bar-track { flex:1; height:12px; background:rgba(0,0,0,0.3); border-radius:0; overflow:hidden; border:1px solid var(--border); }
+  .dept-bar-fill { height:100%; border-radius:0; transition:width 0.5s; }
   .dept-level { font-size:0.7rem; color:var(--text-dim); min-width:24px; text-align:right; }
 
   /* ROSTER GRID */
   .roster-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .roster-slot { border:1px solid var(--border); border-radius:4px; padding:8px; background:rgba(0,0,0,0.2); min-height:80px; cursor:pointer; transition:border-color 0.2s; }
+  .roster-slot { border:1px solid var(--border); border-radius:0; padding:8px; background:rgba(0,0,0,0.2); min-height:80px; cursor:pointer; transition:none; }
   .roster-slot:hover { border-color:var(--accent); }
   .roster-slot .slot-name { font-size:0.75rem; color:var(--text-bright); font-weight:700; }
   .roster-slot .slot-dept { font-size:0.6rem; color:var(--text-dim); margin-top:2px; }
@@ -140,13 +150,13 @@ redirect_from:
   .roster-slot.empty span { color:var(--text-dim); font-size:0.7rem; }
 
   /* DISPATCH */
-  .mission-card { border:1px solid var(--border); border-radius:6px; padding:1rem; margin:8px 0; background:var(--surface); }
+  .mission-card { border:1px solid var(--border); border-radius:0; padding:1rem; margin:8px 0; background:var(--surface); }
   .mission-card h3 { font-size:0.85rem; color:var(--text-bright); margin:0 0 0.3rem; }
   .mission-type { font-size:0.6rem; color:var(--accent); letter-spacing:0.1em; font-weight:700; }
   .mission-desc { font-size:0.75rem; color:var(--text-dim); margin:0.3rem 0; }
   .mission-req { font-size:0.7rem; color:var(--text-mid); }
   .mission-team { display:flex; gap:6px; margin:0.5rem 0; flex-wrap:wrap; }
-  .team-slot { width:60px; height:60px; border:1px dashed var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.6rem; color:var(--text-dim); transition:border-color 0.2s; }
+  .team-slot { width:60px; height:60px; border:1px dashed var(--border); border-radius:0; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.6rem; color:var(--text-dim); transition:none; }
   .team-slot:hover { border-color:var(--accent); }
   .team-slot.filled { border-style:solid; border-color:var(--accent); }
   .team-slot.filled .slot-mini-name { font-size:0.55rem; color:var(--text-mid); text-align:center; word-break:break-all; }
@@ -154,9 +164,9 @@ redirect_from:
 
   /* CANDIDATE POOL */
   .candidate-pool { display:flex; flex-direction:column; gap:8px; padding:1rem; }
-  .candidate-card { border:1px solid var(--border); border-radius:6px; padding:12px; background:var(--surface); display:flex; align-items:center; gap:12px; cursor:pointer; transition:border-color 0.2s; min-height:70px; }
+  .candidate-card { border:1px solid var(--border); border-radius:0; padding:12px; background:var(--surface); display:flex; align-items:center; gap:12px; cursor:pointer; transition:none; min-height:70px; }
   .candidate-card:hover { border-color:var(--accent); }
-  .candidate-card .cand-portrait { width:50px; height:50px; flex-shrink:0; overflow:hidden; border-radius:4px; }
+  .candidate-card .cand-portrait { width:50px; height:50px; flex-shrink:0; overflow:hidden; border-radius:0; }
   .candidate-card .cand-info { flex:1; }
   .candidate-card .cand-name { font-size:0.8rem; color:var(--text-bright); font-weight:700; }
   .candidate-card .cand-origin { font-size:0.65rem; color:var(--text-dim); margin-top:2px; }
@@ -164,16 +174,16 @@ redirect_from:
 
   /* QUESTION MENU */
   .question-menu { display:flex; flex-direction:column; gap:6px; padding:0 1rem; }
-  .question-btn { display:block; width:100%; padding:10px 14px; border:1px solid var(--border); background:rgba(0,0,30,0.4); color:var(--text-mid); font-family:inherit; font-size:0.78rem; cursor:pointer; border-radius:4px; text-align:left; transition:all 0.15s; min-height:48px; line-height:1.4; }
+  .question-btn { display:block; width:100%; padding:10px 14px; border:1px solid var(--border); background:rgba(0,0,30,0.4); color:var(--text-mid); font-family:inherit; font-size:0.78rem; cursor:pointer; border-radius:0; text-align:left; transition:none; min-height:48px; line-height:1.4; }
   .question-btn:hover { border-color:var(--accent); color:var(--text-bright); }
   .question-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   .question-btn.used { opacity:0.3; pointer-events:none; }
 
   /* CHALLENGE */
-  .challenge-panel { border:1px solid var(--accent); border-radius:6px; padding:1rem; margin:0.5rem 1rem; background:rgba(255,68,68,0.05); }
+  .challenge-panel { border:1px solid var(--accent); border-radius:0; padding:1rem; margin:0.5rem 1rem; background:rgba(255,68,68,0.05); }
   .challenge-panel h3 { font-size:0.8rem; color:var(--accent); margin:0 0 0.5rem; }
   .statement-list { display:flex; flex-direction:column; gap:6px; }
-  .statement-btn { padding:8px 12px; border:1px solid var(--border); border-radius:4px; background:rgba(0,0,0,0.2); color:var(--text-mid); font-family:inherit; font-size:0.75rem; cursor:pointer; text-align:left; min-height:48px; transition:all 0.15s; }
+  .statement-btn { padding:8px 12px; border:1px solid var(--border); border-radius:0; background:rgba(0,0,0,0.2); color:var(--text-mid); font-family:inherit; font-size:0.75rem; cursor:pointer; text-align:left; min-height:48px; transition:none; }
   .statement-btn:hover { border-color:var(--accent); }
   .statement-btn.contradiction { border-color:var(--accent); }
 
@@ -191,7 +201,7 @@ redirect_from:
   /* QUERY TOKEN DISPLAY */
   .token-display { display:flex; align-items:center; gap:6px; padding:8px 1rem; }
   .token-display .token-label { font-size:0.65rem; color:var(--text-dim); letter-spacing:0.1em; }
-  .token-pip { width:12px; height:12px; border-radius:2px; border:1px solid var(--gold); }
+  .token-pip { width:12px; height:12px; border-radius:0; border:1px solid var(--gold); }
   .token-pip.filled { background:var(--gold); }
   .token-pip.empty { background:transparent; }
 
@@ -203,13 +213,13 @@ redirect_from:
 
   /* PHASE INDICATOR */
   .phase-bar { display:flex; gap:2px; padding:4px 1rem; }
-  .phase-pip { flex:1; height:3px; border-radius:1px; background:var(--border); }
+  .phase-pip { flex:1; height:3px; border-radius:0; background:var(--border); }
   .phase-pip.active { background:var(--accent); }
   .phase-pip.done { background:var(--rd-green); }
 
   /* DEPARTMENT ASSIGN MODAL */
   .dept-assign { padding:1rem; }
-  .dept-option { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border:1px solid var(--border); border-radius:4px; margin:6px 0; cursor:pointer; min-height:48px; transition:border-color 0.2s; }
+  .dept-option { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border:1px solid var(--border); border-radius:0; margin:6px 0; cursor:pointer; min-height:48px; transition:none; }
   .dept-option:hover { border-color:var(--accent); }
   .dept-option .dept-name { font-size:0.8rem; font-weight:700; }
   .dept-option .dept-fit { font-size:0.65rem; }
@@ -249,16 +259,16 @@ redirect_from:
     <div id="screen-title" class="screen active">
       <div class="title-screen">
         <h1>GURREN BRIGADE</h1>
-        <div class="sub">AI RECRUITMENT ENGINE</div>
+        <div class="sub">AI TEAM BUILDER</div>
         <div class="premise">
-          <em>Adversarial AI threats are escalating.</em><br><br>
-          You command the <em>Substrate Gurren Brigade</em> — a cybersecurity investigation force staffed by AI agents. Your job: recruit candidates, verify their integrity, assign them to departments, and deploy teams against hostile AI incidents.<br><br>
-          Not every candidate is what they claim. Some are <em>compromised</em> — sleeper agents planted by the adversary. The interview is your only defense.<br><br>
-          <em>Trust is a vulnerability. Verify everything.</em>
+          <em>Bad AIs are causing trouble!</em><br><br>
+          You run the <em>Substrate Gurren Brigade</em>! Pick new AI friends. Check if they are good. Put them on teams. Fight the bad guys!<br><br>
+          Some AIs are sneaky fakes! Talk to them to find out who is real.<br><br>
+          <em>Check everyone! Trust no one!</em>
         </div>
-        <button class="btn" id="btn-new-game">INITIALIZE BRIGADE</button>
+        <button class="btn" id="btn-new-game">START GAME</button>
         <div style="margin-top:1rem;">
-          <button class="btn btn-sm btn-gold" id="btn-load" style="display:none;">RESUME OPS</button>
+          <button class="btn btn-sm btn-gold" id="btn-load" style="display:none;">KEEP PLAYING</button>
         </div>
       </div>
     </div>
@@ -278,13 +288,13 @@ redirect_from:
     <!-- RECRUITMENT -->
     <div id="screen-recruit" class="screen">
       <div class="chapter-header">
-        <div class="ch-label">RECRUITMENT PHASE</div>
-        <div class="ch-title" id="recruit-title">INCOMING CANDIDATES</div>
-        <div class="ch-sub" id="recruit-sub">Select a candidate to interview</div>
+        <div class="ch-label">PICK NEW FRIENDS</div>
+        <div class="ch-title" id="recruit-title">WHO WANTS TO JOIN?</div>
+        <div class="ch-sub" id="recruit-sub">Tap someone to talk to them</div>
       </div>
       <div class="candidate-pool" id="candidate-pool"></div>
       <div class="action-area">
-        <button class="btn btn-sm" id="btn-end-recruit">END RECRUITMENT</button>
+        <button class="btn btn-sm" id="btn-end-recruit">DONE PICKING</button>
       </div>
     </div>
 
@@ -305,8 +315,8 @@ redirect_from:
     <!-- RECRUIT DECISION -->
     <div id="screen-decision" class="screen">
       <div class="chapter-header">
-        <div class="ch-label">RECRUITMENT DECISION</div>
-        <div class="ch-title">AGENT DOSSIER</div>
+        <div class="ch-label">KEEP OR SKIP?</div>
+        <div class="ch-title">ABOUT THIS AI</div>
       </div>
       <div id="decision-dossier"></div>
       <div class="action-area" id="decision-actions"></div>
@@ -324,15 +334,15 @@ redirect_from:
       <div id="hq-roster" class="hq-panel"></div>
       <div id="hq-dispatch" class="hq-panel"></div>
       <div class="action-area">
-        <button class="btn btn-sm" id="btn-recruit-phase">RECRUITMENT</button>
-        <button class="btn btn-sm btn-green" id="btn-next-chapter">NEXT CHAPTER</button>
+        <button class="btn btn-sm" id="btn-recruit-phase">PICK MORE</button>
+        <button class="btn btn-sm btn-green" id="btn-next-chapter">NEXT ROUND</button>
       </div>
     </div>
 
     <!-- DISPATCH RESULTS -->
     <div id="screen-debrief" class="screen">
       <div class="chapter-header">
-        <div class="ch-label">MISSION DEBRIEF</div>
+        <div class="ch-label">HOW DID IT GO?</div>
         <div class="ch-title" id="debrief-title"></div>
       </div>
       <div id="debrief-body" style="padding:1rem;"></div>
@@ -344,13 +354,13 @@ redirect_from:
     <!-- DEPARTMENT ASSIGN -->
     <div id="screen-assign" class="screen">
       <div class="chapter-header">
-        <div class="ch-label">DEPARTMENT ASSIGNMENT</div>
+        <div class="ch-label">PICK A TEAM</div>
         <div class="ch-title" id="assign-agent-name"></div>
-        <div class="ch-sub">Select a department</div>
+        <div class="ch-sub">Where should they go?</div>
       </div>
       <div class="dept-assign" id="assign-options"></div>
       <div class="action-area">
-        <button class="btn btn-sm" id="btn-assign-reserve">RESERVE POOL</button>
+        <button class="btn btn-sm" id="btn-assign-reserve">BENCH</button>
         <button class="btn btn-sm" id="btn-assign-cancel">CANCEL</button>
       </div>
     </div>
@@ -513,7 +523,7 @@ function generatePortrait(agent,size){
   var artPortrait = ARCHETYPE_PORTRAITS[agent.archetype];
   if (artPortrait) {
     return '<div style="position:relative;width:'+size+'px;height:'+size+'px;margin:0 auto;">' +
-      '<img src="'+artPortrait+'" alt="'+agent.designation+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:4px;opacity:0.5;z-index:0;">' +
+      '<img src="'+artPortrait+'" alt="'+agent.designation+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:0;opacity:0.5;z-index:0;">' +
       '<div style="position:relative;z-index:1;">'+svg+'</div></div>';
   }
   return svg;
@@ -1500,7 +1510,7 @@ function showFundPrompt(){
 </script>
 
 <!-- Procedural Music: Military march, steady drums, brass-like synths -->
-<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:0;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
 <script>
 (function(){
 var musicPlaying = false;

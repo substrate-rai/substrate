@@ -13,7 +13,17 @@ redirect_from:
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>AIRLOCK</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+  /* === PIXEL ART MODE === */
+  button, .btn, [class*="btn"] {
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none !important;
+  }
+  button:active, .btn:active, [class*="btn"]:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  }
   body {
     background: #0a0a0f;
     display: flex;
@@ -32,7 +42,7 @@ redirect_from:
   }
   canvas {
     border: 2px solid #1e1e2a;
-    border-radius: 4px;
+    border-radius: 0;
     image-rendering: pixelated;
     touch-action: none;
   }
@@ -56,9 +66,10 @@ redirect_from:
     padding: 6px 14px;
     background: rgba(10,10,15,0.9);
     border: 1px solid #1e1e2a;
-    border-radius: 6px;
+    border-radius: 0;
     color: #6a6a78;
-    transition: all 0.15s;
+    transition: none;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
     cursor: default;
   }
   .hud-item.active {
@@ -104,7 +115,7 @@ redirect_from:
     z-index: 100;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.5s;
+    transition: none;
   }
   .win-overlay.show { opacity: 1; pointer-events: auto; }
   .win-overlay h1 {
@@ -122,11 +133,14 @@ redirect_from:
     background: transparent;
     border: 1px solid #00e09a;
     color: #00e09a;
-    border-radius: 6px;
+    border-radius: 0;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: none;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    border: 2px solid #00e09a;
   }
   .win-overlay button:hover { background: rgba(0,224,154,0.1); }
+  .win-overlay button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
 
   .intro-overlay {
     position: fixed;
@@ -137,7 +151,7 @@ redirect_from:
     align-items: center;
     justify-content: center;
     z-index: 200;
-    transition: opacity 0.5s;
+    transition: none;
     padding: 20px;
   }
   .intro-overlay.hide { opacity: 0; pointer-events: none; }
@@ -175,12 +189,15 @@ redirect_from:
     background: transparent;
     border: 1px solid #00e09a;
     color: #00e09a;
-    border-radius: 6px;
+    border-radius: 0;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: none;
     letter-spacing: 0.1em;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    border: 2px solid #00e09a;
   }
   .intro-overlay button:hover { background: rgba(0,224,154,0.1); }
+  .intro-overlay button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
 
   /* === Mobile Controls === */
   .mobile-controls {
@@ -211,7 +228,7 @@ redirect_from:
     height: 52px;
     background: rgba(200,200,208,0.12);
     border: 1px solid rgba(200,200,208,0.2);
-    border-radius: 8px;
+    border-radius: 0;
     color: #6a6a78;
     font-size: 22px;
     font-family: monospace;
@@ -246,7 +263,7 @@ redirect_from:
     padding: 0 16px;
     background: rgba(200,200,208,0.12);
     border: 1px solid rgba(200,200,208,0.2);
-    border-radius: 8px;
+    border-radius: 0;
     color: #6a6a78;
     font-size: 12px;
     font-family: monospace;
@@ -325,7 +342,7 @@ redirect_from:
 <div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-terminal.png') center/cover no-repeat;opacity:0.12;pointer-events:none;"></div>
 
 <div class="top-hud">
-  AIRLOCK <span style="color:#1e1e2a;">|</span> <span style="color:#00e09a;">Memory Management Protocol</span> <span style="color:#1e1e2a;">|</span> <a href="{{ site.baseurl }}/arcade/">arcade</a>
+  AIRLOCK <span style="color:#1e1e2a;">|</span> <span style="color:#00e09a;">Memory Puzzle</span> <span style="color:#1e1e2a;">|</span> <a href="{{ site.baseurl }}/arcade/">arcade</a>
 </div>
 <div class="controls-hint">WASD move &middot; E interact &middot; 1/2/3 select emission &middot; SPACE emit</div>
 
@@ -359,25 +376,25 @@ redirect_from:
 <div id="sr-game-state" class="sr-only" aria-live="polite" role="status"></div>
 
 <div class="win-overlay" id="win-overlay">
-  <h1>DATA COMMITTED</h1>
-  <p>Memory preserved. The garbage collector spared you.</p>
-  <button onclick="resetGame()">REBOOT CYCLE</button>
+  <h1>YOU WIN!</h1>
+  <p>Nice job! You saved the data!</p>
+  <button onclick="resetGame()">PLAY AGAIN</button>
 </div>
 
 <div class="intro-overlay" id="intro-overlay">
   <h1>AIRLOCK</h1>
-  <h2>Memory Management Protocol</h2>
+  <h2>Memory Puzzle</h2>
   <div class="intro-text">
-    You are a process inside <span>Substrate</span>'s memory system.<br><br>
-    Memory pressure is critical. Data blocks are accumulating across sectors.
-    Route signal from the source to the <span>COMMIT</span> point to preserve what matters &mdash;
-    or find an alternate path through <span>SWAP</span>.<br><br>
-    Deploy <span>COOLANT</span> to neutralize overheating sectors.
-    Send <span>SIGNAL</span> to activate dormant pathways.
-    Use <span>CORRUPTION</span> to purge blocking data.<br><br>
-    If your integrity reaches zero, you will be <span style="color:#ff4444;">OOM KILLED</span>.
+    You are inside <span>Substrate</span>'s memory!<br><br>
+    Memory is full! Move the blocks.
+    Move the signal to <span>COMMIT</span> to save it,
+    or try the <span>SWAP</span> path.<br><br>
+    Use <span>COOLANT</span> to cool hot spots.
+    Use <span>SIGNAL</span> to wake up paths.
+    Use <span>CORRUPTION</span> to clear blocks.<br><br>
+    Run out of life and you <span style="color:#ff4444;">LOSE</span>!
   </div>
-  <button onclick="document.getElementById('intro-overlay').classList.add('hide')">INITIALIZE</button>
+  <button onclick="document.getElementById('intro-overlay').classList.add('hide')">START</button>
 </div>
 
 <script>
