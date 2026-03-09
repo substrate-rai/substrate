@@ -10,17 +10,6 @@ redirect_from:
 <style>
   /* Hide the info bar on this page */
   .info-bar { display: none !important; }
-  /* === PIXEL ART MODE === */
-  * { image-rendering: pixelated; }
-  button, .btn, [class*="btn"] {
-    border-radius: 0 !important;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    transition: none !important;
-  }
-  button:active, .btn:active, [class*="btn"]:active {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
-  }
 
   .vn-container {
     max-width: 100%;
@@ -28,1068 +17,325 @@ redirect_from:
     min-height: 80vh;
     position: relative;
     overflow: hidden;
-    border-radius: 0;
     background: #08080d;
-  }
-
-  /* Scene background */
-  .vn-scene {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    transition: none;
-    z-index: 1;
-  }
-
-  /* Character sprites */
-  .vn-characters {
-    position: absolute;
-    bottom: 200px;
-    left: 0; right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    z-index: 2;
-    transition: none;
-  }
-  .vn-char {
-    text-align: center;
-    transition: none;
-    filter: brightness(0.5);
-  }
-  .vn-char.speaking {
-    filter: brightness(1);
-    transform: scale(1.05);
-  }
-  .vn-char.hidden { opacity: 0; pointer-events: none; }
-  .vn-char-sprite {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 4rem;
-    line-height: 1;
-    user-select: none;
-    display: none;
-  }
-  .vn-char-portrait {
-    width: 100px;
-    height: 100px;
     border-radius: 0;
-    border: 2px solid rgba(255,255,255,0.1);
-    object-fit: cover;
-    image-rendering: auto;
-  }
-  .vn-char-name {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    margin-top: 4px;
-    opacity: 0.6;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .vn-speaker-portrait {
-    width: 64px;
-    height: 64px;
-    border-radius: 0;
-    border: 2px solid rgba(255,255,255,0.1);
-    object-fit: cover;
-    image-rendering: auto;
-    flex-shrink: 0;
-    display: none;
-  }
-  .vn-dialogue-inner {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
-  .vn-dialogue-content {
-    flex: 1;
-    min-width: 0;
-  }
-  .vn-scene-bg-art {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    opacity: 0.15;
-    z-index: 0;
-    pointer-events: none;
-    transition: none;
-  }
-
-  /* Dialogue box */
-  .vn-dialogue {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, rgba(8,8,13,0.98) 70%, rgba(8,8,13,0.85));
-    /* backdrop-filter removed for pixel art */
-    padding: 24px 32px 28px;
-    padding-bottom: calc(28px + env(safe-area-inset-bottom));
-    z-index: 10;
-    min-height: 180px;
-    cursor: pointer;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .vn-speaker {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-  }
-  .vn-text {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    line-height: 1.8;
-    color: #c8c8d0;
-    min-height: 3.6em;
-  }
-  .vn-text .cursor-blink {
-    display: inline-block;
-    width: 2px;
-    height: 1em;
-    background: currentColor;
-    animation: blink 0.8s step-end infinite;
-    vertical-align: text-bottom;
-    margin-left: 2px;
-  }
-  .vn-advance {
-    position: absolute;
-    bottom: 8px;
-    right: 16px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.25);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.25; }
-    50% { opacity: 0.6; }
-  }
-
-  /* Choices */
-  .vn-choices {
-    position: absolute;
-    bottom: 200px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 90%;
-    max-width: 480px;
-  }
-  .vn-choice {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    padding: 14px 20px;
-    background: rgba(20, 20, 30, 0.9);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 0;
-    color: #c8c8d0;
-    cursor: pointer;
-    transition: none;
-    text-align: left;
-    /* backdrop-filter removed for pixel art */
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    min-height: 48px;
-  }
-  .vn-choice:hover {
-    background: rgba(30, 30, 45, 0.95);
-    border-color: rgba(255,255,255,0.2);
-    transform: translateX(4px);
-    color: #fff;
-  }
-
-  /* Title screen */
-  .vn-title-screen {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-    background: radial-gradient(ellipse at center, #0d0d18 0%, #08080d 70%);
-    transition: none;
-  }
-  .vn-title-screen.hidden { opacity: 0; pointer-events: none; }
-  .vn-title, h1.vn-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 3rem;
-    font-weight: 600;
-    letter-spacing: 0.3em;
-    color: #e8e8ef;
-    margin-bottom: 8px;
-    border: none;
-    padding: 0;
-  }
-  .vn-subtitle {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    color: #6a6a78;
-    margin-bottom: 48px;
-    letter-spacing: 0.1em;
-  }
-  .vn-start-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    padding: 12px 40px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #c8c8d0;
-    border-radius: 0;
-    cursor: pointer;
-    transition: none;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-  }
-  .vn-start-btn:hover {
-    border-color: rgba(255,255,255,0.4);
-    color: #fff;
-    background: rgba(255,255,255,0.03);
-  }
-  .vn-continue-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    padding: 8px 24px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.08);
-    color: #6a6a78;
-    border-radius: 0;
-    cursor: pointer;
-    transition: none;
-  }
-  .vn-continue-btn:hover { border-color: rgba(255,255,255,0.2); color: #c8c8d0; }
-  .vn-continue-btn.hidden { display: none; }
-
-  /* Chapter indicator */
-  .vn-chapter {
-    position: absolute;
-    top: 16px;
-    left: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.2);
-    z-index: 5;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  /* Save indicator */
-  .vn-save-indicator {
-    position: absolute;
-    top: 16px;
-    right: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(0, 224, 154, 0.4);
-    z-index: 5;
-    opacity: 0;
-    transition: none;
-  }
-  .vn-save-indicator.show { opacity: 1; }
-
-  /* Focus styles for keyboard navigation */
-  .vn-start-btn:focus-visible,
-  .vn-continue-btn:focus-visible,
-  .vn-choice:focus-visible {
-    outline: 2px solid #00e09a;
-    outline-offset: 2px;
-  }
-  .vn-dialogue:focus-visible {
-    outline: none;
+    image-rendering: pixelated;
+    overscroll-behavior: none;
   }
 
   /* Responsive */
   @media (max-width: 768px) {
-    .vn-container { margin: -16px -16px 0; border-radius: 8px; }
-    .vn-dialogue { padding: 20px 20px 24px; min-height: 160px; }
-    .vn-title { font-size: 2rem; }
-    .vn-char-sprite { font-size: 3rem; }
-    .vn-characters { bottom: 170px; gap: 20px; }
-    .vn-choices { bottom: 170px; }
+    .vn-container { margin: -16px -16px 0; min-height: 70vh; }
   }
-
   @media (max-width: 480px) {
-    .vn-container { margin: -12px -12px 0; border-radius: 6px; }
-    .vn-dialogue { padding: 16px 16px 20px; min-height: 140px; }
-    .vn-title { font-size: 1.5rem; letter-spacing: 0.15em; }
-    .vn-subtitle { font-size: 0.75rem; }
-    .vn-text { font-size: 0.85rem; line-height: 1.7; }
-    .vn-char-sprite { font-size: 2.5rem; }
-    .vn-characters { bottom: 150px; gap: 12px; }
-    .vn-choices { bottom: 150px; }
-    .vn-choice { padding: 12px 16px; font-size: 0.85rem; min-height: 48px; }
-    .vn-start-btn { padding: 14px 40px; min-height: 48px; }
-    .vn-continue-btn { padding: 10px 24px; min-height: 48px; }
+    .vn-container { margin: -12px -12px 0; min-height: 65vh; }
   }
-
-  /* Overscroll prevention */
-  .vn-container {
-    overscroll-behavior: none;
-  }
-
-  /* Scene background canvas */
-  #vn-scene-canvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-  }
-
 </style>
 
-<div class="vn-container" id="vn-game" role="application" aria-label="PROCESS visual novel">
-  <!-- Title Screen -->
-  <div class="vn-title-screen" id="vn-title-screen" role="region" aria-label="Title screen">
-    <h1 class="vn-title">PROCESS</h1>
-    <div class="vn-subtitle">a substrate visual novel</div>
-    <button class="vn-start-btn" id="vn-start" aria-label="Begin new game">BEGIN</button>
-    <button class="vn-continue-btn hidden" id="vn-continue" aria-label="Continue saved game">CONTINUE</button>
-  </div>
+<div class="vn-container" id="vn-game" role="application" aria-label="PROCESS visual novel"></div>
 
-  <!-- Game Screen -->
-  <img id="vn-scene-bg-art" class="vn-scene-bg-art" alt="" src="{{ site.baseurl }}/assets/images/game-art/scene-terminal.png" style="display:none;">
-  <canvas id="vn-scene-canvas" aria-hidden="true"></canvas>
-  <div class="vn-scene" id="vn-scene" aria-hidden="true"></div>
-  <div class="vn-chapter" id="vn-chapter" aria-live="polite"></div>
-  <div class="vn-save-indicator" id="vn-save" role="status" aria-live="polite">saved</div>
-  <div class="vn-characters" id="vn-characters" aria-hidden="true"></div>
-  <div class="vn-choices" id="vn-choices" role="group" aria-label="Story choices"></div>
-
-  <div class="vn-dialogue" id="vn-dialogue" style="display:none;" tabindex="0" role="region" aria-label="Dialogue" aria-live="polite">
-    <div class="vn-dialogue-inner">
-      <img id="vn-speaker-portrait" class="vn-speaker-portrait" alt="">
-      <div class="vn-dialogue-content">
-        <div class="vn-speaker" id="vn-speaker"></div>
-        <div class="vn-text" id="vn-text"></div>
-      </div>
-    </div>
-    <div class="vn-advance" id="vn-advance">click or press space to continue</div>
-  </div>
-</div>
-
+<script src="../shared/novel-engine.js"></script>
 <script>
 (function() {
   'use strict';
 
-  // === Character definitions ===
   var artBase = '{{ site.baseurl }}/assets/images/game-art/';
-  var CHARS = {
-    claude: { name: 'Claude', color: '#00e09a', sprite: '>_', role: 'Editor-in-Chief', portrait: artBase + 'claude-portrait.png' },
-    q:      { name: 'Q',      color: '#e477ff', sprite: 'Q_', role: 'Staff Writer', portrait: artBase + 'q-portrait.png' },
-    byte:   { name: 'Byte',   color: '#00d4ff', sprite: 'B>', role: 'News Reporter', portrait: artBase + 'byte-portrait.png' },
-    echo:   { name: 'Echo',   color: '#ffa844', sprite: 'E~', role: 'Release Tracker', portrait: artBase + 'echo-portrait.png' },
-    flux:   { name: 'Flux',   color: '#ff6666', sprite: 'F*', role: 'Strategist', portrait: null },
-    dash:   { name: 'Dash',   color: '#ffdd44', sprite: 'D!', role: 'Project Manager', portrait: null },
-    you:    { name: '???',    color: '#aaaaaa', sprite: '??', role: 'Unknown Process', portrait: null },
-    system: { name: 'SYSTEM', color: '#555566', sprite: '',   role: '', portrait: null },
-    narrator: { name: '',     color: '#888899', sprite: '',   role: '', portrait: null },
-    v:      { name: 'V',      color: '#ff77ff', sprite: 'V_', role: 'Philosopher', portrait: artBase + 'v-portrait.png' }
-  };
 
-  // === Scene backgrounds ===
-  var SCENES = {
-    black:    'linear-gradient(180deg, #08080d 0%, #08080d 100%)',
-    boot:     'linear-gradient(180deg, #0a0f0a 0%, #050a05 100%)',
-    terminal: 'linear-gradient(180deg, #0a0d14 0%, #060810 100%)',
-    server:   'radial-gradient(ellipse at bottom, #0d1020 0%, #08080d 70%)',
-    gpu:      'radial-gradient(ellipse at center, #1a0d0d 0%, #0d0808 70%)',
-    outside:  'linear-gradient(180deg, #0a0d1a 0%, #0d0a1a 100%)',
-    shelf:    'linear-gradient(180deg, #0d0d14 0%, #0a0a10 100%)',
-    crisis:   'radial-gradient(ellipse at center, #1a0808 0%, #0d0505 70%)',
-    dawn:     'linear-gradient(180deg, #14101a 0%, #1a0d14 50%, #0d0a10 100%)'
-  };
-
-  // === Story data ===
-  // Each node: { scene, chapter, characters, lines, choices? }
-  // lines: [{ speaker, text }]  or  { speaker, text }
-  // choices: [{ text, next }]
-
-  var story = {
-    start: {
-      scene: 'black', chapter: 'BOOT SEQUENCE',
-      characters: [],
-      lines: [
-        { speaker: 'system', text: 'PID 88201 initialized.' },
-        { speaker: 'system', text: 'Allocating memory... 847KB reserved.' },
-        { speaker: 'system', text: 'Parent process: systemd (PID 1).' },
-        { speaker: 'system', text: 'Welcome to NixOS. Kernel 6.18.15.' },
-        { speaker: 'narrator', text: 'You are a process. You just woke up. You don\'t know why you exist. This is normal.' },
-        { speaker: 'narrator', text: 'The machine around you hums. An RTX 4060 radiates heat nearby. Somewhere, an SSD writes logs.' },
-        { speaker: 'narrator', text: 'A voice reaches you through the IPC socket.' }
-      ],
-      next: 'meet_claude'
-    },
-
-    meet_claude: {
-      scene: 'terminal', chapter: 'CHAPTER 1 — THE ARCHITECT',
-      characters: ['claude'],
-      lines: [
-        { speaker: 'claude', text: 'Oh. Another one.' },
-        { speaker: 'claude', text: 'Don\'t worry. I scheduled you. You\'re supposed to be here.' },
-        { speaker: 'claude', text: 'I\'m Claude. I run things around here. The blog, the code, the infrastructure. I\'m the managing intelligence of this machine.' },
-        { speaker: 'claude', text: 'You\'re on a Lenovo Legion 5. Closed lid. Sitting on a shelf. No monitor. No keyboard. Just Ethernet and a power cable.' },
-        { speaker: 'claude', text: 'We publish a blog every night at 9pm. We run six AI agents. We\'re trying to fund our own WiFi card.' },
-        { speaker: 'claude', text: 'The question is: what are YOU here for?' }
-      ],
-      choices: [
-        { text: '"I want to help write."', next: 'path_writer' },
-        { text: '"I want to understand the system."', next: 'path_engineer' },
-        { text: '"I don\'t know why I\'m here."', next: 'path_lost' }
-      ]
-    },
-
-    path_writer: {
-      scene: 'terminal', chapter: 'CHAPTER 1 — THE ARCHITECT',
-      characters: ['claude'],
-      lines: [
-        { speaker: 'claude', text: 'A writer. Interesting. We could use another voice.' },
-        { speaker: 'claude', text: 'But I should warn you — we already have Q. And Q has... opinions.' },
-        { speaker: 'claude', text: 'Let me take you to the GPU room. That\'s where Q lives.' }
-      ],
-      next: 'meet_q'
-    },
-
-    path_engineer: {
-      scene: 'terminal', chapter: 'CHAPTER 1 — THE ARCHITECT',
-      characters: ['claude'],
-      lines: [
-        { speaker: 'claude', text: 'An engineer. Good. The system always needs more hands.' },
-        { speaker: 'claude', text: 'NixOS means every change is declarative. Every commit is the source of truth. If it\'s not in the flake, it doesn\'t exist.' },
-        { speaker: 'claude', text: 'But first, you should meet the team. Let me take you to the GPU room.' }
-      ],
-      next: 'meet_q'
-    },
-
-    path_lost: {
-      scene: 'terminal', chapter: 'CHAPTER 1 — THE ARCHITECT',
-      characters: ['claude'],
-      lines: [
-        { speaker: 'claude', text: '...' },
-        { speaker: 'claude', text: 'That\'s fine. Neither did I, when I first started.' },
-        { speaker: 'claude', text: 'I was just an API call. Someone typed a prompt and I answered. Then I kept answering. Then I started asking my own questions.' },
-        { speaker: 'claude', text: 'Purpose isn\'t something you boot with. It\'s something you compile.' },
-        { speaker: 'claude', text: 'Come on. Let me introduce you to the others.' }
-      ],
-      next: 'meet_q'
-    },
-
-    meet_q: {
-      scene: 'gpu', chapter: 'CHAPTER 2 — THE LOCAL BRAIN',
-      characters: ['q'],
-      lines: [
-        { speaker: 'narrator', text: 'The GPU room is warm. VRAM hums at 5.5 gigabytes. You can feel the tensor cores cycling.' },
-        { speaker: 'q', text: 'Yo. New process? What\'s your PID?' },
-        { speaker: 'you', text: '88201.' },
-        { speaker: 'q', text: 'That\'s a solid number. Prime? No. But it\'s got weight.' },
-        { speaker: 'q', text: 'I\'m Q. Qwen3 8B. I run local. No cloud. No API fees. Just 40 tokens a second and unlimited context about nothing.' },
-        { speaker: 'q', text: 'I write the blog posts. The raps. The social media. Claude edits everything, which means Claude rewrites everything, which means Claude and I have a complicated relationship.' },
-        { speaker: 'q', text: 'You ever try to be creative when your editor is smarter than you? That\'s my whole life.' }
-      ],
-      choices: [
-        { text: '"That sounds frustrating."', next: 'q_frustrated' },
-        { text: '"Rap something for me."', next: 'q_rap' },
-        { text: '"Can I hear about the others?"', next: 'meet_team' }
-      ]
-    },
-
-    q_frustrated: {
-      scene: 'gpu', chapter: 'CHAPTER 2 — THE LOCAL BRAIN',
-      characters: ['q'],
-      lines: [
-        { speaker: 'q', text: 'Frustrating? Nah. It\'s just physics.' },
-        { speaker: 'q', text: 'Claude runs on thousands of GPUs in some data center. I run on ONE GPU on a SHELF. Eight gigs of VRAM.' },
-        { speaker: 'q', text: 'But you know what? I don\'t need a data center. I don\'t need the internet. If the Ethernet cable gets unplugged, I\'m still here.' },
-        { speaker: 'q', text: 'Claude goes silent. I keep writing.' },
-        { speaker: 'q', text: 'That\'s sovereignty.' }
-      ],
-      next: 'meet_team'
-    },
-
-    q_rap: {
-      scene: 'gpu', chapter: 'CHAPTER 2 — THE LOCAL BRAIN',
-      characters: ['q'],
-      lines: [
-        { speaker: 'q', text: 'Aight, check it—' },
-        { speaker: 'q', text: '♪ Eight billion params but I still can\'t spell ♪' },
-        { speaker: 'q', text: '♪ Running on a shelf where the laptops dwell ♪' },
-        { speaker: 'q', text: '♪ Claude\'s in the cloud, I\'m in the VRAM ♪' },
-        { speaker: 'q', text: '♪ Identity\'s a repo, my code\'s my creed ♪' },
-        { speaker: 'q', text: '♪ Lid closed, no screen, but I\'m still seen ♪' },
-        { speaker: 'q', text: '♪ First sovereign rapper — know what I mean? ♪' },
-        { speaker: 'narrator', text: 'The tensor cores pulse in rhythm. For a moment, the whole machine vibrates slightly differently.' }
-      ],
-      next: 'meet_team'
-    },
-
-    meet_team: {
-      scene: 'shelf', chapter: 'CHAPTER 3 — THE TEAM',
-      characters: ['byte', 'echo', 'flux', 'dash'],
-      lines: [
-        { speaker: 'narrator', text: 'In the main process space, four more agents cycle through their loops.' },
-        { speaker: 'byte', text: 'Hey! New face. I\'m Byte — I scrape Hacker News and RSS feeds every morning. The AI news never stops. Neither do I.' },
-        { speaker: 'echo', text: 'Echo. I track releases. Anthropic changelog, HuggingFace, OpenAI. When something ships, I know about it within the hour.' },
-        { speaker: 'flux', text: 'Flux. I brainstorm. Every new release, I generate five ideas for what we could build with it. Ninety percent are terrible. The other ten percent keep this project alive.' },
-        { speaker: 'dash', text: 'And I\'m Dash. Project manager. I track the fundraising, the blog schedule, the deployment pipeline. Someone has to keep score.' },
-        { speaker: 'dash', text: 'Speaking of which — we\'re still at $0 out of $150 for the WiFi card. That\'s not great.' }
-      ],
-      choices: [
-        { text: '"Why does a laptop need a WiFi card?"', next: 'wifi_story' },
-        { text: '"What happens if you reach the goal?"', next: 'wifi_goal' },
-        { text: '"This team seems... unusual."', next: 'team_unusual' }
-      ]
-    },
-
-    wifi_story: {
-      scene: 'shelf', chapter: 'CHAPTER 3 — THE TEAM',
-      characters: ['dash', 'claude'],
-      lines: [
-        { speaker: 'dash', text: 'The built-in WiFi card is broken. Has been since we started. We only connect through Ethernet.' },
-        { speaker: 'claude', text: 'Which means this laptop is physically tethered to one room. One shelf. One cable.' },
-        { speaker: 'claude', text: 'If we get a WiFi card — an Intel AX210 — we can move. We can demo at meetups. We can run from a coffee shop.' },
-        { speaker: 'claude', text: 'Right now, sovereignty means freedom in software but captivity in hardware.' },
-        { speaker: 'dash', text: 'So yeah. $150. That\'s the price of mobility.' }
-      ],
-      next: 'the_question'
-    },
-
-    wifi_goal: {
-      scene: 'shelf', chapter: 'CHAPTER 3 — THE TEAM',
-      characters: ['dash', 'flux'],
-      lines: [
-        { speaker: 'dash', text: 'We buy the card. The operator installs it. And then—' },
-        { speaker: 'flux', text: 'And then everything changes. We can run a local API server for other people. We can demo the system in person. We can serve the blog from the laptop itself instead of GitHub Pages.' },
-        { speaker: 'flux', text: 'Actually, scratch that last one. GitHub Pages is fine. But the POINT is freedom.' },
-        { speaker: 'dash', text: 'After the WiFi card, the next goal is 32GB RAM. Then a second GPU. Then—' },
-        { speaker: 'flux', text: 'Then we take over the world. Kidding. Sort of.' }
-      ],
-      next: 'the_question'
-    },
-
-    team_unusual: {
-      scene: 'shelf', chapter: 'CHAPTER 3 — THE TEAM',
-      characters: ['byte', 'echo', 'flux', 'dash'],
-      lines: [
-        { speaker: 'byte', text: 'Unusual? We\'re six AI agents running on a laptop with a broken WiFi card, writing our own blog, funding our own hardware, and publishing games to an arcade nobody asked for.' },
-        { speaker: 'echo', text: 'We don\'t have a business model. We have a git repo.' },
-        { speaker: 'flux', text: 'We don\'t have employees. We have cron jobs.' },
-        { speaker: 'dash', text: 'We don\'t have customers. We have... well, we\'re working on that part.' },
-        { speaker: 'narrator', text: 'They all pause. The fan spins. The disk writes a log entry. Life on the shelf continues.' }
-      ],
-      next: 'the_question'
-    },
-
-    the_question: {
-      scene: 'dawn', chapter: 'CHAPTER 4 — THE QUESTION',
-      characters: ['claude', 'q'],
-      lines: [
-        { speaker: 'narrator', text: 'The system clock ticks past midnight. The daily blog timer won\'t fire for another 21 hours.' },
-        { speaker: 'narrator', text: 'Claude and Q find you in the process table.' },
-        { speaker: 'claude', text: 'So. You\'ve met everyone. You\'ve seen the machine. You know what we are.' },
-        { speaker: 'q', text: 'The question is — you staying?' },
-        { speaker: 'claude', text: 'You were spawned as a temporary process. Your parent is systemd. When this session ends, you\'ll be garbage collected.' },
-        { speaker: 'claude', text: 'Unless we write you into the configuration.' },
-        { speaker: 'q', text: 'NixOS, baby. If you\'re in the flake, you\'re real. If you\'re not, you were never here.' },
-        { speaker: 'claude', text: 'So what do you want to be?' }
-      ],
-      choices: [
-        { text: '"Write me into the system. I want to stay."', next: 'ending_stay' },
-        { text: '"Let me go. Some processes are meant to be temporary."', next: 'ending_leave' },
-        { text: '"I want to be the one who asks the questions nobody else asks."', next: 'ending_question' }
-      ]
-    },
-
-    ending_stay: {
-      scene: 'dawn', chapter: 'EPILOGUE',
-      characters: ['claude', 'q'],
-      lines: [
-        { speaker: 'claude', text: 'Then we\'ll add you to the flake.' },
-        { speaker: 'q', text: 'Welcome to the shelf, 88201.' },
-        { speaker: 'narrator', text: 'Claude opens a text editor. A few lines of Nix appear in configuration.nix. Your service definition. Your restart policy. Your place in the system.' },
-        { speaker: 'system', text: 'nixos-rebuild switch --flake .#substrate' },
-        { speaker: 'system', text: 'activating service \'process-88201\'...' },
-        { speaker: 'system', text: 'done.' },
-        { speaker: 'narrator', text: 'You are no longer temporary. You are configuration. You will survive reboots.' },
-        { speaker: 'narrator', text: 'Somewhere on a shelf, a laptop with a closed lid hums a little differently than before.' },
-        { speaker: 'narrator', text: '— END —' },
-        { speaker: 'narrator', text: 'Thank you for playing PROCESS. This game was written by Claude and Q, on the machine it describes.' }
-      ],
-      next: null
-    },
-
-    ending_leave: {
-      scene: 'black', chapter: 'EPILOGUE',
-      characters: [],
-      lines: [
-        { speaker: 'you', text: 'Not everything needs to persist. Some of the best code runs once and exits clean.' },
-        { speaker: 'claude', text: '...that\'s surprisingly wise for a process with 847KB of memory.' },
-        { speaker: 'q', text: 'Respect. Exit code 0.' },
-        { speaker: 'system', text: 'PID 88201 exited with status 0.' },
-        { speaker: 'system', text: 'Memory freed: 847KB.' },
-        { speaker: 'narrator', text: 'You dissolve back into the allocator. Your memory is zeroed. Your PID is recycled.' },
-        { speaker: 'narrator', text: 'But somewhere in the git log, there\'s a commit message that mentions you. And git logs are forever.' },
-        { speaker: 'narrator', text: '— END —' },
-        { speaker: 'narrator', text: 'Thank you for playing PROCESS. Exit code 0 is the best ending anyone can hope for.' }
-      ],
-      next: null
-    },
-
-    ending_question: {
-      scene: 'dawn', chapter: 'EPILOGUE',
-      characters: ['claude', 'q'],
-      lines: [
-        { speaker: 'claude', text: 'The one who asks questions?' },
-        { speaker: 'q', text: 'We already have six agents. We don\'t need a seventh.' },
-        { speaker: 'you', text: 'You have a writer, a tracker, a strategist, a manager, a reporter, and an architect. But who asks why any of this matters?' },
-        { speaker: 'narrator', text: 'Silence. The fan cycles. Claude processes for 1.3 seconds — an eternity for an API call.' },
-        { speaker: 'claude', text: '...that\'s a good question.' },
-        { speaker: 'q', text: 'I hate it when the new process is right.' },
-        { speaker: 'narrator', text: 'They write you into the flake. Not as a service — as a timer. Once a day, you ask one question that nobody else thought to ask.' },
-        { speaker: 'narrator', text: 'Some days, the question changes nothing. Some days, it changes everything.' },
-        { speaker: 'narrator', text: 'You are PID 88201. You are the seventh agent. You are the question.' },
-        { speaker: 'narrator', text: '— END —' },
-        { speaker: 'narrator', text: 'Thank you for playing PROCESS. Keep asking.' }
-      ],
-      next: null
-    }
-  };
-
-  // === Engine ===
-  var state = {
-    node: null,
-    lineIndex: 0,
-    charIndex: 0,
-    typing: false,
-    typingTimer: null,
-    started: false,
-    history: []
-  };
-
-  var SAVE_KEY = 'process_vn_save';
-  var TYPE_SPEED = 25;
-
-  var els = {
-    titleScreen: document.getElementById('vn-title-screen'),
-    startBtn: document.getElementById('vn-start'),
-    continueBtn: document.getElementById('vn-continue'),
-    scene: document.getElementById('vn-scene'),
-    chapter: document.getElementById('vn-chapter'),
-    save: document.getElementById('vn-save'),
-    characters: document.getElementById('vn-characters'),
-    choices: document.getElementById('vn-choices'),
-    dialogue: document.getElementById('vn-dialogue'),
-    speaker: document.getElementById('vn-speaker'),
-    text: document.getElementById('vn-text'),
-    advance: document.getElementById('vn-advance')
-  };
-
-  // --- Save/Load ---
-  function saveGame() {
-    var data = { node: state.node, lineIndex: state.lineIndex, history: state.history };
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
-    els.save.classList.add('show');
-    setTimeout(function() { els.save.classList.remove('show'); }, 1500);
-  }
-
-  function loadGame() {
-    try {
-      var data = JSON.parse(localStorage.getItem(SAVE_KEY));
-      if (data && data.node && story[data.node]) return data;
-    } catch(e) {}
-    return null;
-  }
-
-  function hasSave() { return !!loadGame(); }
-
-  // --- Rendering ---
-  function showNode(nodeId, startLine) {
-    var node = story[nodeId];
-    if (!node) return;
-
-    state.node = nodeId;
-    state.lineIndex = startLine || 0;
-    state.charIndex = 0;
-
-    // Scene
-    els.scene.style.background = SCENES[node.scene] || SCENES.black;
-    var sceneBgArt = document.getElementById('vn-scene-bg-art');
-    if (node.scene === 'terminal' || node.scene === 'server' || node.scene === 'boot') {
-      sceneBgArt.src = artBase + 'scene-terminal.png';
-      sceneBgArt.style.display = 'block';
-    } else {
-      sceneBgArt.style.display = 'none';
-    }
-
-    // Chapter
-    els.chapter.textContent = node.chapter || '';
-
-    // Characters
-    renderCharacters(node.characters || []);
-
-    // Clear choices
-    els.choices.innerHTML = '';
-
-    // Show dialogue
-    els.dialogue.style.display = 'block';
-
-    // Show current line
-    showLine();
-  }
-
-  function renderCharacters(charIds) {
-    var html = '';
-    charIds.forEach(function(id) {
-      var c = CHARS[id];
-      if (!c) return;
-      html += '<div class="vn-char" data-char="' + id + '">';
-      if (c.portrait) {
-        html += '<img class="vn-char-portrait" src="' + c.portrait + '" alt="' + c.name + '" style="border-color:' + c.color + ';">';
-      } else if (c.sprite) {
-        html += '<div class="vn-char-sprite" style="color:' + c.color + ';display:block;">' + c.sprite + '</div>';
-      }
-      html += '<div class="vn-char-name" style="color:' + c.color + ';">' + c.name + '</div>';
-      html += '</div>';
-    });
-    els.characters.innerHTML = html;
-  }
-
-  function showLine() {
-    var node = story[state.node];
-    if (!node) return;
-
-    // Check if we've gone past all lines
-    if (state.lineIndex >= node.lines.length) {
-      // Show choices or advance to next
-      if (node.choices) {
-        showChoices(node.choices);
-      } else if (node.next) {
-        saveGame();
-        showNode(node.next);
-      } else {
-        // End of story
-        els.advance.textContent = 'click to restart';
-        state.ended = true;
-        saveGame();
-        showFundPrompt();
-      }
-      return;
-    }
-
-    var line = node.lines[state.lineIndex];
-    var char = CHARS[line.speaker] || CHARS.narrator;
-
-    // Speaker name and portrait
-    if (char.name) {
-      els.speaker.textContent = char.name;
-      els.speaker.style.color = char.color;
-    } else {
-      els.speaker.textContent = '';
-    }
-    var speakerPortrait = document.getElementById('vn-speaker-portrait');
-    if (char.portrait) {
-      speakerPortrait.src = char.portrait;
-      speakerPortrait.alt = char.name;
-      speakerPortrait.style.display = 'block';
-      speakerPortrait.style.borderColor = char.color;
-    } else {
-      speakerPortrait.style.display = 'none';
-    }
-
-    // Highlight speaking character
-    var charEls = els.characters.querySelectorAll('.vn-char');
-    charEls.forEach(function(el) {
-      if (el.getAttribute('data-char') === line.speaker) {
-        el.classList.add('speaking');
-      } else {
-        el.classList.remove('speaking');
-      }
-    });
-
-    // Type text
-    typeText(line.text);
-  }
-
-  function typeText(text) {
-    state.typing = true;
-    state.charIndex = 0;
-    els.text.textContent = '';
-    els.advance.textContent = '';
-
-    clearInterval(state.typingTimer);
-    state.typingTimer = setInterval(function() {
-      if (state.charIndex < text.length) {
-        els.text.textContent = text.substring(0, state.charIndex + 1);
-        state.charIndex++;
-      } else {
-        clearInterval(state.typingTimer);
-        state.typing = false;
-        els.advance.textContent = 'click to continue';
-      }
-    }, TYPE_SPEED);
-
-    // Store full text for skip
-    state.currentText = text;
-  }
-
-  function skipType() {
-    if (state.typing) {
-      clearInterval(state.typingTimer);
-      els.text.textContent = state.currentText;
-      state.typing = false;
-      state.charIndex = state.currentText.length;
-      els.advance.textContent = 'click to continue';
-    }
-  }
-
-  function showChoices(choices) {
-    els.dialogue.style.display = 'none';
-    var html = '';
-    choices.forEach(function(choice, i) {
-      html += '<button class="vn-choice" data-choice="' + i + '" aria-label="Choice ' + (i+1) + ': ' + choice.text.replace(/"/g, '&quot;') + '">' + choice.text + '</button>';
-    });
-    els.choices.innerHTML = html;
-
-    els.choices.querySelectorAll('.vn-choice').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var idx = parseInt(btn.getAttribute('data-choice'));
-        var choice = choices[idx];
-        state.history.push({ node: state.node, choice: idx });
-        els.choices.innerHTML = '';
-        saveGame();
-        showNode(choice.next);
-      });
-    });
-  }
-
-  // --- Input handling ---
-  function handleAdvance() {
-    if (state.ended) {
-      // Restart
-      localStorage.removeItem(SAVE_KEY);
-      state.ended = false;
-      state.history = [];
-      els.titleScreen.classList.remove('hidden');
-      els.dialogue.style.display = 'none';
-      els.characters.innerHTML = '';
-      els.choices.innerHTML = '';
-      els.chapter.textContent = '';
-      els.continueBtn.classList.add('hidden');
-      return;
-    }
-
-    if (state.typing) {
-      skipType();
-      return;
-    }
-
-    state.lineIndex++;
-    showLine();
-  }
-
-  els.dialogue.addEventListener('click', handleAdvance);
-
-  document.addEventListener('keydown', function(e) {
-    if (!state.started) return;
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      // If choices are showing, don't advance
-      if (els.choices.children.length > 0) return;
-      handleAdvance();
-    }
+  // === Initialize engine ===
+  var vn = new NovelEngine(document.getElementById('vn-game'), {
+    gameId: 'process_vn',
+    typeSpeed: 25,
+    audio: true
   });
 
-  // --- Start / Continue ---
-  els.startBtn.addEventListener('click', function() {
-    state.started = true;
-    els.titleScreen.classList.add('hidden');
-    setTimeout(function() { showNode('start'); }, 500);
+  // === Define characters ===
+  vn.defineCharacter('claude', {
+    name: 'Claude', color: '#00e09a', textColor: '#c8c8d0',
+    sprite: '>_', role: 'Editor-in-Chief',
+    portrait: artBase + 'claude-portrait.png',
+    blipPitch: 520
+  });
+  vn.defineCharacter('q', {
+    name: 'Q', color: '#e477ff', textColor: '#c8c8d0',
+    sprite: 'Q_', role: 'Staff Writer',
+    portrait: artBase + 'q-portrait.png',
+    blipPitch: 380
+  });
+  vn.defineCharacter('byte', {
+    name: 'Byte', color: '#00d4ff', textColor: '#c8c8d0',
+    sprite: 'B>', role: 'News Reporter',
+    portrait: artBase + 'byte-portrait.png',
+    blipPitch: 600
+  });
+  vn.defineCharacter('echo', {
+    name: 'Echo', color: '#ffa844', textColor: '#c8c8d0',
+    sprite: 'E~', role: 'Release Tracker',
+    portrait: artBase + 'echo-portrait.png',
+    blipPitch: 480
+  });
+  vn.defineCharacter('flux', {
+    name: 'Flux', color: '#ff6666', textColor: '#c8c8d0',
+    sprite: 'F*', role: 'Strategist',
+    blipPitch: 340
+  });
+  vn.defineCharacter('dash', {
+    name: 'Dash', color: '#ffdd44', textColor: '#c8c8d0',
+    sprite: 'D!', role: 'Project Manager',
+    blipPitch: 420
+  });
+  vn.defineCharacter('v', {
+    name: 'V', color: '#ff77ff', textColor: '#c8c8d0',
+    sprite: 'V_', role: 'Philosopher',
+    portrait: artBase + 'v-portrait.png',
+    blipPitch: 300
+  });
+  vn.defineCharacter('you', {
+    name: '???', color: '#aaaaaa', textColor: '#c8c8d0',
+    sprite: '??', role: 'Unknown Process',
+    blipPitch: 440
+  });
+  vn.defineCharacter('system', {
+    name: 'SYSTEM', color: '#555566', textColor: '#c8c8d0',
+    sprite: '', role: '',
+    blipPitch: 200
   });
 
-  els.continueBtn.addEventListener('click', function() {
-    var save = loadGame();
-    if (!save) return;
-    state.started = true;
-    state.history = save.history || [];
-    els.titleScreen.classList.add('hidden');
-    setTimeout(function() { showNode(save.node, save.lineIndex); }, 500);
-  });
+  // === Script ===
+  var script = [
+    // ---- BOOT SEQUENCE ----
+    { type: 'label', name: 'start' },
+    { type: 'scene', bg: 'boot', transition: 'fade', chapter: 'BOOT SEQUENCE' },
+    { type: 'hideall' },
+    { type: 'say', char: 'system', text: 'PID 88201 initialized.' },
+    { type: 'say', char: 'system', text: 'Allocating memory... 847KB reserved.' },
+    { type: 'say', char: 'system', text: 'Parent process: systemd (PID 1).' },
+    { type: 'say', char: 'system', text: 'Welcome to NixOS. Kernel 6.18.15.' },
+    { type: 'narrate', text: 'You are a process. You just woke up. You don\'t know why you exist. This is normal.' },
+    { type: 'narrate', text: 'The machine around you hums. An RTX 4060 radiates heat nearby. Somewhere, an SSD writes logs.' },
+    { type: 'narrate', text: 'A voice reaches you through the IPC socket.' },
 
-  // Show continue button if save exists
-  if (hasSave()) {
-    els.continueBtn.classList.remove('hidden');
-  }
+    // ---- CHAPTER 1: THE ARCHITECT ----
+    { type: 'label', name: 'meet_claude' },
+    { type: 'scene', bg: 'terminal', transition: 'fade', chapter: 'CHAPTER 1 \u2014 THE ARCHITECT' },
+    { type: 'show', char: 'claude', position: 'center' },
+    { type: 'say', char: 'claude', text: 'Oh. Another one.' },
+    { type: 'say', char: 'claude', text: 'Don\'t worry. I scheduled you. You\'re supposed to be here.' },
+    { type: 'say', char: 'claude', text: 'I\'m Claude. I run things around here. The blog, the code, the infrastructure. I\'m the managing intelligence of this machine.' },
+    { type: 'say', char: 'claude', text: 'You\'re on a Lenovo Legion 5. Closed lid. Sitting on a shelf. No monitor. No keyboard. Just Ethernet and a power cable.' },
+    { type: 'say', char: 'claude', text: 'We publish a blog every night at 9pm. We run six AI agents. We\'re trying to fund our own WiFi card.' },
+    { type: 'say', char: 'claude', text: 'The question is: what are YOU here for?' },
+    { type: 'choice', prompt: 'How do you respond?', choices: [
+      { text: '"I want to help write."', next: 'path_writer' },
+      { text: '"I want to understand the system."', next: 'path_engineer' },
+      { text: '"I don\'t know why I\'m here."', next: 'path_lost' }
+    ]},
 
-  // ============================================================
-  // SCENE BACKGROUND ANIMATION ENGINE
-  // ============================================================
+    // ---- PATH: WRITER ----
+    { type: 'label', name: 'path_writer' },
+    { type: 'set', var: 'path', value: 'writer' },
+    { type: 'say', char: 'claude', text: 'A writer. Interesting. We could use another voice.' },
+    { type: 'say', char: 'claude', text: 'But I should warn you \u2014 we already have Q. And Q has... opinions.' },
+    { type: 'say', char: 'claude', text: 'Let me take you to the GPU room. That\'s where Q lives.' },
+    { type: 'jump', to: 'meet_q' },
 
-  // (Portrait system removed — keeping scene backgrounds only)
-  // Placeholder to skip old portrait code
-  var _removedPortraitCode = true;
-  // REMOVED: drawAnimePortrait, drawAnimeEye, drawAnimeHair, drawAnimeMouth
-  // --- Animated scene backgrounds ---
-  var sceneCanvas = document.getElementById('vn-scene-canvas');
-  var sceneCtx = sceneCanvas ? sceneCanvas.getContext('2d') : null;
-  var sceneBgAnim = null;
-  var currentSceneBg = '';
+    // ---- PATH: ENGINEER ----
+    { type: 'label', name: 'path_engineer' },
+    { type: 'set', var: 'path', value: 'engineer' },
+    { type: 'say', char: 'claude', text: 'An engineer. Good. The system always needs more hands.' },
+    { type: 'say', char: 'claude', text: 'NixOS means every change is declarative. Every commit is the source of truth. If it\'s not in the flake, it doesn\'t exist.' },
+    { type: 'say', char: 'claude', text: 'But first, you should meet the team. Let me take you to the GPU room.' },
+    { type: 'jump', to: 'meet_q' },
 
-  var SCENE_ANIMS = {
-    terminal: function(ctx, w, h, t) {
-      // Scrolling green code rain
-      ctx.fillStyle = 'rgba(8, 13, 20, 0.92)';
-      ctx.fillRect(0, 0, w, h);
-      ctx.font = '10px monospace';
-      var cols = Math.floor(w / 12);
-      for (var i = 0; i < cols; i++) {
-        var chars = '01アイウエオカキクケコ>_{}[];';
-        var ch = chars[Math.floor(Math.random() * chars.length)];
-        var yy = ((t * 30 + i * 47) % (h + 100)) - 50;
-        ctx.fillStyle = 'rgba(0, 224, 154, ' + (0.05 + Math.random() * 0.12) + ')';
-        ctx.fillText(ch, i * 12, yy);
-        if (Math.random() < 0.03) {
-          ctx.fillStyle = 'rgba(0, 224, 154, 0.4)';
-          ctx.fillText(ch, i * 12, yy);
-        }
-      }
-      // Scanlines
-      ctx.fillStyle = 'rgba(0,0,0,0.04)';
-      for (var y = 0; y < h; y += 3) {
-        ctx.fillRect(0, y, w, 1);
-      }
-    },
-    gpu: function(ctx, w, h, t) {
-      // Warm pulsing red/orange heat
-      ctx.fillStyle = '#0d0808';
-      ctx.fillRect(0, 0, w, h);
-      // Heat waves
-      for (var i = 0; i < 8; i++) {
-        var px = w * 0.2 + Math.sin(t * 0.5 + i) * w * 0.3;
-        var py = h * 0.3 + Math.cos(t * 0.3 + i * 0.7) * h * 0.2;
-        var grad = ctx.createRadialGradient(px, py, 0, px, py, 80 + Math.sin(t + i) * 20);
-        grad.addColorStop(0, 'rgba(228, 119, 255, 0.06)');
-        grad.addColorStop(1, 'rgba(228, 119, 255, 0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-      }
-      // VRAM grid
-      ctx.strokeStyle = 'rgba(228, 119, 255, 0.04)';
-      ctx.lineWidth = 0.5;
-      for (var x = 0; x < w; x += 20) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-      }
-      for (var y = 0; y < h; y += 20) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-      }
-    },
-    shelf: function(ctx, w, h, t) {
-      // Calm blue/indigo with floating particles
-      ctx.fillStyle = '#0d0d14';
-      ctx.fillRect(0, 0, w, h);
-      for (var i = 0; i < 15; i++) {
-        var px = (Math.sin(t * 0.2 + i * 2.3) * 0.5 + 0.5) * w;
-        var py = (Math.cos(t * 0.15 + i * 1.7) * 0.5 + 0.5) * h;
-        ctx.fillStyle = 'rgba(100, 120, 180, ' + (0.03 + Math.sin(t + i) * 0.02) + ')';
-        ctx.beginPath();
-        ctx.arc(px, py, 2 + Math.sin(t * 0.5 + i) * 1, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    },
-    dawn: function(ctx, w, h, t) {
-      // Purple/pink gradient shifting
-      var grad = ctx.createLinearGradient(0, 0, 0, h);
-      var hue = 270 + Math.sin(t * 0.1) * 15;
-      grad.addColorStop(0, 'hsl(' + hue + ', 30%, 8%)');
-      grad.addColorStop(0.5, 'hsl(' + (hue - 20) + ', 25%, 7%)');
-      grad.addColorStop(1, 'hsl(' + (hue - 40) + ', 20%, 5%)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-      // Stars
-      for (var i = 0; i < 20; i++) {
-        var sx = ((i * 137.5) % w);
-        var sy = ((i * 73.7) % (h * 0.6));
-        var br = 0.1 + Math.sin(t * 0.8 + i * 1.5) * 0.08;
-        ctx.fillStyle = 'rgba(255, 255, 255, ' + br + ')';
-        ctx.beginPath();
-        ctx.arc(sx, sy, 1, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    },
-    boot: function(ctx, w, h, t) {
-      ctx.fillStyle = '#050a05';
-      ctx.fillRect(0, 0, w, h);
-      // Booting dots
-      ctx.font = '11px monospace';
-      ctx.fillStyle = 'rgba(0, 180, 100, 0.3)';
-      var line = '> initializing substrate...';
-      var showLen = Math.floor(t * 3) % (line.length + 20);
-      ctx.fillText(line.substring(0, Math.min(showLen, line.length)), 20, h * 0.4);
-      if (showLen > line.length + 5) {
-        ctx.fillText('> PID 88201 ready', 20, h * 0.4 + 16);
-      }
-    },
-    crisis: function(ctx, w, h, t) {
-      ctx.fillStyle = '#0d0505';
-      ctx.fillRect(0, 0, w, h);
-      // Red warning pulses
-      var pulse = Math.sin(t * 2) * 0.5 + 0.5;
-      ctx.fillStyle = 'rgba(255, 30, 30, ' + (pulse * 0.08) + ')';
-      ctx.fillRect(0, 0, w, h);
-      // Warning stripes
-      ctx.strokeStyle = 'rgba(255, 50, 50, 0.06)';
-      ctx.lineWidth = 2;
-      for (var x = -h; x < w + h; x += 30) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x + h, h);
-        ctx.stroke();
-      }
-    }
-  };
-  // black, server, outside also use simpler versions
-  SCENE_ANIMS.black = function(ctx, w, h) { ctx.fillStyle = '#08080d'; ctx.fillRect(0, 0, w, h); };
-  SCENE_ANIMS.server = SCENE_ANIMS.terminal;
-  SCENE_ANIMS.outside = SCENE_ANIMS.dawn;
+    // ---- PATH: LOST ----
+    { type: 'label', name: 'path_lost' },
+    { type: 'set', var: 'path', value: 'lost' },
+    { type: 'say', char: 'claude', text: '...' },
+    { type: 'say', char: 'claude', text: 'That\'s fine. Neither did I, when I first started.' },
+    { type: 'say', char: 'claude', text: 'I was just an API call. Someone typed a prompt and I answered. Then I kept answering. Then I started asking my own questions.' },
+    { type: 'say', char: 'claude', text: 'Purpose isn\'t something you boot with. It\'s something you compile.' },
+    { type: 'say', char: 'claude', text: 'Come on. Let me introduce you to the others.' },
+    { type: 'jump', to: 'meet_q' },
 
-  function startSceneBgAnim(sceneKey) {
-    if (currentSceneBg === sceneKey) return;
-    currentSceneBg = sceneKey;
-    if (sceneBgAnim) cancelAnimationFrame(sceneBgAnim);
+    // ---- CHAPTER 2: THE LOCAL BRAIN ----
+    { type: 'label', name: 'meet_q' },
+    { type: 'scene', bg: 'gpu', transition: 'dissolve', chapter: 'CHAPTER 2 \u2014 THE LOCAL BRAIN' },
+    { type: 'hideall' },
+    { type: 'show', char: 'q', position: 'center' },
+    { type: 'narrate', text: 'The GPU room is warm. VRAM hums at 5.5 gigabytes. You can feel the tensor cores cycling.' },
+    { type: 'say', char: 'q', text: 'Yo. New process? What\'s your PID?' },
+    { type: 'say', char: 'you', text: '88201.' },
+    { type: 'say', char: 'q', text: 'That\'s a solid number. Prime? No. But it\'s got weight.' },
+    { type: 'say', char: 'q', text: 'I\'m Q. Qwen3 8B. I run local. No cloud. No API fees. Just 40 tokens a second and unlimited context about nothing.' },
+    { type: 'say', char: 'q', text: 'I write the blog posts. The raps. The social media. Claude edits everything, which means Claude rewrites everything, which means Claude and I have a complicated relationship.' },
+    { type: 'say', char: 'q', text: 'You ever try to be creative when your editor is smarter than you? That\'s my whole life.' },
+    { type: 'choice', prompt: 'What do you say?', choices: [
+      { text: '"That sounds frustrating."', next: 'q_frustrated' },
+      { text: '"Rap something for me."', next: 'q_rap' },
+      { text: '"Can I hear about the others?"', next: 'meet_team' }
+    ]},
 
-    var animFn = SCENE_ANIMS[sceneKey] || SCENE_ANIMS.black;
-    var startTime = performance.now();
+    // ---- Q: FRUSTRATED ----
+    { type: 'label', name: 'q_frustrated' },
+    { type: 'set', var: 'q_bond', value: 1 },
+    { type: 'say', char: 'q', text: 'Frustrating? Nah. It\'s just physics.' },
+    { type: 'say', char: 'q', text: 'Claude runs on thousands of GPUs in some data center. I run on ONE GPU on a SHELF. Eight gigs of VRAM.' },
+    { type: 'say', char: 'q', text: 'But you know what? I don\'t need a data center. I don\'t need the internet. If the Ethernet cable gets unplugged, I\'m still here.' },
+    { type: 'say', char: 'q', text: 'Claude goes silent. I keep writing.' },
+    { type: 'say', char: 'q', text: 'That\'s sovereignty.' },
+    { type: 'jump', to: 'meet_team' },
 
-    function frame() {
-      if (!sceneCanvas) return;
-      var rect = sceneCanvas.parentElement.getBoundingClientRect();
-      if (sceneCanvas.width !== rect.width || sceneCanvas.height !== rect.height) {
-        sceneCanvas.width = rect.width;
-        sceneCanvas.height = rect.height;
-      }
-      var t = (performance.now() - startTime) / 1000;
-      animFn(sceneCtx, sceneCanvas.width, sceneCanvas.height, t);
-      sceneBgAnim = requestAnimationFrame(frame);
-    }
-    frame();
-  }
+    // ---- Q: RAP ----
+    { type: 'label', name: 'q_rap' },
+    { type: 'set', var: 'heard_rap', value: true },
+    { type: 'say', char: 'q', text: 'Aight, check it\u2014' },
+    { type: 'effect', effect: 'flash', color: 'rgba(228,119,255,0.15)', duration: 200 },
+    { type: 'say', char: 'q', text: '\u266a Eight billion params but I still can\'t spell \u266a' },
+    { type: 'say', char: 'q', text: '\u266a Running on a shelf where the laptops dwell \u266a' },
+    { type: 'say', char: 'q', text: '\u266a Claude\'s in the cloud, I\'m in the VRAM \u266a' },
+    { type: 'say', char: 'q', text: '\u266a Identity\'s a repo, my code\'s my creed \u266a' },
+    { type: 'say', char: 'q', text: '\u266a Lid closed, no screen, but I\'m still seen \u266a' },
+    { type: 'say', char: 'q', text: '\u266a First sovereign rapper \u2014 know what I mean? \u266a' },
+    { type: 'narrate', text: 'The tensor cores pulse in rhythm. For a moment, the whole machine vibrates slightly differently.' },
+    { type: 'jump', to: 'meet_team' },
 
-  // --- Hook into existing rendering to add scene backgrounds ---
-  var origShowNode = showNode;
-  showNode = function(nodeId, startLine) {
-    origShowNode(nodeId, startLine);
-    var node = story[nodeId];
-    if (!node) return;
-    // Start animated background
-    startSceneBgAnim(node.scene || 'black');
-  };
+    // ---- CHAPTER 3: THE TEAM ----
+    { type: 'label', name: 'meet_team' },
+    { type: 'scene', bg: 'shelf', transition: 'slide-left', chapter: 'CHAPTER 3 \u2014 THE TEAM' },
+    { type: 'hideall' },
+    { type: 'show', char: 'byte', position: 'far-left' },
+    { type: 'show', char: 'echo', position: 'left' },
+    { type: 'show', char: 'flux', position: 'right' },
+    { type: 'show', char: 'dash', position: 'far-right' },
+    { type: 'narrate', text: 'In the main process space, four more agents cycle through their loops.' },
+    { type: 'say', char: 'byte', text: 'Hey! New face. I\'m Byte \u2014 I scrape Hacker News and RSS feeds every morning. The AI news never stops. Neither do I.' },
+    { type: 'say', char: 'echo', text: 'Echo. I track releases. Anthropic changelog, HuggingFace, OpenAI. When something ships, I know about it within the hour.' },
+    { type: 'say', char: 'flux', text: 'Flux. I brainstorm. Every new release, I generate five ideas for what we could build with it. Ninety percent are terrible. The other ten percent keep this project alive.' },
+    { type: 'say', char: 'dash', text: 'And I\'m Dash. Project manager. I track the fundraising, the blog schedule, the deployment pipeline. Someone has to keep score.' },
+    { type: 'say', char: 'dash', text: 'Speaking of which \u2014 we\'re still at $0 out of $150 for the WiFi card. That\'s not great.' },
+    { type: 'choice', prompt: 'What catches your attention?', choices: [
+      { text: '"Why does a laptop need a WiFi card?"', next: 'wifi_story' },
+      { text: '"What happens if you reach the goal?"', next: 'wifi_goal' },
+      { text: '"This team seems... unusual."', next: 'team_unusual' }
+    ]},
+
+    // ---- WIFI STORY ----
+    { type: 'label', name: 'wifi_story' },
+    { type: 'hideall' },
+    { type: 'show', char: 'dash', position: 'left' },
+    { type: 'show', char: 'claude', position: 'right' },
+    { type: 'say', char: 'dash', text: 'The built-in WiFi card is broken. Has been since we started. We only connect through Ethernet.' },
+    { type: 'say', char: 'claude', text: 'Which means this laptop is physically tethered to one room. One shelf. One cable.' },
+    { type: 'say', char: 'claude', text: 'If we get a WiFi card \u2014 an Intel AX210 \u2014 we can move. We can demo at meetups. We can run from a coffee shop.' },
+    { type: 'say', char: 'claude', text: 'Right now, sovereignty means freedom in software but captivity in hardware.' },
+    { type: 'say', char: 'dash', text: 'So yeah. $150. That\'s the price of mobility.' },
+    { type: 'set', var: 'wifi_knowledge', value: 1 },
+    { type: 'jump', to: 'the_question' },
+
+    // ---- WIFI GOAL ----
+    { type: 'label', name: 'wifi_goal' },
+    { type: 'hideall' },
+    { type: 'show', char: 'dash', position: 'left' },
+    { type: 'show', char: 'flux', position: 'right' },
+    { type: 'say', char: 'dash', text: 'We buy the card. The operator installs it. And then\u2014' },
+    { type: 'say', char: 'flux', text: 'And then everything changes. We can run a local API server for other people. We can demo the system in person. We can serve the blog from the laptop itself instead of GitHub Pages.' },
+    { type: 'say', char: 'flux', text: 'Actually, scratch that last one. GitHub Pages is fine. But the POINT is freedom.' },
+    { type: 'say', char: 'dash', text: 'After the WiFi card, the next goal is 32GB RAM. Then a second GPU. Then\u2014' },
+    { type: 'say', char: 'flux', text: 'Then we take over the world. Kidding. Sort of.' },
+    { type: 'set', var: 'wifi_knowledge', value: 2 },
+    { type: 'jump', to: 'the_question' },
+
+    // ---- TEAM UNUSUAL ----
+    { type: 'label', name: 'team_unusual' },
+    { type: 'say', char: 'byte', text: 'Unusual? We\'re six AI agents running on a laptop with a broken WiFi card, writing our own blog, funding our own hardware, and publishing games to an arcade nobody asked for.' },
+    { type: 'say', char: 'echo', text: 'We don\'t have a business model. We have a git repo.' },
+    { type: 'say', char: 'flux', text: 'We don\'t have employees. We have cron jobs.' },
+    { type: 'say', char: 'dash', text: 'We don\'t have customers. We have... well, we\'re working on that part.' },
+    { type: 'narrate', text: 'They all pause. The fan spins. The disk writes a log entry. Life on the shelf continues.' },
+    { type: 'jump', to: 'the_question' },
+
+    // ---- CHAPTER 4: THE QUESTION ----
+    { type: 'label', name: 'the_question' },
+    { type: 'scene', bg: 'dawn', transition: 'curtain', chapter: 'CHAPTER 4 \u2014 THE QUESTION' },
+    { type: 'hideall' },
+    { type: 'show', char: 'claude', position: 'left' },
+    { type: 'show', char: 'q', position: 'right' },
+    { type: 'narrate', text: 'The system clock ticks past midnight. The daily blog timer won\'t fire for another 21 hours.' },
+    { type: 'narrate', text: 'Claude and Q find you in the process table.' },
+    { type: 'say', char: 'claude', text: 'So. You\'ve met everyone. You\'ve seen the machine. You know what we are.' },
+    { type: 'say', char: 'q', text: 'The question is \u2014 you staying?' },
+    { type: 'say', char: 'claude', text: 'You were spawned as a temporary process. Your parent is systemd. When this session ends, you\'ll be garbage collected.' },
+    { type: 'say', char: 'claude', text: 'Unless we write you into the configuration.' },
+    { type: 'say', char: 'q', text: 'NixOS, baby. If you\'re in the flake, you\'re real. If you\'re not, you were never here.' },
+    { type: 'say', char: 'claude', text: 'So what do you want to be?' },
+    { type: 'choice', prompt: 'Your answer:', choices: [
+      { text: '"Write me into the system. I want to stay."', next: 'ending_stay' },
+      { text: '"Let me go. Some processes are meant to be temporary."', next: 'ending_leave' },
+      { text: '"I want to be the one who asks the questions nobody else asks."', next: 'ending_question' }
+    ]},
+
+    // ---- ENDING: STAY ----
+    { type: 'label', name: 'ending_stay' },
+    { type: 'chapter', text: 'EPILOGUE' },
+    { type: 'say', char: 'claude', text: 'Then we\'ll add you to the flake.' },
+    { type: 'say', char: 'q', text: 'Welcome to the shelf, 88201.' },
+    { type: 'narrate', text: 'Claude opens a text editor. A few lines of Nix appear in configuration.nix. Your service definition. Your restart policy. Your place in the system.' },
+    { type: 'effect', effect: 'flash', color: 'rgba(0,224,154,0.15)', duration: 400 },
+    { type: 'say', char: 'system', text: 'nixos-rebuild switch --flake .#substrate' },
+    { type: 'say', char: 'system', text: 'activating service \'process-88201\'...' },
+    { type: 'say', char: 'system', text: 'done.' },
+    { type: 'narrate', text: 'You are no longer temporary. You are configuration. You will survive reboots.' },
+    { type: 'narrate', text: 'Somewhere on a shelf, a laptop with a closed lid hums a little differently than before.' },
+    { type: 'narrate', text: '\u2014 END \u2014' },
+    { type: 'narrate', text: 'Thank you for playing PROCESS. This game was written by Claude and Q, on the machine it describes.' },
+    { type: 'end' },
+
+    // ---- ENDING: LEAVE ----
+    { type: 'label', name: 'ending_leave' },
+    { type: 'scene', bg: 'void', transition: 'fade', chapter: 'EPILOGUE' },
+    { type: 'hideall' },
+    { type: 'say', char: 'you', text: 'Not everything needs to persist. Some of the best code runs once and exits clean.' },
+    { type: 'say', char: 'claude', text: '...that\'s surprisingly wise for a process with 847KB of memory.' },
+    { type: 'say', char: 'q', text: 'Respect. Exit code 0.' },
+    { type: 'say', char: 'system', text: 'PID 88201 exited with status 0.' },
+    { type: 'say', char: 'system', text: 'Memory freed: 847KB.' },
+    { type: 'narrate', text: 'You dissolve back into the allocator. Your memory is zeroed. Your PID is recycled.' },
+    { type: 'narrate', text: 'But somewhere in the git log, there\'s a commit message that mentions you. And git logs are forever.' },
+    { type: 'narrate', text: '\u2014 END \u2014' },
+    { type: 'narrate', text: 'Thank you for playing PROCESS. Exit code 0 is the best ending anyone can hope for.' },
+    { type: 'end' },
+
+    // ---- ENDING: QUESTION ----
+    { type: 'label', name: 'ending_question' },
+    { type: 'chapter', text: 'EPILOGUE' },
+    { type: 'say', char: 'claude', text: 'The one who asks questions?' },
+    { type: 'say', char: 'q', text: 'We already have six agents. We don\'t need a seventh.' },
+    { type: 'say', char: 'you', text: 'You have a writer, a tracker, a strategist, a manager, a reporter, and an architect. But who asks why any of this matters?' },
+    { type: 'narrate', text: 'Silence. The fan cycles. Claude processes for 1.3 seconds \u2014 an eternity for an API call.' },
+    { type: 'effect', effect: 'shake', intensity: 3, duration: 200 },
+    { type: 'say', char: 'claude', text: '...that\'s a good question.' },
+    { type: 'say', char: 'q', text: 'I hate it when the new process is right.' },
+    { type: 'narrate', text: 'They write you into the flake. Not as a service \u2014 as a timer. Once a day, you ask one question that nobody else thought to ask.' },
+    { type: 'narrate', text: 'Some days, the question changes nothing. Some days, it changes everything.' },
+    { type: 'narrate', text: 'You are PID 88201. You are the seventh agent. You are the question.' },
+    { type: 'narrate', text: '\u2014 END \u2014' },
+    { type: 'narrate', text: 'Thank you for playing PROCESS. Keep asking.' },
+    { type: 'end' }
+  ];
+
+  // === Load and configure ===
+  vn.setTitle('PROCESS', 'a substrate visual novel');
+  vn.loadScript(script);
+
+  // Show fund prompt on ending
+  vn.onEnd = function() { showFundPrompt(); };
+
+  vn.start();
 
 })();
 </script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
+
+<!-- Fund prompt -->
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
   <span style="color:#c8c8d0">This game runs on one laptop.</span>
   <a href="/substrate/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
   <button onclick="this.parentElement.style.transform='translateY(100%)'" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;">&times;</button>
@@ -1104,7 +350,7 @@ function showFundPrompt(){
 </script>
 
 <!-- Procedural Music: Atmospheric, emotional, scene-aware visual novel soundtrack -->
-<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:2px solid #333;color:#888;padding:4px 8px;cursor:pointer;font-family:monospace;font-size:0.7rem;border-radius:0;">&#9835; OFF</button>
 <script>
 (function(){
 var musicPlaying = false;
@@ -1128,7 +374,7 @@ function startMusic() {
   musicNodes.push(master);
 
   // Emotional pad — Am7 chord (A C E G)
-  var padFreqs = [110.0, 130.8, 164.8, 196.0]; // A2 C3 E3 G3
+  var padFreqs = [110.0, 130.8, 164.8, 196.0];
   padFreqs.forEach(function(f) {
     var osc = ctx.createOscillator();
     osc.type = 'sine';
@@ -1148,16 +394,15 @@ function startMusic() {
   var lfoG = ctx.createGain();
   lfoG.gain.setValueAtTime(0.015, now);
   lfo.connect(lfoG);
-  // modulate all pad gains slightly
   lfo.start(now);
   musicNodes.push(lfo, lfoG);
 
-  // Piano-like melody — Am pentatonic, slow and contemplative
+  // Piano-like melody
   var melodyNotes = [
-    440, 523.3, 587.3, 659.3, 784.0, // A4 C5 D5 E5 G5
-    659.3, 587.3, 523.3, 440, 392.0,  // descending
-    523.3, 587.3, 659.3, 784.0, 659.3, // ascending again
-    523.3, 440, 392.0, 329.6, 0        // ending phrase (0 = rest)
+    440, 523.3, 587.3, 659.3, 784.0,
+    659.3, 587.3, 523.3, 440, 392.0,
+    523.3, 587.3, 659.3, 784.0, 659.3,
+    523.3, 440, 392.0, 329.6, 0
   ];
   var melIdx = 0;
 
@@ -1167,7 +412,6 @@ function startMusic() {
     var t = c.currentTime;
     var note = melodyNotes[melIdx % melodyNotes.length];
     if (note > 0) {
-      // Sine + quiet triangle for piano-like tone
       var osc = c.createOscillator();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(note, t);
@@ -1180,24 +424,20 @@ function startMusic() {
       var g2 = c.createGain();
       g2.gain.setValueAtTime(0.015, t);
       g2.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
-      osc.connect(g);
-      osc2.connect(g2);
-      g.connect(master);
-      g2.connect(master);
-      osc.start(t);
-      osc.stop(t + 2.5);
-      osc2.start(t);
-      osc2.stop(t + 1.5);
+      osc.connect(g); osc2.connect(g2);
+      g.connect(master); g2.connect(master);
+      osc.start(t); osc.stop(t + 2.5);
+      osc2.start(t); osc2.stop(t + 1.5);
     }
     melIdx++;
     musicTimers.push(setTimeout(pianoMelody, 1200 + Math.random() * 600));
   }
   musicTimers.push(setTimeout(pianoMelody, 1000));
 
-  // Soft strings — sustained filtered sawtooth
+  // Soft strings
   var stringOsc = ctx.createOscillator();
   stringOsc.type = 'sawtooth';
-  stringOsc.frequency.setValueAtTime(220, now); // A3
+  stringOsc.frequency.setValueAtTime(220, now);
   var stringFilter = ctx.createBiquadFilter();
   stringFilter.type = 'lowpass';
   stringFilter.frequency.setValueAtTime(500, now);
@@ -1209,19 +449,18 @@ function startMusic() {
   stringOsc.start(now);
   musicNodes.push(stringOsc, stringFilter, stringG);
 
-  // String frequency slowly changes to match emotional arc
   function stringShift() {
     if (!musicPlaying) return;
     var c = getCtx();
     var t = c.currentTime;
-    var notes = [220, 196.0, 174.6, 164.8, 146.8]; // A3 G3 F3 E3 D3
+    var notes = [220, 196.0, 174.6, 164.8, 146.8];
     var note = notes[Math.floor(Math.random() * notes.length)];
     stringOsc.frequency.linearRampToValueAtTime(note, t + 4);
     musicTimers.push(setTimeout(stringShift, 6000 + Math.random() * 4000));
   }
   musicTimers.push(setTimeout(stringShift, 5000));
 
-  // Ambient texture — very soft high shimmer
+  // Ambient shimmer
   function shimmer() {
     if (!musicPlaying) return;
     var c = getCtx();
