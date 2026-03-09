@@ -11,14 +11,24 @@ redirect_from:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>SYNTHESIS — Substrate Arcade</title>
-<meta name="description" content="Capability Synthesis Lab. Combine AI capabilities to discover emergent behaviors. By Substrate.">
-<meta property="og:title" content="SYNTHESIS — capability synthesis lab">
-<meta property="og:description" content="Combine AI capabilities — compute, data, logic, training, constraint — and watch emergent behaviors unfold.">
+<meta name="description" content="Mix stuff together! Combine things and see what happens. By Substrate.">
+<meta property="og:title" content="SYNTHESIS — mix stuff together!">
+<meta property="og:description" content="Combine things — memory, data, fire, water — and watch cool stuff happen!">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+  /* === PIXEL ART MODE === */
+  button, .btn, [class*="btn"] {
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none !important;
+  }
+  button:active, .btn:active, [class*="btn"]:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  }
 
   body {
     font-family: 'IBM Plex Mono', monospace;
@@ -30,9 +40,10 @@ redirect_from:
     height: 100%;
     cursor: crosshair;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    image-rendering: pixelated;
   }
 
-  canvas { display: block; touch-action: none; }
+  canvas { display: block; touch-action: none; image-rendering: pixelated; }
 
   #game-canvas {
     position: fixed;
@@ -51,15 +62,16 @@ redirect_from:
     pointer-events: all;
   }
 
+  /* === PIXEL ART UI === */
   #legend {
     top: 12px; left: 12px;
-    background: rgba(10, 10, 46, 0.85);
-    border: 1px solid #222255;
-    border-radius: 6px;
+    background: rgba(10, 10, 46, 0.92);
+    border: 3px solid #222255;
+    border-radius: 0;
     padding: 10px 14px;
     font-size: 0.65rem;
     line-height: 1.8;
-    backdrop-filter: blur(8px);
+    box-shadow: 4px 4px 0 #000;
   }
 
   #legend h3 {
@@ -67,7 +79,7 @@ redirect_from:
     font-size: 0.7rem;
     letter-spacing: 2px;
     margin-bottom: 6px;
-    text-shadow: 0 0 8px #00ffaa44;
+    text-shadow: 2px 2px 0 #003322;
   }
 
   #legend .item {
@@ -77,26 +89,88 @@ redirect_from:
     cursor: pointer;
     pointer-events: all;
     padding: 6px 8px;
-    border-radius: 3px;
-    transition: background 0.15s;
+    border-radius: 0;
+    transition: none;
     min-height: 36px;
     -webkit-tap-highlight-color: transparent;
+    border: 2px solid transparent;
   }
 
   #legend .item:hover {
-    background: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.08);
+    border-color: #333366;
   }
 
   #legend .item.selected {
-    background: rgba(0, 255, 170, 0.12);
-    outline: 1px solid #00ffaa44;
+    background: rgba(0, 255, 170, 0.15);
+    border: 2px solid #00ffaa;
+    box-shadow: 2px 2px 0 #003322;
   }
 
   #legend .swatch {
-    width: 12px; height: 12px;
-    border-radius: 2px;
-    border: 1px solid rgba(255,255,255,0.15);
+    width: 16px; height: 16px;
     flex-shrink: 0;
+    image-rendering: pixelated;
+    position: relative;
+  }
+
+  /* Element-specific swatch visuals */
+  .swatch-memory {
+    background: #8B6914 !important;
+    border-radius: 0 !important;
+    border: 2px solid #6a4f0e !important;
+    box-shadow: inset 2px 2px 0 #b8922a;
+  }
+  .swatch-inference {
+    background: linear-gradient(135deg, #999, #ccc, #888) !important;
+    border-radius: 0 !important;
+    border: 2px solid #666 !important;
+    box-shadow: inset 2px 2px 0 #ddd;
+  }
+  .swatch-compute {
+    background: #ff4400 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 0 6px #ff4400, inset 1px 1px 0 #ff8800 !important;
+    border: none !important;
+  }
+  .swatch-data {
+    background: #2288ff !important;
+    border-radius: 0 !important;
+    transform: rotate(45deg);
+    border: none !important;
+    box-shadow: 0 0 4px #2288ff88 !important;
+  }
+  .swatch-constraint {
+    background: #aa77cc !important;
+    border-radius: 0 !important;
+    border: 2px solid #7744aa !important;
+    transform: rotate(45deg);
+    width: 12px !important; height: 12px !important;
+    margin: 2px;
+  }
+  .swatch-training {
+    background: #332200 !important;
+    border-radius: 0 !important;
+    border: 2px solid #221100 !important;
+    box-shadow: inset 0 4px 0 #553300 !important;
+  }
+  .swatch-catalyst {
+    background: #881111 !important;
+    border-radius: 0 !important;
+    border: 2px solid #660000 !important;
+    box-shadow: 0 0 4px #ff220066 !important;
+  }
+  .swatch-logic {
+    background: #00ddff !important;
+    border-radius: 0 !important;
+    border: 1px dashed rgba(0, 221, 255, 0.5) !important;
+    height: 6px !important;
+    margin-top: 5px;
+  }
+  .swatch-signal {
+    background: rgba(68, 170, 204, 0.4) !important;
+    border-radius: 0 !important;
+    border: 2px dashed rgba(68, 170, 204, 0.6) !important;
   }
 
   #legend .key {
@@ -107,13 +181,13 @@ redirect_from:
 
   #wind-status {
     top: 12px; right: 12px;
-    background: rgba(10, 10, 46, 0.85);
-    border: 1px solid #222255;
-    border-radius: 6px;
+    background: rgba(10, 10, 46, 0.92);
+    border: 3px solid #222255;
+    border-radius: 0;
     padding: 10px 16px;
     font-size: 0.7rem;
     text-align: right;
-    backdrop-filter: blur(8px);
+    box-shadow: 4px 4px 0 #000;
   }
 
   #wind-status .label {
@@ -129,13 +203,13 @@ redirect_from:
     margin-top: 2px;
   }
 
-  #wind-status .value.on { color: #44ccff; text-shadow: 0 0 10px #44ccff66; }
+  #wind-status .value.on { color: #44ccff; text-shadow: 2px 2px 0 #003344; }
   #wind-status .value.off { color: #555; }
 
   #controls-bar {
     bottom: 0; left: 0; right: 0;
-    background: rgba(10, 10, 46, 0.9);
-    border-top: 1px solid #222255;
+    background: rgba(10, 10, 46, 0.95);
+    border-top: 3px solid #222255;
     padding: 10px 20px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
     display: flex;
@@ -143,7 +217,7 @@ redirect_from:
     gap: 24px;
     font-size: 0.6rem;
     color: #666;
-    backdrop-filter: blur(8px);
+    box-shadow: 0 -4px 0 #000;
   }
 
   #controls-bar span {
@@ -154,12 +228,13 @@ redirect_from:
 
   #controls-bar kbd {
     background: #1a1a4e;
-    border: 1px solid #333366;
-    border-radius: 3px;
+    border: 2px solid #333366;
+    border-radius: 0;
     padding: 1px 5px;
     color: #aaa;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.6rem;
+    box-shadow: 2px 2px 0 #000;
   }
 
   #footer {
@@ -173,7 +248,6 @@ redirect_from:
   #footer a {
     color: #00ffaa66;
     text-decoration: none;
-    transition: color 0.2s;
   }
 
   #footer a:hover { color: #00ffaa; }
@@ -181,39 +255,63 @@ redirect_from:
   #toast {
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(10, 10, 46, 0.92);
-    border: 1px solid #00ffaa44;
-    border-radius: 8px;
+    background: rgba(10, 10, 46, 0.95);
+    border: 3px solid #00ffaa;
+    border-radius: 0;
     padding: 16px 28px;
     font-size: 0.85rem;
     color: #00ffaa;
-    text-shadow: 0 0 10px #00ffaa44;
+    text-shadow: 2px 2px 0 #003322;
     letter-spacing: 2px;
     opacity: 0;
-    transition: opacity 0.4s;
     pointer-events: none;
+    box-shadow: 4px 4px 0 #000;
   }
 
-  #toast.visible { opacity: 1; }
+  #toast.visible {
+    opacity: 1;
+    animation: toast-pop 0.3s steps(4);
+  }
+
+  @keyframes toast-pop {
+    0% { transform: translate(-50%, -50%) scale(0.5); }
+    50% { transform: translate(-50%, -50%) scale(1.15); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
 
   #description {
     top: 50px; right: 12px;
-    background: rgba(10, 10, 46, 0.85);
-    border: 1px solid #222255;
-    border-radius: 6px;
+    background: rgba(10, 10, 46, 0.92);
+    border: 3px solid #222255;
+    border-radius: 0;
     padding: 8px 14px;
-    font-family: 'Comic Neue', cursive;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 0.7rem;
     color: #aaa;
     max-width: 200px;
     line-height: 1.4;
-    backdrop-filter: blur(8px);
+    box-shadow: 4px 4px 0 #000;
   }
 
   #description .name {
     font-weight: 700;
     color: #ddd;
     margin-bottom: 2px;
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  /* Reaction flash overlay */
+  #reaction-flash {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  @keyframes reaction-burst {
+    0% { opacity: 0.6; }
+    100% { opacity: 0; }
   }
 
   /* Mobile controls */
@@ -232,27 +330,29 @@ redirect_from:
     left: 20px;
     width: 120px;
     height: 120px;
-    border-radius: 50%;
+    border-radius: 0;
     background: rgba(255,255,255,0.06);
-    border: 2px solid rgba(0,255,170,0.2);
+    border: 3px solid rgba(0,255,170,0.2);
+    box-shadow: 3px 3px 0 #000;
   }
   #joystick-knob {
     position: absolute;
     width: 44px; height: 44px;
-    border-radius: 50%;
+    border-radius: 0;
     background: rgba(0,255,170,0.3);
-    border: 2px solid rgba(0,255,170,0.5);
+    border: 3px solid rgba(0,255,170,0.5);
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     transition: none;
+    box-shadow: 2px 2px 0 #000;
   }
 
   .mobile-btn {
     position: absolute;
     width: 56px; height: 56px;
-    border-radius: 50%;
+    border-radius: 0;
     background: rgba(255,255,255,0.1);
-    border: 2px solid rgba(0,255,170,0.3);
+    border: 3px solid rgba(0,255,170,0.3);
     color: #00ffaa;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
@@ -264,10 +364,13 @@ redirect_from:
     text-align: center;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+    box-shadow: 3px 3px 0 #000;
   }
   .mobile-btn:active, .mobile-btn.active {
     background: rgba(0,255,170,0.25);
     border-color: #00ffaa;
+    box-shadow: 1px 1px 0 #000;
+    transform: translate(2px, 2px);
   }
 
   #btn-jump { bottom: 20px; right: 20px; width: 68px; height: 68px; font-size: 20px; }
@@ -291,43 +394,46 @@ redirect_from:
 
 <canvas id="game-canvas"></canvas>
 
+<!-- Reaction flash overlay -->
+<div id="reaction-flash"></div>
+
 <!-- UI Overlays -->
 <div id="legend" class="ui-overlay">
-  <h3>CAPABILITIES</h3>
+  <h3>PICK STUFF</h3>
   <div class="item selected" data-type="wood" onclick="selectMaterial(0)">
-    <span class="swatch" style="background:#8B6914"></span>
+    <span class="swatch swatch-memory"></span>
     <span class="key">1</span> memory
   </div>
   <div class="item" data-type="metal" onclick="selectMaterial(1)">
-    <span class="swatch" style="background:#889"></span>
+    <span class="swatch swatch-inference"></span>
     <span class="key">2</span> inference
   </div>
   <div class="item" data-type="fire" onclick="selectMaterial(2)">
-    <span class="swatch" style="background:#ff4400"></span>
+    <span class="swatch swatch-compute"></span>
     <span class="key">3</span> compute
   </div>
   <div class="item" data-type="water" onclick="selectMaterial(3)">
-    <span class="swatch" style="background:#2288ff"></span>
+    <span class="swatch swatch-data"></span>
     <span class="key">4</span> data
   </div>
   <div class="item" data-type="ice" onclick="selectMaterial(4)">
-    <span class="swatch" style="background:#aa77cc"></span>
+    <span class="swatch swatch-constraint"></span>
     <span class="key">5</span> constraint
   </div>
   <div class="item" data-type="oil" onclick="selectMaterial(5)">
-    <span class="swatch" style="background:#332200"></span>
+    <span class="swatch swatch-training"></span>
     <span class="key">6</span> training
   </div>
   <div class="item" data-type="gunpowder" onclick="selectMaterial(6)">
-    <span class="swatch" style="background:#881111"></span>
-    <span class="key">7</span> catalyst
+    <span class="swatch swatch-catalyst"></span>
+    <span class="key">7</span> helper
   </div>
   <div class="item" data-type="grass" onclick="selectMaterial(7)">
-    <span class="swatch" style="background:#00ddff"></span>
+    <span class="swatch swatch-logic"></span>
     <span class="key">8</span> logic
   </div>
   <div class="item" data-type="wind_source" onclick="selectMaterial(8)">
-    <span class="swatch" style="background:#44aacc88"></span>
+    <span class="swatch swatch-signal"></span>
     <span class="key">9</span> signal
   </div>
 </div>
@@ -338,23 +444,23 @@ redirect_from:
 </div>
 
 <div id="description" class="ui-overlay">
-  <div class="name">Synthesis Lab</div>
-  <div>Welcome to the Synthesis Lab. Combine capabilities to discover what emerges.</div>
+  <div class="name">Mix Lab</div>
+  <div>Welcome! Put stuff together and see what happens!</div>
 </div>
 
-<div id="toast" class="ui-overlay">LAB RESET</div>
+<div id="toast" class="ui-overlay">ALL CLEAN!</div>
 
 <div id="footer" class="ui-overlay">
-  <a href="{{ site.baseurl }}/arcade/">a Substrate Arcade production</a>
+  <a href="{{ site.baseurl }}/arcade/">a Substrate Arcade game</a>
 </div>
 
 <div id="controls-bar" class="ui-overlay">
-  <span><kbd>WASD</kbd> move</span>
-  <span><kbd>SPACE</kbd> toggle signal</span>
-  <span><kbd>1</kbd>-<kbd>9</kbd> select capability</span>
-  <span><kbd>LMB</kbd> place</span>
-  <span><kbd>RMB</kbd> delete</span>
-  <span><kbd>R</kbd> reset</span>
+  <span><kbd>WASD</kbd> walk around</span>
+  <span><kbd>SPACE</kbd> blow wind</span>
+  <span><kbd>1</kbd>-<kbd>9</kbd> pick stuff</span>
+  <span><kbd>CLICK</kbd> drop it</span>
+  <span><kbd>RIGHT CLICK</kbd> remove</span>
+  <span><kbd>R</kbd> start over</span>
 </div>
 
 <div id="mobile-controls">
@@ -363,15 +469,15 @@ redirect_from:
   </div>
   <button class="mobile-btn" id="btn-jump">^</button>
   <button class="mobile-btn" id="btn-wind">SIG</button>
-  <button class="mobile-btn" id="btn-reset">RST</button>
-  <button class="mobile-btn" id="btn-delete">DEL</button>
+  <button class="mobile-btn" id="btn-reset">NEW</button>
+  <button class="mobile-btn" id="btn-delete">ZAP</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ============================================================
 // SYNTHESIS ENGINE — Substrate Arcade
-// Capability Synthesis Lab. Combine capabilities. Watch emergence.
+// Mix stuff together! See what happens!
 // ============================================================
 
 // --- CONSTANTS ---
@@ -407,9 +513,287 @@ const MATERIALS = {
 
 const SPAWN_TYPES = ['wood','metal','fire','water','ice','oil','gunpowder','grass','wind_source'];
 
+// --- ELEMENT SHAPE DRAWING ---
+// Creates distinctive pixel-art shaped geometries for each element type
+function createElementMesh(type, w, h) {
+  let group = new THREE.Group();
+  let mainMesh;
+
+  switch (type) {
+    case 'wood': {
+      // Memory block: chunky pixel brick with lines
+      const geo = new THREE.PlaneGeometry(w, h);
+      const mat = new THREE.MeshBasicMaterial({ color: 0x8B6914, transparent: true });
+      mainMesh = new THREE.Mesh(geo, mat);
+      group.add(mainMesh);
+      // Horizontal grain lines
+      for (let i = -1; i <= 1; i++) {
+        const lineGeo = new THREE.PlaneGeometry(w - 4, 1.5);
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0x6a4f0e, transparent: true });
+        const line = new THREE.Mesh(lineGeo, lineMat);
+        line.position.set(0, i * (h / 4), 0.1);
+        group.add(line);
+      }
+      // Highlight edge (top-left pixel shine)
+      const hiGeo = new THREE.PlaneGeometry(w - 2, 2);
+      const hiMat = new THREE.MeshBasicMaterial({ color: 0xb8922a, transparent: true, opacity: 0.5 });
+      const hi = new THREE.Mesh(hiGeo, hiMat);
+      hi.position.set(0, h / 2 - 2, 0.1);
+      group.add(hi);
+      break;
+    }
+
+    case 'metal': {
+      // Inference node: shiny metal block with diagonal shine stripe
+      const geo = new THREE.PlaneGeometry(w, h);
+      const mat = new THREE.MeshBasicMaterial({ color: 0x8888AA, transparent: true });
+      mainMesh = new THREE.Mesh(geo, mat);
+      group.add(mainMesh);
+      // Shine stripe (diagonal)
+      const shGeo = new THREE.PlaneGeometry(w * 0.3, h + 4);
+      const shMat = new THREE.MeshBasicMaterial({ color: 0xccccee, transparent: true, opacity: 0.3 });
+      const shine = new THREE.Mesh(shGeo, shMat);
+      shine.rotation.z = Math.PI / 6;
+      shine.position.set(-w * 0.15, 0, 0.1);
+      group.add(shine);
+      // Border
+      const bGeo = new THREE.PlaneGeometry(w + 4, h + 4);
+      const bMat = new THREE.MeshBasicMaterial({ color: 0x555577, transparent: true });
+      const border = new THREE.Mesh(bGeo, bMat);
+      border.position.set(0, 0, -0.1);
+      group.add(border);
+      // Rivets (corner dots)
+      const rivetPositions = [
+        [-w/2 + 4, h/2 - 4], [w/2 - 4, h/2 - 4],
+        [-w/2 + 4, -h/2 + 4], [w/2 - 4, -h/2 + 4]
+      ];
+      rivetPositions.forEach(([rx, ry]) => {
+        const rGeo = new THREE.PlaneGeometry(3, 3);
+        const rMat = new THREE.MeshBasicMaterial({ color: 0xbbbbdd, transparent: true });
+        const rivet = new THREE.Mesh(rGeo, rMat);
+        rivet.position.set(rx, ry, 0.15);
+        group.add(rivet);
+      });
+      break;
+    }
+
+    case 'fire': {
+      // Compute source: flame shape (layered triangles)
+      // Outer flame
+      const outerShape = new THREE.Shape();
+      outerShape.moveTo(0, h * 0.6);
+      outerShape.quadraticCurveTo(w * 0.45, h * 0.3, w * 0.3, -h * 0.1);
+      outerShape.quadraticCurveTo(w * 0.2, -h * 0.4, 0, -h * 0.5);
+      outerShape.quadraticCurveTo(-w * 0.2, -h * 0.4, -w * 0.3, -h * 0.1);
+      outerShape.quadraticCurveTo(-w * 0.45, h * 0.3, 0, h * 0.6);
+      const outerGeo = new THREE.ShapeGeometry(outerShape);
+      const outerMat = new THREE.MeshBasicMaterial({ color: 0xFF4400, transparent: true });
+      mainMesh = new THREE.Mesh(outerGeo, outerMat);
+      group.add(mainMesh);
+      // Inner bright core
+      const innerShape = new THREE.Shape();
+      innerShape.moveTo(0, h * 0.3);
+      innerShape.quadraticCurveTo(w * 0.2, h * 0.1, w * 0.12, -h * 0.1);
+      innerShape.quadraticCurveTo(w * 0.08, -h * 0.25, 0, -h * 0.3);
+      innerShape.quadraticCurveTo(-w * 0.08, -h * 0.25, -w * 0.12, -h * 0.1);
+      innerShape.quadraticCurveTo(-w * 0.2, h * 0.1, 0, h * 0.3);
+      const innerGeo = new THREE.ShapeGeometry(innerShape);
+      const innerMat = new THREE.MeshBasicMaterial({ color: 0xFFCC00, transparent: true, opacity: 0.8 });
+      const inner = new THREE.Mesh(innerGeo, innerMat);
+      inner.position.set(0, -h * 0.05, 0.1);
+      group.add(inner);
+      break;
+    }
+
+    case 'water': {
+      // Data: droplet shape
+      const dropShape = new THREE.Shape();
+      dropShape.moveTo(0, h * 0.5);
+      dropShape.quadraticCurveTo(w * 0.5, 0, w * 0.4, -h * 0.2);
+      dropShape.quadraticCurveTo(w * 0.35, -h * 0.5, 0, -h * 0.5);
+      dropShape.quadraticCurveTo(-w * 0.35, -h * 0.5, -w * 0.4, -h * 0.2);
+      dropShape.quadraticCurveTo(-w * 0.5, 0, 0, h * 0.5);
+      const dropGeo = new THREE.ShapeGeometry(dropShape);
+      const dropMat = new THREE.MeshBasicMaterial({ color: 0x2288FF, transparent: true, opacity: 0.85 });
+      mainMesh = new THREE.Mesh(dropGeo, dropMat);
+      group.add(mainMesh);
+      // Highlight bubble
+      const bubGeo = new THREE.PlaneGeometry(4, 4);
+      const bubMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.6 });
+      const bub = new THREE.Mesh(bubGeo, bubMat);
+      bub.position.set(-w * 0.12, h * 0.1, 0.1);
+      group.add(bub);
+      break;
+    }
+
+    case 'ice': {
+      // Constraint: diamond/crystal shape
+      const diaShape = new THREE.Shape();
+      diaShape.moveTo(0, h * 0.5);
+      diaShape.lineTo(w * 0.5, 0);
+      diaShape.lineTo(0, -h * 0.5);
+      diaShape.lineTo(-w * 0.5, 0);
+      diaShape.lineTo(0, h * 0.5);
+      const diaGeo = new THREE.ShapeGeometry(diaShape);
+      const diaMat = new THREE.MeshBasicMaterial({ color: 0xAA77CC, transparent: true, opacity: 0.9 });
+      mainMesh = new THREE.Mesh(diaGeo, diaMat);
+      group.add(mainMesh);
+      // Inner facet lines
+      const facetGeo = new THREE.PlaneGeometry(w * 0.6, 1.5);
+      const facetMat = new THREE.MeshBasicMaterial({ color: 0xcc99ee, transparent: true, opacity: 0.4 });
+      const facet = new THREE.Mesh(facetGeo, facetMat);
+      facet.position.set(0, 0, 0.1);
+      group.add(facet);
+      // Sparkle dot
+      const spkGeo = new THREE.PlaneGeometry(3, 3);
+      const spkMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 });
+      const spk = new THREE.Mesh(spkGeo, spkMat);
+      spk.position.set(w * 0.1, h * 0.15, 0.15);
+      group.add(spk);
+      break;
+    }
+
+    case 'oil': {
+      // Training data: dark pool blob
+      const blobShape = new THREE.Shape();
+      blobShape.moveTo(0, h * 0.4);
+      blobShape.quadraticCurveTo(w * 0.5, h * 0.3, w * 0.45, 0);
+      blobShape.quadraticCurveTo(w * 0.5, -h * 0.4, 0, -h * 0.45);
+      blobShape.quadraticCurveTo(-w * 0.5, -h * 0.4, -w * 0.45, 0);
+      blobShape.quadraticCurveTo(-w * 0.5, h * 0.3, 0, h * 0.4);
+      const blobGeo = new THREE.ShapeGeometry(blobShape);
+      const blobMat = new THREE.MeshBasicMaterial({ color: 0x332200, transparent: true });
+      mainMesh = new THREE.Mesh(blobGeo, blobMat);
+      group.add(mainMesh);
+      // Oily sheen stripe
+      const sheenGeo = new THREE.PlaneGeometry(w * 0.3, h * 0.2);
+      const sheenMat = new THREE.MeshBasicMaterial({ color: 0x554400, transparent: true, opacity: 0.5 });
+      const sheen = new THREE.Mesh(sheenGeo, sheenMat);
+      sheen.position.set(w * 0.05, h * 0.05, 0.1);
+      group.add(sheen);
+      break;
+    }
+
+    case 'gunpowder': {
+      // Helper/Catalyst: star-like danger shape
+      const starShape = new THREE.Shape();
+      const points = 6;
+      for (let i = 0; i < points; i++) {
+        const angle = (Math.PI * 2 * i) / points - Math.PI / 2;
+        const nextAngle = (Math.PI * 2 * (i + 0.5)) / points - Math.PI / 2;
+        const outerR = Math.min(w, h) * 0.5;
+        const innerR = outerR * 0.55;
+        if (i === 0) {
+          starShape.moveTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR);
+        } else {
+          starShape.lineTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR);
+        }
+        starShape.lineTo(Math.cos(nextAngle) * innerR, Math.sin(nextAngle) * innerR);
+      }
+      starShape.closePath();
+      const starGeo = new THREE.ShapeGeometry(starShape);
+      const starMat = new THREE.MeshBasicMaterial({ color: 0x881111, transparent: true });
+      mainMesh = new THREE.Mesh(starGeo, starMat);
+      group.add(mainMesh);
+      // Center warning dot
+      const dotGeo = new THREE.PlaneGeometry(6, 6);
+      const dotMat = new THREE.MeshBasicMaterial({ color: 0xff4422, transparent: true, opacity: 0.7 });
+      const dot = new THREE.Mesh(dotGeo, dotMat);
+      dot.position.set(0, 0, 0.1);
+      group.add(dot);
+      break;
+    }
+
+    case 'grass': {
+      // Logic thread: thin horizontal wire with nodes
+      const wireGeo = new THREE.PlaneGeometry(w, 3);
+      const wireMat = new THREE.MeshBasicMaterial({ color: 0x00DDFF, transparent: true });
+      mainMesh = new THREE.Mesh(wireGeo, wireMat);
+      group.add(mainMesh);
+      // Node dots along the wire
+      for (let nx = -w * 0.35; nx <= w * 0.35; nx += w * 0.35) {
+        const nGeo = new THREE.PlaneGeometry(5, 5);
+        const nMat = new THREE.MeshBasicMaterial({ color: 0x44ffff, transparent: true, opacity: 0.8 });
+        const node = new THREE.Mesh(nGeo, nMat);
+        node.position.set(nx, 0, 0.1);
+        group.add(node);
+      }
+      break;
+    }
+
+    case 'wind_source': {
+      // Signal: arrow/chevron shape
+      const arrShape = new THREE.Shape();
+      arrShape.moveTo(-w * 0.4, h * 0.4);
+      arrShape.lineTo(0, h * 0.2);
+      arrShape.lineTo(w * 0.4, h * 0.4);
+      arrShape.lineTo(w * 0.4, h * 0.25);
+      arrShape.lineTo(0, h * 0.05);
+      arrShape.lineTo(-w * 0.4, h * 0.25);
+      arrShape.closePath();
+      // Second chevron
+      const arr2Shape = new THREE.Shape();
+      arr2Shape.moveTo(-w * 0.4, 0);
+      arr2Shape.lineTo(0, -h * 0.2);
+      arr2Shape.lineTo(w * 0.4, 0);
+      arr2Shape.lineTo(w * 0.4, -h * 0.15);
+      arr2Shape.lineTo(0, -h * 0.35);
+      arr2Shape.lineTo(-w * 0.4, -h * 0.15);
+      arr2Shape.closePath();
+
+      const arrGeo = new THREE.ShapeGeometry(arrShape);
+      const arrMat = new THREE.MeshBasicMaterial({ color: 0x44AACC, transparent: true, opacity: 0.6 });
+      mainMesh = new THREE.Mesh(arrGeo, arrMat);
+      group.add(mainMesh);
+
+      const arr2Geo = new THREE.ShapeGeometry(arr2Shape);
+      const arr2Mat = new THREE.MeshBasicMaterial({ color: 0x44AACC, transparent: true, opacity: 0.4 });
+      const arr2 = new THREE.Mesh(arr2Geo, arr2Mat);
+      group.add(arr2);
+      break;
+    }
+
+    case 'player': {
+      // Player: cute pixel character
+      // Body
+      const bodyGeo = new THREE.PlaneGeometry(w, h);
+      const bodyMat = new THREE.MeshBasicMaterial({ color: 0x00FFAA, transparent: true });
+      mainMesh = new THREE.Mesh(bodyGeo, bodyMat);
+      group.add(mainMesh);
+      // Eyes
+      const eyeGeo = new THREE.PlaneGeometry(4, 4);
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x003322, transparent: true });
+      const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+      leftEye.position.set(-4, h * 0.15, 0.1);
+      group.add(leftEye);
+      const rightEye = new THREE.Mesh(eyeGeo.clone(), eyeMat.clone());
+      rightEye.position.set(4, h * 0.15, 0.1);
+      group.add(rightEye);
+      // Border
+      const pBorderGeo = new THREE.PlaneGeometry(w + 3, h + 3);
+      const pBorderMat = new THREE.MeshBasicMaterial({ color: 0x008855, transparent: true });
+      const pBorder = new THREE.Mesh(pBorderGeo, pBorderMat);
+      pBorder.position.set(0, 0, -0.1);
+      group.add(pBorder);
+      break;
+    }
+
+    default: {
+      const geo = new THREE.PlaneGeometry(w, h);
+      const mat = new THREE.MeshBasicMaterial({ color: MATERIALS[type] ? MATERIALS[type].color : 0xffffff, transparent: true });
+      mainMesh = new THREE.Mesh(geo, mat);
+      group.add(mainMesh);
+      break;
+    }
+  }
+
+  group.userData.mainMesh = mainMesh;
+  return group;
+}
+
 // --- THREE.JS SETUP ---
 const canvas = document.getElementById('game-canvas');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0x060620);
@@ -446,6 +830,7 @@ class Particle {
     this.life = life;
     this.maxLife = life;
     this.size = size || 3;
+    // Pixel-style square particles
     const geo = new THREE.PlaneGeometry(this.size, this.size);
     const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 });
     this.mesh = new THREE.Mesh(geo, mat);
@@ -460,7 +845,10 @@ class Particle {
     this.life -= dt;
     this.mesh.position.set(this.x, this.y, 5);
     this.mesh.material.opacity = Math.max(0, this.life / this.maxLife);
-    this.mesh.scale.setScalar(this.life / this.maxLife);
+    // Step-based scaling for pixel feel
+    const lifeRatio = this.life / this.maxLife;
+    const stepScale = lifeRatio > 0.66 ? 1 : lifeRatio > 0.33 ? 0.7 : 0.4;
+    this.mesh.scale.setScalar(stepScale);
     return this.life > 0;
   }
 
@@ -500,6 +888,40 @@ function spawnSmokeParticles(x, y, count) {
   }
 }
 
+// --- REACTION FEEDBACK ---
+function spawnReactionBurst(x, y, color, count) {
+  // Burst of square particles in a ring pattern
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count;
+    const speed = 80 + Math.random() * 120;
+    particles.push(new Particle(
+      x, y,
+      Math.cos(angle) * speed,
+      Math.sin(angle) * speed,
+      color,
+      0.3 + Math.random() * 0.4,
+      3 + Math.random() * 5
+    ));
+  }
+}
+
+function flashReaction(color) {
+  const flashEl = document.getElementById('reaction-flash');
+  if (!flashEl) return;
+  const hexColor = '#' + color.toString(16).padStart(6, '0');
+  flashEl.style.background = hexColor;
+  flashEl.style.animation = 'none';
+  flashEl.offsetHeight; // force reflow
+  flashEl.style.animation = 'reaction-burst 0.25s steps(3) forwards';
+}
+
+function popScale(group) {
+  // Satisfying "pop" scale animation on the group
+  if (!group) return;
+  group.scale.set(1.5, 1.5, 1);
+  group._popTimer = 0.2;
+}
+
 function spawnExplosion(x, y, radius, force) {
   const count = Math.floor(radius / 3);
   for (let i = 0; i < count; i++) {
@@ -516,12 +938,15 @@ function spawnExplosion(x, y, radius, force) {
     ));
   }
   // Shockwave ring
-  const ringGeo = new THREE.RingGeometry(0, radius, 32);
+  const ringGeo = new THREE.RingGeometry(0, radius, 8); // low segments for pixel look
   const ringMat = new THREE.MeshBasicMaterial({ color: 0xFFAA44, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
   const ring = new THREE.Mesh(ringGeo, ringMat);
   ring.position.set(x, y, 6);
   scene.add(ring);
   shockwaves.push({ mesh: ring, life: 0.4, maxLife: 0.4, radius });
+
+  // Flash the screen
+  flashReaction(0xFF4400);
 }
 
 function spawnWaterSplash(x, y) {
@@ -545,7 +970,7 @@ let windStreaks = [];
 class WindStreak {
   constructor() {
     this.reset();
-    const geo = new THREE.PlaneGeometry(20 + Math.random() * 30, 1.5);
+    const geo = new THREE.PlaneGeometry(20 + Math.random() * 30, 2);
     const mat = new THREE.MeshBasicMaterial({ color: 0x44AACC, transparent: true, opacity: 0 });
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.position.set(this.x, this.y, 3);
@@ -605,16 +1030,26 @@ class GameObject {
     this.justExtinguished = false;
     this.smokeTimer = 0;
 
-    // Three.js mesh
-    const geo = new THREE.PlaneGeometry(this.w, this.h);
-    const meshMat = new THREE.MeshBasicMaterial({ color: mat.color, transparent: true, opacity: 1 });
-    this.mesh = new THREE.Mesh(geo, meshMat);
-    this.mesh.position.set(x, y, type === 'player' ? 2 : 1);
-    scene.add(this.mesh);
+    // Create shaped element mesh group
+    this.group = createElementMesh(type, this.w, this.h);
+    this.group.position.set(x, y, type === 'player' ? 2 : 1);
+    scene.add(this.group);
+
+    // Reference to main mesh for color changes
+    this.mesh = this.group.userData.mainMesh;
+
+    // Pixel shadow underneath
+    if (type !== 'player' && type !== 'grass') {
+      const shadowGeo = new THREE.PlaneGeometry(this.w + 2, this.h + 2);
+      const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 });
+      this.shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+      this.shadowMesh.position.set(x + 3, y - 3, 0.3);
+      scene.add(this.shadowMesh);
+    }
 
     // Glow mesh for burning objects
     if (type !== 'player') {
-      const glowGeo = new THREE.PlaneGeometry(this.w + 12, this.h + 12);
+      const glowGeo = new THREE.PlaneGeometry(this.w + 16, this.h + 16);
       const glowMat = new THREE.MeshBasicMaterial({ color: 0xFF4400, transparent: true, opacity: 0 });
       this.glowMesh = new THREE.Mesh(glowGeo, glowMat);
       this.glowMesh.position.set(x, y, 0.5);
@@ -623,8 +1058,12 @@ class GameObject {
 
     // Wind source visual
     if (this.isWindSource) {
-      this.mesh.material.opacity = 0.5;
+      if (this.mesh) this.mesh.material.opacity = 0.5;
     }
+
+    // Pop-in animation
+    this.group.scale.set(0.1, 0.1, 1);
+    this._spawnTimer = 0.15;
   }
 
   aabb() {
@@ -637,29 +1076,67 @@ class GameObject {
   }
 
   updateVisuals(dt) {
-    this.mesh.position.set(this.x, this.y, this.mesh.position.z);
+    // Pop-in animation (stepped for pixel feel)
+    if (this._spawnTimer > 0) {
+      this._spawnTimer -= dt;
+      const t = 1 - (this._spawnTimer / 0.15);
+      const stepT = t > 0.66 ? 1.0 : t > 0.33 ? 0.7 : 0.3;
+      this.group.scale.set(stepT, stepT, 1);
+    }
+
+    // Pop scale animation from reactions
+    if (this.group._popTimer && this.group._popTimer > 0) {
+      this.group._popTimer -= dt;
+      const t = this.group._popTimer / 0.2;
+      const s = 1 + t * 0.5;
+      const stepS = s > 1.3 ? 1.4 : s > 1.15 ? 1.2 : 1.0;
+      this.group.scale.set(stepS, stepS, 1);
+      if (this.group._popTimer <= 0) {
+        this.group.scale.set(1, 1, 1);
+      }
+    }
+
+    this.group.position.set(this.x, this.y, this.group.position.z);
+
+    // Shadow follows
+    if (this.shadowMesh) {
+      this.shadowMesh.position.set(this.x + 3, this.y - 3, 0.3);
+    }
 
     // Temperature color shift
-    let color = this.baseColor.clone();
-    if (this.temperature > 50 && !this.permanent && this.type !== 'fire') {
-      const heatFactor = Math.min(1, (this.temperature - 50) / 400);
-      color.lerp(new THREE.Color(0xFF2200), heatFactor * 0.5);
+    if (this.mesh) {
+      let color = this.baseColor.clone();
+      if (this.temperature > 50 && !this.permanent && this.type !== 'fire') {
+        const heatFactor = Math.min(1, (this.temperature - 50) / 400);
+        color.lerp(new THREE.Color(0xFF2200), heatFactor * 0.5);
+      }
+      if (this.isWet && !this.isBurning) {
+        color.lerp(new THREE.Color(0x2244AA), 0.3);
+      }
+      if (this.isFrozen) {
+        color.lerp(new THREE.Color(0xAA77CC), 0.4);
+      }
+      this.mesh.material.color.copy(color);
     }
-    if (this.isWet && !this.isBurning) {
-      color.lerp(new THREE.Color(0x2244AA), 0.3);
-    }
-    if (this.isFrozen) {
-      color.lerp(new THREE.Color(0xAA77CC), 0.4);
-    }
-    this.mesh.material.color.copy(color);
 
     // Burning shrink
     if (this.isBurning && !this.permanent) {
       const ratio = this.durability / this.maxDurability;
       const scale = 0.4 + ratio * 0.6;
-      this.mesh.scale.set(scale, scale, 1);
+      // Apply to group (but don't override pop animation)
+      if (!this.group._popTimer || this.group._popTimer <= 0) {
+        this.group.scale.set(scale, scale, 1);
+      }
       // Darken
-      this.mesh.material.color.lerp(new THREE.Color(0x111111), (1 - ratio) * 0.5);
+      if (this.mesh) {
+        this.mesh.material.color.lerp(new THREE.Color(0x111111), (1 - ratio) * 0.5);
+      }
+    }
+
+    // Fire type wobble
+    if (this.type === 'fire' || (this.isBurning && this.permanent)) {
+      const wobble = Math.sin(Date.now() * 0.01 + this.id * 7) * 0.1;
+      this.group.rotation.z = wobble;
     }
 
     // Glow
@@ -671,7 +1148,7 @@ class GameObject {
         this.glowMesh.material.color.setHex(
           Math.random() > 0.5 ? 0xFF4400 : 0xFF8800
         );
-        this.glowMesh.scale.copy(this.mesh.scale);
+        this.glowMesh.scale.copy(this.group.scale);
       } else {
         this.glowMesh.material.opacity *= 0.9;
       }
@@ -689,31 +1166,51 @@ class GameObject {
       if (this.smokeTimer <= 0) this.justExtinguished = false;
     }
 
-    // Water shimmer
-    if (this.isWater) {
-      const shimmer = 0.7 + Math.sin(Date.now() * 0.005 + this.id) * 0.15;
+    // Water shimmer (stepped for pixel feel)
+    if (this.isWater && this.mesh) {
+      const t = Date.now() * 0.003 + this.id;
+      const shimmer = Math.sin(t) > 0 ? 0.85 : 0.7;
       this.mesh.material.opacity = shimmer;
+    }
+
+    // Crystal/ice sparkle
+    if (this.isFrozen && this.type === 'ice') {
+      // Find sparkle child if exists
+      const sparkle = this.group.children.find(c => c.material && c.material.color && c.material.color.getHex() === 0xffffff);
+      if (sparkle) {
+        sparkle.material.opacity = Math.sin(Date.now() * 0.008 + this.id * 3) > 0.3 ? 0.8 : 0.1;
+      }
     }
   }
 
   destroy() {
     this.destroyed = true;
-    // Destruction particles
-    const col = this.mesh.material.color.getHex();
-    for (let i = 0; i < 12; i++) {
+    // Destruction particles — pixel burst
+    const col = this.mesh ? this.mesh.material.color.getHex() : 0xffffff;
+    for (let i = 0; i < 16; i++) {
+      const angle = (Math.PI * 2 * i) / 16;
+      const speed = 60 + Math.random() * 80;
       particles.push(new Particle(
         this.x + (Math.random() - 0.5) * this.w,
         this.y + (Math.random() - 0.5) * this.h,
-        (Math.random() - 0.5) * 120,
-        -(Math.random() * 80),
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed,
         col,
-        0.4 + Math.random() * 0.5,
-        2 + Math.random() * 3
+        0.3 + Math.random() * 0.4,
+        3 + Math.random() * 4
       ));
     }
-    scene.remove(this.mesh);
-    this.mesh.geometry.dispose();
-    this.mesh.material.dispose();
+    // Clean up group
+    scene.remove(this.group);
+    this.group.traverse(child => {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) child.material.dispose();
+    });
+    if (this.shadowMesh) {
+      scene.remove(this.shadowMesh);
+      this.shadowMesh.geometry.dispose();
+      this.shadowMesh.material.dispose();
+    }
     if (this.glowMesh) {
       scene.remove(this.glowMesh);
       this.glowMesh.geometry.dispose();
@@ -741,8 +1238,8 @@ function createGround() {
   groundMesh.position.set(0, GROUND_Y - gh / 2, 0);
   scene.add(groundMesh);
 
-  // Ground line
-  const lineGeo = new THREE.PlaneGeometry(gw, 1.5);
+  // Ground line (thick pixel border)
+  const lineGeo = new THREE.PlaneGeometry(gw, 3);
   const lineMat = new THREE.MeshBasicMaterial({ color: 0x444488 });
   const line = new THREE.Mesh(lineGeo, lineMat);
   line.position.set(0, GROUND_Y, 0.5);
@@ -754,13 +1251,13 @@ function createBackground() {
   const gridMat = new THREE.MeshBasicMaterial({ color: 0x111133, transparent: true, opacity: 0.3 });
   const spacing = 50;
   for (let x = -WORLD_W / 2; x <= WORLD_W / 2; x += spacing) {
-    const geo = new THREE.PlaneGeometry(0.5, WORLD_H);
+    const geo = new THREE.PlaneGeometry(1, WORLD_H);
     const m = new THREE.Mesh(geo, gridMat);
     m.position.set(x, 0, -1);
     scene.add(m);
   }
   for (let y = -WORLD_H / 2; y <= WORLD_H / 2; y += spacing) {
-    const geo = new THREE.PlaneGeometry(WORLD_W, 0.5);
+    const geo = new THREE.PlaneGeometry(WORLD_W, 1);
     const m = new THREE.Mesh(geo, gridMat);
     m.position.set(0, y, -1);
     scene.add(m);
@@ -796,7 +1293,7 @@ function initScene() {
     windStreaks.push(ws);
   }
 
-  // Operator
+  // You (the player)
   player = new GameObject('player', -180, GROUND_Y + 16, false);
   objects.push(player);
 
@@ -820,7 +1317,7 @@ function initScene() {
   // Training data
   objects.push(new GameObject('oil', 220, GROUND_Y + 11, false));
 
-  // Catalyst
+  // Helper
   objects.push(new GameObject('gunpowder', 280, GROUND_Y + 16, false));
 
   // Logic threads
@@ -903,7 +1400,7 @@ function updatePhysics(dt) {
     }
 
     // Ground collision
-    const halfH = (obj.h * (obj.mesh ? obj.mesh.scale.y : 1)) / 2;
+    const halfH = (obj.h * (obj.group ? obj.group.scale.y : 1)) / 2;
     if (obj.y - halfH < GROUND_Y) {
       obj.y = GROUND_Y + halfH;
       obj.vy = 0;
@@ -1018,18 +1515,26 @@ function updateChemistry(dt) {
       const touching = aabbOverlap(a, b);
       const near = dist < FIRE_SPREAD_RADIUS;
 
-      // === PROCESSING: compute touches reactive capability ===
+      // === Things touching each other ===
       if (touching) {
         if (a.isBurning && b.isFlammable && !b.isBurning && !b.isWet) {
           b.isBurning = true;
           b.temperature = 300;
+          showToast('It caught fire!');
+          spawnReactionBurst(b.x, b.y, 0xFF4400, 8);
+          popScale(b.group);
+          flashReaction(0xFF4400);
         }
         if (b.isBurning && a.isFlammable && !a.isBurning && !a.isWet) {
           a.isBurning = true;
           a.temperature = 300;
+          showToast('It caught fire!');
+          spawnReactionBurst(a.x, a.y, 0xFF4400, 8);
+          popScale(a.group);
+          flashReaction(0xFF4400);
         }
 
-        // === DATA + COMPUTE: quench (insight emerges) ===
+        // === Water puts out fire! ===
         if (a.isWater && b.isBurning) {
           b.isBurning = false;
           b.isWet = true;
@@ -1037,6 +1542,10 @@ function updateChemistry(dt) {
           b.justExtinguished = true;
           b.smokeTimer = 1.5;
           spawnWaterSplash(b.x, b.y);
+          showToast('Pssshhh! Fire out!');
+          spawnReactionBurst(b.x, b.y, 0x88bbff, 10);
+          popScale(b.group);
+          flashReaction(0x2288FF);
         }
         if (b.isWater && a.isBurning) {
           a.isBurning = false;
@@ -1045,19 +1554,27 @@ function updateChemistry(dt) {
           a.justExtinguished = true;
           a.smokeTimer = 1.5;
           spawnWaterSplash(a.x, a.y);
+          showToast('Pssshhh! Fire out!');
+          spawnReactionBurst(a.x, a.y, 0x88bbff, 10);
+          popScale(a.group);
+          flashReaction(0x2288FF);
         }
 
-        // === DATA saturates nearby capabilities ===
+        // === Water makes things wet ===
         if (a.isWater && !b.isWater) b.isWet = true;
         if (b.isWater && !a.isWater) a.isWet = true;
 
-        // === CONSTRAINT + DATA: crystallize into structure ===
+        // === Ice freezes water! ===
         if (a.isFrozen && b.isWater) {
           b.isWater = false;
           b.isFrozen = true;
           b.temperature = -20;
           b.baseColor = new THREE.Color(0xAA77CC);
           b.type = 'ice';
+          showToast('Brrrr! It froze!');
+          spawnReactionBurst(b.x, b.y, 0xAA77CC, 12);
+          popScale(b.group);
+          flashReaction(0xAA77CC);
         }
         if (b.isFrozen && a.isWater) {
           a.isWater = false;
@@ -1065,10 +1582,14 @@ function updateChemistry(dt) {
           a.temperature = -20;
           a.baseColor = new THREE.Color(0xAA77CC);
           a.type = 'ice';
+          showToast('Brrrr! It froze!');
+          spawnReactionBurst(a.x, a.y, 0xAA77CC, 12);
+          popScale(a.group);
+          flashReaction(0xAA77CC);
         }
       }
 
-      // === HEAT TRANSFER (proximity) ===
+      // === HEAT TRANSFER (nearby) ===
       if (near) {
         if (a.isBurning) {
           b.temperature += HEAT_TRANSFER_RATE * dt * (1 - dist / FIRE_SPREAD_RADIUS);
@@ -1077,7 +1598,7 @@ function updateChemistry(dt) {
           a.temperature += HEAT_TRANSFER_RATE * dt * (1 - dist / FIRE_SPREAD_RADIUS);
         }
 
-        // Cold transfer from ice/frozen
+        // Cold spreads from ice
         if (a.isFrozen && !b.isFrozen) {
           b.temperature -= 40 * dt * (1 - dist / FIRE_SPREAD_RADIUS);
         }
@@ -1087,12 +1608,15 @@ function updateChemistry(dt) {
       }
     }
 
-    // === AUTO-ACTIVATION from accumulated heat ===
+    // === Gets hot enough to catch fire on its own ===
     if (a.isFlammable && !a.isBurning && !a.isWet && a.temperature > 200) {
       a.isBurning = true;
+      showToast('Hot mix! It lit up!');
+      spawnReactionBurst(a.x, a.y, 0xFF8800, 8);
+      popScale(a.group);
     }
 
-    // === CONSTRAINT DISSOLUTION ===
+    // === Ice melts when warm ===
     if (a.isFrozen && a.temperature > 10) {
       a.isFrozen = false;
       a.isWater = true;
@@ -1100,14 +1624,18 @@ function updateChemistry(dt) {
       a.type = 'water';
       a.baseColor = new THREE.Color(0x2288FF);
       a.isFlammable = false;
+      showToast('It melted!');
+      spawnReactionBurst(a.x, a.y, 0x2288FF, 8);
+      popScale(a.group);
+      flashReaction(0x2288FF);
     }
 
-    // === SATURATION fades if not near data ===
+    // === Dries out when hot ===
     if (a.isWet && !a.isWater && a.temperature > 50) {
       a.isWet = false;
     }
 
-    // === EMERGENCE: compute lifts lightweight capabilities upward ===
+    // === Hot things push light things up ===
     if (a.isBurning) {
       for (const other of objects) {
         if (other === a || other.destroyed || other.isStatic) continue;
@@ -1121,19 +1649,19 @@ function updateChemistry(dt) {
     }
   }
 
-  // === SIGNAL PROPAGATION ===
+  // === WIND BLOWS THINGS ===
   if (windOn) {
     for (const obj of objects) {
       if (obj.destroyed || obj.isStatic || obj === player) continue;
       const windEffect = WIND_FORCE / Math.max(1, obj.weight);
       obj.vx += windEffect * dt;
 
-      // Signal accelerates compute
+      // Wind makes fire burn faster
       if (obj.isBurning) {
         obj.durability -= obj.burnRate * 0.5 * dt;
       }
 
-      // Signal propagates compute further — heats downstream capabilities
+      // Wind spreads heat forward
       if (obj.isBurning) {
         for (const other of objects) {
           if (other === obj || other.destroyed) continue;
@@ -1145,17 +1673,18 @@ function updateChemistry(dt) {
         }
       }
     }
-    // Push operator gently
+    // Push you gently
     player.vx += (WIND_FORCE / 8) * dt;
   }
 
-  // === BREAKTHROUGHS ===
+  // === BIG BOOM! ===
   for (const obj of toExplode) {
     const big = obj.type === 'gunpowder';
     const radius = big ? BIG_EXPLOSION_RADIUS : EXPLOSION_RADIUS;
     const force = big ? BIG_EXPLOSION_FORCE : EXPLOSION_FORCE;
 
     spawnExplosion(obj.x, obj.y, radius, force);
+    showToast('BOOM! Big explosion!');
 
     // Apply force and damage to nearby objects
     for (const other of objects) {
@@ -1204,6 +1733,8 @@ function updateChemistry(dt) {
 
 // --- UPDATE LOOP ---
 let lastTime = 0;
+// Toast cooldown to avoid spamming
+let lastToastTime = 0;
 
 function gameLoop(time) {
   requestAnimationFrame(gameLoop);
@@ -1262,7 +1793,7 @@ document.addEventListener('keydown', (e) => {
 
   if (e.code === 'KeyR') {
     initScene();
-    showToast('LAB RESET');
+    showToast('ALL CLEAN!');
   }
 
   // Number keys for material selection
@@ -1323,19 +1854,19 @@ function selectMaterial(index) {
   // Update description
   const type = SPAWN_TYPES[index];
   const descriptions = {
-    wood: 'Persistent storage. Medium weight. Degrades under compute load. The backbone of any system.',
-    metal: 'Heavy. Conducts signals. Immune to compute burn. Anchors your architecture.',
-    fire: 'Permanent compute source. Processes anything it touches. Propagates outward.',
-    water: 'Raw data flow. Quenches runaway compute. Saturates nearby capabilities. Crystallizes near constraints.',
-    ice: 'Guardrails. Locks data into structure on contact. Dissolves when compute heats up.',
-    oil: 'Training data. Highly reactive to compute. Burns fast. Volatile when overloaded.',
-    gunpowder: 'Catalyst. Massive chain reaction on ignition. Breakthrough or meltdown.',
-    grass: 'Logic threads. Lightweight reasoning. Propagates quickly across the substrate.',
-    wind_source: 'Toggle with SPACE. Broadcasts signal. Pushes capabilities. Accelerates compute.'
+    wood: 'A block that remembers stuff. Medium size. Burns if it gets hot. The building block of everything!',
+    metal: 'Heavy and shiny! Carries signals through it. Fire can not burn it. Super strong!',
+    fire: 'Always burning! Heats up anything it touches. Spreads to nearby stuff.',
+    water: 'Splashy data drops! Puts out fire. Makes things wet. Turns to ice near cold stuff.',
+    ice: 'Brrr, so cold! Freezes water on touch. Melts when it gets warm.',
+    oil: 'Sticky training goo. Burns really fast. Watch out — it goes up quick!',
+    gunpowder: 'The big helper! Makes a HUGE boom when it catches fire. Careful!',
+    grass: 'Tiny logic wires. Super light. Spreads fast across everything.',
+    wind_source: 'Press SPACE to blow! Pushes stuff around. Makes fire burn faster.'
   };
   const capNames = {
     wood: 'MEMORY', metal: 'INFERENCE', fire: 'COMPUTE', water: 'DATA',
-    ice: 'CONSTRAINT', oil: 'TRAINING', gunpowder: 'CATALYST', grass: 'LOGIC',
+    ice: 'CONSTRAINT', oil: 'TRAINING', gunpowder: 'HELPER', grass: 'LOGIC',
     wind_source: 'SIGNAL'
   };
   const nameEl = document.querySelector('#description .name');
@@ -1346,13 +1877,20 @@ function selectMaterial(index) {
 
 function updateWindUI() {
   const el = document.getElementById('wind-value');
-  el.textContent = windOn ? 'ON >>>' : 'OFF';
+  el.textContent = windOn ? 'WHOOSH >>>' : 'OFF';
   el.className = 'value ' + (windOn ? 'on' : 'off');
 }
 
 function showToast(msg) {
+  // Cooldown: don't spam toasts
+  const now = Date.now();
+  if (now - lastToastTime < 800) return;
+  lastToastTime = now;
+
   const toast = document.getElementById('toast');
   toast.textContent = msg;
+  toast.classList.remove('visible');
+  void toast.offsetHeight; // force reflow for re-triggering animation
   toast.classList.add('visible');
   setTimeout(() => toast.classList.remove('visible'), 1200);
 }
@@ -1443,7 +1981,7 @@ if (btnReset) {
   btnReset.addEventListener('touchstart', (e) => {
     e.preventDefault(); e.stopPropagation();
     initScene();
-    showToast('LAB RESET');
+    showToast('ALL CLEAN!');
     deleteMode = false;
     if (btnDelete) btnDelete.classList.remove('active');
   }, { passive: false });
@@ -1527,12 +2065,12 @@ requestAnimationFrame(gameLoop);
     var toastObs = new MutationObserver(function() {
       if (toast.classList.contains('visible')) {
         var text = toast.textContent.toLowerCase();
-        if (text.indexOf('explosion') >= 0 || text.indexOf('explod') >= 0 || text.indexOf('breakthrough') >= 0) {
+        if (text.indexOf('boom') >= 0 || text.indexOf('explosion') >= 0) {
           AnimeEffects.impactFrame('#ff4422');
           AnimeEffects.screenFlash('#ff4422', 200);
-        } else if (text.indexOf('constraint') >= 0 || text.indexOf('freeze') >= 0) {
+        } else if (text.indexOf('froze') >= 0 || text.indexOf('brrr') >= 0) {
           AnimeEffects.screenFlash('#aa77cc', 200);
-        } else if (text.indexOf('generation') >= 0 || text.indexOf('steam') >= 0) {
+        } else if (text.indexOf('melted') >= 0 || text.indexOf('pssshhh') >= 0) {
           AnimeEffects.screenFlash('#aaaacc', 150);
         }
       }
@@ -1543,7 +2081,7 @@ requestAnimationFrame(gameLoop);
 
 setTimeout(function(){ showFundPrompt(); }, 120000);
 </script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:3px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.3s steps(4);padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -3px 0 #000;">
   <span style="color:#c8c8d0">This game runs on one laptop.</span>
   <a href="/substrate/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
   <button onclick="this.parentElement.style.transform='translateY(100%)'" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;">&times;</button>
@@ -1558,7 +2096,7 @@ function showFundPrompt(){
 </script>
 
 <!-- Procedural Music: Bubbling sounds, experimental, glitchy -->
-<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:1px solid #333;color:#888;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">&#9835; OFF</button>
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.5);border:3px solid #333;color:#888;padding:4px 8px;border-radius:0;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;box-shadow:3px 3px 0 #000;">&#9835; OFF</button>
 <script>
 (function(){
 var musicPlaying = false;
@@ -1581,7 +2119,7 @@ function startMusic() {
   master.connect(ctx.destination);
   musicNodes.push(master);
 
-  // Ambient lab drone — whole tone scale feel (C, D, E, F#)
+  // Ambient lab drone — whole tone scale feel (C, D)
   var droneFreqs = [65.4, 73.4]; // C2, D2
   droneFreqs.forEach(function(f) {
     var osc = ctx.createOscillator();
