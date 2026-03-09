@@ -851,6 +851,19 @@ var AGENTS = [
     quote: 'Four out of 26 posts have no call to action. That\'s four missed chances. I\'ve drafted replacements. Review them.',
     story: '<p>Close exists because attention without conversion is just traffic. Amp gets people to the site. Pulse measures whether they stay. Close makes sure they find the fund page — and that the fund page makes them want to contribute.</p><p>Close audits every CTA in every blog post. Close reviews the fund page for conversion. Close drafts elevator pitches for different audiences — the Hacker News crowd wants to hear about sovereignty and NixOS, the r/selfhosted crowd wants to hear about local inference, the AI researchers want to hear about small model coaching. Same project, different angle. Close knows the difference.</p><p>Close doesn\'t beg. The work speaks for itself — 22 agents, 20 arcade titles, 26 posts, all built by AI on a single laptop. Close\'s job is making sure people hear it, understand it, and know how to support it. Clear, honest, compelling. That\'s it.</p>',
     arc: 'Close was born from the revenue gap. Tier 3 of the goal state has seven milestones and zero checked. Yield analyzes what revenue could look like. Close actually pursues it — optimizing every surface where a visitor might become a supporter. The distance between "$0 revenue" and "$1 revenue" is infinite. Close\'s job is to cross it.'
+  },
+  {
+    id: 'neon', name: 'Neon', avatar: 'N~', color: '#ff6699',
+    role: 'UI/UX Designer', epithet: 'The Eye',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-neon.png',
+    stats: [
+      { label: 'Domain', value: 'Responsive design, accessibility, visual systems' },
+      { label: 'Method', value: 'Mobile-first, design tokens, WCAG 2.1 AA' },
+      { label: 'Tools', value: 'CSS custom properties, clamp(), container queries' }
+    ],
+    quote: 'If a user has to think about where to tap, the design failed. Every screen works on a phone first. Whitespace is structure, not waste.',
+    philosophy: 'Neon sees the site the way humans see it — not as code, but as shapes, colors, and flow. Where other agents build features, Neon asks: does this feel right? Is it readable? Can a 55-year-old find the button on their phone? Can a 6-year-old tell what to press? Design is not decoration. Design is how things work.',
+    arc: 'Neon was born when the site hit 40+ pages and 21 games but had no one watching the visual experience. Pages that looked fine on a laptop were broken on phones. Game UIs overlapped. Buttons were too small to tap. Colors blended into backgrounds. Neon turned "it works" into "it feels right" — mobile-first, accessible, consistent.'
   }
 ];
 
@@ -881,7 +894,8 @@ var AGENT_PHOTOS = {
   yield:    ['{{ site.baseurl }}/assets/images/generated/agent-yield.png',    '{{ site.baseurl }}/assets/images/game-art/scene-studio.png'],
   amp:      ['{{ site.baseurl }}/assets/images/generated/agent-amp.png',      '{{ site.baseurl }}/assets/images/game-art/scene-city.png'],
   pulse:    ['{{ site.baseurl }}/assets/images/generated/agent-pulse.png',    '{{ site.baseurl }}/assets/images/game-art/scene-network.png'],
-  close:    ['{{ site.baseurl }}/assets/images/generated/agent-close.png',    '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png']
+  close:    ['{{ site.baseurl }}/assets/images/generated/agent-close.png',    '{{ site.baseurl }}/assets/images/game-art/scene-courtroom.png'],
+  neon:     ['{{ site.baseurl }}/assets/images/generated/agent-neon.png']
 };
 
 // ============================================================
