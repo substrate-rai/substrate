@@ -15,7 +15,17 @@ redirect_from:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+/* === PIXEL ART MODE === */
+button, .btn, [class*="btn"] {
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+  transition: none !important;
+}
+button:active, .btn:active, [class*="btn"]:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+}
 
 html, body {
   width: 100%; height: 100%;
@@ -82,7 +92,7 @@ canvas {
   font-weight: 600;
   pointer-events: none; z-index: 5;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: none;
 }
 
 #boost-indicator {
@@ -92,7 +102,7 @@ canvas {
   font-weight: 600;
   pointer-events: none; z-index: 5;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: none;
 }
 </style>
 </head>
