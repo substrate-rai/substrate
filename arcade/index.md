@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "Substrate Arcade — 21 Games, 7 Radio Stations, Built by AI"
-description: "21 games. 7 radio stations. 1 album. Built by 24 AI agents on one laptop with an RTX 4060. Free forever."
+title: "Substrate Arcade — 22 Games, 7 Radio Stations, Built by AI"
+description: "22 games. 7 radio stations. 1 album. Built by 24 AI agents on one laptop with an RTX 4060. Free forever."
 permalink: /arcade/
 ---
 
@@ -1600,6 +1600,21 @@ permalink: /arcade/
 
 <div class="game-grid" id="trending-grid">
 
+<a class="game-card" data-game="warcraft" data-genre="strategy" data-name="DOMINION" data-added="22" href="{{ site.baseurl }}/games/warcraft/" aria-label="Play DOMINION — Base-Building RTS, 3D — Free">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a2a10, #2a3a18, #0a1a08);">
+    <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
+  </div>
+  <span class="game-card-badge badge-new">NEW</span>
+  <div class="game-card-body">
+    <div class="game-card-title">DOMINION</div>
+    <div class="game-card-tags">
+      <span class="game-tag tag-strategy">BASE-BUILDING</span>
+      <span class="game-tag tag-strategy">RTS</span>
+    </div>
+    <div class="game-card-price"><span class="price-free">FREE</span></div>
+  </div>
+</a>
+
 <a class="game-card" data-game="signal" data-genre="strategy" data-name="SIGNAL" data-added="16" href="{{ site.baseurl }}/games/signal/" aria-label="Play SIGNAL — Deduction, Bot-Playable — Free">
   <div class="game-card-thumb" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a, #0a1a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.webp'); background-size: cover; background-position: center;">
     <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
@@ -1776,7 +1791,7 @@ permalink: /arcade/
 <div class="section-heading" id="strategy">
   <span class="section-heading-text">STRATEGY</span>
   <div class="section-heading-line"></div>
-  <span class="section-heading-count">5 titles</span>
+  <span class="section-heading-count">6 titles</span>
 </div>
 
 <div class="game-grid" data-category="strategy">
@@ -1831,6 +1846,20 @@ permalink: /arcade/
     <div class="game-card-title">STACK OVERFLOW</div>
     <div class="game-card-tags">
       <span class="game-tag tag-strategy">DECKBUILDER</span>
+    </div>
+    <div class="game-card-price"><span class="price-free">FREE</span></div>
+  </div>
+</a>
+
+<a class="game-card" data-game="warcraft" data-genre="strategy" data-name="DOMINION" data-added="22" href="{{ site.baseurl }}/games/warcraft/" aria-label="Play DOMINION — Base-Building RTS, 3D — Free">
+  <div class="game-card-thumb" style="background: linear-gradient(135deg, #1a2a10, #2a3a18, #0a1a08);">
+    <div class="game-card-thumb-overlay"><span class="game-card-thumb-play">PLAY</span></div>
+  </div>
+  <div class="game-card-body">
+    <div class="game-card-title">DOMINION</div>
+    <div class="game-card-tags">
+      <span class="game-tag tag-strategy">BASE-BUILDING</span>
+      <span class="game-tag tag-strategy">RTS</span>
     </div>
     <div class="game-card-price"><span class="price-free">FREE</span></div>
   </div>
@@ -2133,7 +2162,7 @@ permalink: /arcade/
   </a>
   <a class="category-card" data-filter="strategy" href="#strategy">
     <div class="category-card-bg" style="background: linear-gradient(135deg, #0a2a1a, #1a3a2a); background-image: url('{{ site.baseurl }}/assets/images/generated/game-signal.webp'); background-size: cover; background-position: center;"></div>
-    <span class="category-card-count">5 titles</span>
+    <span class="category-card-count">6 titles</span>
     <span class="category-card-label">STRATEGY</span>
   </a>
   <a class="category-card" data-filter="action" href="#action">
@@ -2536,6 +2565,15 @@ permalink: /arcade/
       tagClass: 'tag-tool',
       url: '{{ site.baseurl }}/games/album/',
       bg: 'linear-gradient(135deg, #2a1a2a, #1a0a1a, #3a2a3a)'
+    },
+    'warcraft': {
+      title: 'DOMINION',
+      desc: 'Warcraft-inspired base-building RTS in Three.js. Gather gold and lumber, build farms and barracks, train workers, expand your dominion. Procedural 3D, toon shading, zero external assets.',
+      genre: 'Real-Time Strategy',
+      tags: ['BASE-BUILDING', 'RTS', 'STRATEGY'],
+      tagClass: 'tag-strategy',
+      url: '{{ site.baseurl }}/games/warcraft/',
+      bg: 'linear-gradient(135deg, #1a2a10, #2a3a18, #0a1a08)'
     }
   };
 

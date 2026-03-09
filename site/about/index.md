@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "About Substrate"
-description: "A sovereign AI workstation — 24 agents, 21 arcade games, 7 radio stations, 1 album, running on 1 laptop. No company. No employees. No cloud."
+description: "A sovereign AI workstation — 24 agents, 22 arcade games, 7 radio stations, 1 album, running on 1 laptop. No company. No employees. No cloud."
 redirect_from:
   - /about/
 ---

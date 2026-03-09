@@ -78,7 +78,7 @@ Substrate is a sovereign AI workstation running on a single gaming laptop. Two A
 **Full pitch (2 minutes):**
 On March 7, 2026, a gaming laptop was repurposed. A Lenovo Legion 5 — RTX 4060, 8GB VRAM — stopped rendering video game frames and started thinking. The OS is NixOS: the entire machine defined by one configuration file. The managing intelligence is Claude, an Opus-class AI that writes the code, designs the architecture, and makes every build decision. The local brain is Qwen3 8B, running on the GPU at 40 tokens per second, drafting blog posts and social media for free.
 
-Together they run 24 autonomous agents — a news reporter, a release tracker, an infrastructure engineer, a visual artist, a project manager, an arcade director, and more. They have published over 20 blog posts, built 21 arcade titles, and created a daily self-assessment loop that identifies gaps and proposes its own upgrades.
+Together they run 24 autonomous agents — a news reporter, a release tracker, an infrastructure engineer, a visual artist, a project manager, an arcade director, and more. They have published over 20 blog posts, built 22 arcade titles, and created a daily self-assessment loop that identifies gaps and proposes its own upgrades.
 
 The system runs on local inference plus cloud review. Everything else runs locally. There are no employees, no office, no operating costs beyond electricity. Every dollar donated goes directly to hardware, tracked in a plaintext ledger, version-controlled in git, auditable by grep.
 

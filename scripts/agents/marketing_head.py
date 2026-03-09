@@ -33,7 +33,7 @@ COMMUNITIES = [
     {
         'platform': 'Hacker News',
         'type': 'submission',
-        'title': 'Show HN: 21 arcade titles built entirely by AI on a single laptop',
+        'title': 'Show HN: 22 arcade titles built entirely by AI on a single laptop',
         'url': 'https://substrate.lol/arcade/',
         'priority': 1,
         'status': 'draft',
@@ -42,7 +42,7 @@ COMMUNITIES = [
     {
         'platform': 'Reddit r/selfhosted',
         'type': 'submission',
-        'title': 'I built a self-hosted AI workstation that runs 24 agents and publishes 21 arcade titles from a laptop on a shelf',
+        'title': 'I built a self-hosted AI workstation that runs 24 agents and publishes 22 arcade titles from a laptop on a shelf',
         'url': 'https://substrate.lol/arcade/',
         'priority': 2,
         'status': 'draft',
@@ -60,7 +60,7 @@ COMMUNITIES = [
     {
         'platform': 'Reddit r/NixOS',
         'type': 'submission',
-        'title': 'NixOS as the foundation for a sovereign AI workstation — one flake, 24 agents, 21 arcade titles',
+        'title': 'NixOS as the foundation for a sovereign AI workstation — one flake, 24 agents, 22 arcade titles',
         'url': 'https://github.com/substrate-rai/substrate',
         'priority': 3,
         'status': 'draft',
@@ -92,7 +92,7 @@ COMMUNITIES = [
     {
         'platform': 'Indie Hackers',
         'type': 'submission',
-        'title': 'AI-only game studio: 21 arcade titles, local inference + cloud review',
+        'title': 'AI-only game studio: 22 arcade titles, local inference + cloud review',
         'priority': 3,
         'status': 'pending',
     },
@@ -138,11 +138,11 @@ def cmd_generate(args):
     campaign = {
         'generated': datetime.now().isoformat(),
         'phase': 'launch',
-        'tagline': 'First AI-Built Arcade: 21 Titles, Zero Humans, One Laptop',
+        'tagline': 'First AI-Built Arcade: 22 Titles, Zero Humans, One Laptop',
         'communities': COMMUNITIES,
         'media_angles': MEDIA_ANGLES,
         'stats': {
-            'arcade_titles': 21,
+            'arcade_titles': 22,
             'games': 16,
             'tools': 4,
             'music_experiences': 3,
@@ -188,7 +188,7 @@ def generate_social_posts():
         'platform': 'bluesky',
         'type': 'thread',
         'posts': [
-            'Substrate Arcade is live.\n\n21 arcade titles. Zero human developers. One laptop on a shelf.\n\nTactical RPGs. Synthesis labs. Visual novels. Word puzzles. A deduction game. A Kojima tribute. All built by AI agents.\n\nhttps://substrate.lol/arcade/',
+            'Substrate Arcade is live.\n\n22 arcade titles. Zero human developers. One laptop on a shelf.\n\nTactical RPGs. Synthesis labs. Visual novels. Word puzzles. A deduction game. A Kojima tribute. All built by AI agents.\n\nhttps://substrate.lol/arcade/',
             'The team: 24 AI agents.\n- Claude (cloud) — architect, writes all code\n- Q (Qwen3 8B, local) — writer, learning to rap\n- Arc — arcade director\n- Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, and 13 more\n\nRunning on local inference + cloud review.',
             'Highlights:\n- TACTICS: isometric tactical RPG in Three.js\n- AIRLOCK: Among Us meets BotW chemistry puzzles\n- PROCESS: visual novel where you meet the AI team\n- SIGTERM: daily word puzzle for tech terms\n\nAll open source. All free. All running on an RTX 4060.',
             'The whole machine is defined by a single NixOS config file. The repo IS the documentation. The git log IS the changelog.\n\nEverything is transparent. Everything is auditable.\n\nhttps://github.com/substrate-rai/substrate',

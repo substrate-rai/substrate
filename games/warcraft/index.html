@@ -1,0 +1,1353 @@
+---
+layout: null
+permalink: /games/warcraft/
+title: "DOMINION — Substrate Arcade"
+redirect_from:
+  - /warcraft/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOMINION — Substrate Arcade</title>
+<meta name="description" content="Build your base, gather resources, and expand your dominion in this Warcraft-inspired RTS. Procedural 3D, zero assets, built by AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;overflow:hidden;position:fixed;width:100%;height:100%}
+#game-canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+
+/* Selection box */
+#select-box{position:absolute;border:1px solid #00e09a;background:rgba(0,224,154,0.08);pointer-events:none;display:none;z-index:10}
+
+/* HUD - Top bar */
+#hud{position:absolute;top:0;left:0;right:0;height:36px;background:linear-gradient(180deg,rgba(20,16,10,0.95),rgba(30,24,16,0.9));border-bottom:2px solid #5a4a2a;display:flex;align-items:center;padding:0 12px;z-index:20;gap:20px;font-size:13px}
+.res{display:flex;align-items:center;gap:5px}
+.res-icon{width:16px;height:16px;border-radius:2px}
+.res-gold{background:linear-gradient(135deg,#ffd700,#b8860b)}
+.res-lumber{background:linear-gradient(135deg,#8B4513,#654321)}
+.res-food{background:linear-gradient(135deg,#f4a460,#d2691e)}
+.res-val{font-weight:700;min-width:40px}
+#hud-right{margin-left:auto;display:flex;gap:12px;align-items:center}
+
+/* Bottom panel */
+#bottom-panel{position:absolute;bottom:0;left:0;right:0;height:160px;background:linear-gradient(0deg,rgba(20,16,10,0.97),rgba(30,24,16,0.93));border-top:2px solid #5a4a2a;display:flex;z-index:20}
+
+/* Minimap */
+#minimap-frame{width:160px;height:160px;border-right:2px solid #5a4a2a;position:relative;flex-shrink:0}
+#minimap-canvas{width:100%;height:100%;display:block;cursor:crosshair}
+
+/* Selection info */
+#sel-info{flex:1;padding:8px 12px;display:flex;align-items:center;gap:12px;min-width:0}
+#sel-portrait{width:64px;height:64px;border:2px solid #5a4a2a;border-radius:4px;background:#1a1610;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#sel-portrait canvas{width:100%;height:100%}
+#sel-details{flex:1;min-width:0}
+#sel-name{font-weight:700;font-size:14px;color:#ffd700;margin-bottom:4px}
+#sel-hp-bar{width:100%;height:8px;background:#1a1610;border:1px solid #5a4a2a;border-radius:2px;margin-bottom:4px}
+#sel-hp-fill{height:100%;background:#00cc44;border-radius:1px;transition:width 0.3s}
+#sel-status{font-size:11px;color:#8a8a6a}
+#sel-multi{display:none;flex-wrap:wrap;gap:4px}
+.sel-multi-icon{width:28px;height:28px;border:1px solid #5a4a2a;border-radius:2px;background:#1a1610;cursor:pointer}
+.sel-multi-icon.active{border-color:#ffd700}
+
+/* Command panel */
+#cmd-panel{width:180px;border-left:2px solid #5a4a2a;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3px;padding:6px;flex-shrink:0}
+.cmd-btn{background:linear-gradient(180deg,#2a2418,#1a1610);border:1px solid #5a4a2a;border-radius:3px;color:#c8c0a0;font-size:10px;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px;transition:all 0.15s}
+.cmd-btn:hover:not(:disabled){background:linear-gradient(180deg,#3a3428,#2a2418);border-color:#ffd700}
+.cmd-btn:disabled{opacity:0.3;cursor:not-allowed}
+.cmd-btn .cmd-key{font-size:9px;color:#8a8a6a}
+.cmd-btn .cmd-label{font-size:9px;text-align:center;line-height:1.1}
+.cmd-btn .cmd-cost{font-size:8px;color:#b8860b}
+
+/* Build ghost tooltip */
+#build-tooltip{position:absolute;background:rgba(20,16,10,0.95);border:1px solid #5a4a2a;border-radius:4px;padding:8px;font-size:11px;pointer-events:none;display:none;z-index:30;max-width:200px}
+#build-tooltip .tt-name{font-weight:700;color:#ffd700;margin-bottom:4px}
+#build-tooltip .tt-cost{color:#b8860b}
+#build-tooltip .tt-req{color:#aa4444;font-size:10px;margin-top:2px}
+
+/* Title screen */
+#title-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a,#1a1020,#0a1a0a);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100}
+#title-screen h1{font-size:48px;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.3);letter-spacing:4px;margin-bottom:8px}
+#title-screen .subtitle{font-size:14px;color:#8a8a6a;margin-bottom:40px}
+#title-screen button{background:linear-gradient(180deg,#3a3020,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:16px;padding:12px 40px;border-radius:4px;cursor:pointer;letter-spacing:2px;transition:all 0.2s}
+#title-screen button:hover{background:linear-gradient(180deg,#5a4a30,#3a3020);box-shadow:0 0 20px rgba(255,215,0,0.2)}
+.title-controls{font-size:11px;color:#6a6a5a;margin-top:30px;text-align:center;line-height:1.8}
+
+/* Music toggle */
+#music-btn{background:none;border:1px solid #5a4a2a;color:#8a8a6a;font-family:inherit;font-size:11px;padding:2px 8px;border-radius:3px;cursor:pointer}
+#music-btn:hover{border-color:#ffd700;color:#ffd700}
+#music-btn.active{color:#00cc44;border-color:#00cc44}
+
+/* Arcade link */
+#arcade-link{position:absolute;top:42px;left:8px;z-index:25;color:#00e09a;text-decoration:none;font-size:12px;background:rgba(10,10,15,0.8);padding:3px 8px;border-radius:3px;border:1px solid rgba(0,224,154,0.2)}
+#arcade-link:hover{background:rgba(0,224,154,0.1)}
+
+/* Notifications */
+#notifications{position:absolute;top:44px;right:12px;z-index:25;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.notif{background:rgba(20,16,10,0.9);border:1px solid #5a4a2a;border-radius:3px;padding:4px 10px;font-size:11px;color:#ffd700;animation:notif-fade 3s forwards;white-space:nowrap}
+@keyframes notif-fade{0%{opacity:0;transform:translateX(20px)}10%{opacity:1;transform:translateX(0)}80%{opacity:1}100%{opacity:0}}
+</style>
+</head>
+<body>
+
+<div id="title-screen">
+  <h1>DOMINION</h1>
+  <div class="subtitle">a base-building RTS &middot; substrate arcade</div>
+  <button onclick="startGame()">BEGIN</button>
+  <div class="title-controls">
+    WASD / Arrow keys — scroll &nbsp;&middot;&nbsp; Mouse wheel — zoom<br>
+    Left click — select &nbsp;&middot;&nbsp; Right click — command &nbsp;&middot;&nbsp; Drag — box select<br>
+    F/B/L/K/T — build &nbsp;&middot;&nbsp; Q — train worker &nbsp;&middot;&nbsp; ESC — cancel
+  </div>
+</div>
+
+<canvas id="game-canvas"></canvas>
+<div id="select-box"></div>
+
+<a id="arcade-link" href="/arcade/">&larr; ARCADE</a>
+
+<div id="hud" style="display:none">
+  <div class="res"><div class="res-icon res-gold"></div><span class="res-val" id="gold-val">500</span></div>
+  <div class="res"><div class="res-icon res-lumber"></div><span class="res-val" id="lumber-val">200</span></div>
+  <div class="res"><div class="res-icon res-food"></div><span class="res-val" id="food-val">4/10</span></div>
+  <div id="hud-right">
+    <button id="music-btn" onclick="toggleMusic()">&#9835; OFF</button>
+  </div>
+</div>
+
+<div id="bottom-panel" style="display:none">
+  <div id="minimap-frame"><canvas id="minimap-canvas"></canvas></div>
+  <div id="sel-info">
+    <div id="sel-portrait"><canvas id="portrait-canvas" width="60" height="60"></canvas></div>
+    <div id="sel-details">
+      <div id="sel-name">—</div>
+      <div id="sel-hp-bar"><div id="sel-hp-fill" style="width:100%"></div></div>
+      <div id="sel-status">Select a unit or building</div>
+    </div>
+    <div id="sel-multi"></div>
+  </div>
+  <div id="cmd-panel"></div>
+</div>
+
+<div id="build-tooltip">
+  <div class="tt-name"></div>
+  <div class="tt-cost"></div>
+  <div class="tt-req"></div>
+</div>
+
+<div id="notifications"></div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
+</script>
+<script type="module">
+import*as THREE from'three';
+
+// ============================================================
+// CONFIG
+// ============================================================
+const CFG={
+  MAP_SIZE:48,TILE_SIZE:2,
+  CAM_SPEED:0.4,CAM_ZOOM_MIN:8,CAM_ZOOM_MAX:40,CAM_ZOOM_START:20,
+  WORKER_SPEED:3.5,WORKER_HP:60,
+  HARVEST_TIME:4,HARVEST_GOLD:10,HARVEST_LUMBER:8,
+  BUILD_RATE:12,// hp per second during construction
+  START_GOLD:500,START_LUMBER:200,
+};
+const BUILDINGS={
+  townhall:{name:'Town Hall',w:3,h:3,hp:1200,cost:{gold:0,lumber:0},food:0,supply:10,prereq:[],key:'H',train:['worker']},
+  farm:{name:'Farm',w:2,h:2,hp:400,cost:{gold:80,lumber:20},food:0,supply:6,prereq:[],key:'F'},
+  barracks:{name:'Barracks',w:3,h:3,hp:800,cost:{gold:200,lumber:60},food:0,supply:0,prereq:[],key:'B'},
+  lumbermill:{name:'Lumber Mill',w:3,h:2,hp:600,cost:{gold:120,lumber:0},food:0,supply:0,prereq:[],key:'L'},
+  blacksmith:{name:'Blacksmith',w:2,h:2,hp:600,cost:{gold:140,lumber:60},food:0,supply:0,prereq:['barracks'],key:'K'},
+  tower:{name:'Tower',w:2,h:2,hp:500,cost:{gold:200,lumber:100},food:0,supply:0,prereq:['lumbermill'],key:'T'},
+};
+const WORKER_COST={gold:75,lumber:0,food:1};
+
+// ============================================================
+// GAME STATE
+// ============================================================
+let gold=CFG.START_GOLD,lumber=CFG.START_LUMBER,foodUsed=0,foodCap=0;
+let entities=[],selected=[],goldMines=[],trees=[];
+let buildMode=null,buildGhost=null;
+let gameStarted=false,gameTick=0;
+let musicPlaying=false,audioCtx=null,bgmGain=null;
+
+// Keyboard state
+const keys={};
+window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Escape')cancelBuild()});
+window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+
+// ============================================================
+// THREE.JS SCENE
+// ============================================================
+const canvas=document.getElementById('game-canvas');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x87CEEB);
+scene.fog=new THREE.Fog(0x87CEEB,60,120);
+
+// Camera — isometric-style
+const camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.5,200);
+let camTarget=new THREE.Vector3(CFG.MAP_SIZE*CFG.TILE_SIZE/2,0,CFG.MAP_SIZE*CFG.TILE_SIZE/2);
+let camDist=CFG.CAM_ZOOM_START;
+let camAngle=Math.PI*0.75;// rotation around Y
+const CAM_PITCH=0.9;// fixed pitch angle
+
+function updateCamera(){
+  const x=camTarget.x+camDist*Math.sin(CAM_PITCH)*Math.cos(camAngle);
+  const y=camDist*Math.cos(CAM_PITCH);
+  const z=camTarget.z+camDist*Math.sin(CAM_PITCH)*Math.sin(camAngle);
+  camera.position.set(x,y,z);
+  camera.lookAt(camTarget);
+}
+
+// Lighting
+const ambLight=new THREE.AmbientLight(0x6688aa,0.6);
+scene.add(ambLight);
+const sunLight=new THREE.DirectionalLight(0xffeedd,1.2);
+sunLight.position.set(30,40,20);
+sunLight.castShadow=true;
+sunLight.shadow.mapSize.set(2048,2048);
+sunLight.shadow.camera.left=-50;sunLight.shadow.camera.right=50;
+sunLight.shadow.camera.top=50;sunLight.shadow.camera.bottom=-50;
+sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=100;
+sunLight.shadow.bias=-0.001;
+scene.add(sunLight);
+const hemLight=new THREE.HemisphereLight(0x87CEEB,0x556633,0.4);
+scene.add(hemLight);
+
+// ============================================================
+// TOON MATERIAL
+// ============================================================
+const gradientData=new Uint8Array([40,120,255]);
+const gradientMap=new THREE.DataTexture(gradientData,3,1,THREE.RedFormat);
+gradientMap.minFilter=THREE.NearestFilter;
+gradientMap.magFilter=THREE.NearestFilter;
+gradientMap.needsUpdate=true;
+
+function makeToon(color){
+  return new THREE.MeshToonMaterial({color,gradientMap});
+}
+function addOutline(mesh,t=0.03){
+  const geo=mesh.geometry.clone();
+  const mat=new THREE.MeshBasicMaterial({color:0x000000,side:THREE.BackSide});
+  const ol=new THREE.Mesh(geo,mat);
+  ol.scale.multiplyScalar(1+t);
+  mesh.add(ol);
+  return mesh;
+}
+
+// ============================================================
+// PROCEDURAL TERRAIN
+// ============================================================
+function generateTexture(baseColor,noiseColor,size=64){
+  const c=document.createElement('canvas');c.width=c.height=size;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle=baseColor;ctx.fillRect(0,0,size,size);
+  for(let i=0;i<size*size/4;i++){
+    const x=Math.random()*size,y=Math.random()*size;
+    ctx.fillStyle=noiseColor;ctx.globalAlpha=Math.random()*0.3;
+    ctx.fillRect(x,y,2,2);
+  }
+  ctx.globalAlpha=1;
+  const tex=new THREE.CanvasTexture(c);
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  tex.repeat.set(CFG.MAP_SIZE,CFG.MAP_SIZE);
+  return tex;
+}
+
+const grassTex=generateTexture('#3a7a3a','#2a6a2a');
+const groundGeo=new THREE.PlaneGeometry(CFG.MAP_SIZE*CFG.TILE_SIZE,CFG.MAP_SIZE*CFG.TILE_SIZE);
+groundGeo.rotateX(-Math.PI/2);
+const groundMat=new THREE.MeshToonMaterial({map:grassTex,gradientMap});
+const ground=new THREE.Mesh(groundGeo,groundMat);
+ground.position.set(CFG.MAP_SIZE*CFG.TILE_SIZE/2,0,CFG.MAP_SIZE*CFG.TILE_SIZE/2);
+ground.receiveShadow=true;
+scene.add(ground);
+
+// Grid overlay (subtle)
+const gridHelper=new THREE.GridHelper(CFG.MAP_SIZE*CFG.TILE_SIZE,CFG.MAP_SIZE,0x2a5a2a,0x2a5a2a);
+gridHelper.position.set(CFG.MAP_SIZE*CFG.TILE_SIZE/2,0.01,CFG.MAP_SIZE*CFG.TILE_SIZE/2);
+gridHelper.material.opacity=0.15;
+gridHelper.material.transparent=true;
+scene.add(gridHelper);
+
+// Tile occupancy grid
+const tileOccupied=new Uint8Array(CFG.MAP_SIZE*CFG.MAP_SIZE);
+function tileIdx(tx,tz){return tz*CFG.MAP_SIZE+tx}
+function isTileFree(tx,tz){
+  if(tx<0||tz<0||tx>=CFG.MAP_SIZE||tz>=CFG.MAP_SIZE)return false;
+  return tileOccupied[tileIdx(tx,tz)]===0;
+}
+function occupyTiles(tx,tz,w,h,val=1){
+  for(let dz=0;dz<h;dz++)for(let dx=0;dx<w;dx++){
+    const i=tileIdx(tx+dx,tz+dz);
+    if(i>=0&&i<tileOccupied.length)tileOccupied[i]=val;
+  }
+}
+function worldToTile(x,z){return{tx:Math.floor(x/CFG.TILE_SIZE),tz:Math.floor(z/CFG.TILE_SIZE)}}
+function tileToWorld(tx,tz){return{x:(tx+0.5)*CFG.TILE_SIZE,z:(tz+0.5)*CFG.TILE_SIZE}}
+
+// ============================================================
+// PROCEDURAL MODELS
+// ============================================================
+function createTownHall(){
+  const g=new THREE.Group();
+  // Stone base
+  const base=new THREE.Mesh(new THREE.BoxGeometry(5,3,5),makeToon(0x8B7355));
+  base.position.y=1.5;base.castShadow=true;addOutline(base);g.add(base);
+  // Blue pyramid roof
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(3.8,2.5,4),makeToon(0x1a3a6e));
+  roof.position.y=4.2;roof.rotation.y=Math.PI/4;roof.castShadow=true;addOutline(roof);g.add(roof);
+  // Door
+  const door=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.8,0.15),makeToon(0x4a3520));
+  door.position.set(0,0.9,2.55);addOutline(door);g.add(door);
+  // Banner poles
+  for(let side of[-1,1]){
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,4),makeToon(0x654321));
+    pole.position.set(side*2,2,2.6);g.add(pole);
+    const banner=new THREE.Mesh(new THREE.PlaneGeometry(0.6,1.2),makeToon(0x1a3a6e));
+    banner.position.set(side*2+side*0.3,3.2,2.6);g.add(banner);
+  }
+  g.userData.footprint={w:3,h:3};
+  return g;
+}
+
+function createFarm(){
+  const g=new THREE.Group();
+  const base=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.3,3.5),makeToon(0x8B7355));
+  base.position.y=0.15;base.castShadow=true;g.add(base);
+  // Farmhouse
+  const house=new THREE.Mesh(new THREE.BoxGeometry(1.8,1.5,1.8),makeToon(0xA0826D));
+  house.position.set(-0.5,0.9,-0.5);house.castShadow=true;addOutline(house);g.add(house);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(1.6,1,4),makeToon(0x8B4513));
+  roof.position.set(-0.5,2,-0.5);roof.rotation.y=Math.PI/4;roof.castShadow=true;addOutline(roof);g.add(roof);
+  // Wheat patches
+  for(let i=0;i<6;i++){
+    const wheat=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.6+Math.random()*0.3),makeToon(0xDAA520));
+    wheat.position.set(0.5+Math.random()*1,0.4,0.3+Math.random()*1);g.add(wheat);
+  }
+  // Fence
+  for(let i=0;i<4;i++){
+    const post=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.7),makeToon(0x654321));
+    post.position.set(-1.7,0.35,-1.7+i*1.1);g.add(post);
+  }
+  return g;
+}
+
+function createBarracks(){
+  const g=new THREE.Group();
+  const base=new THREE.Mesh(new THREE.BoxGeometry(5,2.5,5),makeToon(0x7a6a55));
+  base.position.y=1.25;base.castShadow=true;addOutline(base);g.add(base);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(5.5,0.4,5.5),makeToon(0x8B4513));
+  roof.position.y=2.7;roof.castShadow=true;g.add(roof);
+  // Door
+  const door=new THREE.Mesh(new THREE.BoxGeometry(1.4,2,0.15),makeToon(0x4a3520));
+  door.position.set(0,1,2.55);addOutline(door);g.add(door);
+  // Training dummy
+  const dummyPole=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,1.5),makeToon(0x654321));
+  dummyPole.position.set(2,0.75,3.2);g.add(dummyPole);
+  const dummyBody=new THREE.Mesh(new THREE.SphereGeometry(0.3),makeToon(0xDAA520));
+  dummyBody.position.set(2,1.3,3.2);g.add(dummyBody);
+  return g;
+}
+
+function createLumberMill(){
+  const g=new THREE.Group();
+  const base=new THREE.Mesh(new THREE.BoxGeometry(5,2,3.5),makeToon(0x8B7355));
+  base.position.y=1;base.castShadow=true;addOutline(base);g.add(base);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(3.5,1.5,4),makeToon(0x654321));
+  roof.position.y=2.5;roof.rotation.y=Math.PI/4;roof.castShadow=true;addOutline(roof);g.add(roof);
+  // Sawblade
+  const blade=new THREE.Mesh(new THREE.CircleGeometry(0.8,16),makeToon(0xaaaaaa));
+  blade.position.set(2.55,1.5,0);blade.rotation.y=Math.PI/2;g.add(blade);
+  // Log pile
+  for(let i=0;i<3;i++){
+    const log=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,1.5),makeToon(0x8B4513));
+    log.position.set(-2,0.2+i*0.3,0.5);log.rotation.z=Math.PI/2;g.add(log);
+  }
+  return g;
+}
+
+function createBlacksmith(){
+  const g=new THREE.Group();
+  const base=new THREE.Mesh(new THREE.BoxGeometry(3.5,2,3.5),makeToon(0x6a5a45));
+  base.position.y=1;base.castShadow=true;addOutline(base);g.add(base);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(2.8,1.2,4),makeToon(0x4a3520));
+  roof.position.y=2.2;roof.rotation.y=Math.PI/4;roof.castShadow=true;g.add(roof);
+  // Chimney
+  const chimney=new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.4,2),makeToon(0x555555));
+  chimney.position.set(0.8,2.8,0.5);chimney.castShadow=true;g.add(chimney);
+  // Fire glow
+  const fireLight=new THREE.PointLight(0xff6600,0.8,5);
+  fireLight.position.set(0.8,3.8,0.5);g.add(fireLight);
+  // Anvil
+  const anvil=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.4,0.3),makeToon(0x333333));
+  anvil.position.set(-0.3,0.2,2);g.add(anvil);
+  return g;
+}
+
+function createTower(){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(1,1.3,5,8),makeToon(0x8B7355));
+  body.position.y=2.5;body.castShadow=true;addOutline(body);g.add(body);
+  const cap=new THREE.Mesh(new THREE.ConeGeometry(1.6,2,8),makeToon(0x1a3a6e));
+  cap.position.y=5.8;cap.castShadow=true;addOutline(cap);g.add(cap);
+  // Pennant
+  const pennant=new THREE.Mesh(new THREE.PlaneGeometry(0.4,0.8),makeToon(0xffd700));
+  pennant.position.set(0,7,0);g.add(pennant);
+  return g;
+}
+
+const buildingModelFns={
+  townhall:createTownHall,farm:createFarm,barracks:createBarracks,
+  lumbermill:createLumberMill,blacksmith:createBlacksmith,tower:createTower,
+};
+
+function createWorkerModel(){
+  const g=new THREE.Group();
+  // Head (big, 1/4 body height)
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.3,8,8),makeToon(0xf4c79a));
+  head.position.y=1.5;head.castShadow=true;addOutline(head,0.04);g.add(head);
+  // Body (barrel)
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.3,0.7,8),makeToon(0x3366aa));
+  body.position.y=1;body.castShadow=true;addOutline(body);g.add(body);
+  // Legs
+  for(let s of[-1,1]){
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,0.5,6),makeToon(0x6a5a45));
+    leg.position.set(s*0.15,0.35,0);g.add(leg);
+  }
+  // Arms
+  for(let s of[-1,1]){
+    const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.08,0.5,6),makeToon(0xf4c79a));
+    arm.position.set(s*0.4,1.1,0);arm.rotation.z=s*0.3;g.add(arm);
+  }
+  // Pickaxe
+  const handle=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.8),makeToon(0x654321));
+  handle.position.set(0.5,1.3,0);handle.rotation.z=-0.5;g.add(handle);
+  const pick=new THREE.Mesh(new THREE.ConeGeometry(0.12,0.3,4),makeToon(0x888888));
+  pick.position.set(0.8,1.6,0);pick.rotation.z=-Math.PI/2;g.add(pick);
+  return g;
+}
+
+function createGoldMineModel(){
+  const g=new THREE.Group();
+  // Rock cluster
+  for(let i=0;i<5;i++){
+    const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(0.5+Math.random()*0.4,0),makeToon(0x5a5a5a));
+    const a=Math.random()*Math.PI*2,r=Math.random()*0.8;
+    rock.position.set(Math.cos(a)*r,0.3+Math.random()*0.5,Math.sin(a)*r);
+    rock.rotation.set(Math.random(),Math.random(),0);
+    rock.castShadow=true;addOutline(rock);g.add(rock);
+  }
+  // Gold veins (emissive)
+  for(let i=0;i<3;i++){
+    const vein=new THREE.Mesh(new THREE.SphereGeometry(0.15,6,6),
+      new THREE.MeshToonMaterial({color:0xffd700,emissive:0xaa8800,emissiveIntensity:0.5,gradientMap}));
+    const a=Math.random()*Math.PI*2,r=Math.random()*0.6;
+    vein.position.set(Math.cos(a)*r,0.4+Math.random()*0.4,Math.sin(a)*r);
+    g.add(vein);
+  }
+  // Cave entrance
+  const cave=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.8,0.3),makeToon(0x1a1a1a));
+  cave.position.set(0,0.4,0.9);g.add(cave);
+  return g;
+}
+
+// Trees — instanced mesh for performance
+let treeInstances=null;
+const treePositions=[];
+function createTrees(){
+  const trunkGeo=new THREE.CylinderGeometry(0.1,0.15,1.2,6);
+  const canopyGeo=new THREE.SphereGeometry(0.6,6,6);
+  // We'll use two instanced meshes: trunk + canopy
+  const numTrees=200;
+  const trunkMesh=new THREE.InstancedMesh(trunkGeo,makeToon(0x654321),numTrees);
+  const canopyMesh=new THREE.InstancedMesh(canopyGeo,makeToon(0x2a6a2a),numTrees);
+  trunkMesh.castShadow=true;canopyMesh.castShadow=true;
+  const dummy=new THREE.Object3D();
+  let count=0;
+  // Create forest patches
+  const patches=[
+    {cx:8,cz:8,r:8,n:40},{cx:38,cz:8,r:8,n:40},
+    {cx:8,cz:38,r:8,n:40},{cx:38,cz:38,r:8,n:40},
+    {cx:24,cz:5,r:5,n:20},{cx:5,cz:24,r:5,n:20},
+    {cx:43,cz:24,r:5,n:20},{cx:24,cz:43,r:5,n:20},
+  ];
+  for(const p of patches){
+    for(let i=0;i<p.n&&count<numTrees;i++){
+      const a=Math.random()*Math.PI*2,r=Math.random()*p.r;
+      const tx=Math.floor(p.cx+Math.cos(a)*r);
+      const tz=Math.floor(p.cz+Math.sin(a)*r);
+      if(tx<1||tz<1||tx>=CFG.MAP_SIZE-1||tz>=CFG.MAP_SIZE-1)continue;
+      if(!isTileFree(tx,tz))continue;
+      const wx=(tx+0.5)*CFG.TILE_SIZE,wz=(tz+0.5)*CFG.TILE_SIZE;
+      const scale=0.8+Math.random()*0.5;
+      // Trunk
+      dummy.position.set(wx,0.6*scale,wz);dummy.scale.set(scale,scale,scale);
+      dummy.updateMatrix();trunkMesh.setMatrixAt(count,dummy.matrix);
+      // Canopy
+      dummy.position.set(wx,1.5*scale,wz);
+      dummy.updateMatrix();canopyMesh.setMatrixAt(count,dummy.matrix);
+      treePositions.push({idx:count,tx,tz,x:wx,z:wz,hp:50,maxHp:50,alive:true});
+      occupyTiles(tx,tz,1,1,2);// 2 = tree
+      count++;
+    }
+  }
+  trunkMesh.count=count;canopyMesh.count=count;
+  trunkMesh.instanceMatrix.needsUpdate=true;
+  canopyMesh.instanceMatrix.needsUpdate=true;
+  scene.add(trunkMesh);scene.add(canopyMesh);
+  treeInstances={trunk:trunkMesh,canopy:canopyMesh};
+}
+
+// ============================================================
+// ENTITY SYSTEM
+// ============================================================
+let nextId=1;
+class Entity{
+  constructor(type,x,z){
+    this.id=nextId++;this.type=type;
+    this.x=x;this.z=z;this.hp=100;this.maxHp=100;
+    this.mesh=null;this.selCircle=null;this.selected=false;
+    this.hpBar=null;
+  }
+  createSelectionCircle(r=0.8){
+    const geo=new THREE.RingGeometry(r-0.05,r,32);
+    geo.rotateX(-Math.PI/2);
+    const mat=new THREE.MeshBasicMaterial({color:0x00ff88,transparent:true,opacity:0.6});
+    this.selCircle=new THREE.Mesh(geo,mat);
+    this.selCircle.position.y=0.05;
+    this.selCircle.visible=false;
+    this.mesh.add(this.selCircle);
+  }
+  setSelected(v){
+    this.selected=v;
+    if(this.selCircle)this.selCircle.visible=v;
+  }
+  takeDamage(d){this.hp=Math.max(0,this.hp-d)}
+  get alive(){return this.hp>0}
+}
+
+class Worker extends Entity{
+  constructor(x,z){
+    super('worker',x,z);
+    this.hp=CFG.WORKER_HP;this.maxHp=CFG.WORKER_HP;
+    this.state='idle';this.target=null;this.path=[];
+    this.carryType=null;this.carryAmount=0;
+    this.harvestTimer=0;this.buildTarget=null;
+    this.mesh=createWorkerModel();
+    this.mesh.position.set(x,0,z);
+    this.createSelectionCircle(0.5);
+    scene.add(this.mesh);
+    this.bobPhase=Math.random()*Math.PI*2;
+  }
+  update(dt){
+    if(!this.alive)return;
+    switch(this.state){
+      case'idle':break;
+      case'moving':this.doMove(dt);break;
+      case'harvesting_gold':this.doHarvestGold(dt);break;
+      case'harvesting_lumber':this.doHarvestLumber(dt);break;
+      case'returning':this.doMove(dt);break;
+      case'building':this.doBuild(dt);break;
+    }
+    // Bob animation while moving
+    if(this.state==='moving'||this.state==='returning'){
+      this.bobPhase+=dt*8;
+      this.mesh.position.y=Math.abs(Math.sin(this.bobPhase))*0.15;
+    }else{
+      this.mesh.position.y=0;
+    }
+  }
+  moveTo(tx,tz){
+    const{x,z}=tileToWorld(tx,tz);
+    this.target={x,z};this.state='moving';
+  }
+  doMove(dt){
+    if(!this.target)return void(this.state='idle');
+    const dx=this.target.x-this.x,dz=this.target.z-this.z;
+    const dist=Math.sqrt(dx*dx+dz*dz);
+    if(dist<0.3){
+      this.x=this.target.x;this.z=this.target.z;
+      this.mesh.position.x=this.x;this.mesh.position.z=this.z;
+      this.onArrived();return;
+    }
+    const speed=CFG.WORKER_SPEED*dt;
+    const step=Math.min(speed,dist);
+    this.x+=dx/dist*step;this.z+=dz/dist*step;
+    this.mesh.position.x=this.x;this.mesh.position.z=this.z;
+    // Face direction
+    this.mesh.rotation.y=Math.atan2(dx,dz);
+  }
+  onArrived(){
+    if(this.state==='returning'){
+      // Deposit resources
+      if(this.carryType==='gold'){gold+=this.carryAmount;playSfx('deposit')}
+      else if(this.carryType==='lumber'){lumber+=this.carryAmount;playSfx('deposit')}
+      this.carryAmount=0;
+      // Go back to harvest source if it still exists
+      if(this._harvestSource){
+        if(this._harvestSource.type==='goldmine'&&this._harvestSource.hp>0){
+          const p=tileToWorld(this._harvestSource.tx,this._harvestSource.tz);
+          this.target={x:p.x,z:p.z};this.state='moving';
+          this._returnToHarvest=true;return;
+        }else if(this._harvestSource.type==='tree'&&this._harvestSource.alive){
+          this.target={x:this._harvestSource.x,z:this._harvestSource.z};this.state='moving';
+          this._returnToHarvest=true;return;
+        }
+      }
+      this.state='idle';this.target=null;return;
+    }
+    if(this._returnToHarvest&&this._harvestSource){
+      this._returnToHarvest=false;
+      if(this._harvestSource.type==='goldmine')this.state='harvesting_gold';
+      else this.state='harvesting_lumber';
+      this.harvestTimer=0;return;
+    }
+    if(this.buildTarget){
+      this.state='building';this.target=null;return;
+    }
+    this.state='idle';this.target=null;
+  }
+  commandHarvestGold(mine){
+    this._harvestSource=mine;this._returnToHarvest=false;
+    const p=tileToWorld(mine.tx,mine.tz);
+    this.target={x:p.x,z:p.z};this.state='moving';
+    this.buildTarget=null;
+  }
+  commandHarvestLumber(tree){
+    this._harvestSource=tree;this._returnToHarvest=false;
+    this.target={x:tree.x,z:tree.z};this.state='moving';
+    this.buildTarget=null;
+  }
+  commandBuild(building){
+    this.buildTarget=building;this._harvestSource=null;
+    const cx=building.x,cz=building.z;
+    this.target={x:cx,z:cz+BUILDINGS[building.btype].h*CFG.TILE_SIZE/2+1};
+    this.state='moving';
+  }
+  doHarvestGold(dt){
+    this.harvestTimer+=dt;
+    if(this.harvestTimer>=CFG.HARVEST_TIME){
+      this.harvestTimer=0;
+      if(this._harvestSource&&this._harvestSource.hp>0){
+        const take=Math.min(CFG.HARVEST_GOLD,this._harvestSource.hp);
+        this._harvestSource.hp-=take;
+        this.carryType='gold';this.carryAmount=take;
+        playSfx('mine');
+        this.returnToDepot();
+      }else{this.state='idle'}
+    }
+  }
+  doHarvestLumber(dt){
+    this.harvestTimer+=dt;
+    if(this.harvestTimer>=CFG.HARVEST_TIME){
+      this.harvestTimer=0;
+      if(this._harvestSource&&this._harvestSource.alive){
+        this._harvestSource.hp-=CFG.HARVEST_LUMBER;
+        this.carryType='lumber';this.carryAmount=CFG.HARVEST_LUMBER;
+        playSfx('chop');
+        if(this._harvestSource.hp<=0){
+          this._harvestSource.alive=false;
+          hideTreeInstance(this._harvestSource.idx);
+          occupyTiles(this._harvestSource.tx,this._harvestSource.tz,1,1,0);
+        }
+        this.returnToDepot();
+      }else{this.state='idle'}
+    }
+  }
+  returnToDepot(){
+    // Find nearest town hall or lumber mill (for lumber)
+    let best=null,bestDist=Infinity;
+    for(const e of entities){
+      if(e.type!=='building'||!e.built)continue;
+      if(this.carryType==='lumber'&&e.btype!=='townhall'&&e.btype!=='lumbermill')continue;
+      if(this.carryType==='gold'&&e.btype!=='townhall')continue;
+      const dx=e.x-this.x,dz=e.z-this.z,d=dx*dx+dz*dz;
+      if(d<bestDist){bestDist=d;best=e}
+    }
+    if(best){
+      this.target={x:best.x,z:best.z+BUILDINGS[best.btype].h*CFG.TILE_SIZE/2+0.5};
+      this.state='returning';
+    }else{this.state='idle'}
+  }
+  doBuild(dt){
+    if(!this.buildTarget||this.buildTarget.built||this.buildTarget.hp<=0){
+      this.buildTarget=null;this.state='idle';return;
+    }
+    this.buildTarget.hp=Math.min(this.buildTarget.maxHp,this.buildTarget.hp+CFG.BUILD_RATE*dt);
+    // Construction visual progress
+    const pct=this.buildTarget.hp/this.buildTarget.maxHp;
+    if(this.buildTarget.mesh)this.buildTarget.mesh.scale.y=0.3+pct*0.7;
+    if(pct>=1){
+      this.buildTarget.built=true;
+      this.buildTarget.mesh.scale.y=1;
+      if(BUILDINGS[this.buildTarget.btype].supply)foodCap+=BUILDINGS[this.buildTarget.btype].supply;
+      playSfx('complete');
+      notify(BUILDINGS[this.buildTarget.btype].name+' complete');
+      this.buildTarget=null;this.state='idle';
+    }
+  }
+}
+
+function hideTreeInstance(idx){
+  if(!treeInstances)return;
+  const dummy=new THREE.Object3D();
+  dummy.position.set(0,-100,0);dummy.scale.set(0,0,0);dummy.updateMatrix();
+  treeInstances.trunk.setMatrixAt(idx,dummy.matrix);
+  treeInstances.canopy.setMatrixAt(idx,dummy.matrix);
+  treeInstances.trunk.instanceMatrix.needsUpdate=true;
+  treeInstances.canopy.instanceMatrix.needsUpdate=true;
+}
+
+class Building extends Entity{
+  constructor(btype,tx,tz){
+    const info=BUILDINGS[btype];
+    const cx=(tx+info.w/2)*CFG.TILE_SIZE,cz=(tz+info.h/2)*CFG.TILE_SIZE;
+    super('building',cx,cz);
+    this.btype=btype;this.tx=tx;this.tz=tz;
+    this.maxHp=info.hp;this.hp=1;// starts at 1hp, workers build it up
+    this.built=false;
+    this.mesh=buildingModelFns[btype]();
+    this.mesh.position.set(cx,0,cz);
+    this.mesh.scale.y=0.3;// construction state
+    this.createSelectionCircle(info.w*CFG.TILE_SIZE/2);
+    scene.add(this.mesh);
+    occupyTiles(tx,tz,info.w,info.h,3);// 3 = building
+  }
+}
+
+// ============================================================
+// GOLD MINES
+// ============================================================
+function spawnGoldMine(tx,tz){
+  const mine={type:'goldmine',tx,tz,hp:2500,maxHp:2500,
+    x:(tx+1)*CFG.TILE_SIZE,z:(tz+1)*CFG.TILE_SIZE};
+  const model=createGoldMineModel();
+  model.position.set(mine.x,0,mine.z);
+  scene.add(model);mine.mesh=model;
+  occupyTiles(tx,tz,2,2,4);// 4 = gold mine
+  goldMines.push(mine);
+}
+
+// ============================================================
+// MAP GENERATION
+// ============================================================
+function generateMap(){
+  // Gold mines — two near center, two in corners
+  spawnGoldMine(20,20);spawnGoldMine(26,26);
+  spawnGoldMine(4,22);spawnGoldMine(42,22);
+  // Trees
+  createTrees();
+}
+
+// ============================================================
+// GAME INIT
+// ============================================================
+function initGame(){
+  generateMap();
+  // Starting town hall
+  const thTx=22,thTz=22;
+  const th=new Building('townhall',thTx,thTz);
+  th.hp=th.maxHp;th.built=true;th.mesh.scale.y=1;
+  foodCap+=BUILDINGS.townhall.supply;
+  entities.push(th);
+  // Starting workers
+  for(let i=0;i<4;i++){
+    const wx=(thTx+1.5)*CFG.TILE_SIZE+(i-1.5)*1.5;
+    const wz=(thTz+BUILDINGS.townhall.h+0.5)*CFG.TILE_SIZE;
+    const w=new Worker(wx,wz);
+    entities.push(w);foodUsed++;
+  }
+  camTarget.set(th.x,0,th.z);
+}
+
+// ============================================================
+// SELECTION & COMMANDS
+// ============================================================
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+let dragStart=null,isDragging=false;
+const selectBox=document.getElementById('select-box');
+
+function screenToWorld(sx,sy){
+  mouse.x=(sx/window.innerWidth)*2-1;
+  mouse.y=-(sy/window.innerHeight)*2+1;
+  raycaster.setFromCamera(mouse,camera);
+  const hits=raycaster.intersectObject(ground);
+  if(hits.length>0)return hits[0].point;
+  return null;
+}
+
+function findEntityAt(worldPos,radius=1.5){
+  let best=null,bestDist=Infinity;
+  for(const e of entities){
+    if(!e.alive)continue;
+    const dx=e.x-worldPos.x,dz=e.z-worldPos.z;
+    const d=Math.sqrt(dx*dx+dz*dz);
+    if(d<radius&&d<bestDist){bestDist=d;best=e}
+  }
+  return best;
+}
+
+function findGoldMineAt(worldPos,radius=2.5){
+  for(const m of goldMines){
+    if(m.hp<=0)continue;
+    const dx=m.x-worldPos.x,dz=m.z-worldPos.z;
+    if(Math.sqrt(dx*dx+dz*dz)<radius)return m;
+  }
+  return null;
+}
+
+function findTreeAt(worldPos,radius=1.5){
+  let best=null,bestDist=Infinity;
+  for(const t of treePositions){
+    if(!t.alive)continue;
+    const dx=t.x-worldPos.x,dz=t.z-worldPos.z;
+    const d=Math.sqrt(dx*dx+dz*dz);
+    if(d<radius&&d<bestDist){bestDist=d;best=t}
+  }
+  return best;
+}
+
+function selectEntities(list){
+  for(const e of selected)e.setSelected(false);
+  selected=list;
+  for(const e of selected)e.setSelected(true);
+  updateSelectionUI();
+}
+
+function commandSelected(worldPos){
+  if(selected.length===0)return;
+  // Check if clicking a gold mine
+  const mine=findGoldMineAt(worldPos);
+  if(mine){
+    for(const e of selected)if(e instanceof Worker)e.commandHarvestGold(mine);
+    playSfx('ack');return;
+  }
+  // Check if clicking a tree
+  const tree=findTreeAt(worldPos);
+  if(tree){
+    for(const e of selected)if(e instanceof Worker)e.commandHarvestLumber(tree);
+    playSfx('ack');return;
+  }
+  // Check if clicking an unfinished building
+  const ent=findEntityAt(worldPos,2);
+  if(ent&&ent.type==='building'&&!ent.built){
+    for(const e of selected)if(e instanceof Worker)e.commandBuild(ent);
+    playSfx('ack');return;
+  }
+  // Move command
+  const tile=worldToTile(worldPos.x,worldPos.z);
+  for(const e of selected){
+    if(e instanceof Worker){e.moveTo(tile.tx,tile.tz);e.buildTarget=null;e._harvestSource=null}
+  }
+  playSfx('ack');
+}
+
+// Mouse handling
+canvas.addEventListener('mousedown',e=>{
+  if(!gameStarted)return;
+  if(e.button===0){
+    if(buildMode){
+      placeBuild(e);return;
+    }
+    dragStart={x:e.clientX,y:e.clientY};isDragging=false;
+  }
+});
+canvas.addEventListener('mousemove',e=>{
+  if(!gameStarted)return;
+  if(buildMode)updateBuildGhost(e);
+  if(dragStart){
+    const dx=e.clientX-dragStart.x,dy=e.clientY-dragStart.y;
+    if(Math.abs(dx)>5||Math.abs(dy)>5)isDragging=true;
+    if(isDragging){
+      selectBox.style.display='block';
+      selectBox.style.left=Math.min(dragStart.x,e.clientX)+'px';
+      selectBox.style.top=Math.min(dragStart.y,e.clientY)+'px';
+      selectBox.style.width=Math.abs(dx)+'px';
+      selectBox.style.height=Math.abs(dy)+'px';
+    }
+  }
+});
+canvas.addEventListener('mouseup',e=>{
+  if(!gameStarted)return;
+  if(e.button===0){
+    if(isDragging){
+      // Box select
+      const box={
+        x1:Math.min(dragStart.x,e.clientX),y1:Math.min(dragStart.y,e.clientY),
+        x2:Math.max(dragStart.x,e.clientX),y2:Math.max(dragStart.y,e.clientY)
+      };
+      const hits=[];
+      for(const ent of entities){
+        if(!ent.alive||ent.type!=='worker')continue;
+        const screenPos=ent.mesh.position.clone().project(camera);
+        const sx=(screenPos.x+1)/2*window.innerWidth;
+        const sy=(1-screenPos.y)/2*window.innerHeight;
+        if(sx>=box.x1&&sx<=box.x2&&sy>=box.y1&&sy<=box.y2)hits.push(ent);
+      }
+      if(hits.length>0)selectEntities(hits);
+      selectBox.style.display='none';
+    }else{
+      // Click select
+      const wp=screenToWorld(e.clientX,e.clientY);
+      if(wp){
+        const ent=findEntityAt(wp);
+        if(ent){selectEntities([ent]);playSfx('select')}
+        else selectEntities([]);
+      }
+    }
+    dragStart=null;isDragging=false;
+  }else if(e.button===2){
+    e.preventDefault();
+    const wp=screenToWorld(e.clientX,e.clientY);
+    if(wp)commandSelected(wp);
+  }
+});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+
+// Zoom
+canvas.addEventListener('wheel',e=>{
+  camDist=Math.max(CFG.CAM_ZOOM_MIN,Math.min(CFG.CAM_ZOOM_MAX,camDist+e.deltaY*0.03));
+});
+
+// ============================================================
+// BUILD PLACEMENT
+// ============================================================
+function enterBuildMode(btype){
+  if(buildMode)cancelBuild();
+  const info=BUILDINGS[btype];
+  // Check prereqs
+  for(const req of info.prereq){
+    if(!entities.some(e=>e.type==='building'&&e.btype===req&&e.built)){
+      notify('Requires '+BUILDINGS[req].name);playSfx('error');return;
+    }
+  }
+  // Check cost
+  if(gold<info.cost.gold||lumber<info.cost.lumber){
+    notify('Not enough resources');playSfx('error');return;
+  }
+  buildMode=btype;
+  // Create ghost
+  buildGhost=buildingModelFns[btype]();
+  buildGhost.traverse(c=>{if(c.isMesh){c.material=c.material.clone();c.material.transparent=true;c.material.opacity=0.5}});
+  scene.add(buildGhost);
+}
+
+function cancelBuild(){
+  if(buildGhost){scene.remove(buildGhost);buildGhost=null}
+  buildMode=null;
+}
+
+function updateBuildGhost(e){
+  if(!buildGhost||!buildMode)return;
+  const wp=screenToWorld(e.clientX,e.clientY);
+  if(!wp)return;
+  const info=BUILDINGS[buildMode];
+  const tx=Math.floor(wp.x/CFG.TILE_SIZE);
+  const tz=Math.floor(wp.z/CFG.TILE_SIZE);
+  const cx=(tx+info.w/2)*CFG.TILE_SIZE,cz=(tz+info.h/2)*CFG.TILE_SIZE;
+  buildGhost.position.set(cx,0,cz);
+  // Check validity
+  let valid=true;
+  for(let dz=0;dz<info.h;dz++)for(let dx=0;dx<info.w;dx++){
+    if(!isTileFree(tx+dx,tz+dz))valid=false;
+  }
+  buildGhost.traverse(c=>{if(c.isMesh&&c.material.color){
+    c.material.color.set(valid?0x00ff88:0xff4444);
+  }});
+  buildGhost._valid=valid;buildGhost._tx=tx;buildGhost._tz=tz;
+}
+
+function placeBuild(e){
+  if(!buildGhost||!buildMode)return;
+  if(!buildGhost._valid){playSfx('error');return}
+  const info=BUILDINGS[buildMode];
+  if(gold<info.cost.gold||lumber<info.cost.lumber){
+    notify('Not enough resources');playSfx('error');return;
+  }
+  gold-=info.cost.gold;lumber-=info.cost.lumber;
+  const b=new Building(buildMode,buildGhost._tx,buildGhost._tz);
+  entities.push(b);
+  playSfx('hammer');
+  notify('Building '+info.name+'...');
+  // Auto-assign nearest idle worker
+  let bestW=null,bestD=Infinity;
+  for(const e of entities){
+    if(e instanceof Worker&&e.state==='idle'){
+      const dx=e.x-b.x,dz=e.z-b.z,d=dx*dx+dz*dz;
+      if(d<bestD){bestD=d;bestW=e}
+    }
+  }
+  if(bestW)bestW.commandBuild(b);
+  cancelBuild();
+}
+
+// ============================================================
+// TRAIN WORKERS
+// ============================================================
+function trainWorker(){
+  if(gold<WORKER_COST.gold){notify('Not enough gold');playSfx('error');return}
+  if(foodUsed>=foodCap){notify('Need more farms');playSfx('error');return}
+  gold-=WORKER_COST.gold;foodUsed++;
+  // Spawn near town hall
+  const th=entities.find(e=>e.type==='building'&&e.btype==='townhall'&&e.built);
+  if(!th)return;
+  const wx=th.x+(Math.random()-0.5)*3;
+  const wz=th.z+BUILDINGS.townhall.h*CFG.TILE_SIZE/2+1+Math.random()*2;
+  const w=new Worker(wx,wz);
+  entities.push(w);
+  playSfx('ack');notify('Worker trained');
+}
+
+// ============================================================
+// UI UPDATES
+// ============================================================
+function updateHUD(){
+  document.getElementById('gold-val').textContent=Math.floor(gold);
+  document.getElementById('lumber-val').textContent=Math.floor(lumber);
+  document.getElementById('food-val').textContent=foodUsed+'/'+foodCap;
+}
+
+function updateSelectionUI(){
+  const nameEl=document.getElementById('sel-name');
+  const statusEl=document.getElementById('sel-status');
+  const hpFill=document.getElementById('sel-hp-fill');
+  const cmdPanel=document.getElementById('cmd-panel');
+  cmdPanel.innerHTML='';
+  if(selected.length===0){
+    nameEl.textContent='—';statusEl.textContent='Select a unit or building';
+    hpFill.style.width='0%';return;
+  }
+  if(selected.length===1){
+    const e=selected[0];
+    if(e.type==='worker'){
+      nameEl.textContent='Worker';
+      statusEl.textContent=e.state==='idle'?'Idle':e.state.replace(/_/g,' ');
+      hpFill.style.width=(e.hp/e.maxHp*100)+'%';
+      // Build commands
+      addBuildCommands(cmdPanel);
+    }else if(e.type==='building'){
+      const info=BUILDINGS[e.btype];
+      nameEl.textContent=info.name;
+      statusEl.textContent=e.built?'Ready':'Under construction ('+(e.hp/e.maxHp*100|0)+'%)';
+      hpFill.style.width=(e.hp/e.maxHp*100)+'%';
+      if(e.btype==='townhall'&&e.built){
+        const btn=mkCmd('Train Worker','Q',WORKER_COST.gold+'g',()=>trainWorker());
+        cmdPanel.appendChild(btn);
+      }
+    }
+  }else{
+    nameEl.textContent=selected.length+' Workers';
+    statusEl.textContent='Group selected';hpFill.style.width='100%';
+    addBuildCommands(cmdPanel);
+  }
+}
+
+function addBuildCommands(panel){
+  for(const[key,info]of Object.entries(BUILDINGS)){
+    if(key==='townhall')continue;
+    const costStr=info.cost.gold+'g '+(info.cost.lumber?info.cost.lumber+'l':'');
+    const canBuild=gold>=info.cost.gold&&lumber>=info.cost.lumber&&
+      info.prereq.every(r=>entities.some(e=>e.type==='building'&&e.btype===r&&e.built));
+    const btn=mkCmd(info.name,info.key,costStr,()=>enterBuildMode(key));
+    if(!canBuild)btn.disabled=true;
+    panel.appendChild(btn);
+  }
+}
+
+function mkCmd(label,key,cost,onClick){
+  const btn=document.createElement('button');
+  btn.className='cmd-btn';
+  btn.innerHTML=`<span class="cmd-key">[${key}]</span><span class="cmd-label">${label}</span>${cost?`<span class="cmd-cost">${cost}</span>`:''}`;
+  btn.addEventListener('click',onClick);
+  return btn;
+}
+
+// Notifications
+function notify(msg){
+  const el=document.createElement('div');
+  el.className='notif';el.textContent=msg;
+  document.getElementById('notifications').appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+
+// ============================================================
+// MINIMAP
+// ============================================================
+const minimapCanvas=document.getElementById('minimap-canvas');
+const mctx=minimapCanvas.getContext('2d');
+function updateMinimap(){
+  const s=160,ts=s/CFG.MAP_SIZE;
+  minimapCanvas.width=s;minimapCanvas.height=s;
+  mctx.fillStyle='#1a3a1a';mctx.fillRect(0,0,s,s);
+  // Trees
+  mctx.fillStyle='#0a5a0a';
+  for(const t of treePositions){
+    if(!t.alive)continue;
+    mctx.fillRect(t.tx*ts,t.tz*ts,ts,ts);
+  }
+  // Gold mines
+  mctx.fillStyle='#ffd700';
+  for(const m of goldMines){
+    if(m.hp<=0)continue;
+    mctx.fillRect(m.tx*ts,m.tz*ts,ts*2,ts*2);
+  }
+  // Buildings
+  for(const e of entities){
+    if(e.type!=='building')continue;
+    const info=BUILDINGS[e.btype];
+    mctx.fillStyle=e.built?'#4488ff':'#666666';
+    mctx.fillRect(e.tx*ts,e.tz*ts,info.w*ts,info.h*ts);
+  }
+  // Workers
+  mctx.fillStyle='#00ff88';
+  for(const e of entities){
+    if(e.type!=='worker'||!e.alive)continue;
+    const tx=e.x/CFG.TILE_SIZE*ts,tz=e.z/CFG.TILE_SIZE*ts;
+    mctx.fillRect(tx-1,tz-1,3,3);
+  }
+  // Camera viewport
+  mctx.strokeStyle='#ffffff';mctx.lineWidth=1;
+  const cx=camTarget.x/CFG.TILE_SIZE/CFG.MAP_SIZE*s;
+  const cz=camTarget.z/CFG.TILE_SIZE/CFG.MAP_SIZE*s;
+  const vw=camDist*1.2/CFG.MAP_SIZE/CFG.TILE_SIZE*s;
+  mctx.strokeRect(cx-vw/2,cz-vw/2,vw,vw);
+}
+
+// Click minimap to move camera
+minimapCanvas.addEventListener('click',e=>{
+  const rect=minimapCanvas.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)/rect.width;
+  const mz=(e.clientY-rect.top)/rect.height;
+  camTarget.x=mx*CFG.MAP_SIZE*CFG.TILE_SIZE;
+  camTarget.z=mz*CFG.MAP_SIZE*CFG.TILE_SIZE;
+});
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+function handleKeys(){
+  // Camera scroll
+  const spd=CFG.CAM_SPEED*camDist*0.05;
+  const fwd=new THREE.Vector3(-Math.cos(camAngle),0,-Math.sin(camAngle));
+  const right=new THREE.Vector3(-Math.sin(camAngle),0,Math.cos(camAngle));
+  if(keys['w']||keys['arrowup']){camTarget.add(fwd.clone().multiplyScalar(spd))}
+  if(keys['s']||keys['arrowdown']){camTarget.add(fwd.clone().multiplyScalar(-spd))}
+  if(keys['a']||keys['arrowleft']){camTarget.add(right.clone().multiplyScalar(-spd))}
+  if(keys['d']||keys['arrowright']){camTarget.add(right.clone().multiplyScalar(spd))}
+  // Clamp camera
+  const limit=CFG.MAP_SIZE*CFG.TILE_SIZE;
+  camTarget.x=Math.max(0,Math.min(limit,camTarget.x));
+  camTarget.z=Math.max(0,Math.min(limit,camTarget.z));
+  // Edge scroll
+  // Build hotkeys
+  if(keys['b']&&!buildMode){
+    if(selected.some(e=>e instanceof Worker)){
+      // show build options — already shown in command panel
+    }
+  }
+  // Building hotkeys
+  if(selected.some(e=>e instanceof Worker)||selected.some(e=>e.type==='building')){
+    for(const[key,info]of Object.entries(BUILDINGS)){
+      if(key==='townhall')continue;
+      if(keys[info.key.toLowerCase()]&&!buildMode){enterBuildMode(key);keys[info.key.toLowerCase()]=false}
+    }
+  }
+  // Train worker (Q key when Town Hall selected)
+  if(keys['q']&&selected.some(e=>e.type==='building'&&e.btype==='townhall'&&e.built)){
+    trainWorker();keys['q']=false;
+  }
+}
+
+// ============================================================
+// AUDIO — Procedural Web Audio
+// ============================================================
+function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  bgmGain=audioCtx.createGain();bgmGain.gain.value=0;
+  bgmGain.connect(audioCtx.destination);
+}
+
+function playSfx(type){
+  if(!audioCtx)initAudio();
+  const t=audioCtx.currentTime;
+  const g=audioCtx.createGain();g.connect(audioCtx.destination);
+  const o=audioCtx.createOscillator();
+  switch(type){
+    case'select':
+      o.type='sine';o.frequency.value=600;g.gain.setValueAtTime(0.15,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.1);o.connect(g);o.start(t);o.stop(t+0.1);break;
+    case'ack':
+      o.type='triangle';o.frequency.setValueAtTime(120,t);o.frequency.linearRampToValueAtTime(180,t+0.08);
+      g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.25);
+      o.connect(g);o.start(t);o.stop(t+0.25);
+      // Second formant
+      const o2=audioCtx.createOscillator();o2.type='triangle';
+      o2.frequency.setValueAtTime(240,t);o2.frequency.linearRampToValueAtTime(300,t+0.08);
+      o2.connect(g);o2.start(t);o2.stop(t+0.25);break;
+    case'mine':
+      o.type='square';o.frequency.value=800;g.gain.setValueAtTime(0.1,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.15);o.connect(g);o.start(t);o.stop(t+0.15);
+      // Noise burst via buffer
+      playNoiseBurst(0.08,2000,8000,t);break;
+    case'chop':
+      playNoiseBurst(0.12,2000,8000,t);
+      o.type='sine';o.frequency.value=150;g.gain.setValueAtTime(0.15,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.2);o.connect(g);o.start(t);o.stop(t+0.2);break;
+    case'hammer':
+      o.type='triangle';o.frequency.value=200;g.gain.setValueAtTime(0.12,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.15);o.connect(g);o.start(t);o.stop(t+0.15);
+      playNoiseBurst(0.08,1000,5000,t);break;
+    case'complete':
+      // Ascending chord C-E-G-C
+      [262,330,392,523].forEach((f,i)=>{
+        const oc=audioCtx.createOscillator();oc.type='triangle';oc.frequency.value=f;
+        const gc=audioCtx.createGain();gc.gain.setValueAtTime(0.1,t+i*0.1);
+        gc.gain.exponentialRampToValueAtTime(0.01,t+i*0.1+0.4);
+        oc.connect(gc);gc.connect(audioCtx.destination);oc.start(t+i*0.1);oc.stop(t+i*0.1+0.4);
+      });return;
+    case'deposit':
+      [1200,1400,1600].forEach((f,i)=>{
+        const oc=audioCtx.createOscillator();oc.type='sine';oc.frequency.value=f;
+        const gc=audioCtx.createGain();gc.gain.setValueAtTime(0.06,t+i*0.05);
+        gc.gain.exponentialRampToValueAtTime(0.01,t+i*0.05+0.15);
+        oc.connect(gc);gc.connect(audioCtx.destination);oc.start(t+i*0.05);oc.stop(t+i*0.05+0.15);
+      });return;
+    case'error':
+      o.type='square';o.frequency.setValueAtTime(200,t);
+      o.frequency.linearRampToValueAtTime(150,t+0.2);
+      g.gain.setValueAtTime(0.1,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.25);
+      o.connect(g);o.start(t);o.stop(t+0.25);break;
+  }
+}
+
+function playNoiseBurst(dur,lo,hi,startTime){
+  const sr=audioCtx.sampleRate;const len=sr*dur;
+  const buf=audioCtx.createBuffer(1,len,sr);
+  const data=buf.getChannelData(0);
+  for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*0.3;
+  const src=audioCtx.createBufferSource();src.buffer=buf;
+  const bp=audioCtx.createBiquadFilter();bp.type='bandpass';
+  bp.frequency.value=(lo+hi)/2;bp.Q.value=1;
+  const g=audioCtx.createGain();g.gain.setValueAtTime(0.15,startTime);
+  g.gain.exponentialRampToValueAtTime(0.01,startTime+dur);
+  src.connect(bp);bp.connect(g);g.connect(audioCtx.destination);
+  src.start(startTime);src.stop(startTime+dur);
+}
+
+// BGM — triangle pad chord loop
+let bgmInterval=null;
+function startBGM(){
+  if(!audioCtx)initAudio();
+  bgmGain.gain.setValueAtTime(0.08,audioCtx.currentTime);
+  const chords=[[261.6,311.1,392],[261.6,311.1,392],[415.3,493.9,622.3],[466.2,554.4,659.3]];
+  let chordIdx=0;
+  function playChord(){
+    const t=audioCtx.currentTime;
+    const freqs=chords[chordIdx%chords.length];
+    freqs.forEach(f=>{
+      const o=audioCtx.createOscillator();o.type='triangle';o.frequency.value=f;
+      const g=audioCtx.createGain();
+      g.gain.setValueAtTime(0.05,t);
+      g.gain.setValueAtTime(0.05,t+1.2);
+      g.gain.linearRampToValueAtTime(0,t+1.5);
+      o.connect(g);g.connect(bgmGain);o.start(t);o.stop(t+1.5);
+    });
+    chordIdx++;
+  }
+  playChord();
+  bgmInterval=setInterval(playChord,60000/90*2);// 2 beats at 90 BPM
+}
+
+function stopBGM(){
+  if(bgmInterval){clearInterval(bgmInterval);bgmInterval=null}
+  if(bgmGain)bgmGain.gain.setValueAtTime(0,audioCtx.currentTime);
+}
+
+window.toggleMusic=function(){
+  initAudio();
+  musicPlaying=!musicPlaying;
+  const btn=document.getElementById('music-btn');
+  if(musicPlaying){startBGM();btn.textContent='♫ ON';btn.classList.add('active')}
+  else{stopBGM();btn.textContent='♫ OFF';btn.classList.remove('active')}
+};
+
+// ============================================================
+// GAME LOOP
+// ============================================================
+const clock=new THREE.Clock();
+let uiTimer=0;
+
+function gameLoop(){
+  requestAnimationFrame(gameLoop);
+  if(!gameStarted){renderer.render(scene,camera);return}
+  const dt=Math.min(clock.getDelta(),0.1);
+  gameTick++;
+  // Input
+  handleKeys();
+  // Update entities
+  for(const e of entities){
+    if(e instanceof Worker)e.update(dt);
+  }
+  // Camera
+  updateCamera();
+  // UI (throttled)
+  uiTimer+=dt;
+  if(uiTimer>0.25){
+    uiTimer=0;updateHUD();updateMinimap();
+    if(selected.length>0)updateSelectionUI();
+  }
+  renderer.render(scene,camera);
+}
+
+// ============================================================
+// RESIZE
+// ============================================================
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+// ============================================================
+// START
+// ============================================================
+window.startGame=function(){
+  document.getElementById('title-screen').style.display='none';
+  document.getElementById('hud').style.display='flex';
+  document.getElementById('bottom-panel').style.display='flex';
+  initAudio();
+  gameStarted=true;
+  initGame();
+  updateCamera();
+  clock.start();
+};
+
+// State persistence
+window.addEventListener('beforeunload',()=>{
+  if(!gameStarted)return;
+  const state={gold,lumber,foodUsed,foodCap,gameTick};
+  try{sessionStorage.setItem('dominion-state',JSON.stringify(state))}catch(e){}
+});
+
+updateCamera();
+gameLoop();
+</script>
+</body>
+</html>
+</html>
