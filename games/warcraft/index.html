@@ -161,7 +161,8 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
   <div class="title-controls">
     WASD / Arrow keys — scroll &nbsp;&middot;&nbsp; Mouse wheel — zoom<br>
     Left click — select &nbsp;&middot;&nbsp; Right click — command &nbsp;&middot;&nbsp; Drag — box select<br>
-    F/B/L/K/T — build &nbsp;&middot;&nbsp; Q — train worker &nbsp;&middot;&nbsp; ESC — cancel
+    F/B/L/K/T — build &nbsp;&middot;&nbsp; Q — train worker &nbsp;&middot;&nbsp; ESC — cancel<br>
+    <span style="color:#5a5a4a">Mobile: drag — pan &nbsp;&middot;&nbsp; pinch — zoom &nbsp;&middot;&nbsp; tap — select &nbsp;&middot;&nbsp; double-tap — command</span>
   </div>
 </div>
 
@@ -1195,6 +1196,100 @@ canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('wheel',e=>{
   camDist=Math.max(CFG.CAM_ZOOM_MIN,Math.min(CFG.CAM_ZOOM_MAX,camDist+e.deltaY*0.03));
 });
+
+// ============================================================
+// TOUCH CONTROLS (Mobile)
+// ============================================================
+let touchState={start:null,lastTap:0,pinchDist:0,isPanning:false,moved:false};
+
+function getTouchDist(t1,t2){
+  const dx=t1.clientX-t2.clientX,dy=t1.clientY-t2.clientY;
+  return Math.sqrt(dx*dx+dy*dy);
+}
+
+canvas.addEventListener('touchstart',e=>{
+  if(!gameStarted)return;
+  e.preventDefault();
+  const t=e.touches;
+  if(t.length===2){
+    // Pinch start
+    touchState.pinchDist=getTouchDist(t[0],t[1]);
+    touchState.isPanning=false;
+  }else if(t.length===1){
+    touchState.start={x:t[0].clientX,y:t[0].clientY,time:Date.now()};
+    touchState.moved=false;
+    touchState.isPanning=false;
+  }
+},{passive:false});
+
+canvas.addEventListener('touchmove',e=>{
+  if(!gameStarted)return;
+  e.preventDefault();
+  const t=e.touches;
+  if(t.length===2){
+    // Pinch zoom
+    const dist=getTouchDist(t[0],t[1]);
+    if(touchState.pinchDist>0){
+      const delta=(touchState.pinchDist-dist)*0.08;
+      camDist=Math.max(CFG.CAM_ZOOM_MIN,Math.min(CFG.CAM_ZOOM_MAX,camDist+delta));
+    }
+    touchState.pinchDist=dist;
+    touchState.isPanning=false;
+    touchState.moved=true;
+  }else if(t.length===1&&touchState.start){
+    const dx=t[0].clientX-touchState.start.x;
+    const dy=t[0].clientY-touchState.start.y;
+    if(Math.abs(dx)>8||Math.abs(dy)>8){
+      touchState.isPanning=true;
+      touchState.moved=true;
+      // Pan camera — map screen delta to world movement
+      const panSpeed=camDist*0.012;
+      const fwd=new THREE.Vector3(-Math.cos(camAngle),0,-Math.sin(camAngle));
+      const right=new THREE.Vector3(-Math.sin(camAngle),0,Math.cos(camAngle));
+      camTarget.add(right.clone().multiplyScalar(-dx*panSpeed));
+      camTarget.add(fwd.clone().multiplyScalar(dy*panSpeed));
+      // Clamp
+      const limit=CFG.MAP_SIZE*CFG.TILE_SIZE;
+      camTarget.x=Math.max(0,Math.min(limit,camTarget.x));
+      camTarget.z=Math.max(0,Math.min(limit,camTarget.z));
+      touchState.start={x:t[0].clientX,y:t[0].clientY,time:touchState.start.time};
+    }
+  }
+},{passive:false});
+
+canvas.addEventListener('touchend',e=>{
+  if(!gameStarted)return;
+  e.preventDefault();
+  if(touchState.moved||e.touches.length>0){
+    touchState.start=null;touchState.pinchDist=0;
+    return;
+  }
+  // Quick tap — no drag happened
+  if(!touchState.start)return;
+  const elapsed=Date.now()-touchState.start.time;
+  if(elapsed>300){touchState.start=null;return}// long press, ignore
+  const now=Date.now();
+  const isDoubleTap=(now-touchState.lastTap)<350;
+  touchState.lastTap=now;
+
+  const wp=screenToWorld(touchState.start.x,touchState.start.y);
+  if(!wp){touchState.start=null;return}
+
+  if(isDoubleTap&&selected.length>0){
+    // Double-tap = command (right-click)
+    commandSelected(wp);
+  }else{
+    // Single tap = select
+    if(buildMode){
+      placeBuild({clientX:touchState.start.x,clientY:touchState.start.y});
+    }else{
+      const ent=findEntityAt(wp);
+      if(ent){selectEntities([ent]);playSfx('select')}
+      else selectEntities([]);
+    }
+  }
+  touchState.start=null;
+},{passive:false});
 
 // ============================================================
 // BUILD PLACEMENT
