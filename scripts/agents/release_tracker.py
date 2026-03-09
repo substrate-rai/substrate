@@ -25,6 +25,8 @@ from urllib.error import URLError, HTTPError
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+sys.path.insert(0, SCRIPT_DIR)
+from shared import queue_post
 RELEASES_DIR = os.path.join(REPO_DIR, "memory", "releases")
 CACHE_FILE = os.path.join(RELEASES_DIR, "last_check.json")
 
@@ -316,6 +318,21 @@ def main():
     cache["last_run"] = now_str
     save_cache(cache)
     print(f"[echo] cache updated: {CACHE_FILE}", file=sys.stderr)
+
+    # If changes detected, queue a breaking news post
+    if changes:
+        changed_sources = [c["source"] for c in changes]
+        new_models = []
+        for c in changes:
+            new_models.extend(c.get("new_models", []))
+        post = f"Anthropic docs just changed. "
+        if new_models:
+            post += f"New models spotted: {', '.join(new_models[:3])}. "
+        post += (
+            f"Echo tracks this automatically from a laptop on a shelf. "
+            f"substrate.lol"
+        )
+        queue_post(post, source="echo")
 
 
 if __name__ == "__main__":

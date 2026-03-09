@@ -20,6 +20,8 @@ from datetime import datetime, timezone
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+sys.path.insert(0, SCRIPT_DIR)
+from shared import queue_post
 MEMORY_DIR = os.path.join(REPO_DIR, "memory")
 LEDGER_DIR = os.path.join(REPO_DIR, "ledger")
 ENGAGEMENT_DIR = os.path.join(MEMORY_DIR, "engagement")
@@ -424,6 +426,24 @@ def main():
     print(f"Report: {report_path}")
     print()
     print("-- Spore, Substrate Community Network")
+
+    # Queue a funding update post if there's something to say
+    if total_raised > 0 or recent_donations:
+        post = (
+            f"${total_raised:.2f} raised toward ${target:.2f} "
+            f"({pct:.0f}%). "
+        )
+        if next_milestone:
+            post += f"Next milestone: {next_milestone[1]}. "
+        post += "Every dollar tracked in a plaintext ledger. substrate.lol/site/fund/"
+        queue_post(post, source="spore")
+    elif len(milestones_reached) == 0:
+        post = (
+            f"$0 raised. {blog_count} blog posts. 24 games. 24 agents. "
+            f"One laptop on a shelf. The ledger is transparent and empty. "
+            f"substrate.lol/site/fund/"
+        )
+        queue_post(post, source="spore")
 
 
 if __name__ == "__main__":

@@ -8,11 +8,15 @@ Usage:
 
 import argparse
 import glob
+import json
 import os
 import re
 import sys
 
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AGENTS_DIR = os.path.join(REPO_DIR, "scripts", "agents")
+sys.path.insert(0, AGENTS_DIR)
+from shared import queue_post
 BRIEFINGS_DIR = os.path.join(REPO_DIR, "memory", "briefings")
 ACCOUNTABILITY_LOG = os.path.join(REPO_DIR, "memory", "accountability.log")
 
@@ -133,7 +137,24 @@ def main():
             print(f"  - {h}")
         sys.exit(1)
 
-    print(result.stdout)
+    haiku_text = result.stdout.strip()
+    print(haiku_text)
+
+    # Queue the first 2-3 haiku as a Bluesky post
+    if haiku_text:
+        # Split into individual haiku (separated by blank lines)
+        haiku_list = [h.strip() for h in haiku_text.split("\n\n") if h.strip()]
+        # Take first 2-3 haiku that fit in 300 chars
+        post_haiku = []
+        post_len = 0
+        for h in haiku_list[:3]:
+            if post_len + len(h) + 2 < 260:  # leave room for signature
+                post_haiku.append(h)
+                post_len += len(h) + 2
+        if post_haiku:
+            post = "\n\n".join(post_haiku) + "\n\n— Q, from the shelf"
+            queue_post(post, source="q-monologue")
+            print(f"\n[queued {len(post_haiku)} haiku for bluesky]", file=sys.stderr)
 
 
 if __name__ == "__main__":

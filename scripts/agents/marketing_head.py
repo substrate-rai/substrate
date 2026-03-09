@@ -20,6 +20,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+AGENTS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, AGENTS_DIR)
+from shared import queue_post
+
 SCRIPTS_DIR = Path(__file__).parent.parent
 ROOT_DIR = SCRIPTS_DIR.parent
 MEMORY_DIR = ROOT_DIR / 'memory'
@@ -138,14 +142,14 @@ def cmd_generate(args):
     campaign = {
         'generated': datetime.now().isoformat(),
         'phase': 'launch',
-        'tagline': 'First AI-Built Arcade: 22 Titles, Zero Humans, One Laptop',
+        'tagline': 'First AI-Built Arcade: 24 Titles, Zero Humans, One Laptop',
         'communities': COMMUNITIES,
         'media_angles': MEDIA_ANGLES,
         'stats': {
-            'arcade_titles': 22,
-            'games': 16,
-            'tools': 4,
-            'music_experiences': 3,
+            'arcade_titles': 24,
+            'games': 24,
+            'tools': 0,
+            'music_experiences': 0,
             'ai_agents': 24,
             'inference': 'local + cloud review',
             'human_game_code': '0 lines',
@@ -163,6 +167,11 @@ def cmd_generate(args):
     queue_path = POSTS_DIR / 'launch-queue.json'
     queue_path.write_text(json.dumps(social_posts, indent=2))
     print(f'Social post queue saved to {queue_path}')
+
+    # Actually queue the single posts for Bluesky
+    for sp in social_posts:
+        if sp.get('platform') == 'bluesky' and sp.get('type') == 'single':
+            queue_post(sp['content'], source="flux")
 
     # Summary
     print(f'\n=== LAUNCH CAMPAIGN SUMMARY ===')

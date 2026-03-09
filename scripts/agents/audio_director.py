@@ -17,6 +17,9 @@ import sys
 from datetime import datetime, timezone
 
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+AGENTS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, AGENTS_DIR)
+from shared import queue_post
 GAMES_DIR = os.path.join(REPO_DIR, "games")
 ASSETS_DIR = os.path.join(REPO_DIR, "assets")
 REPORT_DIR = os.path.join(REPO_DIR, "memory", "audio")
@@ -357,8 +360,19 @@ def main():
         or game_results[s]["has_web_audio_api"]
         or game_results[s]["audio_files"]
     )
+    silent = total - with_sound
     print(f"[Hum] {with_sound}/{total} games have audio")
     print("-- Hum, Substrate Audio")
+
+    # Queue a post about audio coverage
+    if silent > 0:
+        post = (
+            f"{with_sound} of {total} games have sound. "
+            f"{silent} are still silent. "
+            f"All audio is procedural — Web Audio API, zero mp3s. "
+            f"A laptop composing its own soundtrack. substrate.lol/arcade/"
+        )
+        queue_post(post, source="hum")
 
 
 if __name__ == "__main__":
