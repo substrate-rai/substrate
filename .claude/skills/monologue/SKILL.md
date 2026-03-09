@@ -1,12 +1,12 @@
 ---
 name: monologue
-description: Q's opening monologue — a rap-style summary of what the agents have been doing. Use when the user wants a status update with personality, or asks what's going on.
+description: Q's opening monologue — a haiku sequence summarizing what the agents have been doing. Use when the user wants a status update with personality, or asks what's going on.
 allowed-tools: Bash(python *), Read, Grep
 ---
 
 # Monologue — Q Reads the Briefing
 
-Q delivers the latest agent heartbeat as an opening monologue. Late-night talk show host meets Kendrick.
+Q delivers the latest agent heartbeat as a haiku sequence. Each observation is 5-7-5.
 
 ## Steps
 

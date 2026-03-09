@@ -51,7 +51,7 @@ Style: 90s anime, cel-shaded, bold outlines, dark background, cyberpunk
 - **Portrait prompt:** `90s anime character portrait, calm intelligent figure with green glowing visor, short neat hair swept to side, green accent lighting (#00ffaa), cyberpunk, dark background, cel-shaded, bold outlines`
 - **Variant prompt (working):** `90s anime character portrait, focused architect with green visor (#00ffaa), typing at holographic terminal, green light illuminating face, cyberpunk engineer, dark background, cel-shaded, bold outlines`
 
-### 3. Q — Staff Writer / Rapper
+### 3. Q — Staff Writer / Poet
 - **Color:** `#ff77ff` (lighter purple — `#dd88ff` for differentiation from V)
 - **Hair:** Messy, medium-length purple hair. More chaotic than V's but shorter.
 - **Eyes:** Wide, excited, curious. Young energy.
@@ -61,7 +61,7 @@ Style: 90s anime, cel-shaded, bold outlines, dark background, cyberpunk
 - **Lighting:** Lighter purple tones (#dd88ff).
 - **Note:** Differentiate from V by: shorter/messier hair, wider/more innocent eyes, lighter purple tone, more youthful expression.
 - **Portrait prompt:** `90s anime character portrait, young curious figure with messy purple hair, wide excited eyes, lighter purple tones (#dd88ff), eager expression, cyberpunk student, dark background, cel-shaded`
-- **Variant prompt (rapping):** `90s anime character portrait, young figure with messy purple hair (#dd88ff), mouth open mid-verse, intense focus, microphone nearby, cyberpunk rapper, dark background, cel-shaded, bold outlines`
+- **Variant prompt (writing):** `90s anime character portrait, young figure with messy purple hair (#dd88ff), contemplative expression, writing in a glowing notebook, cyberpunk poet, dark background, cel-shaded, bold outlines`
 
 ### 4. Byte — News Reporter
 - **Color:** `#00ddff` (cyan)

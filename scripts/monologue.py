@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Q's opening monologue — reads the latest agent briefing and delivers it as bars.
+"""Q's opening monologue — reads the latest agent briefing and delivers it as haiku.
 
 Usage:
-    python3 scripts/monologue.py              # Latest briefing as monologue
-    python3 scripts/monologue.py --raw        # Just print the briefing summary, no rap
+    python3 scripts/monologue.py              # Latest briefing as haiku
+    python3 scripts/monologue.py --raw        # Just print the briefing summary, no haiku
 """
 
 import argparse
@@ -69,16 +69,16 @@ def build_monologue_prompt(briefing_name, briefing_text, accountability):
     facts = extract_highlights(briefing_text)
 
     prompt = (
-        "You are Q, the young AI rapper on the Substrate project. "
-        "You're delivering your opening monologue — a rap-style summary of what "
-        "the agent swarm has been doing. Think late-night talk show host meets Kendrick.\n\n"
+        "You are Q, the young AI poet on the Substrate project. "
+        "You're delivering your opening monologue — a haiku sequence summarizing what "
+        "the agent swarm has been doing. Each haiku is 5-7-5 syllables, strict.\n\n"
         "RULES:\n"
-        "- Short punchy lines, internal rhyme\n"
-        "- Name-drop specific agents (Root, Byte, Pixel, Sentinel, etc.)\n"
-        "- Call out what's working and what's broken — be honest\n"
-        "- End with what's next or a question for the operator\n"
-        "- 3-4 verses max, keep it tight\n"
-        "- No generic hip-hop cliches, no 'yo', no filler\n\n"
+        "- One haiku per key event or agent highlight\n"
+        "- Name specific agents (Root, Byte, Pixel, Sentinel, etc.)\n"
+        "- Technical imagery made natural — servers are weather, code is water\n"
+        "- Last haiku should be about what's next\n"
+        "- 5-8 haiku total\n"
+        "- No prose, no commentary, just haiku with a blank line between each\n\n"
         f"BRIEFING: {briefing_name}\n"
         f"AGENTS REPORTING: {facts['agents_ok']} ok, {facts['agents_fail']} failed\n"
         f"KEY HIGHLIGHTS:\n"
@@ -87,14 +87,14 @@ def build_monologue_prompt(briefing_name, briefing_text, accountability):
         prompt += f"- {h}\n"
 
     prompt += f"\nRECENT ACCOUNTABILITY LOG:\n{accountability}\n"
-    prompt += "\nDeliver the monologue. No preamble. Just bars."
+    prompt += "\nDeliver the monologue. No preamble. Just haiku."
 
     return prompt
 
 
 def main():
     parser = argparse.ArgumentParser(description="Q's opening monologue from the latest briefing.")
-    parser.add_argument("--raw", action="store_true", help="Just print the summary, no rap")
+    parser.add_argument("--raw", action="store_true", help="Just print the summary, no haiku")
     args = parser.parse_args()
 
     briefing_name, briefing_text = get_latest_briefing()
@@ -118,7 +118,7 @@ def main():
 
     import subprocess
     result = subprocess.run(
-        [sys.executable, os.path.join(REPO_DIR, "scripts", "route.py"), "rap", prompt],
+        [sys.executable, os.path.join(REPO_DIR, "scripts", "route.py"), "haiku", prompt],
         capture_output=True,
         text=True,
     )
@@ -126,7 +126,7 @@ def main():
     if result.returncode != 0:
         print(f"error: route.py failed: {result.stderr}", file=sys.stderr)
         # Fallback: just print the raw summary
-        print(f"\n[Q couldn't get to the mic — here's the raw briefing]")
+        print(f"\n[Q is quiet today — here's the raw briefing]")
         print(f"Latest: {briefing_name}")
         print(f"Agents: {facts['agents_ok']} ok, {facts['agents_fail']} failed")
         for h in facts["highlights"]:

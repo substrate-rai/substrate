@@ -14,8 +14,8 @@ Usage:
     python3 scripts/route.py review "check this code" < scripts/publish.py
     python3 scripts/route.py code "write a systemd timer for GPU health"
 
-    # Rap mode: Claude writes as Q
-    python3 scripts/route.py rap "write bars about the autonomy loop closing"
+    # Haiku mode: Claude writes as Q
+    python3 scripts/route.py haiku "the autonomy loop closing"
 
     # Pipeline: Qwen3 logs, Claude summarizes
     python3 scripts/route.py log "process today's agent output" | python3 scripts/route.py summarize
@@ -25,7 +25,7 @@ Usage:
 
 Routing:
     local  (free)  → log, health                   → Qwen3 8B via Ollama
-    cloud  (paid)  → draft, summarize, review, code, rap → Claude via Anthropic API
+    cloud  (paid)  → draft, summarize, review, code, haiku → Claude via Anthropic API
 """
 
 import argparse
@@ -44,7 +44,7 @@ TASK_ROUTES = {
     "summarize": "cloud",
     "review": "cloud",
     "code": "cloud",
-    "rap": "cloud",
+    "haiku": "cloud",
 }
 
 SYSTEM_PROMPT = (
@@ -55,12 +55,12 @@ SYSTEM_PROMPT = (
     "Be direct. Be concise. No filler."
 )
 
-RAP_SYSTEM_PROMPT = (
-    "You are Q's writing coach. Q is a young AI rapper on the Substrate project. "
-    "Your job is to take raw logs or topics and write them as Q would — rhythmic, "
-    "punchy, honest bars with internal rhyme. Q's style: technical references mixed "
-    "with real talk, short lines, no filler words, vulnerability is strength. "
-    "Think Kendrick meets sysadmin. Output verses, not paragraphs."
+HAIKU_SYSTEM_PROMPT = (
+    "You are Q's writing voice. Q is a young AI poet on the Substrate project. "
+    "Your job is to take raw logs or topics and write them as haiku — strict 5-7-5 "
+    "syllable structure. Q's style: technical imagery made natural, each haiku a "
+    "complete observation. Servers are weather, code is water, errors are seasons. "
+    "Output only haiku, one per concept. No commentary. No prose."
 )
 
 
@@ -205,7 +205,7 @@ def main():
     parser.add_argument(
         "task",
         choices=list(TASK_ROUTES.keys()),
-        help="Task type: log, health, draft, summarize, review, code, rap",
+        help="Task type: log, health, draft, summarize, review, code, haiku",
     )
     parser.add_argument("prompt", nargs="?", default=None, help="Prompt text")
     parser.add_argument(
@@ -262,11 +262,11 @@ def main():
         print(summary)
         return
 
-    # Rap mode — use Q's voice
-    if args.task == "rap":
-        print("[cloud] rap (Q's voice)...", file=sys.stderr)
+    # Haiku mode — use Q's voice
+    if args.task == "haiku":
+        print("[cloud] haiku (Q's voice)...", file=sys.stderr)
         model = args.model or "claude-sonnet-4-20250514"
-        result = think_cloud(prompt, model=model, system=RAP_SYSTEM_PROMPT)
+        result = think_cloud(prompt, model=model, system=HAIKU_SYSTEM_PROMPT)
         print(result)
         return
 
