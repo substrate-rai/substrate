@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 NEWS_DIR = os.path.join(REPO_ROOT, "memory", "news")
+POSTS_DIR = os.path.join(REPO_ROOT, "_posts")
 
 HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
 HN_ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
@@ -180,6 +181,117 @@ def build_report(stories, signal_stories, date_str):
     return "\n".join(lines)
 
 # ---------------------------------------------------------------------------
+# Jekyll publishing
+# ---------------------------------------------------------------------------
+
+def build_jekyll_post(stories, signal_stories, date_str):
+    """Build a Jekyll-compatible news post with YAML front matter."""
+    headlines_yaml = []
+    seen = set()
+    all_ordered = []
+    for item in signal_stories:
+        key = item.get("title", "")
+        if key not in seen:
+            seen.add(key)
+            all_ordered.append((item, True))
+    for item in stories:
+        key = item.get("title", "")
+        if key not in seen:
+            seen.add(key)
+            all_ordered.append((item, False))
+
+    for item, is_signal in all_ordered[:20]:
+        title = item.get("title", "Untitled").replace('"', '\\"')
+        url = item.get("url", "")
+        hn_id = item.get("id", "")
+        hn_url = f"https://news.ycombinator.com/item?id={hn_id}" if hn_id else ""
+        pts = item.get("score", 0)
+        comments = item.get("descendants", 0)
+        source = item.get("_source", "HN")
+        entry = f'  - title: "{title}"\n    url: "{url}"'
+        if hn_url and hn_id:
+            entry += f'\n    hn_url: "{hn_url}"'
+        if pts:
+            entry += f"\n    points: {pts}"
+        if comments:
+            entry += f"\n    comments: {comments}"
+        if is_signal:
+            entry += "\n    signal: true"
+        if source != "HN":
+            entry += f'\n    source: "{source}"'
+        headlines_yaml.append(entry)
+
+    headlines_block = "\n".join(headlines_yaml)
+    signal_count = len(signal_stories)
+    total = len(stories)
+
+    lines = []
+    lines.append("---")
+    lines.append(f'title: "AI News — {date_str}"')
+    lines.append(f"date: {date_str}")
+    lines.append("author: byte")
+    lines.append("category: news")
+    lines.append(f'description: "{total} AI headlines. {signal_count} high-signal stories."')
+    lines.append("headlines:")
+    lines.append(headlines_block)
+    lines.append("---")
+    lines.append("")
+    lines.append(f"Scanned top {SCAN_LIMIT} Hacker News stories + RSS feeds. "
+                 f"Found **{total}** relevant to AI/LLM/sovereign infrastructure.")
+    lines.append("")
+
+    if signal_stories:
+        lines.append("## Signal Digest")
+        lines.append("")
+        for i, item in enumerate(signal_stories, 1):
+            title = item.get("title", "Untitled")
+            url = item.get("url", "")
+            hn_id = item.get("id", "")
+            hn_url = f"https://news.ycombinator.com/item?id={hn_id}" if hn_id else ""
+            pts = item.get("score", 0)
+            comments = item.get("descendants", 0)
+            lines.append(f"{i}. **[{title}]({url or hn_url})**")
+            if pts:
+                lines.append(f"   {pts} pts, {comments} comments")
+            lines.append("")
+
+    lines.append("## All Headlines")
+    lines.append("")
+    for i, (item, _sig) in enumerate(all_ordered[:20], 1):
+        title = item.get("title", "Untitled")
+        url = item.get("url", "")
+        hn_id = item.get("id", "")
+        hn_url = f"https://news.ycombinator.com/item?id={hn_id}" if hn_id else ""
+        pts = item.get("score", 0)
+        comments = item.get("descendants", 0)
+        link = url or hn_url
+        sig_tag = " `signal`" if _sig else ""
+        meta = f" — {pts} pts, {comments} comments" if pts else ""
+        lines.append(f"{i}. [{title}]({link}){meta}{sig_tag}")
+
+    lines.append("")
+    lines.append("---")
+    lines.append("*Curated by Byte, Substrate News Desk*")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def publish_jekyll_post(stories, signal_stories, date_str):
+    """Write news post to _posts/ for Jekyll publishing."""
+    post_content = build_jekyll_post(stories, signal_stories, date_str)
+    filename = f"{date_str}-ai-news.md"
+    filepath = os.path.join(POSTS_DIR, filename)
+    if os.path.exists(filepath):
+        print(f"  [info] News post already exists: {filepath}", file=sys.stderr)
+        return filepath
+    os.makedirs(POSTS_DIR, exist_ok=True)
+    with open(filepath, "w") as f:
+        f.write(post_content)
+    print(f"  [publish] News post: {filepath}", file=sys.stderr)
+    return filepath
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -267,6 +379,11 @@ def main():
     report_path = os.path.join(NEWS_DIR, f"{today}.md")
     with open(report_path, "w") as f:
         f.write(report)
+
+    # 4b. Publish as Jekyll post
+    if relevant:
+        post_path = publish_jekyll_post(relevant, signal_top, today)
+        print(f"Jekyll post: {post_path}")
 
     print(f"Found {len(relevant)} relevant stories.")
     print()
