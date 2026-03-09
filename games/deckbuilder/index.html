@@ -524,6 +524,141 @@ body {
   box-shadow: 0 0 20px #aa77ff88, 0 0 40px #aa77ff44 !important;
   border-color: #aa77ff !important;
 }
+
+/* ═══ MOBILE RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #title-screen h1 {
+    font-size: 1.8rem;
+    letter-spacing: 4px;
+  }
+  #title-screen .subtitle { font-size: 0.65rem; }
+  #title-screen .menu-btn {
+    padding: 12px 28px;
+    font-size: 0.85rem;
+    min-width: 180px;
+    min-height: 48px;
+  }
+  #top-bar {
+    padding: 6px 10px;
+  }
+  #top-bar .player-hp { font-size: 0.75rem; }
+  .hp-bar-wrap { width: 80px; height: 8px; }
+  #top-bar .act-info { font-size: 0.65rem; letter-spacing: 1px; }
+  #enemy-area {
+    gap: 12px;
+    padding: 8px;
+  }
+  .enemy-sprite {
+    width: 64px;
+    height: 64px;
+  }
+  .enemy-name { font-size: 0.65rem; max-width: 80px; }
+  .enemy-hp-wrap { width: 64px; height: 5px; }
+  .enemy-intent { font-size: 0.65rem; }
+  #player-status {
+    padding: 3px 10px;
+    gap: 10px;
+  }
+  .block-display { font-size: 0.7rem; }
+  #hand-area {
+    min-height: 140px;
+    padding: 6px 2px 2px;
+    gap: 4px;
+    justify-content: flex-start;
+  }
+  .card {
+    width: 88px;
+    min-height: 126px;
+    padding: 4px;
+  }
+  .card-cost { width: 20px; height: 20px; font-size: 0.65rem; }
+  .card-icon { height: 38px; margin-top: 6px; }
+  .card-icon canvas { width: 36px; height: 36px; }
+  .card-name { font-size: 0.65rem; letter-spacing: 1px; }
+  .card-desc { font-size: 0.6rem; }
+  .card-rarity { font-size: 0.6rem; }
+  #bottom-bar {
+    padding: 4px 10px 8px;
+    gap: 6px;
+  }
+  .energy-orb { width: 32px; height: 32px; font-size: 1rem; }
+  .deck-counts { font-size: 0.65rem; gap: 8px; }
+  #end-turn-btn {
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    min-height: 44px;
+    min-width: 80px;
+  }
+  #reward-screen { padding: 16px; }
+  #reward-screen h2 { font-size: 1rem; }
+  #reward-cards { gap: 8px; }
+  #reward-cards .card { min-height: 140px; }
+  #skip-reward-btn { min-height: 44px; padding: 8px 20px; }
+  #event-screen { padding: 16px; }
+  #event-screen h2 { font-size: 0.95rem; }
+  #event-screen .event-text { font-size: 0.65rem; max-width: 85vw; }
+  #event-screen .event-btn { padding: 10px 20px; font-size: 0.7rem; min-height: 44px; }
+  #result-screen h1 { font-size: 1.6rem; letter-spacing: 4px; }
+  #result-screen .result-stats { font-size: 0.65rem; }
+  #result-screen .menu-btn { padding: 12px 24px; font-size: 0.8rem; min-height: 48px; }
+  #deck-viewer { padding: 12px; }
+  #deck-viewer h2 { font-size: 0.8rem; }
+  #deck-viewer .close-viewer { min-height: 44px; padding: 10px 20px; }
+}
+
+@media (max-width: 480px) {
+  #title-screen h1 {
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+  }
+  #title-screen .subtitle { font-size: 0.6rem; letter-spacing: 2px; }
+  #title-screen .menu-btn {
+    padding: 10px 20px;
+    font-size: 0.75rem;
+    min-width: 160px;
+  }
+  #top-bar { padding: 4px 8px; }
+  #top-bar .player-hp { font-size: 0.7rem; gap: 4px; }
+  .hp-bar-wrap { width: 60px; height: 7px; }
+  #top-bar .act-info { font-size: 0.6rem; }
+  #enemy-area {
+    gap: 8px;
+    padding: 6px;
+  }
+  .enemy-sprite { width: 52px; height: 52px; }
+  .enemy-name { font-size: 0.6rem; max-width: 64px; }
+  .enemy-hp-wrap { width: 52px; }
+  .enemy-intent { font-size: 0.6rem; }
+  #hand-area {
+    min-height: 120px;
+    padding: 4px 2px 2px;
+    gap: 3px;
+  }
+  .card {
+    width: 76px;
+    min-height: 110px;
+    padding: 3px;
+  }
+  .card-cost { width: 18px; height: 18px; font-size: 0.6rem; }
+  .card-icon { height: 32px; margin-top: 4px; }
+  .card-icon canvas { width: 30px; height: 30px; }
+  .card-name { font-size: 0.6rem; letter-spacing: 0.5px; margin: 2px 0 1px; }
+  .card-desc { font-size: 0.55rem; }
+  .card-rarity { font-size: 0.55rem; letter-spacing: 1px; }
+  .card.selected { transform: translateY(-8px) scale(1.03); }
+  #bottom-bar { padding: 3px 8px 6px; }
+  .energy-orb { width: 28px; height: 28px; font-size: 0.9rem; }
+  .deck-counts { font-size: 0.6rem; }
+  #end-turn-btn { padding: 6px 10px; font-size: 0.65rem; min-width: 70px; }
+  #reward-screen { padding: 12px; }
+  #reward-cards .card { width: 84px; min-height: 120px; }
+  #event-screen .event-btn { padding: 8px 16px; font-size: 0.65rem; }
+  #result-screen h1 { font-size: 1.3rem; }
+  .dmg-number { font-size: 1rem; }
+}
 </style>
 </head>
 <body>

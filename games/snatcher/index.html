@@ -58,6 +58,105 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;image-rendering:pix
 #act-title .act-num{font-size:14px;color:#666;letter-spacing:8px;margin-bottom:12px}
 #act-title .act-name{font-size:36px;letter-spacing:6px;margin-bottom:20px}
 #act-title .act-desc{font-size:14px;color:#666;max-width:400px;text-align:center;line-height:1.6}
+/* ═══ MOBILE RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #title-screen h1 {
+    font-size: 32px;
+    letter-spacing: 6px;
+  }
+  #title-screen .subtitle {
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+  #title-screen .prompt { font-size: 13px; }
+  #text-box {
+    min-height: 25%;
+    max-height: 35%;
+    padding: 10px 12px 6px;
+  }
+  #speaker-name { font-size: 13px; }
+  #dialogue-text { font-size: 14px; line-height: 1.4; min-height: 50px; }
+  #continue-indicator { font-size: 11px; }
+  #action-bar {
+    padding: 6px 10px 10px;
+    gap: 6px;
+  }
+  .action-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 48px;
+    min-width: 70px;
+    max-width: 140px;
+  }
+  .choice-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 48px;
+    max-width: 100%;
+  }
+  .character-portrait {
+    width: 60px;
+    height: 60px;
+  }
+  .tension-target {
+    width: 54px;
+    height: 54px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  #act-title .act-num { font-size: 12px; }
+  #act-title .act-name { font-size: 26px; letter-spacing: 4px; }
+  #act-title .act-desc { font-size: 13px; max-width: 85vw; }
+  .save-indicator { top: calc(12px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right)); }
+}
+
+@media (max-width: 480px) {
+  #title-screen h1 {
+    font-size: 24px;
+    letter-spacing: 4px;
+  }
+  #title-screen .subtitle {
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-bottom: 30px;
+  }
+  #title-screen .prompt { font-size: 12px; }
+  #text-box {
+    min-height: 22%;
+    max-height: 32%;
+    padding: 8px 10px 6px;
+  }
+  #speaker-name { font-size: 12px; margin-bottom: 4px; }
+  #dialogue-text { font-size: 13px; min-height: 40px; }
+  #action-bar {
+    padding: 6px 8px 8px;
+    gap: 4px;
+  }
+  .action-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+    min-height: 44px;
+    max-width: 120px;
+  }
+  .choice-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+  .character-portrait {
+    width: 48px;
+    height: 48px;
+  }
+  .tension-target {
+    width: 48px;
+    height: 48px;
+  }
+  #act-title .act-name { font-size: 22px; letter-spacing: 3px; }
+  #act-title .act-desc { font-size: 12px; max-width: 90vw; }
+}
 </style>
 </head>
 <body>

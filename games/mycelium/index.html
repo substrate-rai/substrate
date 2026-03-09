@@ -306,6 +306,96 @@ body {
   display: none;
   font-family: 'Comic Neue', cursive;
 }
+/* ═══ MOBILE RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #hud {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .hud-panel {
+    padding: 8px 10px;
+    min-width: unset !important;
+    text-align: left !important;
+  }
+  #resources-panel, #control-panel, #status-panel {
+    min-width: unset;
+  }
+  #control-panel {
+    order: -1;
+    text-align: center !important;
+  }
+  .hud-title { font-size: 11px; margin-bottom: 4px; }
+  .hud-value { font-size: 15px; }
+  .resource-row { font-size: 12px; }
+  .speed-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+    min-height: 44px;
+    min-width: 44px;
+  }
+  #minimap {
+    width: 100px;
+    height: 100px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    right: calc(10px + env(safe-area-inset-right));
+  }
+  .tutorial-box {
+    padding: 24px 20px;
+    max-width: 90vw;
+    border-radius: 8px;
+  }
+  .tutorial-box h1 { font-size: 22px; letter-spacing: 2px; }
+  .tutorial-box .subtitle { font-size: 13px; }
+  .tutorial-box .instructions { font-size: 13px; line-height: 1.6; }
+  .start-btn { font-size: 14px; padding: 12px 32px; min-height: 48px; }
+  .gameover-box {
+    padding: 24px 20px;
+    max-width: 90vw;
+    border-radius: 8px;
+  }
+  .gameover-box h2 { font-size: 20px; }
+  .gameover-box p { font-size: 13px; }
+  #footer { font-size: 11px; bottom: calc(10px + env(safe-area-inset-bottom)); }
+  #tooltip { font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  #hud {
+    padding: 6px 6px;
+    gap: 4px;
+  }
+  .hud-panel { padding: 6px 8px; }
+  .hud-title { font-size: 10px; }
+  .hud-value { font-size: 13px; }
+  .resource-row { font-size: 11px; }
+  .speed-btn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+  #minimap {
+    width: 80px;
+    height: 80px;
+  }
+  .tutorial-box {
+    padding: 20px 16px;
+    max-width: 95vw;
+  }
+  .tutorial-box h1 { font-size: 18px; }
+  .tutorial-box .subtitle { font-size: 12px; }
+  .tutorial-box .instructions { font-size: 12px; }
+  .start-btn { font-size: 13px; padding: 10px 24px; }
+  .gameover-box {
+    padding: 20px 16px;
+    max-width: 95vw;
+  }
+  .gameover-box h2 { font-size: 18px; }
+  #footer { font-size: 10px; }
+}
 </style>
 </head>
 <body>

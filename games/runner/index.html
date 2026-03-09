@@ -114,6 +114,55 @@ canvas {
   opacity: 0;
   transition: none;
 }
+/* ═══ MOBILE RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #hud {
+    padding: 8px 12px;
+    padding-top: calc(8px + env(safe-area-inset-top));
+  }
+  #score-display {
+    font-size: 16px;
+  }
+  #distance-display {
+    font-size: 12px;
+  }
+  #shield-indicator {
+    font-size: 11px;
+    top: calc(42px + env(safe-area-inset-top));
+    left: 12px;
+  }
+  #boost-indicator {
+    font-size: 11px;
+    top: calc(58px + env(safe-area-inset-top));
+    left: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  #hud {
+    padding: 6px 8px;
+    padding-top: calc(6px + env(safe-area-inset-top));
+  }
+  #score-display {
+    font-size: 14px;
+  }
+  #distance-display {
+    font-size: 11px;
+  }
+  #shield-indicator {
+    font-size: 10px;
+    top: calc(36px + env(safe-area-inset-top));
+    left: 8px;
+  }
+  #boost-indicator {
+    font-size: 10px;
+    top: calc(50px + env(safe-area-inset-top));
+    left: 8px;
+  }
+}
 </style>
 </head>
 <body>

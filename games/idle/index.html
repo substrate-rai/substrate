@@ -728,6 +728,133 @@ redirect_from:
     #cycle-count { font-size: 3em; }
     #content { padding: 12px 20px 24px; }
   }
+
+  /* ═══ MOBILE RESPONSIVE ═══ */
+  @media (max-width: 768px) {
+    body {
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    #header { padding: 8px 12px 2px; }
+    #cycle-count { font-size: 2em; }
+    #cycle-label { font-size: 0.6em; letter-spacing: 2px; }
+    #cps-display { font-size: 0.7em; }
+    #tap-zone {
+      padding: 10px;
+      min-height: 140px;
+    }
+    #tap-button {
+      width: 120px;
+      height: 120px;
+    }
+    #tap-button .terminal-icon { font-size: 2.4em; }
+    .tab-btn {
+      font-size: 0.6em;
+      padding: 8px 2px;
+      min-height: 44px;
+      letter-spacing: 0.5px;
+    }
+    #content { padding: 6px 8px 16px; }
+    .gen-card {
+      padding: 10px;
+      min-height: 64px;
+    }
+    .gen-card .gen-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 1.2em;
+      margin-right: 10px;
+    }
+    .gen-card .gen-name { font-size: 0.8em; }
+    .gen-card .gen-desc { font-size: 0.55em; }
+    .gen-card .gen-output { font-size: 0.55em; }
+    .gen-card .gen-cost { font-size: 0.75em; }
+    .gen-card .gen-owned { font-size: 0.6em; }
+    .upgrade-card {
+      padding: 10px;
+      min-height: 56px;
+    }
+    .upgrade-card .upg-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 1em;
+      margin-right: 10px;
+    }
+    .upgrade-card .upg-name { font-size: 0.75em; }
+    .upgrade-card .upg-desc { font-size: 0.55em; }
+    .upgrade-card .upg-cost { font-size: 0.7em; }
+    .milestone-card {
+      padding: 8px 10px;
+      min-height: 44px;
+    }
+    .milestone-card .ms-name { font-size: 0.7em; }
+    .milestone-card .ms-req { font-size: 0.55em; }
+    .stat-row { font-size: 0.7em; padding: 6px 2px; }
+    .buy-amt-btn {
+      padding: 6px 10px;
+      font-size: 0.65em;
+      min-height: 44px;
+    }
+    #milestone-popup, #offline-popup {
+      max-width: 85vw;
+      padding: 20px 24px;
+    }
+    #back-link {
+      top: calc(6px + env(safe-area-inset-top));
+      left: calc(8px + env(safe-area-inset-left));
+      font-size: 0.6em;
+    }
+    #reset-btn { font-size: 0.65em; padding: 8px 16px; min-height: 44px; }
+  }
+
+  @media (max-width: 480px) {
+    #header { padding: 6px 8px 2px; }
+    #cycle-count { font-size: 1.6em; }
+    #cycle-label { font-size: 0.55em; letter-spacing: 1px; }
+    #cps-display { font-size: 0.65em; }
+    #tap-zone {
+      padding: 8px;
+      min-height: 120px;
+    }
+    #tap-button {
+      width: 100px;
+      height: 100px;
+    }
+    #tap-button .terminal-icon { font-size: 2em; }
+    .tab-btn {
+      font-size: 0.55em;
+      padding: 6px 2px;
+      letter-spacing: 0;
+    }
+    #content { padding: 4px 6px 14px; }
+    .gen-card {
+      padding: 8px;
+      margin-bottom: 6px;
+      min-height: 56px;
+    }
+    .gen-card .gen-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 1em;
+      margin-right: 8px;
+    }
+    .gen-card .gen-name { font-size: 0.75em; }
+    .gen-card .gen-desc { font-size: 0.5em; }
+    .upgrade-card {
+      padding: 8px;
+      min-height: 48px;
+    }
+    .upgrade-card .upg-icon {
+      width: 32px;
+      height: 32px;
+      margin-right: 8px;
+    }
+    #milestone-popup, #offline-popup {
+      max-width: 92vw;
+      padding: 16px 18px;
+    }
+    #milestone-popup .mp-name { font-size: 1em; }
+    #offline-popup .op-amount { font-size: 1.2em; }
+  }
 </style>
 </head>
 <body>
