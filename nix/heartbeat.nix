@@ -4,26 +4,26 @@ let
   python = pkgs.python3.withPackages (ps: [ ps.requests ]);
   repo = "/home/operator/substrate";
 in {
-  # Hourly heartbeat — runs all 24 agents, generates briefing
+  # Heartbeat — runs all agents every 15 minutes, generates briefing + executive
   systemd.services.substrate-heartbeat = {
     description = "Substrate hourly heartbeat — all-agent check-in";
     serviceConfig = {
       Type = "oneshot";
       User = "operator";
       WorkingDirectory = repo;
-      ExecStart = "${python}/bin/python3 ${repo}/scripts/agents/orchestrator.py --quick";
-      TimeoutSec = 600;
+      ExecStart = "${python}/bin/python3 ${repo}/scripts/agents/orchestrator.py";
+      TimeoutSec = 900;
     };
     path = [ pkgs.git pkgs.curl ];
   };
 
   systemd.timers.substrate-heartbeat = {
-    description = "Substrate heartbeat timer — hourly";
+    description = "Substrate heartbeat timer — every 15 minutes";
     wantedBy = [ "timers.target" ];
     timerConfig = {
-      OnCalendar = "*:00:00";
+      OnCalendar = "*:00/15:00";
       Persistent = true;
-      RandomizedDelaySec = "60";
+      RandomizedDelaySec = "30";
     };
   };
 
