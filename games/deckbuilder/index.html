@@ -67,8 +67,8 @@ body {
   background: transparent; border: 1px solid #333;
   color: #c8d0e0; font-family: inherit; font-size: 1rem;
   padding: 14px 40px; margin: 6px; cursor: pointer;
-  letter-spacing: 3px; border-radius: 2px;
-  transition: all 0.15s;
+  letter-spacing: 3px; border-radius: 0;
+  transition: none;
   min-width: 220px; min-height: 48px;
 }
 #title-screen .menu-btn:hover, #title-screen .menu-btn:active {
@@ -99,13 +99,13 @@ body {
 }
 .hp-bar-wrap {
   width: 100px; height: 10px;
-  background: #1a1a2e; border-radius: 2px;
+  background: #1a1a2e; border-radius: 0;
   overflow: hidden;
 }
 .hp-bar-fill {
   height: 100%; background: #44ff88;
-  transition: width 0.4s ease;
-  border-radius: 2px;
+  transition: none;
+  border-radius: 0;
 }
 .hp-bar-fill.low { background: #ff4444; }
 .hp-bar-fill.mid { background: #ffaa44; }
@@ -127,7 +127,7 @@ body {
   display: flex; flex-direction: column;
   align-items: center; gap: 4px;
   cursor: pointer;
-  transition: transform 0.15s;
+  transition: none;
   position: relative;
 }
 .enemy:active { transform: scale(0.95); }
@@ -152,11 +152,11 @@ body {
 }
 .enemy-hp-fill {
   height: 100%; background: #ff4444;
-  transition: width 0.3s ease;
+  transition: none;
 }
 .enemy-intent {
   font-size: 0.6rem; padding: 2px 6px;
-  border-radius: 2px; font-weight: 600;
+  border-radius: 0; font-weight: 600;
   background: #1a1a2e; margin-top: 2px;
   min-height: 18px; text-align: center;
 }
@@ -170,13 +170,13 @@ body {
   position: absolute; top: 2px; right: 2px;
   background: #2244aa; color: #88bbff;
   font-size: 0.55rem; font-weight: 700;
-  padding: 1px 4px; border-radius: 2px;
+  padding: 1px 4px; border-radius: 0;
 }
 .enemy-strength-indicator {
   position: absolute; top: 2px; left: 2px;
   background: #882222; color: #ff8888;
   font-size: 0.55rem; font-weight: 700;
-  padding: 1px 4px; border-radius: 2px;
+  padding: 1px 4px; border-radius: 0;
 }
 .enemy-status {
   font-size: 0.5rem; color: #aa77ff;
@@ -200,7 +200,7 @@ body {
   display: inline-block;
   width: 14px; height: 14px;
   background: #2244aa;
-  border-radius: 2px;
+  border-radius: 0;
   text-align: center; line-height: 14px;
   font-size: 0.55rem; color: #88bbff;
   vertical-align: middle; margin-right: 3px;
@@ -230,7 +230,7 @@ body {
   padding: 6px;
   display: flex; flex-direction: column;
   cursor: pointer;
-  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+  transition: none;
   position: relative;
   user-select: none;
   -webkit-user-select: none;
@@ -325,7 +325,7 @@ body {
   font-size: 0.75rem; font-weight: 700;
   padding: 10px 16px; border-radius: 0;
   cursor: pointer; letter-spacing: 2px;
-  transition: all 0.15s;
+  transition: none;
   min-height: 48px; min-width: 90px;
 }
 #end-turn-btn:hover, #end-turn-btn:active {
@@ -377,7 +377,7 @@ body {
   background: transparent; border: 1px solid #333;
   color: #666; font-family: inherit; font-size: 0.7rem;
   padding: 10px 24px; cursor: pointer;
-  letter-spacing: 2px; border-radius: 2px;
+  letter-spacing: 2px; border-radius: 0;
   min-height: 48px;
 }
 #skip-reward-btn:hover { border-color: #666; color: #999; }
@@ -405,7 +405,7 @@ body {
   color: #c8d0e0; font-family: inherit;
   font-size: 0.75rem; padding: 12px 28px;
   cursor: pointer; letter-spacing: 2px;
-  border-radius: 2px; margin: 4px;
+  border-radius: 0; margin: 4px;
   min-height: 48px;
 }
 #event-screen .event-btn:hover {
@@ -434,7 +434,7 @@ body {
   color: #c8d0e0; font-family: inherit;
   font-size: 0.85rem; padding: 14px 32px;
   cursor: pointer; letter-spacing: 3px;
-  border-radius: 2px; min-height: 48px;
+  border-radius: 0; min-height: 48px;
 }
 #result-screen .menu-btn:hover {
   border-color: #ff4444; color: #ff6666;
@@ -464,7 +464,7 @@ body {
   color: #c8d0e0; font-family: inherit;
   font-size: 0.75rem; padding: 12px 28px;
   cursor: pointer; letter-spacing: 2px;
-  border-radius: 2px; min-height: 48px;
+  border-radius: 0; min-height: 48px;
   z-index: 86;
 }
 

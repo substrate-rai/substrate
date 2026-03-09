@@ -15,7 +15,17 @@ redirect_from:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+  /* === PIXEL ART MODE === */
+  button, .btn, [class*="btn"] {
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none !important;
+  }
+  button:active, .btn:active, [class*="btn"]:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  }
 
   :root {
     --bg: #0a0a0a;
@@ -149,7 +159,7 @@ redirect_from:
     width: 140px;
     height: 140px;
     border: 3px solid var(--accent);
-    border-radius: 20px;
+    border-radius: 0;
     background: linear-gradient(135deg, #0d1a14, #0a1210);
     display: flex;
     align-items: center;
@@ -206,7 +216,7 @@ redirect_from:
     width: 4px;
     height: 4px;
     background: var(--accent-glow);
-    border-radius: 50%;
+    border-radius: 0;
     pointer-events: none;
     z-index: 99;
   }
@@ -235,7 +245,7 @@ redirect_from:
     text-transform: uppercase;
     -webkit-tap-highlight-color: transparent;
     min-height: 48px;
-    transition: color 0.2s, border-color 0.2s;
+    transition: none;
   }
 
   .tab-btn.active {
@@ -261,11 +271,11 @@ redirect_from:
     align-items: center;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 0;
     padding: 12px;
     margin-bottom: 8px;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, opacity 0.3s;
+    transition: none;
     min-height: 72px;
     -webkit-tap-highlight-color: transparent;
     position: relative;
@@ -293,7 +303,7 @@ redirect_from:
   .gen-card .gen-icon {
     width: 44px;
     height: 44px;
-    border-radius: 8px;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -353,7 +363,7 @@ redirect_from:
     background: var(--accent-glow);
     opacity: 0;
     pointer-events: none;
-    border-radius: 10px;
+    border-radius: 0;
   }
 
   .gen-card.just-bought .flash-overlay {
@@ -371,11 +381,11 @@ redirect_from:
     align-items: center;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 0;
     padding: 12px;
     margin-bottom: 8px;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, opacity 0.3s;
+    transition: none;
     min-height: 60px;
     -webkit-tap-highlight-color: transparent;
   }
@@ -403,7 +413,7 @@ redirect_from:
   .upgrade-card .upg-icon {
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -442,11 +452,11 @@ redirect_from:
     align-items: center;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 0;
     padding: 10px 12px;
     margin-bottom: 6px;
     min-height: 48px;
-    transition: opacity 0.3s;
+    transition: none;
   }
 
   .milestone-card.achieved {
@@ -513,11 +523,11 @@ redirect_from:
     color: var(--dim);
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 0;
     cursor: pointer;
     min-height: 36px;
     -webkit-tap-highlight-color: transparent;
-    transition: color 0.15s, border-color 0.15s;
+    transition: none;
   }
 
   .buy-amt-btn.active {
@@ -533,13 +543,13 @@ redirect_from:
     transform: translate(-50%, -50%) scale(0.8);
     background: var(--surface);
     border: 2px solid var(--purple);
-    border-radius: 16px;
+    border-radius: 0;
     padding: 24px 32px;
     text-align: center;
     z-index: 9999;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s, transform 0.3s;
+    transition: none;
     box-shadow: 0 0 60px rgba(170, 102, 255, 0.3);
     max-width: 300px;
   }
@@ -578,13 +588,13 @@ redirect_from:
     transform: translate(-50%, -50%) scale(0.8);
     background: var(--surface);
     border: 2px solid var(--accent);
-    border-radius: 16px;
+    border-radius: 0;
     padding: 24px 32px;
     text-align: center;
     z-index: 9998;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s, transform 0.3s;
+    transition: none;
     box-shadow: 0 0 60px rgba(0, 224, 154, 0.2);
     max-width: 300px;
   }
@@ -624,7 +634,7 @@ redirect_from:
     color: var(--bg);
     background: var(--accent);
     border: none;
-    border-radius: 8px;
+    border-radius: 0;
     cursor: pointer;
     min-height: 44px;
   }
@@ -656,7 +666,7 @@ redirect_from:
     color: var(--warn);
     background: none;
     border: 1px solid rgba(255, 102, 68, 0.3);
-    border-radius: 8px;
+    border-radius: 0;
     cursor: pointer;
     min-height: 48px;
     -webkit-tap-highlight-color: transparent;
@@ -673,11 +683,11 @@ redirect_from:
     width: 6px;
     height: 6px;
     background: var(--accent);
-    border-radius: 50%;
+    border-radius: 0;
     margin-left: 4px;
     vertical-align: super;
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: none;
   }
 
   .tab-btn .badge.visible {
@@ -693,7 +703,7 @@ redirect_from:
     background: var(--accent);
     opacity: 0.3;
     border-radius: 0 0 10px 10px;
-    transition: width 0.5s linear;
+    transition: none;
   }
 
   /* Multiplier display */
