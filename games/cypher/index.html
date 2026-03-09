@@ -27,6 +27,17 @@ redirect_from:
   html, body {
     overscroll-behavior: none;
   }
+  /* === PIXEL ART MODE === */
+  * { image-rendering: pixelated; }
+  button, .btn, [class*="btn"] {
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transition: none !important;
+  }
+  button:active, .btn:active, [class*="btn"]:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  }
 
   #cypher-container {
     max-width: 700px;
@@ -104,8 +115,8 @@ redirect_from:
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s;
+    border-radius: 0;
+    transition: none;
     min-height: 48px;
     min-width: 48px;
     letter-spacing: 0.1em;
@@ -148,7 +159,7 @@ redirect_from:
 
   .dialogue-box {
     border: 1px solid #333;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 1rem 1.2rem;
     margin: 0.8rem 0;
     background: rgba(0,0,30,0.5);
@@ -161,7 +172,7 @@ redirect_from:
   .dialogue-portrait {
     width: 64px;
     height: 64px;
-    border-radius: 6px;
+    border-radius: 0;
     border: 2px solid rgba(255,255,255,0.1);
     object-fit: cover;
     image-rendering: auto;
@@ -234,7 +245,7 @@ redirect_from:
     font-family: inherit;
     font-size: 0.82rem;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 0;
     text-align: left;
     transition: all 0.2s;
     min-height: 48px;
@@ -277,7 +288,7 @@ redirect_from:
 
   .verse-builder {
     border: 1px solid #333;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 1rem;
     margin: 1rem 0;
     background: rgba(0,0,40,0.3);
@@ -316,7 +327,7 @@ redirect_from:
     font-family: inherit;
     font-size: 0.82rem;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 0;
     text-align: left;
     transition: all 0.15s;
     min-height: 48px;
@@ -394,7 +405,7 @@ redirect_from:
   }
   .end-stat {
     border: 1px solid #333;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 1rem;
     background: rgba(0,0,30,0.4);
   }
@@ -440,7 +451,7 @@ redirect_from:
     flex: 1;
     height: 8px;
     background: #111;
-    border-radius: 4px;
+    border-radius: 0;
     overflow: hidden;
     border: 1px solid #222;
   }
@@ -499,7 +510,7 @@ redirect_from:
     height: 120px;
     display: block;
     margin-bottom: 8px;
-    border-radius: 4px;
+    border-radius: 0;
   }
 </style>
 

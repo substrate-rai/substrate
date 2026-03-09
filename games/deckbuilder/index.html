@@ -17,7 +17,17 @@ redirect_from:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+/* === PIXEL ART MODE === */
+button, .btn, [class*="btn"] {
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+  transition: none !important;
+}
+button:active, .btn:active, [class*="btn"]:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+}
 html, body {
   width: 100%; height: 100%;
   overflow: hidden;
@@ -125,7 +135,7 @@ body {
 .enemy.targeted .enemy-sprite { box-shadow: 0 0 20px #ff444488; }
 .enemy-sprite {
   width: 80px; height: 80px;
-  border-radius: 4px;
+  border-radius: 0;
   position: relative;
   overflow: hidden;
 }
@@ -215,7 +225,7 @@ body {
   flex-shrink: 0;
   width: 105px; min-height: 148px;
   border: 2px solid #333;
-  border-radius: 6px;
+  border-radius: 0;
   background: #12121e;
   padding: 6px;
   display: flex; flex-direction: column;
@@ -244,7 +254,7 @@ body {
   font-size: 0.5rem; color: #ff44aa;
   letter-spacing: 2px; font-weight: 700;
   background: #00000088;
-  border-radius: 4px;
+  border-radius: 0;
 }
 .card-common { border-color: #444; }
 .card-uncommon { border-color: #00cccc; }
@@ -253,7 +263,7 @@ body {
   position: absolute; top: -1px; left: -1px;
   width: 22px; height: 22px;
   background: #1a1a2e; border: 1px solid #444;
-  border-radius: 50%;
+  border-radius: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.7rem; font-weight: 700; color: #ffdd44;
 }
@@ -295,7 +305,7 @@ body {
 }
 .energy-orb {
   width: 36px; height: 36px;
-  border-radius: 50%;
+  border-radius: 0;
   background: radial-gradient(circle at 40% 40%, #ffdd44, #cc8800);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.1rem; font-weight: 700; color: #1a1a2e;
@@ -313,7 +323,7 @@ body {
   background: #222; border: 2px solid #ff4444;
   color: #ff6666; font-family: inherit;
   font-size: 0.75rem; font-weight: 700;
-  padding: 10px 16px; border-radius: 4px;
+  padding: 10px 16px; border-radius: 0;
   cursor: pointer; letter-spacing: 2px;
   transition: all 0.15s;
   min-height: 48px; min-width: 90px;
