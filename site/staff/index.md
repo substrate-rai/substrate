@@ -572,9 +572,12 @@ There are twenty-four of us — V sets the direction, Claude builds things, and 
   <p style="margin-top:1rem;"><a href="{{ site.baseurl }}/games/novel/" style="color:#ff77ff;">Meet them in person &rarr;</a> &nbsp; The visual novel PROCESS lets you talk to each agent and make choices that shape the story.</p>
 </div>
 
+<script src="{{ site.baseurl }}/games/shared/snes-audio.js"></script>
+<script src="{{ site.baseurl }}/games/shared/leitmotifs.js"></script>
+
 <script>
 // ============================================================
-// AGENT DATA — All 24 agents
+// AGENT DATA — All 25 agents
 // ============================================================
 var AGENTS = [
   {
@@ -1283,668 +1286,64 @@ var AGENT_PHOTOS = {
 })();
 
 // ============================================================
-// STAFF THEME ENGINE — Procedural character themes via Web Audio API
-// Each of the 24 agents gets a unique synthesized musical identity.
+// STAFF THEME ENGINE — Composed leitmotifs via SNESAudio
+// Each of the 25 agents has a Nobuo Uematsu-inspired character theme.
 // ============================================================
 
 (function() {
   'use strict';
 
-  var audioCtx = null;
-  var masterGain = null;
+  var music = null;
   var currentAgent = null;
   var currentBtn = null;
-  var activeNodes = [];
-  var schedulerIds = [];
-  var stopTimeout = null;
 
-  // --- Scale/frequency helpers ---
-  // Base frequencies for note names (octave 4)
-  var NOTE = {
-    C: 261.63, Db: 277.18, D: 293.66, Eb: 311.13, E: 329.63,
-    F: 349.23, Gb: 369.99, G: 392.00, Ab: 415.30, A: 440.00,
-    Bb: 466.16, B: 493.88
-  };
-
-  function scale(notes, baseOctave) {
-    baseOctave = baseOctave || 1;
-    return notes.map(function(n) { return n * baseOctave; });
+  function getMusic() {
+    if (!music && typeof SNESAudio !== 'undefined') {
+      music = new SNESAudio();
+      music.setVolume(0.7);
+    }
+    return music;
   }
 
-  // --- Theme definitions ---
-  // Each theme: scale, tempo (notes/sec), duration (sec), waveform, filterFreq, filterQ,
-  //   delayTime, delayFeedback, padWave, padGain, leadGain, style function
-  var THEMES = {
-    v: {
-      name: 'V', scale: scale([NOTE.C, NOTE.Eb, NOTE.F, NOTE.G, NOTE.Bb], 0.5),
-      tempo: 3.5, duration: 20, padWave: 'sawtooth', leadWave: 'square',
-      filterFreq: 900, filterQ: 2, delayTime: 0.3, delayFb: 0.25,
-      padGain: 0.06, leadGain: 0.08, subGain: 0.10,
-      style: 'hiphop'
-    },
-    claude: {
-      name: 'Claude', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.F, NOTE.G, NOTE.A, NOTE.B]),
-      tempo: 2.0, duration: 20, padWave: 'sine', leadWave: 'sine',
-      filterFreq: 1200, filterQ: 0.7, delayTime: 0.4, delayFb: 0.2,
-      padGain: 0.08, leadGain: 0.06, subGain: 0.05,
-      style: 'algorithmic'
-    },
-    q: {
-      name: 'Q', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.Gb, NOTE.G, NOTE.A, NOTE.B]),
-      tempo: 2.5, duration: 20, padWave: 'triangle', leadWave: 'sine',
-      filterFreq: 1000, filterQ: 1, delayTime: 0.5, delayFb: 0.3,
-      padGain: 0.09, leadGain: 0.06, subGain: 0.04,
-      style: 'arpeggio'
-    },
-    byte: {
-      name: 'Byte', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.G, NOTE.A], 2),
-      tempo: 5.0, duration: 18, padWave: 'square', leadWave: 'square',
-      filterFreq: 2000, filterQ: 1.5, delayTime: 0.15, delayFb: 0.15,
-      padGain: 0.03, leadGain: 0.07, subGain: 0.03,
-      style: 'staccato'
-    },
-    echo: {
-      name: 'Echo', scale: scale([NOTE.C, NOTE.Eb, NOTE.G, NOTE.Bb], 0.5),
-      tempo: 1.0, duration: 22, padWave: 'sine', leadWave: 'triangle',
-      filterFreq: 600, filterQ: 2, delayTime: 0.7, delayFb: 0.55,
-      padGain: 0.08, leadGain: 0.05, subGain: 0.06,
-      style: 'echo'
-    },
-    flux: {
-      name: 'Flux', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.Gb, NOTE.Ab, NOTE.Bb]),
-      tempo: 2.2, duration: 20, padWave: 'sawtooth', leadWave: 'triangle',
-      filterFreq: 800, filterQ: 3, delayTime: 0.45, delayFb: 0.35,
-      padGain: 0.05, leadGain: 0.06, subGain: 0.04,
-      style: 'shifting'
-    },
-    dash: {
-      name: 'Dash', scale: scale([NOTE.G, NOTE.A, NOTE.B, NOTE.D, NOTE.E], 1),
-      tempo: 4.0, duration: 18, padWave: 'square', leadWave: 'sawtooth',
-      filterFreq: 1400, filterQ: 1, delayTime: 0.2, delayFb: 0.15,
-      padGain: 0.04, leadGain: 0.07, subGain: 0.06,
-      style: 'driving'
-    },
-    pixel: {
-      name: 'Pixel', scale: scale([NOTE.C, NOTE.E, NOTE.G, NOTE.A, NOTE.B], 2),
-      tempo: 4.5, duration: 18, padWave: 'square', leadWave: 'square',
-      filterFreq: 3000, filterQ: 2, delayTime: 0.12, delayFb: 0.1,
-      padGain: 0.03, leadGain: 0.08, subGain: 0.02,
-      style: 'chiptune'
-    },
-    spore: {
-      name: 'Spore', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.G, NOTE.A], 0.5),
-      tempo: 1.5, duration: 22, padWave: 'sine', leadWave: 'triangle',
-      filterFreq: 700, filterQ: 0.8, delayTime: 0.6, delayFb: 0.3,
-      padGain: 0.09, leadGain: 0.05, subGain: 0.06,
-      style: 'organic'
-    },
-    root: {
-      name: 'Root', scale: scale([NOTE.C, NOTE.Eb, NOTE.F, NOTE.G, NOTE.Bb], 0.25),
-      tempo: 1.2, duration: 22, padWave: 'sawtooth', leadWave: 'sine',
-      filterFreq: 400, filterQ: 3, delayTime: 0.5, delayFb: 0.3,
-      padGain: 0.06, leadGain: 0.04, subGain: 0.14,
-      style: 'industrial'
-    },
-    lumen: {
-      name: 'Lumen', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.F, NOTE.G, NOTE.A, NOTE.B]),
-      tempo: 2.0, duration: 20, padWave: 'triangle', leadWave: 'sine',
-      filterFreq: 1100, filterQ: 0.7, delayTime: 0.35, delayFb: 0.2,
-      padGain: 0.09, leadGain: 0.06, subGain: 0.05,
-      style: 'warm'
-    },
-    arc: {
-      name: 'Arc', scale: scale([NOTE.C, NOTE.E, NOTE.G, NOTE.A, NOTE.B], 2),
-      tempo: 4.0, duration: 18, padWave: 'square', leadWave: 'square',
-      filterFreq: 2500, filterQ: 2, delayTime: 0.15, delayFb: 0.15,
-      padGain: 0.03, leadGain: 0.08, subGain: 0.03,
-      style: 'arcade'
-    },
-    forge: {
-      name: 'Forge', scale: scale([NOTE.C, NOTE.D, NOTE.F, NOTE.G, NOTE.Bb], 0.5),
-      tempo: 2.5, duration: 20, padWave: 'sawtooth', leadWave: 'square',
-      filterFreq: 900, filterQ: 4, delayTime: 0.25, delayFb: 0.2,
-      padGain: 0.05, leadGain: 0.07, subGain: 0.09,
-      style: 'metallic'
-    },
-    hum: {
-      name: 'Hum', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.G, NOTE.A, NOTE.B], 0.5),
-      tempo: 1.5, duration: 24, padWave: 'sine', leadWave: 'triangle',
-      filterFreq: 800, filterQ: 1.5, delayTime: 0.6, delayFb: 0.4,
-      padGain: 0.10, leadGain: 0.04, subGain: 0.07,
-      style: 'harmonic'
-    },
-    sync: {
-      name: 'Sync', scale: scale([NOTE.G, NOTE.A, NOTE.B, NOTE.D, NOTE.E]),
-      tempo: 3.0, duration: 20, padWave: 'triangle', leadWave: 'sine',
-      filterFreq: 1000, filterQ: 1, delayTime: 0.33, delayFb: 0.3,
-      padGain: 0.06, leadGain: 0.06, subGain: 0.05,
-      style: 'callresponse'
-    },
-    mint: {
-      name: 'Mint', scale: scale([NOTE.C, NOTE.E, NOTE.G, NOTE.A], 1),
-      tempo: 2.0, duration: 18, padWave: 'triangle', leadWave: 'sine',
-      filterFreq: 1000, filterQ: 1, delayTime: 0.25, delayFb: 0.15,
-      padGain: 0.07, leadGain: 0.05, subGain: 0.06,
-      style: 'steady'
-    },
-    yield: {
-      name: 'Yield', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.F, NOTE.G, NOTE.A, NOTE.B]),
-      tempo: 2.5, duration: 20, padWave: 'sine', leadWave: 'triangle',
-      filterFreq: 1200, filterQ: 0.8, delayTime: 0.4, delayFb: 0.25,
-      padGain: 0.08, leadGain: 0.06, subGain: 0.04,
-      style: 'ascending'
-    },
-    amp: {
-      name: 'Amp', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.G, NOTE.A], 1),
-      tempo: 3.5, duration: 18, padWave: 'sawtooth', leadWave: 'sawtooth',
-      filterFreq: 1800, filterQ: 4, delayTime: 0.2, delayFb: 0.3,
-      padGain: 0.06, leadGain: 0.08, subGain: 0.07,
-      style: 'loud'
-    },
-    pulse: {
-      name: 'Pulse', scale: scale([NOTE.C, NOTE.Eb, NOTE.G, NOTE.B], 1),
-      tempo: 2.0, duration: 20, padWave: 'sine', leadWave: 'sine',
-      filterFreq: 900, filterQ: 1, delayTime: 0.5, delayFb: 0.2,
-      padGain: 0.06, leadGain: 0.05, subGain: 0.06,
-      style: 'heartbeat'
-    },
-    spec: {
-      name: 'Spec', scale: scale([NOTE.C, NOTE.E, NOTE.G, NOTE.B, NOTE.D * 2]),
-      tempo: 3.0, duration: 18, padWave: 'sine', leadWave: 'sine',
-      filterFreq: 1500, filterQ: 0.5, delayTime: 0.2, delayFb: 0.1,
-      padGain: 0.04, leadGain: 0.07, subGain: 0.03,
-      style: 'precise'
-    },
-    sentinel: {
-      name: 'Sentinel', scale: scale([NOTE.C, NOTE.Db, NOTE.Eb, NOTE.F, NOTE.G, NOTE.Ab, NOTE.Bb], 0.5),
-      tempo: 1.8, duration: 22, padWave: 'sawtooth', leadWave: 'triangle',
-      filterFreq: 600, filterQ: 3, delayTime: 0.55, delayFb: 0.35,
-      padGain: 0.05, leadGain: 0.05, subGain: 0.08,
-      style: 'alert'
-    },
-    close: {
-      name: 'Close', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.F, NOTE.G, NOTE.A, NOTE.B]),
-      tempo: 2.5, duration: 20, padWave: 'triangle', leadWave: 'sine',
-      filterFreq: 1100, filterQ: 1, delayTime: 0.3, delayFb: 0.2,
-      padGain: 0.07, leadGain: 0.07, subGain: 0.05,
-      style: 'resolving'
-    },
-    neon: {
-      name: 'Neon', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.G, NOTE.A]),
-      tempo: 2.2, duration: 20, padWave: 'sine', leadWave: 'triangle',
-      filterFreq: 1400, filterQ: 1, delayTime: 0.25, delayFb: 0.15,
-      padGain: 0.06, leadGain: 0.07, subGain: 0.04,
-      style: 'clean'
-    },
-    myth: {
-      name: 'Myth', scale: scale([NOTE.C, NOTE.Eb, NOTE.F, NOTE.Ab, NOTE.Bb], 0.5),
-      tempo: 1.5, duration: 24, padWave: 'sawtooth', leadWave: 'triangle',
-      filterFreq: 500, filterQ: 4, delayTime: 0.6, delayFb: 0.4,
-      padGain: 0.06, leadGain: 0.05, subGain: 0.09,
-      style: 'incantatory'
-    },
-    promo: {
-      name: 'Promo', scale: scale([NOTE.C, NOTE.D, NOTE.E, NOTE.G, NOTE.A], 2),
-      tempo: 2.8, duration: 16, padWave: 'square', leadWave: 'sawtooth',
-      filterFreq: 2000, filterQ: 2, delayTime: 0.15, delayFb: 0.2,
-      padGain: 0.05, leadGain: 0.08, subGain: 0.03,
-      style: 'energetic'
-    }
-  };
-
-  function ensureAudio() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = 0.7;
-      masterGain.connect(audioCtx.destination);
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
+  function resetBtn(btn, agentId) {
+    if (btn) {
+      btn.innerHTML = '&#9654;';
+      btn.classList.remove('playing');
+      var agent = AGENTS.find(function(a) { return a.id === agentId; });
+      btn.setAttribute('aria-label', 'Play ' + (agent ? agent.name : agentId) + "'s theme");
     }
   }
 
-  function cleanup() {
-    schedulerIds.forEach(function(id) { clearInterval(id); clearTimeout(id); });
-    schedulerIds = [];
-    activeNodes.forEach(function(n) {
-      try { if (n.stop) n.stop(); } catch(e) {}
-      try { n.disconnect(); } catch(e) {}
-    });
-    activeNodes = [];
-    if (stopTimeout) { clearTimeout(stopTimeout); stopTimeout = null; }
-  }
-
-  function createFeedbackDelay(t, delayTime, feedback) {
-    var input = audioCtx.createGain();
-    var delay = audioCtx.createDelay(2.0);
-    delay.delayTime.value = delayTime;
-    var fbGain = audioCtx.createGain();
-    fbGain.gain.value = feedback;
-    var fbFilter = audioCtx.createBiquadFilter();
-    fbFilter.type = 'lowpass';
-    fbFilter.frequency.value = 2000;
-    var wet = audioCtx.createGain();
-    wet.gain.value = 0.3;
-    input.connect(delay);
-    delay.connect(wet);
-    delay.connect(fbFilter);
-    fbFilter.connect(fbGain);
-    fbGain.connect(delay);
-    wet.connect(masterGain);
-    activeNodes.push(input, delay, fbGain, fbFilter, wet);
-    return input;
-  }
-
-  function createPad(t) {
-    var padOut = audioCtx.createGain();
-    padOut.gain.value = 0;
-    var rootFreq = t.scale[0];
-    for (var d = -1; d <= 1; d++) {
-      var osc = audioCtx.createOscillator();
-      osc.type = t.padWave;
-      osc.frequency.value = rootFreq;
-      osc.detune.value = d * 6;
-      var g = audioCtx.createGain();
-      g.gain.value = t.padGain;
-      osc.connect(g);
-      g.connect(padOut);
-      osc.start();
-      activeNodes.push(osc, g);
-    }
-    var filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = t.filterFreq;
-    filter.Q.value = t.filterQ;
-    var lfo = audioCtx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.12;
-    var lfoG = audioCtx.createGain();
-    lfoG.gain.value = 30;
-    lfo.connect(lfoG);
-    lfoG.connect(filter.frequency);
-    lfo.start();
-    padOut.connect(filter);
-    activeNodes.push(padOut, filter, lfo, lfoG);
-    padOut.gain.setTargetAtTime(1.0, audioCtx.currentTime, 1.5);
-    return filter;
-  }
-
-  function createSub(t) {
-    var osc = audioCtx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.value = t.scale[0] * 0.5;
-    var g = audioCtx.createGain();
-    g.gain.value = t.subGain;
-    var f = audioCtx.createBiquadFilter();
-    f.type = 'lowpass';
-    f.frequency.value = 180;
-    osc.connect(g);
-    g.connect(f);
-    f.connect(masterGain);
-    osc.start();
-    activeNodes.push(osc, g, f);
-  }
-
-  // Style-specific note schedulers
-  function scheduleNotes(t, delayInput) {
-    var lastIdx = -1;
-    var beatCount = 0;
-
-    function playNote() {
-      if (!currentAgent) return;
-      var now = audioCtx.currentTime;
-      var idx;
-      do { idx = Math.floor(Math.random() * t.scale.length); }
-      while (idx === lastIdx && t.scale.length > 2);
-      lastIdx = idx;
-      var freq = t.scale[idx];
-      beatCount++;
-
-      // Style variations
-      if (t.style === 'hiphop') {
-        // Kick-like thump on beats 1 and 3
-        if (beatCount % 4 === 1 || beatCount % 4 === 3) {
-          var kick = audioCtx.createOscillator();
-          kick.type = 'sine';
-          kick.frequency.setValueAtTime(150, now);
-          kick.frequency.exponentialRampToValueAtTime(40, now + 0.15);
-          var kG = audioCtx.createGain();
-          kG.gain.setValueAtTime(0.15, now);
-          kG.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-          kick.connect(kG); kG.connect(masterGain);
-          kick.start(now); kick.stop(now + 0.25);
-        }
-        // Hi-hat on every beat
-        var hh = audioCtx.createOscillator();
-        hh.type = 'square';
-        hh.frequency.value = 6000 + Math.random() * 2000;
-        var hhG = audioCtx.createGain();
-        hhG.gain.setValueAtTime(0.02, now);
-        hhG.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-        var hhF = audioCtx.createBiquadFilter();
-        hhF.type = 'highpass'; hhF.frequency.value = 5000;
-        hh.connect(hhF); hhF.connect(hhG); hhG.connect(masterGain);
-        hh.start(now); hh.stop(now + 0.06);
-      }
-
-      if (t.style === 'chiptune' || t.style === 'arcade') {
-        // Quick arpeggio bursts
-        for (var a = 0; a < 3; a++) {
-          var aOsc = audioCtx.createOscillator();
-          aOsc.type = 'square';
-          var aIdx = (idx + a) % t.scale.length;
-          aOsc.frequency.value = t.scale[aIdx] * (a === 2 ? 2 : 1);
-          var aG = audioCtx.createGain();
-          var aStart = now + a * 0.06;
-          aG.gain.setValueAtTime(0, aStart);
-          aG.gain.linearRampToValueAtTime(t.leadGain * 0.7, aStart + 0.01);
-          aG.gain.exponentialRampToValueAtTime(0.001, aStart + 0.08);
-          aOsc.connect(aG); aG.connect(delayInput || masterGain);
-          aOsc.start(aStart); aOsc.stop(aStart + 0.1);
-        }
-        if (t.style === 'arcade' && Math.random() < 0.2) {
-          // Coin-collect sound
-          var coin = audioCtx.createOscillator();
-          coin.type = 'square';
-          coin.frequency.setValueAtTime(988, now);
-          coin.frequency.setValueAtTime(1319, now + 0.06);
-          var cG = audioCtx.createGain();
-          cG.gain.setValueAtTime(0.06, now);
-          cG.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-          coin.connect(cG); cG.connect(masterGain);
-          coin.start(now); coin.stop(now + 0.2);
-        }
-        return;
-      }
-
-      if (t.style === 'staccato') {
-        freq *= (Math.random() < 0.3) ? 2 : 1;
-      }
-
-      if (t.style === 'echo') {
-        // Longer sustains, lower velocity
-        freq *= (Math.random() < 0.5) ? 0.5 : 1;
-      }
-
-      if (t.style === 'shifting') {
-        // Random octave jumps
-        var oct = [0.5, 1, 2][Math.floor(Math.random() * 3)];
-        freq *= oct;
-      }
-
-      if (t.style === 'ascending') {
-        // Gradually climb the scale
-        idx = beatCount % t.scale.length;
-        freq = t.scale[idx];
-        if (beatCount % (t.scale.length * 2) >= t.scale.length) freq *= 2;
-      }
-
-      if (t.style === 'callresponse') {
-        // Alternate between two octaves
-        freq *= (beatCount % 2 === 0) ? 1 : 2;
-      }
-
-      if (t.style === 'heartbeat') {
-        // Double pulse pattern
-        if (beatCount % 4 === 1 || beatCount % 4 === 2) {
-          var hb = audioCtx.createOscillator();
-          hb.type = 'sine';
-          hb.frequency.setValueAtTime(80, now);
-          hb.frequency.exponentialRampToValueAtTime(40, now + 0.15);
-          var hbG = audioCtx.createGain();
-          hbG.gain.setValueAtTime(0.12, now);
-          hbG.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-          hb.connect(hbG); hbG.connect(masterGain);
-          hb.start(now); hb.stop(now + 0.25);
-        }
-      }
-
-      if (t.style === 'metallic') {
-        // Metallic ring: high-freq detuned pair
-        if (Math.random() < 0.3) {
-          for (var m = 0; m < 2; m++) {
-            var mOsc = audioCtx.createOscillator();
-            mOsc.type = 'square';
-            mOsc.frequency.value = freq * 4 + (m * 50);
-            var mG = audioCtx.createGain();
-            mG.gain.setValueAtTime(0.03, now);
-            mG.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-            mOsc.connect(mG); mG.connect(masterGain);
-            mOsc.start(now); mOsc.stop(now + 0.12);
-          }
-        }
-      }
-
-      if (t.style === 'industrial') {
-        // Noise burst on some beats
-        if (Math.random() < 0.25) {
-          var nBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.08, audioCtx.sampleRate);
-          var nData = nBuf.getChannelData(0);
-          for (var ni = 0; ni < nData.length; ni++) nData[ni] = (Math.random() * 2 - 1) * 0.5;
-          var nSrc = audioCtx.createBufferSource();
-          nSrc.buffer = nBuf;
-          var nG = audioCtx.createGain();
-          nG.gain.setValueAtTime(0.06, now);
-          nG.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-          var nF = audioCtx.createBiquadFilter();
-          nF.type = 'bandpass'; nF.frequency.value = 200; nF.Q.value = 2;
-          nSrc.connect(nF); nF.connect(nG); nG.connect(masterGain);
-          nSrc.start(now);
-        }
-      }
-
-      if (t.style === 'alert') {
-        // Scanning sweep on some beats
-        if (beatCount % 6 === 0) {
-          var sw = audioCtx.createOscillator();
-          sw.type = 'sine';
-          sw.frequency.setValueAtTime(300, now);
-          sw.frequency.linearRampToValueAtTime(900, now + 0.4);
-          sw.frequency.linearRampToValueAtTime(300, now + 0.8);
-          var swG = audioCtx.createGain();
-          swG.gain.setValueAtTime(0.04, now);
-          swG.gain.setTargetAtTime(0, now + 0.6, 0.2);
-          sw.connect(swG); swG.connect(delayInput || masterGain);
-          sw.start(now); sw.stop(now + 1.0);
-        }
-      }
-
-      if (t.style === 'steady') {
-        // Cash register click on beat 1
-        if (beatCount % 4 === 1) {
-          var cl = audioCtx.createOscillator();
-          cl.type = 'sine';
-          cl.frequency.value = 2000;
-          var clG = audioCtx.createGain();
-          clG.gain.setValueAtTime(0.06, now);
-          clG.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-          cl.connect(clG); clG.connect(masterGain);
-          cl.start(now); cl.stop(now + 0.04);
-          // Second click
-          var cl2 = audioCtx.createOscillator();
-          cl2.type = 'sine'; cl2.frequency.value = 2500;
-          var clG2 = audioCtx.createGain();
-          clG2.gain.setValueAtTime(0.04, now + 0.04);
-          clG2.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
-          cl2.connect(clG2); clG2.connect(masterGain);
-          cl2.start(now + 0.04); cl2.stop(now + 0.08);
-        }
-      }
-
-      if (t.style === 'resolving') {
-        // Tend toward ascending resolution at end
-        if (beatCount > 30) {
-          idx = Math.min(beatCount - 30, t.scale.length - 1);
-          freq = t.scale[idx] * 2;
-        }
-      }
-
-      if (t.style === 'loud') {
-        // Distortion-like: layered sawtooths
-        if (Math.random() < 0.3) {
-          for (var li = 0; li < 3; li++) {
-            var lOsc = audioCtx.createOscillator();
-            lOsc.type = 'sawtooth';
-            lOsc.frequency.value = freq * (1 + (li - 1) * 0.02);
-            var lG = audioCtx.createGain();
-            lG.gain.setValueAtTime(0.03, now);
-            lG.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-            lOsc.connect(lG); lG.connect(masterGain);
-            lOsc.start(now); lOsc.stop(now + 0.2);
-          }
-        }
-      }
-
-      // --- Main lead note ---
-      var osc = audioCtx.createOscillator();
-      osc.type = t.leadWave;
-      osc.frequency.value = freq;
-      osc.detune.value = (Math.random() - 0.5) * 8;
-
-      var noteG = audioCtx.createGain();
-      var attack = (t.style === 'staccato' || t.style === 'precise') ? 0.01 : 0.04;
-      var sustain = t.leadGain * (0.6 + Math.random() * 0.4);
-      var release = (t.style === 'echo') ? 2.0 :
-                    (t.style === 'staccato' || t.style === 'precise') ? 0.1 :
-                    (t.style === 'organic') ? 1.5 : 0.6;
-
-      noteG.gain.setValueAtTime(0, now);
-      noteG.gain.linearRampToValueAtTime(sustain, now + attack);
-      noteG.gain.setTargetAtTime(0, now + attack + 0.05, release * 0.3);
-
-      var nFilter = audioCtx.createBiquadFilter();
-      nFilter.type = 'lowpass';
-      nFilter.frequency.value = t.filterFreq * (0.7 + Math.random() * 0.6);
-      nFilter.Q.value = 0.7;
-
-      osc.connect(noteG);
-      noteG.connect(nFilter);
-      if (delayInput) nFilter.connect(delayInput);
-      var dry = audioCtx.createGain();
-      dry.gain.value = 0.5;
-      nFilter.connect(dry);
-      dry.connect(masterGain);
-
-      osc.start(now);
-      osc.stop(now + attack + 0.05 + release * 2);
-
-      // Harmonic layer for warm/harmonic styles
-      if ((t.style === 'harmonic' || t.style === 'warm') && Math.random() < 0.4) {
-        var h = audioCtx.createOscillator();
-        h.type = 'sine';
-        h.frequency.value = freq * 1.5;
-        var hG = audioCtx.createGain();
-        hG.gain.setValueAtTime(0, now);
-        hG.gain.linearRampToValueAtTime(sustain * 0.3, now + 0.1);
-        hG.gain.setTargetAtTime(0, now + 0.3, release * 0.4);
-        h.connect(hG); hG.connect(delayInput || masterGain);
-        h.start(now); h.stop(now + release * 2);
-      }
-
-      // Arpeggio style: extra notes in sequence
-      if (t.style === 'arpeggio') {
-        for (var ai = 1; ai <= 2; ai++) {
-          var aOsc2 = audioCtx.createOscillator();
-          aOsc2.type = 'sine';
-          var aIdx2 = (idx + ai * 2) % t.scale.length;
-          aOsc2.frequency.value = t.scale[aIdx2];
-          var aG2 = audioCtx.createGain();
-          var aT = now + ai * 0.12;
-          aG2.gain.setValueAtTime(0, aT);
-          aG2.gain.linearRampToValueAtTime(sustain * 0.5, aT + 0.03);
-          aG2.gain.setTargetAtTime(0, aT + 0.08, 0.4);
-          aOsc2.connect(aG2); aG2.connect(delayInput || masterGain);
-          aOsc2.start(aT); aOsc2.stop(aT + 1.0);
-        }
-      }
-    }
-
-    // Schedule notes at the theme's tempo
-    var interval = 1000 / t.tempo;
-    // Slight humanization
-    function scheduleNext() {
-      playNote();
-      var jitter = interval * (0.85 + Math.random() * 0.3);
-      var id = setTimeout(scheduleNext, jitter);
-      schedulerIds.push(id);
-    }
-    // Start after a short delay for pad to fade in
-    var startId = setTimeout(scheduleNext, 800);
-    schedulerIds.push(startId);
-  }
-
-  function playTheme(agentId) {
-    var t = THEMES[agentId];
-    if (!t) return;
-    ensureAudio();
-    cleanup();
-
-    // Build audio chain
-    var delayInput = createFeedbackDelay(t, t.delayTime, t.delayFb);
-    var padFilter = createPad(t);
-    padFilter.connect(delayInput);
-    createSub(t);
-    scheduleNotes(t, delayInput);
-
-    // Auto-stop with fade
-    stopTimeout = setTimeout(function() {
-      if (currentAgent === agentId) {
-        fadeOutAndStop();
-      }
-    }, t.duration * 1000);
-  }
-
-  function fadeOutAndStop() {
-    if (masterGain) {
-      masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5);
-    }
-    var agent = currentAgent;
-    var btn = currentBtn;
-    setTimeout(function() {
-      cleanup();
-      if (masterGain) masterGain.gain.value = 0.7;
-      if (currentAgent === agent) {
-        currentAgent = null;
-        if (btn) {
-          btn.innerHTML = '&#9654;';
-          btn.classList.remove('playing');
-          btn.setAttribute('aria-label', 'Play ' + (THEMES[agent] ? THEMES[agent].name : agent) + "'s theme");
-        }
-        currentBtn = null;
-      }
-    }, 1500);
-  }
-
-  // Global toggle function
   window.toggleTheme = function(agentId, btn) {
-    ensureAudio();
+    var m = getMusic();
+    if (!m) return;
 
     // If this agent is already playing, stop it
     if (currentAgent === agentId) {
-      fadeOutAndStop();
+      m.stop();
+      resetBtn(currentBtn, currentAgent);
+      currentAgent = null;
+      currentBtn = null;
       return;
     }
 
     // Stop any currently playing theme
     if (currentAgent) {
-      cleanup();
-      if (masterGain) masterGain.gain.value = 0.7;
-      if (currentBtn) {
-        currentBtn.innerHTML = '&#9654;';
-        currentBtn.classList.remove('playing');
-        var prevTheme = THEMES[currentAgent];
-        if (prevTheme) currentBtn.setAttribute('aria-label', 'Play ' + prevTheme.name + "'s theme");
-      }
+      m.stop();
+      resetBtn(currentBtn, currentAgent);
     }
 
-    // Start new theme
-    currentAgent = agentId;
-    currentBtn = btn;
-    btn.innerHTML = '&#9208;';
-    btn.classList.add('playing');
-    btn.setAttribute('aria-label', 'Pause ' + THEMES[agentId].name + "'s theme");
-    playTheme(agentId);
+    // Load and play the agent's leitmotif
+    var songName = 'agent-' + agentId;
+    if (m.loadSong(songName)) {
+      currentAgent = agentId;
+      currentBtn = btn;
+      btn.innerHTML = '&#9208;';
+      btn.classList.add('playing');
+      var agent = AGENTS.find(function(a) { return a.id === agentId; });
+      btn.setAttribute('aria-label', 'Pause ' + (agent ? agent.name : agentId) + "'s theme");
+      m.play();
+    }
   };
 })();
 </script>
