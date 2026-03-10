@@ -1,7 +1,7 @@
 ---
 layout: null
 permalink: /games/cascade/
-title: "CASCADE — Go Go Go!"
+title: "CASCADE — Chain Sequencing"
 redirect_from:
   - /cascade/
 ---
@@ -10,7 +10,7 @@ redirect_from:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>CASCADE — Go Go Go! | Substrate Arcade</title>
+<title>CASCADE — Chain Sequencing | Substrate Arcade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,1399 +18,1499 @@ redirect_from:
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
+}
 
-  a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
 
-  :root {
-    --bg: #060810;
-    --surface: #0c1020;
-    --border: #1a2040;
-    --text: #c8d0e0;
-    --dim: #556677;
-    --momentum: #00ffaa;
-    --decay: #ff4444;
-    --surge: #ffdd44;
-    --spiral: #aa44ff;
-    --heaven: #44ddff;
-  }
+:root {
+  --bg: #E8F4F8;
+  --bg-grad-top: #dff0f7;
+  --bg-grad-bottom: #c8e6f0;
+  --surface: rgba(255,255,255,0.65);
+  --surface-strong: rgba(255,255,255,0.85);
+  --border: rgba(255,255,255,0.5);
+  --shadow: rgba(0,40,80,0.08);
+  --shadow-strong: rgba(0,40,80,0.15);
+  --text: #1a3a4a;
+  --text-dim: #5a7a8a;
+  --blue: #0078D4;
+  --coral: #FF6B6B;
+  --amber: #FFB300;
+  --green: #4CAF50;
+  --purple: #9C6ADE;
+  --correct: #4CAF50;
+  --wrong: #FF6B6B;
+  --glass-border: rgba(255,255,255,0.6);
+  --glass-bg: rgba(255,255,255,0.45);
+  --glass-bg-strong: rgba(255,255,255,0.7);
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    touch-action: none;
-    -webkit-user-select: none;
-    user-select: none;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  }
+body {
+  background: linear-gradient(180deg, var(--bg-grad-top) 0%, var(--bg) 40%, var(--bg-grad-bottom) 100%);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
 
-  /* === LAYOUT === */
-  #game {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    min-height: 100dvh;
-    width: 100vw;
-    max-width: 700px;
-    margin: 0 auto;
-    position: relative;
-  }
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+  padding: 8px;
+  overflow-y: auto;
+}
 
-  /* === POWER BAR === */
-  #gauge-container {
-    padding: 12px 16px 8px;
-    position: relative;
-  }
+/* ── Glass panel ── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.5);
+}
 
-  #phase-label {
-    font-size: 0.7rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    text-align: center;
-    margin-bottom: 6px;
-    transition: color 0.3s;
-  }
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.6);
+}
 
-  #gauge-track {
-    width: 100%;
-    height: 28px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    position: relative;
-  }
+/* ── Title Screen ── */
+#title-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  padding: 20px;
+}
 
-  #gauge-fill {
-    height: 100%;
-    width: 0%;
-    border-radius: 14px;
-    transition: width 0.4s ease-out, background 0.5s;
-    position: relative;
-  }
+#title-screen.hidden { display: none; }
 
-  #gauge-fill::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 20px;
-    height: 100%;
-    background: rgba(255,255,255,0.2);
-    border-radius: 0 14px 14px 0;
-  }
+.title-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.15em;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 8px rgba(0,120,212,0.15);
+}
 
-  #gauge-value {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text);
-    z-index: 2;
-  }
+.title-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+  letter-spacing: 0.05em;
+}
 
-  /* Phase markers on gauge */
-  .gauge-marker {
-    position: absolute;
-    top: -2px;
-    bottom: -2px;
-    width: 2px;
-    background: rgba(255,255,255,0.15);
-    z-index: 1;
-  }
-  .gauge-marker::after {
-    content: attr(data-label);
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    color: var(--dim);
-    white-space: nowrap;
-  }
+.title-best {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  line-height: 1.8;
+}
 
-  /* Crest indicator */
-  #crest-line {
-    position: absolute;
-    top: -2px;
-    bottom: -2px;
-    width: 2px;
-    background: var(--surge);
-    z-index: 3;
-    display: none;
-    box-shadow: 0 0 8px var(--surge);
-  }
+.title-best span {
+  display: inline-block;
+  margin: 0 8px;
+}
 
-  /* === STATS BAR === */
-  #stats {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 16px 12px;
-    font-size: 0.7rem;
-    color: var(--dim);
-  }
-  #stats .stat-val { color: var(--text); font-weight: 600; }
+.title-best strong {
+  color: var(--text);
+  font-weight: 600;
+}
 
-  /* === RESTART BUTTON === */
-  #restart-btn {
-    position: fixed;
-    top: 10px;
-    right: 70px;
-    z-index: 9999;
-    background: rgba(255, 68, 68, 0.15);
-    border: 1px solid rgba(255, 68, 68, 0.4);
-    color: #ff6666;
-    padding: 4px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    transition: all 0.15s;
-    display: none;
-  }
-  #restart-btn:hover {
-    background: rgba(255, 68, 68, 0.3);
-    border-color: rgba(255, 68, 68, 0.7);
-    color: #ff8888;
-  }
+.start-btn {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 48px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(0,120,212,0.3);
+  min-width: 200px;
+  min-height: 52px;
+}
 
-  /* === SCENARIO === */
-  #scenario-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 16px;
-    overflow: hidden;
-  }
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,120,212,0.4); }
+.start-btn:active { transform: translateY(0); }
 
-  #scenario-context {
-    font-size: 0.8rem;
-    color: var(--dim);
-    margin-bottom: 12px;
-    line-height: 1.6;
-    min-height: 2.5em;
-  }
+.title-how {
+  margin-top: 24px;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  max-width: 320px;
+  line-height: 1.6;
+  opacity: 0.7;
+}
 
-  #scenario-prompt {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.6;
-    margin-bottom: 20px;
-    min-height: 3em;
-  }
+/* ── HUD ── */
+#game-screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 520px; height: 100%; }
 
-  /* === TIMER === */
-  #timer-container {
-    padding: 0 16px;
-    margin-bottom: 12px;
-  }
+.hud {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 16px;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
-  #timer-track {
-    width: 100%;
-    height: 6px;
-    background: var(--surface);
-    border-radius: 3px;
-    overflow: hidden;
-  }
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
 
-  #timer-fill {
-    height: 100%;
-    background: var(--momentum);
-    border-radius: 3px;
-    transition: width 0.1s linear;
-    width: 100%;
-  }
+.hud-label { color: var(--text-dim); font-size: 0.6rem; font-weight: 500; }
+.hud-value { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+.hud-value.score-val { color: var(--blue); }
+.hud-value.chain-val { color: var(--green); }
+.hud-value.timer-val { color: var(--text); }
+.hud-value.timer-val.urgent { color: var(--coral); }
 
-  #timer-fill.urgent {
-    background: var(--decay);
-    animation: timer-pulse 0.5s infinite;
-  }
+.hud-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 100%;
+  padding: 4px 16px 8px;
+  font-size: 0.65rem;
+}
 
-  @keyframes timer-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
+.hud-row2 .hud-item { flex-direction: row; gap: 6px; }
+.hud-row2 .hud-value { font-size: 0.8rem; }
 
-  /* === CHOICES === */
-  #choices-container {
-    padding: 0 16px 16px;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
-  }
+/* Timer bar */
+.timer-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
 
-  .choice-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
+.timer-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 3px;
+  transition: width 0.08s linear;
+}
 
-  .choice-btn {
-    flex: 1;
-    padding: 16px 12px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-align: center;
-    min-height: 56px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    position: relative;
-    overflow: hidden;
-  }
+.timer-fill.urgent { background: var(--coral); }
+.timer-fill.warning { background: var(--amber); }
 
-  .choice-btn:hover, .choice-btn:active {
-    border-color: var(--momentum);
-    background: rgba(0, 255, 170, 0.05);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 255, 170, 0.1);
-  }
+/* ── Target Sequence ── */
+.target-area {
+  width: 100%;
+  padding: 10px 16px;
+  margin-bottom: 6px;
+  text-align: center;
+}
 
-  .choice-btn .choice-label {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
+.target-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
 
-  .choice-btn .choice-desc {
-    font-size: 0.7rem;
-    color: var(--dim);
-    font-weight: 400;
-  }
+.target-sequence {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
-  .choice-btn.surge {
-    border-color: var(--surge);
-    background: rgba(255, 221, 68, 0.05);
-    animation: surge-glow 1s ease-in-out infinite alternate;
-  }
+.target-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.8);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1), inset 0 -2px 4px rgba(0,0,0,0.08);
+  transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+  position: relative;
+}
 
-  .choice-btn.surge:hover {
-    background: rgba(255, 221, 68, 0.12);
-    box-shadow: 0 4px 30px rgba(255, 221, 68, 0.2);
-  }
+.target-dot.completed {
+  opacity: 0.35;
+  transform: scale(0.8);
+  border-color: rgba(255,255,255,0.4);
+}
 
-  .choice-btn.surge .choice-label {
-    color: var(--surge);
-  }
+.target-dot.current {
+  transform: scale(1.15);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(0,0,0,0.08), 0 0 0 3px rgba(0,120,212,0.25);
+}
 
-  @keyframes surge-glow {
-    from { box-shadow: 0 0 10px rgba(255, 221, 68, 0.1); }
-    to { box-shadow: 0 0 25px rgba(255, 221, 68, 0.2); }
-  }
+.target-dot.current::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--blue);
+}
 
-  .choice-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    transform: none;
-  }
+/* ── Grid ── */
+.grid-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 8px;
+  min-height: 0;
+}
 
-  /* Power gain preview */
-  .choice-btn .momentum-preview {
-    position: absolute;
-    top: 4px;
-    right: 6px;
-    font-size: 0.75rem;
-    color: var(--momentum);
-    font-weight: 700;
-  }
+#game-canvas {
+  border-radius: 16px;
+  box-shadow: 0 4px 24px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.4);
+  cursor: pointer;
+  touch-action: manipulation;
+}
 
-  .choice-btn.surge .momentum-preview {
-    color: var(--surge);
-  }
+/* ── Bottom stats ── */
+.bottom-bar {
+  width: 100%;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
 
-  /* === COMBO DISPLAY === */
-  #combo-display {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 3rem;
-    font-weight: 700;
-    color: var(--momentum);
-    opacity: 0;
-    pointer-events: none;
-    text-shadow: 0 0 30px var(--momentum);
-    z-index: 20;
-  }
+.bottom-bar span { display: inline-block; }
+.bottom-bar strong { color: var(--text); font-weight: 600; }
 
-  #combo-display.show {
-    animation: combo-pop 0.8s ease-out forwards;
-  }
+/* ── Feedback overlays ── */
+.feedback-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 100;
+}
 
-  @keyframes combo-pop {
-    0% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
-    20% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-  }
+#chain-complete-overlay {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-family: 'Inter', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--green);
+  text-shadow: 0 2px 12px rgba(76,175,80,0.3);
+  pointer-events: none;
+  z-index: 101;
+  opacity: 0;
+  transition: none;
+}
 
-  /* === CREST FLASH === */
-  #crest-flash {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--surge);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 30;
-  }
+#chain-complete-overlay.show {
+  animation: chainPop 0.8s ease-out forwards;
+}
 
-  #crest-flash.flash {
-    animation: crest-burst 0.6s ease-out;
-  }
+@keyframes chainPop {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
 
-  @keyframes crest-burst {
-    0% { opacity: 0.4; }
-    100% { opacity: 0; }
-  }
+#wrong-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255,107,107,0);
+  pointer-events: none;
+  z-index: 100;
+  transition: none;
+}
 
-  /* === HISTORY === */
-  #history {
-    padding: 0 16px;
-    max-height: 80px;
-    overflow-y: auto;
-    margin-bottom: 8px;
-  }
+#wrong-overlay.flash {
+  animation: wrongFlash 0.3s ease-out forwards;
+}
 
-  .history-item {
-    font-size: 0.75rem;
-    color: var(--dim);
-    padding: 2px 0;
-    display: flex;
-    justify-content: space-between;
-  }
-  .history-item .h-choice { color: var(--text); }
-  .history-item .h-gain { color: var(--momentum); }
-  .history-item .h-surge { color: var(--surge); }
+@keyframes wrongFlash {
+  0% { background: rgba(255,107,107,0.2); }
+  100% { background: rgba(255,107,107,0); }
+}
 
-  /* === TITLE SCREEN === */
-  #title-screen {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 100;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 20px;
-  }
-  #title-screen.hidden { display: none; }
+/* Screen shake */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
 
-  .title-name {
-    font-size: 3rem;
-    font-weight: 700;
-    letter-spacing: 8px;
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, var(--momentum), var(--surge), var(--spiral));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+.shaking { animation: shake 0.3s ease-out; }
 
-  .title-sub {
-    font-size: 0.9rem;
-    color: var(--dim);
-    letter-spacing: 3px;
-    margin-bottom: 2rem;
-  }
+/* ── Game Over Screen ── */
+#gameover-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  padding: 20px;
+}
 
-  .title-philosophy {
-    max-width: 500px;
-    font-size: 0.8rem;
-    color: #667788;
-    line-height: 1.8;
-    margin-bottom: 2rem;
-  }
+#gameover-screen.show { display: flex; }
 
-  .title-philosophy em { color: var(--text); font-style: normal; font-weight: 600; }
+.go-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--coral);
+  margin-bottom: 4px;
+}
 
-  .title-modes {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 360px;
-  }
+.go-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
 
-  .mode-btn {
-    padding: 16px 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-align: left;
-    min-height: 48px;
-  }
-  .mode-btn:hover, .mode-btn:active {
-    border-color: var(--momentum);
-    background: rgba(0, 255, 170, 0.05);
-  }
-  .mode-btn .mode-desc {
-    display: block;
-    font-size: 0.7rem;
-    color: var(--dim);
-    font-weight: 400;
-    margin-top: 4px;
-  }
+.go-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 24px;
+}
 
-  .title-credit {
-    position: absolute;
-    bottom: 16px;
-    font-size: 0.75rem;
-    color: #334;
-  }
-  .title-credit a { color: #445566; text-decoration: none; }
+.go-stat {
+  padding: 12px;
+}
 
-  /* === END SCREEN === */
-  #end-screen {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 100;
-    background: rgba(6, 8, 16, 0.95);
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 20px;
-  }
-  #end-screen.show { display: flex; }
+.go-stat-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
 
-  #end-phase {
-    font-size: 0.8rem;
-    letter-spacing: 3px;
-    margin-bottom: 8px;
-  }
-  #end-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-  #end-subtitle {
-    font-size: 0.85rem;
-    color: var(--dim);
-    margin-bottom: 2rem;
-  }
+.go-stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
 
-  .end-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    max-width: 360px;
-    width: 100%;
-    margin-bottom: 2rem;
-  }
+.go-stat-value.highlight { color: var(--blue); }
+.go-stat-value.focus-good { color: var(--green); }
+.go-stat-value.focus-ok { color: var(--amber); }
+.go-stat-value.focus-bad { color: var(--coral); }
 
-  .end-stat {
-    padding: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    text-align: center;
-  }
-  .end-stat .es-val { font-size: 1.4rem; font-weight: 700; color: var(--momentum); }
-  .end-stat .es-label { font-size: 0.75rem; color: var(--dim); margin-top: 4px; }
+.go-new-best {
+  font-size: 0.7rem;
+  color: var(--amber);
+  font-weight: 600;
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+}
 
-  #end-lesson {
-    max-width: 440px;
-    font-size: 0.8rem;
-    color: #778899;
-    line-height: 1.7;
-    margin-bottom: 2rem;
-    padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    text-align: left;
-  }
-  #end-lesson strong {
-    color: var(--surge);
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-  }
+.go-play-again {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 40px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(0,120,212,0.3);
+  min-width: 180px;
+  min-height: 48px;
+  margin-bottom: 12px;
+}
 
-  .end-actions {
-    display: flex;
-    gap: 10px;
-  }
-  .end-btn {
-    padding: 12px 28px;
-    background: transparent;
-    border: 2px solid var(--momentum);
-    border-radius: 6px;
-    color: var(--momentum);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    min-height: 48px;
-    transition: all 0.15s;
-  }
-  .end-btn:hover { background: var(--momentum); color: var(--bg); }
+.go-play-again:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,120,212,0.4); }
+.go-play-again:active { transform: translateY(0); }
 
-  /* === RESPONSIVE === */
-  @media (max-width: 480px) {
-    .title-name { font-size: 2rem; letter-spacing: 4px; }
-    #scenario-prompt { font-size: 0.95rem; }
-    .choice-btn { padding: 14px 10px; font-size: 0.8rem; }
-    .choice-btn .choice-label { font-size: 0.85rem; }
-    #end-title { font-size: 1.8rem; }
-  }
+/* ── Responsive ── */
+@media (max-width: 420px) {
+  .title-name { font-size: 2.2rem; }
+  .hud { padding: 6px 10px; font-size: 0.65rem; }
+  .hud-value { font-size: 0.95rem; }
+  .target-dot { width: 28px; height: 28px; }
+  .target-sequence { gap: 5px; }
+  .go-title { font-size: 1.6rem; }
+  .go-stats { gap: 8px; }
+  .go-stat { padding: 8px; }
+  .go-stat-value { font-size: 1.1rem; }
+}
 
-  .sr-only {
-    position: absolute; width: 1px; height: 1px;
-    padding: 0; margin: -1px; overflow: hidden;
-    clip: rect(0,0,0,0); border: 0;
-  }
+@media (min-height: 800px) {
+  .target-dot { width: 40px; height: 40px; }
+  .target-sequence { gap: 10px; }
+}
 </style>
-<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
+<main>
 
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-city.webp') center/cover no-repeat;opacity:0.12;pointer-events:none;"></div>
-
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
-
-<main id="game-main" role="main">
-<!-- RESTART BUTTON (always visible during play) -->
-<button id="restart-btn" onclick="confirmRestart()" aria-label="Start over (R)">RESTART</button>
-
-<!-- TITLE -->
-<div id="title-screen" aria-label="CASCADE title screen">
+<!-- ── TITLE SCREEN ── -->
+<div id="title-screen">
   <div class="title-name">CASCADE</div>
-  <div class="title-sub">GO GO GO!</div>
-  <div class="title-philosophy">
-    Pick fast. Don't wait.<br>
-    There are <em>no wrong answers.</em><br><br>
-    Just pick something! The faster you tap, the more power you get.<br>
-    Waiting makes your power shrink. Every pick adds up!
+  <div class="title-sub">Chain Sequencing</div>
+  <div class="glass" style="padding: 16px 24px; margin-bottom: 24px;">
+    <div class="title-best">
+      <span>Best Score: <strong id="title-best-score">0</strong></span>
+      <span>Best Chain: <strong id="title-best-chain">0</strong></span>
+      <br>
+      <span>Games Played: <strong id="title-games-played">0</strong></span>
+    </div>
   </div>
-  <div class="title-modes">
-    <button class="mode-btn" onclick="startGame('work')" aria-label="Start work mode">
-      WORK MODE
-      <span class="mode-desc">Pick what to do with your time and energy</span>
-    </button>
-    <button class="mode-btn" onclick="startGame('spiral')" aria-label="Start adventure mode">
-      ADVENTURE MODE
-      <span class="mode-desc">Wild choices — go big or go home!</span>
-    </button>
-    <button class="mode-btn" onclick="startGame('mixed')" aria-label="Start mixed mode">
-      MIX IT UP
-      <span class="mode-desc">A little of both worlds</span>
-    </button>
-  </div>
-  <div class="title-credit">
-    <a href="{{ site.baseurl }}/arcade/">Substrate Arcade</a> — fun brain games
-  </div>
+  <button class="start-btn" id="start-btn">TAP TO START</button>
+  <div class="title-how">Match the sequence. Click tiles in order. Speed builds the chain.</div>
 </div>
 
-<!-- GAME -->
-<div id="game" style="display:none;">
-  <!-- Power Bar -->
-  <div id="gauge-container">
-    <div id="phase-label" aria-live="polite">GROUND</div>
-    <div id="gauge-track" role="meter" aria-label="Your power" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <div id="gauge-fill"></div>
-      <div id="gauge-value">0</div>
-      <div class="gauge-marker" style="left:20%;" data-label="SPARK"></div>
-      <div class="gauge-marker" style="left:40%;" data-label="SPIN"></div>
-      <div class="gauge-marker" style="left:70%;" data-label="DRILL"></div>
-      <div class="gauge-marker" style="left:90%;" data-label="BOOM"></div>
-      <div id="crest-line"></div>
+<!-- ── GAME SCREEN ── -->
+<div id="game-screen">
+  <div class="hud glass" id="hud-panel">
+    <div class="hud-item">
+      <div class="hud-label">Score</div>
+      <div class="hud-value score-val" id="hud-score">0</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Chain</div>
+      <div class="hud-value chain-val" id="hud-chain">0</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Time</div>
+      <div class="hud-value timer-val" id="hud-timer">30</div>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div id="stats">
-    <span>Combo: <span class="stat-val" id="combo-count">0</span></span>
-    <span>Power: <span class="stat-val" id="depth-count">x1.0</span></span>
-    <span>Stars: <span class="stat-val" id="crest-count">0</span></span>
-    <span>Turn: <span class="stat-val" id="round-count">1</span>/20</span>
-  </div>
-
-  <!-- Scenario -->
-  <div id="scenario-area">
-    <div id="scenario-context" aria-live="polite"></div>
-    <div id="scenario-prompt" aria-live="assertive"></div>
-  </div>
-
-  <!-- Timer -->
-  <div id="timer-container">
-    <div id="timer-track">
-      <div id="timer-fill" role="timer" aria-label="Hurry up timer"></div>
+  <div class="hud-row2">
+    <div class="hud-item">
+      <span class="hud-label">Combo</span>
+      <span class="hud-value" id="hud-combo">x1</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Best</span>
+      <span class="hud-value" id="hud-best">0</span>
     </div>
   </div>
 
-  <!-- History -->
-  <div id="history" role="log" aria-label="What you picked"></div>
+  <div class="timer-bar">
+    <div class="timer-fill" id="timer-fill"></div>
+  </div>
 
-  <!-- Choices -->
-  <div id="choices-container" role="group" aria-label="Pick one"></div>
+  <div class="target-area glass" id="target-panel">
+    <div class="target-label">Target Sequence</div>
+    <div class="target-sequence" id="target-sequence"></div>
+  </div>
 
-  <!-- Combo popup -->
-  <div id="combo-display" aria-live="polite"></div>
+  <div class="grid-container">
+    <canvas id="game-canvas"></canvas>
+  </div>
 
-  <!-- Crest flash -->
-  <div id="crest-flash"></div>
+  <div class="bottom-bar">
+    <span>Focus: <strong id="hud-focus">--</strong></span>
+    <span>Best Chain: <strong id="hud-best-chain">0</strong></span>
+  </div>
 </div>
 
-<!-- END SCREEN -->
-<div id="end-screen" role="dialog" aria-label="Game over">
-  <div id="end-phase"></div>
-  <div id="end-title">ALL DONE!</div>
-  <div id="end-subtitle"></div>
-  <div class="end-stats">
-    <div class="end-stat"><div class="es-val" id="es-peak">0</div><div class="es-label">Best Power</div></div>
-    <div class="end-stat"><div class="es-val" id="es-decisions">0</div><div class="es-label">Picks Made</div></div>
-    <div class="end-stat"><div class="es-val" id="es-combo">0</div><div class="es-label">Best Combo</div></div>
-    <div class="end-stat"><div class="es-val" id="es-crests">0</div><div class="es-label">Stars Won</div></div>
+<!-- ── GAME OVER SCREEN ── -->
+<div id="gameover-screen">
+  <div class="go-title">TIME'S UP</div>
+  <div class="go-subtitle" id="go-subtitle">Nice run!</div>
+  <div id="go-new-best" class="go-new-best" style="display:none;">NEW BEST SCORE!</div>
+  <div class="go-stats">
+    <div class="go-stat glass">
+      <div class="go-stat-label">Score</div>
+      <div class="go-stat-value highlight" id="go-score">0</div>
+    </div>
+    <div class="go-stat glass">
+      <div class="go-stat-label">Best Chain</div>
+      <div class="go-stat-value" id="go-best-chain">0</div>
+    </div>
+    <div class="go-stat glass">
+      <div class="go-stat-label">Chains Done</div>
+      <div class="go-stat-value" id="go-chains">0</div>
+    </div>
+    <div class="go-stat glass">
+      <div class="go-stat-label">Avg Chain</div>
+      <div class="go-stat-value" id="go-avg-chain">0</div>
+    </div>
+    <div class="go-stat glass">
+      <div class="go-stat-label">Focus</div>
+      <div class="go-stat-value" id="go-focus">--%</div>
+    </div>
+    <div class="go-stat glass">
+      <div class="go-stat-label">Distractors Avoided</div>
+      <div class="go-stat-value" id="go-distractors">0</div>
+    </div>
   </div>
-  <div id="end-lesson"></div>
-  <div class="end-actions">
-    <button class="end-btn" onclick="startGame(G.mode)" aria-label="Play again">PLAY AGAIN</button>
-    <button class="end-btn" onclick="backToTitle()" aria-label="Go back to start" style="border-color:var(--dim);color:var(--dim);">GO BACK</button>
-  </div>
+  <button class="go-play-again" id="play-again-btn">PLAY AGAIN</button>
+</div>
+
+<!-- ── Overlays ── -->
+<div id="chain-complete-overlay"></div>
+<div id="wrong-overlay"></div>
+
+</main>
+
+<!-- ── Fund prompt ── -->
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(232,244,248,0.95);border-top:1px solid rgba(0,120,212,0.2);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#5a7a8a;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));backdrop-filter:blur(8px);">
+  <span style="color:#1a3a4a">This game runs on one laptop.</span>
+  <a href="/site/fund/" style="color:#0078D4;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#999;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 
 <script>
 (function() {
   'use strict';
 
-  // ============================================
-  // GAME STATE
-  // ============================================
-  window.G = {
-    mode: 'work',
-    momentum: 0,
-    combo: 0,
-    bestCombo: 0,
-    depth: 1.0,
-    crests: 0,
-    crestFloor: 0,
-    round: 0,
-    maxRounds: 20,
-    decisions: 0,
-    peakMomentum: 0,
-    timerMax: 6000,   // ms per pick
-    timerLeft: 6000,
-    timerInterval: null,
-    decayRate: 2,     // power lost each second you wait
-    phase: 'GROUND',
-    history: [],
-    active: false,
-  };
+  // ════════════════════════════════════════════════
+  // CONSTANTS
+  // ════════════════════════════════════════════════
+
+  var COLORS = [
+    { name: 'blue',   hex: '#0078D4', r: 0,   g: 120, b: 212 },
+    { name: 'coral',  hex: '#FF6B6B', r: 255, g: 107, b: 107 },
+    { name: 'amber',  hex: '#FFB300', r: 255, g: 179, b: 0   },
+    { name: 'green',  hex: '#4CAF50', r: 76,  g: 175, b: 80  },
+    { name: 'purple', hex: '#9C6ADE', r: 156, g: 106, b: 222 },
+  ];
+
+  var GRID_SIZE = 5;
+  var TILE_GAP = 6;
+  var TILE_RADIUS = 10;
+  var BASE_TIME = 30;
+  var TIME_PER_CHAIN = 5;
+  var TIMER_TICK = 50; // ms
+
+  // Difficulty thresholds
+  var DIFF = [
+    { minScore: 0,   seqLen: 3, distractors: 0, shift: false, timerDrain: 1.0, gradients: false },
+    { minScore: 50,  seqLen: 4, distractors: 1, shift: false, timerDrain: 1.0, gradients: false },
+    { minScore: 150, seqLen: 5, distractors: 2, shift: true,  timerDrain: 1.1, gradients: false },
+    { minScore: 300, seqLen: 6, distractors: 3, shift: false, timerDrain: 1.3, gradients: false },
+    { minScore: 500, seqLen: 7, distractors: 3, shift: false, timerDrain: 1.5, gradients: true  },
+  ];
+
+  // ════════════════════════════════════════════════
+  // DOM REFS
+  // ════════════════════════════════════════════════
+
+  var canvas = document.getElementById('game-canvas');
+  var ctx = canvas.getContext('2d');
 
   function $(id) { return document.getElementById(id); }
 
-  // ============================================
-  // PHASES
-  // ============================================
-  var PHASES = [
-    { name: 'GROUND',  min: 0,  color: '#556677' },
-    { name: 'SPARK',   min: 20, color: '#00cc88' },
-    { name: 'SPIRAL',  min: 40, color: '#aa44ff' },
-    { name: 'DRILL',   min: 70, color: '#ff6644' },
-    { name: 'HEAVEN',  min: 90, color: '#44ddff' },
-  ];
+  // ════════════════════════════════════════════════
+  // AUDIO (AudioContext tones)
+  // ════════════════════════════════════════════════
 
-  function getPhase(m) {
-    for (var i = PHASES.length - 1; i >= 0; i--) {
-      if (m >= PHASES[i].min) return PHASES[i];
+  var audioCtx = null;
+
+  function initAudio() {
+    if (audioCtx) return;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+
+  function playTone(freq, duration, type, volume) {
+    if (!audioCtx) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = freq;
+      gain.gain.value = volume || 0.12;
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  function sfxCorrect(step) {
+    var baseFreq = 440 + step * 80;
+    playTone(baseFreq, 0.15, 'sine', 0.1);
+  }
+
+  function sfxWrong() {
+    playTone(200, 0.12, 'sawtooth', 0.08);
+    setTimeout(function() { playTone(150, 0.2, 'sawtooth', 0.06); }, 60);
+  }
+
+  function sfxChainComplete() {
+    var notes = [523, 659, 784, 1047];
+    for (var i = 0; i < notes.length; i++) {
+      (function(idx) {
+        setTimeout(function() { playTone(notes[idx], 0.2, 'sine', 0.08); }, idx * 80);
+      })(i);
     }
-    return PHASES[0];
   }
 
-  // ============================================
-  // SCENARIOS
-  // ============================================
+  // ════════════════════════════════════════════════
+  // GAME STATE
+  // ════════════════════════════════════════════════
 
-  var WORK_SCENARIOS = [
-    {
-      context: "Your homework is almost done. But you also have lots of messages.",
-      prompt: "What do you do right now?",
-      choices: [
-        { label: "FINISH", desc: "Close everything else. Get it done!", gain: 12 },
-        { label: "CHECK", desc: "Look at messages first, then finish.", gain: 5 },
-      ]
-    },
-    {
-      context: "Someone wants to talk. But you are doing great work right now!",
-      prompt: "Keep going or stop to talk?",
-      choices: [
-        { label: "KEEP GOING", desc: "I'm on a roll! They can wait.", gain: 14 },
-        { label: "STOP", desc: "Maybe it's important. Go see.", gain: 6 },
-      ]
-    },
-    {
-      context: "You are staring at a blank page. Nothing is coming out.",
-      prompt: "How do you get started?",
-      choices: [
-        { label: "JUST WRITE", desc: "Write anything! Fix it later.", gain: 15 },
-        { label: "MAKE A LIST", desc: "Write three things down first.", gain: 8 },
-      ]
-    },
-    {
-      context: "You just finished one thing. It feels great! But there's more to do.",
-      prompt: "Keep going or take a break?",
-      choices: [
-        { label: "KEEP GOING", desc: "I feel good! Do the next one!", gain: 13 },
-        { label: "REST", desc: "Stop while it still feels fun.", gain: 7 },
-      ]
-    },
-    {
-      context: "A friend asks for help. But you are busy right now.",
-      prompt: "Help them now or later?",
-      choices: [
-        { label: "LATER", desc: "'I'll help you after 3!' No worries.", gain: 11 },
-        { label: "HELP NOW", desc: "It'll only take a minute. Maybe.", gain: 5 },
-      ]
-    },
-    {
-      context: "You made a mistake yesterday. Nobody saw it yet.",
-      prompt: "Fix it now or wait and see?",
-      choices: [
-        { label: "FIX NOW", desc: "Fix it before it gets worse!", gain: 14 },
-        { label: "WAIT", desc: "See if anyone even notices.", gain: 6 },
-      ]
-    },
-    {
-      context: "You have two things to do. One is urgent. One is really important.",
-      prompt: "Which one first?",
-      choices: [
-        { label: "IMPORTANT", desc: "Do the big thing. It matters more.", gain: 13 },
-        { label: "URGENT", desc: "Do the fast thing. Then go big.", gain: 8 },
-      ]
-    },
-    {
-      context: "You're about to start something hard. Your brain says 'play first!'",
-      prompt: "Play first or start working?",
-      choices: [
-        { label: "START NOW", desc: "That lazy voice is tricking you. Go!", gain: 16 },
-        { label: "2 MINUTES", desc: "Quick break, then work. Promise!", gain: 4 },
-      ]
-    },
-    {
-      context: "You've been going for a long time. You're getting tired.",
-      prompt: "Keep going or stop?",
-      choices: [
-        { label: "STOP", desc: "Take a break. Come back fresh!", gain: 10 },
-        { label: "PUSH", desc: "Just a little more. Almost there!", gain: 7 },
-      ]
-    },
-    {
-      context: "You just got a cool new idea! But it's not what you're working on.",
-      prompt: "Chase it or save it for later?",
-      choices: [
-        { label: "SAVE IT", desc: "Write it down. Come back later.", gain: 14 },
-        { label: "CHASE IT", desc: "It's so cool! Switch to that!", gain: 6 },
-      ]
-    },
-    {
-      context: "Your whole plan for today fell apart. Everything went sideways!",
-      prompt: "Make a new plan or just wing it?",
-      choices: [
-        { label: "WING IT", desc: "Pick one thing. Do it. That's the plan!", gain: 13 },
-        { label: "NEW PLAN", desc: "Take a minute. Figure it out.", gain: 7 },
-      ]
-    },
-    {
-      context: "Someone said your work was bad. Your face is hot. You want to yell back.",
-      prompt: "Yell back now or wait?",
-      choices: [
-        { label: "WAIT", desc: "Cool down first. Talk tomorrow.", gain: 14 },
-        { label: "SPEAK UP", desc: "Say your side. Be nice about it.", gain: 5 },
-      ]
-    },
-  ];
+  var G = {
+    state: 'title',  // title | playing | gameover
+    score: 0,
+    combo: 1,
+    bestChainSession: 0,
+    timer: BASE_TIME,
+    timerMax: BASE_TIME,
 
-  var SPIRAL_SCENARIOS = [
-    {
-      context: "The tunnel is falling down! Your drill is only half power.",
-      prompt: "Your drill or your team?",
-      choices: [
-        { label: "CHARGE", desc: "My drill makes tomorrow happen!", gain: 15 },
-        { label: "TEAM UP", desc: "Two drills are better than one!", gain: 10 },
-      ]
-    },
-    {
-      context: "The bad guy is ten times bigger. Smart to run away. But...",
-      prompt: "Be smart or be brave?",
-      choices: [
-        { label: "BE BRAVE", desc: "Who do you think I am?!", gain: 16 },
-        { label: "BE SMART", desc: "Find the weak spot. Strike fast.", gain: 8 },
-      ]
-    },
-    {
-      context: "You're at full power. Everyone says this is your limit.",
-      prompt: "Stop here or break through?",
-      choices: [
-        { label: "BREAK THROUGH", desc: "Limits are made to be smashed!", gain: 14 },
-        { label: "HOLD STEADY", desc: "Keep this power. Don't burn out.", gain: 9 },
-      ]
-    },
-    {
-      context: "Your friend fell down. Their power is fading away.",
-      prompt: "Be sad or take their power?",
-      choices: [
-        { label: "TAKE IT", desc: "Carry their power forward. Keep going!", gain: 13 },
-        { label: "BELIEVE", desc: "They're not done yet. Believe!", gain: 11 },
-      ]
-    },
-    {
-      context: "The big bad boss says: 'You're too strong. Stop growing.'",
-      prompt: "Stop or keep growing?",
-      choices: [
-        { label: "NEVER STOP", desc: "That's tomorrow's problem!", gain: 15 },
-        { label: "DIG DEEPER", desc: "Find out why. Then decide.", gain: 8 },
-      ]
-    },
-    {
-      context: "You're at the edge. Down below: darkness. Up above: the sky.",
-      prompt: "Go up or go down?",
-      choices: [
-        { label: "GO UP", desc: "The sky has no ceiling!", gain: 14 },
-        { label: "GO DOWN", desc: "What's hiding down there?", gain: 10 },
-      ]
-    },
-    {
-      context: "Two leaders are fighting. The team is breaking apart.",
-      prompt: "Pick a side or lead yourself?",
-      choices: [
-        { label: "I'LL LEAD", desc: "Neither is right. Follow me!", gain: 15 },
-        { label: "GO SOLO", desc: "Let them fight. I work alone.", gain: 7 },
-      ]
-    },
-    {
-      context: "Your drill can smash one thing: the bad guy or the wall behind them.",
-      prompt: "Smash the bad guy or the wall?",
-      choices: [
-        { label: "BAD GUY", desc: "You don't run. You drill!", gain: 13 },
-        { label: "THE WALL", desc: "Free everyone behind you!", gain: 12 },
-      ]
-    },
-    {
-      context: "Your power bar is shaking! One more push and it might pop — or go super!",
-      prompt: "Push past the limit?",
-      choices: [
-        { label: "GIGA DRILL", desc: "GIGA. DRILL. BOOM!", gain: 18 },
-        { label: "GIVE UP POWER", desc: "Trade your power to stay safe.", gain: 6 },
-      ]
-    },
-    {
-      context: "You won! The bad guys are gone. But what now?",
-      prompt: "What do you do after winning?",
-      choices: [
-        { label: "BUILD", desc: "The drill isn't just for smashing.", gain: 12 },
-        { label: "EXPLORE", desc: "Find the next thing. Keep walking.", gain: 10 },
-      ]
-    },
-  ];
+    // Grid
+    grid: [],        // 2D array of tile objects
+    tileSize: 60,
+    gridPixelSize: 0,
+    gridOffsetX: 0,
+    gridOffsetY: 0,
 
-  var SURGE_CHOICES = [
-    { label: "GIGA DRILL", desc: "GIGA DRILL BOOM! Max power!", gain: 25 },
-    { label: "TEAM UP", desc: "All powers join into one!", gain: 22 },
-    { label: "WHO AM I?!", desc: "WHO DO YOU THINK I AM?!", gain: 20 },
-    { label: "GO WILD", desc: "Forget the rules. Do the impossible!", gain: 23 },
-    { label: "MY DRILL", desc: "My drill makes tomorrow happen!", gain: 21 },
-  ];
+    // Current sequence
+    sequence: [],    // array of color indices
+    seqPos: 0,       // current position in sequence
 
-  function getScenarios(mode) {
-    if (mode === 'work') return WORK_SCENARIOS;
-    if (mode === 'spiral') return SPIRAL_SCENARIOS;
-    return WORK_SCENARIOS.concat(SPIRAL_SCENARIOS);
+    // Distractors
+    distractorTiles: [],
+    distractorsAvoided: 0,
+    distractorsTotal: 0,
+
+    // Stats
+    chainsCompleted: 0,
+    totalChainLinks: 0,
+    longestChain: 0,
+
+    // Animation
+    animTiles: [],   // tiles with active animations
+    shakeTimer: 0,
+
+    // Difficulty
+    difficulty: 0,
+  };
+
+  // ════════════════════════════════════════════════
+  // localStorage
+  // ════════════════════════════════════════════════
+
+  function loadBest(key, fallback) {
+    try { var v = localStorage.getItem(key); return v !== null ? parseInt(v, 10) : fallback; } catch(e) { return fallback; }
   }
 
-  // ============================================
-  // GAME LOGIC
-  // ============================================
+  function saveBest(key, val) {
+    try { localStorage.setItem(key, val.toString()); } catch(e) {}
+  }
 
-  function startGame(mode) {
-    G.mode = mode;
-    G.momentum = 0;
-    G.combo = 0;
-    G.bestCombo = 0;
-    G.depth = 1.0;
-    G.crests = 0;
-    G.crestFloor = 0;
-    G.round = 0;
-    G.decisions = 0;
-    G.peakMomentum = 0;
-    G.history = [];
-    G.active = true;
-    G.timerMax = 6000;
-    G.decayRate = 2;
+  var bestScore = loadBest('cascade-best-score', 0);
+  var bestChain = loadBest('cascade-best-chain', 0);
+  var gamesPlayed = loadBest('cascade-games-played', 0);
+  var totalChains = loadBest('cascade-total-chains', 0);
+
+  function updateTitleStats() {
+    $('title-best-score').textContent = bestScore;
+    $('title-best-chain').textContent = bestChain;
+    $('title-games-played').textContent = gamesPlayed;
+  }
+
+  // ════════════════════════════════════════════════
+  // DIFFICULTY
+  // ════════════════════════════════════════════════
+
+  function getDifficulty(score) {
+    var d = DIFF[0];
+    for (var i = DIFF.length - 1; i >= 0; i--) {
+      if (score >= DIFF[i].minScore) { d = DIFF[i]; break; }
+    }
+    return d;
+  }
+
+  // ════════════════════════════════════════════════
+  // DISTRACTOR COLOR GENERATION
+  // ════════════════════════════════════════════════
+
+  function makeDistractorHex(colorObj) {
+    // Create a lighter or darker variant
+    var shift = (Math.random() < 0.5) ? 40 : -40;
+    var r = Math.max(0, Math.min(255, colorObj.r + shift + Math.floor(Math.random() * 20 - 10)));
+    var g = Math.max(0, Math.min(255, colorObj.g + shift + Math.floor(Math.random() * 20 - 10)));
+    var b = Math.max(0, Math.min(255, colorObj.b + shift + Math.floor(Math.random() * 20 - 10)));
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  // ════════════════════════════════════════════════
+  // GRID GENERATION
+  // ════════════════════════════════════════════════
+
+  function generateGrid(diff) {
+    var grid = [];
+    var seqColors = G.sequence.slice(); // colors needed in sequence (remaining)
+    var remainingSeq = G.sequence.slice(G.seqPos);
+
+    // Count how many of each color we need
+    var needed = {};
+    for (var i = 0; i < remainingSeq.length; i++) {
+      var ci = remainingSeq[i];
+      needed[ci] = (needed[ci] || 0) + 1;
+    }
+
+    // Place needed tiles first
+    var placed = [];
+    for (var ci in needed) {
+      for (var n = 0; n < needed[ci]; n++) {
+        placed.push({ colorIdx: parseInt(ci), isDistractor: false, distractorOf: -1 });
+      }
+    }
+
+    // Add distractor tiles
+    var distractorCount = Math.min(diff.distractors, GRID_SIZE * GRID_SIZE - placed.length);
+    G.distractorTiles = [];
+    for (var d = 0; d < distractorCount; d++) {
+      // Pick a color from the remaining sequence to create a distractor for
+      var targetIdx = remainingSeq[Math.floor(Math.random() * remainingSeq.length)];
+      placed.push({ colorIdx: targetIdx, isDistractor: true, distractorOf: targetIdx });
+    }
+
+    // Fill remaining spots with random colors
+    while (placed.length < GRID_SIZE * GRID_SIZE) {
+      placed.push({ colorIdx: Math.floor(Math.random() * COLORS.length), isDistractor: false, distractorOf: -1 });
+    }
+
+    // Shuffle
+    for (var s = placed.length - 1; s > 0; s--) {
+      var j = Math.floor(Math.random() * (s + 1));
+      var tmp = placed[s]; placed[s] = placed[j]; placed[j] = tmp;
+    }
+
+    // Build 2D grid
+    for (var row = 0; row < GRID_SIZE; row++) {
+      grid[row] = [];
+      for (var col = 0; col < GRID_SIZE; col++) {
+        var p = placed[row * GRID_SIZE + col];
+        var tile = {
+          row: row,
+          col: col,
+          colorIdx: p.colorIdx,
+          isDistractor: p.isDistractor,
+          distractorOf: p.distractorOf,
+          distractorHex: p.isDistractor ? makeDistractorHex(COLORS[p.colorIdx]) : null,
+          state: 'idle',  // idle | correct | wrong | pulse
+          animTimer: 0,
+          scale: 1,
+          alpha: 1,
+        };
+        grid[row][col] = tile;
+        if (tile.isDistractor) {
+          G.distractorTiles.push(tile);
+          G.distractorsTotal++;
+        }
+      }
+    }
+
+    return grid;
+  }
+
+  // ════════════════════════════════════════════════
+  // SEQUENCE GENERATION
+  // ════════════════════════════════════════════════
+
+  function generateSequence(len) {
+    var seq = [];
+    for (var i = 0; i < len; i++) {
+      seq.push(Math.floor(Math.random() * COLORS.length));
+    }
+    return seq;
+  }
+
+  // ════════════════════════════════════════════════
+  // CANVAS SIZING
+  // ════════════════════════════════════════════════
+
+  function resizeCanvas() {
+    var container = canvas.parentElement;
+    var containerW = container.clientWidth - 16;
+    var containerH = container.clientHeight - 16;
+    var maxDim = Math.min(containerW, containerH, 480);
+
+    // Ensure minimum touch target size (44px per tile)
+    var minTile = 44;
+    var minGrid = minTile * GRID_SIZE + TILE_GAP * (GRID_SIZE + 1);
+    maxDim = Math.max(maxDim, minGrid);
+    maxDim = Math.min(maxDim, containerW, containerH);
+
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = maxDim * dpr;
+    canvas.height = maxDim * dpr;
+    canvas.style.width = maxDim + 'px';
+    canvas.style.height = maxDim + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    G.gridPixelSize = maxDim;
+    G.tileSize = (maxDim - TILE_GAP * (GRID_SIZE + 1)) / GRID_SIZE;
+    G.gridOffsetX = 0;
+    G.gridOffsetY = 0;
+  }
+
+  // ════════════════════════════════════════════════
+  // TARGET SEQUENCE UI
+  // ════════════════════════════════════════════════
+
+  function renderTargetSequence() {
+    var container = $('target-sequence');
+    container.innerHTML = '';
+    for (var i = 0; i < G.sequence.length; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'target-dot';
+      var c = COLORS[G.sequence[i]];
+      dot.style.backgroundColor = c.hex;
+
+      if (i < G.seqPos) {
+        dot.classList.add('completed');
+      } else if (i === G.seqPos) {
+        dot.classList.add('current');
+      }
+      container.appendChild(dot);
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // TILE DRAWING
+  // ════════════════════════════════════════════════
+
+  function getTileRect(row, col) {
+    var x = TILE_GAP + col * (G.tileSize + TILE_GAP);
+    var y = TILE_GAP + row * (G.tileSize + TILE_GAP);
+    return { x: x, y: y, w: G.tileSize, h: G.tileSize };
+  }
+
+  function drawRoundedRect(cx, x, y, w, h, r) {
+    cx.beginPath();
+    cx.moveTo(x + r, y);
+    cx.lineTo(x + w - r, y);
+    cx.quadraticCurveTo(x + w, y, x + w, y + r);
+    cx.lineTo(x + w, y + h - r);
+    cx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    cx.lineTo(x + r, y + h);
+    cx.quadraticCurveTo(x, y + h, x, y + h - r);
+    cx.lineTo(x, y + r);
+    cx.quadraticCurveTo(x, y, x + r, y);
+    cx.closePath();
+  }
+
+  function drawTile(tile) {
+    var rect = getTileRect(tile.row, tile.col);
+    var cx = rect.x + rect.w / 2;
+    var cy = rect.y + rect.h / 2;
+    var scale = tile.scale;
+    var w = rect.w * scale;
+    var h = rect.h * scale;
+    var x = cx - w / 2;
+    var y = cy - h / 2;
+
+    ctx.save();
+    ctx.globalAlpha = tile.alpha;
+
+    // Tile color
+    var color;
+    if (tile.isDistractor && tile.distractorHex) {
+      color = tile.distractorHex;
+    } else {
+      color = COLORS[tile.colorIdx].hex;
+    }
+
+    // Tile shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.12)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 3;
+
+    // Main tile body
+    drawRoundedRect(ctx, x, y, w, h, TILE_RADIUS);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // Glass highlight on top half
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    drawRoundedRect(ctx, x + 2, y + 2, w - 4, h * 0.45, TILE_RADIUS - 1);
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fill();
+
+    // Border
+    drawRoundedRect(ctx, x, y, w, h, TILE_RADIUS);
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // State overlays
+    if (tile.state === 'correct') {
+      drawRoundedRect(ctx, x, y, w, h, TILE_RADIUS);
+      ctx.strokeStyle = '#4CAF50';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Checkmark
+      ctx.beginPath();
+      ctx.moveTo(cx - w * 0.2, cy);
+      ctx.lineTo(cx - w * 0.05, cy + h * 0.15);
+      ctx.lineTo(cx + w * 0.2, cy - h * 0.15);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    } else if (tile.state === 'wrong') {
+      drawRoundedRect(ctx, x, y, w, h, TILE_RADIUS);
+      ctx.strokeStyle = '#FF6B6B';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // X mark
+      ctx.beginPath();
+      ctx.moveTo(cx - w * 0.15, cy - h * 0.15);
+      ctx.lineTo(cx + w * 0.15, cy + h * 0.15);
+      ctx.moveTo(cx + w * 0.15, cy - h * 0.15);
+      ctx.lineTo(cx - w * 0.15, cy + h * 0.15);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  // ════════════════════════════════════════════════
+  // CANVAS RENDERING
+  // ════════════════════════════════════════════════
+
+  function drawGrid() {
+    // Clear
+    ctx.clearRect(0, 0, G.gridPixelSize, G.gridPixelSize);
+
+    // Background
+    drawRoundedRect(ctx, 0, 0, G.gridPixelSize, G.gridPixelSize, 16);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fill();
+
+    // Draw tiles
+    for (var row = 0; row < GRID_SIZE; row++) {
+      for (var col = 0; col < GRID_SIZE; col++) {
+        if (G.grid[row] && G.grid[row][col]) {
+          drawTile(G.grid[row][col]);
+        }
+      }
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // HUD UPDATE
+  // ════════════════════════════════════════════════
+
+  function updateHUD() {
+    $('hud-score').textContent = G.score;
+    $('hud-chain').textContent = G.seqPos;
+    $('hud-combo').textContent = 'x' + G.combo;
+    $('hud-best').textContent = G.bestChainSession;
+
+    var timeLeft = Math.max(0, Math.ceil(G.timer));
+    var timerEl = $('hud-timer');
+    timerEl.textContent = timeLeft + 's';
+
+    if (timeLeft <= 5) {
+      timerEl.classList.add('urgent');
+    } else {
+      timerEl.classList.remove('urgent');
+    }
+
+    // Timer bar
+    var pct = Math.max(0, (G.timer / G.timerMax) * 100);
+    var fill = $('timer-fill');
+    fill.style.width = pct + '%';
+
+    if (pct < 20) {
+      fill.className = 'timer-fill urgent';
+    } else if (pct < 40) {
+      fill.className = 'timer-fill warning';
+    } else {
+      fill.className = 'timer-fill';
+    }
+
+    // Focus
+    if (G.distractorsTotal > 0) {
+      var focusPct = Math.round((G.distractorsAvoided / G.distractorsTotal) * 100);
+      $('hud-focus').textContent = focusPct + '%';
+    }
+
+    // Best chain
+    $('hud-best-chain').textContent = G.bestChainSession;
+  }
+
+  // ════════════════════════════════════════════════
+  // GAME FLOW
+  // ════════════════════════════════════════════════
+
+  function startGame() {
+    initAudio();
+
+    G.state = 'playing';
+    G.score = 0;
+    G.combo = 1;
+    G.bestChainSession = 0;
+    G.timer = BASE_TIME;
+    G.timerMax = BASE_TIME;
+    G.chainsCompleted = 0;
+    G.totalChainLinks = 0;
+    G.longestChain = 0;
+    G.distractorsAvoided = 0;
+    G.distractorsTotal = 0;
+    G.shakeTimer = 0;
 
     $('title-screen').classList.add('hidden');
-    $('end-screen').classList.remove('show');
-    $('game').style.display = 'flex';
-    $('history').innerHTML = '';
-    $('crest-line').style.display = 'none';
-    $('restart-btn').style.display = 'block';
+    $('gameover-screen').classList.remove('show');
+    $('game-screen').style.display = 'flex';
 
-    updateGauge();
-    nextRound();
+    resizeCanvas();
+    newSequence();
+    lastFrameTime = performance.now();
   }
-  window.startGame = startGame;
 
-  function backToTitle() {
-    clearInterval(G.timerInterval);
-    G.active = false;
-    $('end-screen').classList.remove('show');
-    $('game').style.display = 'none';
-    $('title-screen').classList.remove('hidden');
-    $('restart-btn').style.display = 'none';
+  function newSequence() {
+    var diff = getDifficulty(G.score);
+    G.difficulty = diff;
+    G.sequence = generateSequence(diff.seqLen);
+    G.seqPos = 0;
+    G.grid = generateGrid(diff);
+    renderTargetSequence();
+    updateHUD();
   }
-  window.backToTitle = backToTitle;
 
-  // === Restart ===
-  function confirmRestart() {
-    if (G.decisions > 0) {
-      if (!confirm('Start over? Your score will be lost.')) return;
+  function onCorrectClick(tile) {
+    sfxCorrect(G.seqPos);
+
+    tile.state = 'correct';
+    tile.animTimer = 0.4;
+    tile.scale = 1.15;
+
+    G.seqPos++;
+    G.totalChainLinks++;
+
+    if (G.seqPos > G.bestChainSession) {
+      G.bestChainSession = G.seqPos;
     }
-    restartGame();
+
+    renderTargetSequence();
+    updateHUD();
+
+    // Check if chain completed
+    if (G.seqPos >= G.sequence.length) {
+      onChainComplete();
+    }
   }
-  window.confirmRestart = confirmRestart;
 
-  function restartGame() {
-    clearInterval(G.timerInterval);
-    G.active = false;
-    $('end-screen').classList.remove('show');
-    startGame(G.mode);
+  function onChainComplete() {
+    sfxChainComplete();
+
+    var chainLen = G.sequence.length;
+    var points = chainLen * G.combo;
+    G.score += points;
+    G.chainsCompleted++;
+
+    if (chainLen > G.longestChain) {
+      G.longestChain = chainLen;
+    }
+
+    // Count distractors avoided this chain
+    var distractorsThisChain = 0;
+    for (var r = 0; r < GRID_SIZE; r++) {
+      for (var c = 0; c < GRID_SIZE; c++) {
+        if (G.grid[r][c].isDistractor && G.grid[r][c].state !== 'wrong') {
+          distractorsThisChain++;
+        }
+      }
+    }
+    G.distractorsAvoided += distractorsThisChain;
+
+    // Combo grows
+    G.combo++;
+
+    // Extend timer
+    var timeBonus = TIME_PER_CHAIN + Math.floor(chainLen * 0.5);
+    G.timer = Math.min(G.timerMax + 10, G.timer + timeBonus);
+
+    // Show chain complete overlay
+    var overlay = $('chain-complete-overlay');
+    overlay.textContent = '+' + points + ' (x' + G.combo + ')';
+    overlay.classList.remove('show');
+    void overlay.offsetWidth;
+    overlay.classList.add('show');
+
+    // Brief delay then new sequence
+    setTimeout(function() {
+      if (G.state === 'playing') {
+        newSequence();
+      }
+    }, 500);
   }
-  window.restartGame = restartGame;
 
-  function nextRound() {
-    G.round++;
-    $('round-count').textContent = G.round;
+  function onWrongClick(tile) {
+    sfxWrong();
 
-    if (G.round > G.maxRounds) {
+    tile.state = 'wrong';
+    tile.animTimer = 0.4;
+
+    // Screen shake
+    G.shakeTimer = 0.3;
+    var mainEl = $('game-screen');
+    mainEl.classList.remove('shaking');
+    void mainEl.offsetWidth;
+    mainEl.classList.add('shaking');
+
+    // Wrong overlay flash
+    var wo = $('wrong-overlay');
+    wo.classList.remove('flash');
+    void wo.offsetWidth;
+    wo.classList.add('flash');
+
+    // Reset chain
+    G.seqPos = 0;
+    G.combo = 1;
+
+    // Time penalty
+    G.timer = Math.max(0, G.timer - 2);
+
+    renderTargetSequence();
+    updateHUD();
+
+    // Regenerate grid after brief pause
+    setTimeout(function() {
+      if (G.state === 'playing') {
+        // Reset tile states and regenerate
+        G.grid = generateGrid(G.difficulty);
+        renderTargetSequence();
+      }
+    }, 400);
+  }
+
+  function endGame() {
+    G.state = 'gameover';
+    $('game-screen').style.display = 'none';
+
+    // Update persistence
+    gamesPlayed++;
+    totalChains += G.chainsCompleted;
+    saveBest('cascade-games-played', gamesPlayed);
+    saveBest('cascade-total-chains', totalChains);
+
+    var isNewBest = false;
+    if (G.score > bestScore) {
+      bestScore = G.score;
+      saveBest('cascade-best-score', bestScore);
+      isNewBest = true;
+    }
+    if (G.bestChainSession > bestChain) {
+      bestChain = G.bestChainSession;
+      saveBest('cascade-best-chain', bestChain);
+    }
+
+    // Populate game over screen
+    $('go-score').textContent = G.score;
+    $('go-best-chain').textContent = G.bestChainSession;
+    $('go-chains').textContent = G.chainsCompleted;
+
+    var avgChain = G.chainsCompleted > 0 ? (G.totalChainLinks / G.chainsCompleted).toFixed(1) : '0';
+    $('go-avg-chain').textContent = avgChain;
+
+    var focusEl = $('go-focus');
+    if (G.distractorsTotal > 0) {
+      var focusPct = Math.round((G.distractorsAvoided / G.distractorsTotal) * 100);
+      focusEl.textContent = focusPct + '%';
+      focusEl.className = 'go-stat-value ' + (focusPct >= 80 ? 'focus-good' : focusPct >= 50 ? 'focus-ok' : 'focus-bad');
+    } else {
+      focusEl.textContent = '--';
+      focusEl.className = 'go-stat-value';
+    }
+
+    $('go-distractors').textContent = G.distractorsAvoided;
+
+    if (isNewBest) {
+      $('go-new-best').style.display = 'block';
+    } else {
+      $('go-new-best').style.display = 'none';
+    }
+
+    // Subtitle based on score
+    var sub = 'Keep practicing!';
+    if (G.score >= 500) sub = 'Incredible sequencing!';
+    else if (G.score >= 300) sub = 'Outstanding focus!';
+    else if (G.score >= 150) sub = 'Great chains!';
+    else if (G.score >= 50) sub = 'Nice work!';
+    $('go-subtitle').textContent = sub;
+
+    $('gameover-screen').classList.add('show');
+    showFundPrompt();
+  }
+
+  // ════════════════════════════════════════════════
+  // INPUT HANDLING
+  // ════════════════════════════════════════════════
+
+  function getTileFromPos(px, py) {
+    for (var row = 0; row < GRID_SIZE; row++) {
+      for (var col = 0; col < GRID_SIZE; col++) {
+        var rect = getTileRect(row, col);
+        if (px >= rect.x && px <= rect.x + rect.w && py >= rect.y && py <= rect.y + rect.h) {
+          return G.grid[row][col];
+        }
+      }
+    }
+    return null;
+  }
+
+  function getCanvasPos(e) {
+    var bounds = canvas.getBoundingClientRect();
+    var scaleX = G.gridPixelSize / bounds.width;
+    var scaleY = G.gridPixelSize / bounds.height;
+    var clientX, clientY;
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    return {
+      x: (clientX - bounds.left) * scaleX,
+      y: (clientY - bounds.top) * scaleY
+    };
+  }
+
+  function handleTileClick(e) {
+    if (G.state !== 'playing') return;
+    e.preventDefault();
+
+    var pos = getCanvasPos(e);
+    var tile = getTileFromPos(pos.x, pos.y);
+    if (!tile) return;
+    if (tile.state === 'correct') return; // Already used
+
+    var targetColorIdx = G.sequence[G.seqPos];
+
+    // Check: is this the correct color (and NOT a distractor)?
+    if (!tile.isDistractor && tile.colorIdx === targetColorIdx) {
+      onCorrectClick(tile);
+    } else {
+      // Wrong click — either distractor or wrong color
+      onWrongClick(tile);
+    }
+  }
+
+  canvas.addEventListener('click', handleTileClick);
+  canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    handleTileClick(e);
+  }, { passive: false });
+
+  // ════════════════════════════════════════════════
+  // TILE POSITION SHIFTING
+  // ════════════════════════════════════════════════
+
+  var shiftAccum = 0;
+
+  function maybeShiftTiles(dt) {
+    if (!G.difficulty || !G.difficulty.shift) return;
+    shiftAccum += dt;
+    if (shiftAccum < 4) return; // Shift every 4 seconds
+    shiftAccum = 0;
+
+    // Swap two random non-completed tiles
+    var available = [];
+    for (var r = 0; r < GRID_SIZE; r++) {
+      for (var c = 0; c < GRID_SIZE; c++) {
+        if (G.grid[r][c].state === 'idle') {
+          available.push({ r: r, c: c });
+        }
+      }
+    }
+    if (available.length < 2) return;
+
+    var i = Math.floor(Math.random() * available.length);
+    var j;
+    do { j = Math.floor(Math.random() * available.length); } while (j === i);
+
+    var a = available[i];
+    var b = available[j];
+    var tileA = G.grid[a.r][a.c];
+    var tileB = G.grid[b.r][b.c];
+
+    // Swap contents (keep row/col, swap color data)
+    var tmpColor = tileA.colorIdx;
+    var tmpDist = tileA.isDistractor;
+    var tmpDistOf = tileA.distractorOf;
+    var tmpDistHex = tileA.distractorHex;
+
+    tileA.colorIdx = tileB.colorIdx;
+    tileA.isDistractor = tileB.isDistractor;
+    tileA.distractorOf = tileB.distractorOf;
+    tileA.distractorHex = tileB.distractorHex;
+
+    tileB.colorIdx = tmpColor;
+    tileB.isDistractor = tmpDist;
+    tileB.distractorOf = tmpDistOf;
+    tileB.distractorHex = tmpDistHex;
+
+    // Visual feedback — pulse both tiles
+    tileA.scale = 1.1;
+    tileA.animTimer = 0.3;
+    tileB.scale = 1.1;
+    tileB.animTimer = 0.3;
+  }
+
+  // ════════════════════════════════════════════════
+  // GAME LOOP
+  // ════════════════════════════════════════════════
+
+  var lastFrameTime = 0;
+
+  function gameLoop(now) {
+    requestAnimationFrame(gameLoop);
+
+    var dt = (now - lastFrameTime) / 1000;
+    lastFrameTime = now;
+    if (dt > 0.1) dt = 0.1; // Clamp
+
+    if (G.state !== 'playing') return;
+
+    // Timer drain
+    var diff = G.difficulty || DIFF[0];
+    G.timer -= dt * diff.timerDrain;
+
+    if (G.timer <= 0) {
+      G.timer = 0;
       endGame();
       return;
     }
 
-    // Pick scenario
-    var scenarios = getScenarios(G.mode);
-    var scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-
-    $('scenario-context').textContent = scenario.context;
-    $('scenario-prompt').textContent = scenario.prompt;
-
-    // Build choices
-    var container = $('choices-container');
-    container.innerHTML = '';
-
-    var row = document.createElement('div');
-    row.className = 'choice-row';
-
-    scenario.choices.forEach(function(choice) {
-      var btn = document.createElement('button');
-      btn.className = 'choice-btn';
-      btn.setAttribute('aria-label', choice.label + ': ' + choice.desc);
-      btn.innerHTML = '<span class="choice-label">' + choice.label + '</span>' +
-                      '<span class="choice-desc">' + choice.desc + '</span>' +
-                      '<span class="momentum-preview">+' + choice.gain + '</span>';
-      btn.addEventListener('click', function() { makeChoice(choice); });
-      row.appendChild(btn);
-    });
-
-    // Super pick at 70+ power
-    if (G.momentum >= 70) {
-      var surge = SURGE_CHOICES[Math.floor(Math.random() * SURGE_CHOICES.length)];
-      var surgeBtn = document.createElement('button');
-      surgeBtn.className = 'choice-btn surge';
-      surgeBtn.setAttribute('aria-label', 'SUPER: ' + surge.label + ' — ' + surge.desc);
-      surgeBtn.innerHTML = '<span class="choice-label">' + surge.label + '</span>' +
-                           '<span class="choice-desc">' + surge.desc + '</span>' +
-                           '<span class="momentum-preview">+' + surge.gain + '</span>';
-      surgeBtn.addEventListener('click', function() { makeChoice(surge, true); });
-
-      var surgeRow = document.createElement('div');
-      surgeRow.className = 'choice-row';
-      surgeRow.appendChild(surgeBtn);
-      container.appendChild(row);
-      container.appendChild(surgeRow);
-    } else {
-      container.appendChild(row);
-    }
-
-    // Start timer
-    startTimer();
-
-    // Faster and harder as power grows
-    G.decayRate = 2 + (G.momentum / 25);
-    G.timerMax = Math.max(3000, 6000 - G.momentum * 20);
-  }
-
-  function makeChoice(choice, isSurge) {
-    clearInterval(G.timerInterval);
-    G.active = false;
-
-    G.decisions++;
-
-    // Speed bonus: faster pick = more power
-    var timeRatio = G.timerLeft / G.timerMax;
-    var timeBonus = Math.floor(choice.gain * timeRatio * 0.5);
-    var comboBonus = Math.floor(G.combo * 0.5);
-    var depthMultiplier = G.depth;
-    var totalGain = Math.floor((choice.gain + timeBonus + comboBonus) * depthMultiplier);
-
-    // Combo
-    G.combo++;
-    if (G.combo > G.bestCombo) G.bestCombo = G.combo;
-
-    // Show combo
-    if (G.combo >= 3) {
-      showCombo(G.combo);
-    }
-
-    // Add power
-    G.momentum = Math.min(100, G.momentum + totalGain);
-    if (G.momentum > G.peakMomentum) G.peakMomentum = G.momentum;
-
-    // Power grows every 5 picks
-    G.depth = 1.0 + (Math.floor(G.decisions / 5) * 0.2);
-
-    // Star check: at 90+ power, lock in a floor
-    if (G.momentum >= 90 && G.crestFloor < G.momentum - 10) {
-      G.crests++;
-      G.crestFloor = Math.max(G.crestFloor, G.momentum - 15);
-      showCrest();
-    }
-
-    // Log what happened
-    addHistory(choice.label, totalGain, isSurge);
-
-    // Update the screen
-    updateGauge();
-    $('combo-count').textContent = G.combo;
-    $('depth-count').textContent = 'x' + G.depth.toFixed(1);
-    $('crest-count').textContent = G.crests;
-
-    // Next turn after a tiny wait
-    G.active = true;
-    setTimeout(function() { nextRound(); }, 400);
-  }
-
-  function onTimeout() {
-    // Lose power when you wait too long
-    var decay = Math.floor(G.decayRate * 3);
-    G.momentum = Math.max(G.crestFloor, G.momentum - decay);
-    G.combo = 0;
-
-    addHistory('TOO SLOW', -decay, false);
-    updateGauge();
-    $('combo-count').textContent = '0';
-
-    setTimeout(function() { nextRound(); }, 600);
-  }
-
-  // === Timer ===
-  function startTimer() {
-    G.timerLeft = G.timerMax;
-    var fill = $('timer-fill');
-    fill.style.width = '100%';
-    fill.classList.remove('urgent');
-
-    clearInterval(G.timerInterval);
-    var step = 50; // ms
-    G.timerInterval = setInterval(function() {
-      G.timerLeft -= step;
-
-      // Slowly lose power while you think
-      G.momentum = Math.max(G.crestFloor, G.momentum - (G.decayRate * step / 1000));
-      updateGauge();
-
-      var pct = Math.max(0, (G.timerLeft / G.timerMax) * 100);
-      fill.style.width = pct + '%';
-
-      if (pct < 30) fill.classList.add('urgent');
-
-      if (G.timerLeft <= 0) {
-        clearInterval(G.timerInterval);
-        onTimeout();
+    // Tile animations
+    for (var r = 0; r < GRID_SIZE; r++) {
+      for (var c = 0; c < GRID_SIZE; c++) {
+        var tile = G.grid[r] && G.grid[r][c];
+        if (!tile) continue;
+        if (tile.animTimer > 0) {
+          tile.animTimer -= dt;
+          if (tile.animTimer <= 0) {
+            tile.animTimer = 0;
+            tile.scale = 1;
+          }
+        }
+        // Animate scale back to 1
+        if (tile.scale !== 1) {
+          tile.scale += (1 - tile.scale) * dt * 8;
+          if (Math.abs(tile.scale - 1) < 0.01) tile.scale = 1;
+        }
       }
-    }, step);
-  }
-
-  // === Screen Updates ===
-  function updateGauge() {
-    var pct = Math.max(0, Math.min(100, G.momentum));
-    var phase = getPhase(pct);
-
-    $('gauge-fill').style.width = pct + '%';
-    $('gauge-fill').style.background = 'linear-gradient(90deg, ' + phase.color + '88, ' + phase.color + ')';
-    $('gauge-value').textContent = Math.floor(pct);
-    $('gauge-track').setAttribute('aria-valuenow', Math.floor(pct));
-
-    if (phase.name !== G.phase) {
-      G.phase = phase.name;
-      $('phase-label').textContent = phase.name;
-      $('phase-label').style.color = phase.color;
     }
 
-    // Star line
-    if (G.crestFloor > 0) {
-      $('crest-line').style.display = 'block';
-      $('crest-line').style.left = G.crestFloor + '%';
-    }
-  }
-
-  function showCombo(n) {
-    var el = $('combo-display');
-    el.textContent = n + 'x COMBO!';
-    el.classList.remove('show');
-    void el.offsetWidth;
-    el.classList.add('show');
-  }
-
-  function showCrest() {
-    var flash = $('crest-flash');
-    flash.classList.remove('flash');
-    void flash.offsetWidth;
-    flash.classList.add('flash');
-
-    var el = $('combo-display');
-    el.textContent = 'STAR!';
-    el.style.color = 'var(--surge)';
-    el.classList.remove('show');
-    void el.offsetWidth;
-    el.classList.add('show');
-    setTimeout(function() { el.style.color = 'var(--momentum)'; }, 1000);
-  }
-
-  function addHistory(label, gain, isSurge) {
-    var history = $('history');
-    var div = document.createElement('div');
-    div.className = 'history-item';
-    div.innerHTML = '<span class="h-choice">' + label + '</span>' +
-                    '<span class="' + (gain >= 0 ? (isSurge ? 'h-surge' : 'h-gain') : '') + '">' +
-                    (gain >= 0 ? '+' : '') + gain + '</span>';
-    history.insertBefore(div, history.firstChild);
-
-    // Keep only last 8
-    while (history.children.length > 8) {
-      history.removeChild(history.lastChild);
-    }
-  }
-
-  // === End Game ===
-  function endGame() {
-    clearInterval(G.timerInterval);
-    G.active = false;
-    $('game').style.display = 'none';
-    $('restart-btn').style.display = 'none';
-
-    var phase = getPhase(G.peakMomentum);
-
-    $('end-phase').textContent = phase.name;
-    $('end-phase').style.color = phase.color;
-    $('end-title').style.color = phase.color;
-
-    var titles = {
-      'GROUND': 'Just Getting Started!',
-      'SPARK': 'Nice Spark!',
-      'SPIRAL': 'Spinning Up!',
-      'DRILL': 'Drill Power!',
-      'HEAVEN': 'You Did It!',
-    };
-    $('end-title').textContent = titles[phase.name] || 'All Done!';
-
-    var subs = {
-      'GROUND': 'You were a bit slow. Pick faster next time! You got this!',
-      'SPARK': 'You found the spark! Now go faster. Speed is your friend!',
-      'SPIRAL': 'You felt the power! You were really rolling. Keep it up!',
-      'DRILL': 'Wow! You picked fast even when it got hard. Great job!',
-      'HEAVEN': 'Amazing! You went all the way to the top! You are a star!',
-    };
-    $('end-subtitle').textContent = subs[phase.name] || '';
-
-    $('es-peak').textContent = Math.floor(G.peakMomentum);
-    $('es-peak').style.color = phase.color;
-    $('es-decisions').textContent = G.decisions;
-    $('es-combo').textContent = G.bestCombo + 'x';
-    $('es-crests').textContent = G.crests;
-
-    var lessons = {
-      'GROUND': '<strong>WHAT YOU LEARNED</strong>Waiting too long makes your power go away. Don\'t worry about picking the "best" one. Just pick! The faster you go, the more power you get. Next time: just tap something right away!',
-      'SPARK': '<strong>WHAT YOU LEARNED</strong>You can get going! Now try to keep going. Combos happen when you pick over and over without stopping. Try to pick many times in a row really fast!',
-      'SPIRAL': '<strong>WHAT YOU LEARNED</strong>Once you get rolling, it gets easier! Your power grows bigger and bigger. The hard part is the first few picks. After that, it feels like flying!',
-      'DRILL': '<strong>WHAT YOU LEARNED</strong>You kept picking even when the timer got faster. That\'s awesome! When things get harder, just go faster. You\'re like a drill going through a wall!',
-      'HEAVEN': '<strong>WHAT YOU LEARNED</strong>You got a star! That means you hit super high power. Stars lock in your power so it can\'t drop below. You built something that lasts. That\'s the whole point!',
-    };
-    $('end-lesson').innerHTML = lessons[phase.name] || '';
-
-    $('end-screen').classList.add('show');
-
-    // Save best run
-    try {
-      var best = JSON.parse(localStorage.getItem('cascade_best') || '{}');
-      if (!best.peak || G.peakMomentum > best.peak) {
-        localStorage.setItem('cascade_best', JSON.stringify({
-          peak: G.peakMomentum,
-          phase: phase.name,
-          decisions: G.decisions,
-          combo: G.bestCombo,
-          crests: G.crests,
-          mode: G.mode,
-          date: new Date().toISOString(),
-        }));
-      }
-    } catch(e) {}
-    showFundPrompt();
-  }
-
-  // === Keyboard support ===
-  document.addEventListener('keydown', function(e) {
-    // R key to restart (works anytime during play)
-    if ((e.key === 'r' || e.key === 'R') && $('game').style.display !== 'none' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      e.preventDefault();
-      confirmRestart();
-      return;
+    // Shake timer
+    if (G.shakeTimer > 0) {
+      G.shakeTimer -= dt;
     }
 
-    if (!G.active) return;
-    var btns = document.querySelectorAll('.choice-btn');
-    if (e.key === '1' && btns[0]) btns[0].click();
-    if (e.key === '2' && btns[1]) btns[1].click();
-    if (e.key === '3' && btns[2]) btns[2].click();
+    // Tile shifting
+    maybeShiftTiles(dt);
+
+    // Draw
+    drawGrid();
+    updateHUD();
+  }
+
+  // ════════════════════════════════════════════════
+  // EVENT BINDINGS
+  // ════════════════════════════════════════════════
+
+  $('start-btn').addEventListener('click', function() { startGame(); });
+  $('play-again-btn').addEventListener('click', function() { startGame(); });
+
+  window.addEventListener('resize', function() {
+    if (G.state === 'playing') resizeCanvas();
   });
 
-  // === ANIME EFFECTS ===
-  if (typeof AnimeEffects !== 'undefined') {
-    AnimeEffects.addScanlines(0.03);
-
-    // Speed lines behind the game
-    var animeCanvas = document.createElement('canvas');
-    animeCanvas.id = 'anime-speed-bg';
-    animeCanvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;';
-    document.body.insertBefore(animeCanvas, document.body.firstChild);
-
-    var lastPhase = '';
-    var speedLineIntensity = 0;
-
-    // Redraw speed lines based on power
-    function updateAnimeBackground() {
-      var c = document.getElementById('anime-speed-bg');
-      if (!c || !G) return;
-      c.width = window.innerWidth;
-      c.height = window.innerHeight;
-      var ctx = c.getContext('2d');
-      var cx = c.width / 2, cy = c.height / 2;
-      var momentum = G.momentum || 0;
-      var phase = G.phase || 'GROUND';
-
-      // Background glow based on phase
-      var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(c.width, c.height));
-      if (momentum < 20) {
-        grad.addColorStop(0, '#08080f');
-        grad.addColorStop(1, '#040408');
-      } else if (momentum < 40) {
-        grad.addColorStop(0, '#0a100f');
-        grad.addColorStop(1, '#040808');
-      } else if (momentum < 70) {
-        grad.addColorStop(0, '#100a18');
-        grad.addColorStop(1, '#080410');
-      } else if (momentum < 90) {
-        grad.addColorStop(0, '#180a08');
-        grad.addColorStop(1, '#100404');
-      } else {
-        grad.addColorStop(0, '#0a1418');
-        grad.addColorStop(1, '#04080a');
-      }
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, c.width, c.height);
-
-      // Speed lines — more and brighter with higher power
-      var lineCount = Math.floor(momentum / 5);
-      var colors = { GROUND: '#556677', SPARK: '#00cc88', SPIRAL: '#aa44ff', DRILL: '#ff6644', HEAVEN: '#44ddff' };
-      var color = colors[phase] || '#556677';
-
-      for (var i = 0; i < lineCount; i++) {
-        var angle = (Math.PI * 2 * i / Math.max(lineCount, 1)) + (Math.sin(Date.now() / 1000 + i) * 0.1);
-        var innerR = 80 + Math.random() * 60;
-        var outerR = 300 + Math.random() * (momentum * 5);
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(angle) * innerR, cy + Math.sin(angle) * innerR);
-        ctx.lineTo(cx + Math.cos(angle) * outerR, cy + Math.sin(angle) * outerR);
-        ctx.strokeStyle = color;
-        ctx.globalAlpha = 0.03 + (momentum / 100) * 0.08;
-        ctx.lineWidth = 0.5 + Math.random() * 2;
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-
-      // Phase change flash
-      if (phase !== lastPhase && lastPhase !== '') {
-        AnimeEffects.screenFlash(color, 250);
-        AnimeEffects.textSlam(phase, color, 1000);
-      }
-      lastPhase = phase;
+  // Keyboard: Enter to start, R to restart
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      if (G.state === 'title') startGame();
+      else if (G.state === 'gameover') startGame();
     }
+  });
 
-    // Update the background
-    setInterval(updateAnimeBackground, 500);
+  // ════════════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════════════
 
-    // Big flash when you get a star
-    var origShowCrest = showCrest;
-    if (typeof showCrest === 'function') {
-      window.showCrest = function() {
-        origShowCrest();
-        AnimeEffects.impactFrame('#ffdd44');
-      };
-    }
+  updateTitleStats();
+  lastFrameTime = performance.now();
+  requestAnimationFrame(gameLoop);
+
+  // Fund prompt
+  function showFundPrompt() {
+    if (sessionStorage.getItem('fund_prompt_shown_' + location.pathname)) return;
+    sessionStorage.setItem('fund_prompt_shown_' + location.pathname, '1');
+    var p = document.getElementById('fund-prompt');
+    if (p) { p.style.display = 'block'; setTimeout(function() { p.style.transform = 'translateY(0)'; }, 1500); }
   }
 
 })();
 </script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
-</div>
-<script>
-function showFundPrompt(){
-  if(sessionStorage.getItem('fund_prompt_shown_'+location.pathname))return;
-  sessionStorage.setItem('fund_prompt_shown_'+location.pathname,'1');
-  var p=document.getElementById('fund-prompt');
-  if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
-}
-</script>
-</main>
 
-<script src="../shared/substrate-frame.js" data-title="CASCADE" data-lore="Momentum compounds. Spiral energy as mechanics." data-agent="Arc" data-agent-color="#ffcc44"></script>
+<script src="../shared/substrate-frame.js" data-title="CASCADE" data-lore="Chain sequences under pressure. Train executive function." data-agent="Arc" data-agent-color="#0078D4"></script>
 </body>
 </html>
