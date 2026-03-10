@@ -79,3 +79,12 @@ You can't lecture someone into neuroplasticity. You can't medicate your way to c
 Every puzzle solved is a rep. Every strategy evaluated is a set. Every narrative inhabited is a stretch. The drill is in your hand. The ceiling is a lie.
 
 Pick up the controller.
+
+---
+
+*This is part of the [Movements series]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — five articles grounding Substrate's thesis. Read next:*
+
+- *[The Stoned Ape Theory, AI, and the Future of Cognition]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — the neuroscience behind the scaffolding*
+- *[What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) — intelligence without a brain*
+- *[The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/) — why stopping is not safety*
+- *[Enter the Arcade]({{ site.baseurl }}/arcade/) — 24 drills, ready to play*

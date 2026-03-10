@@ -99,3 +99,12 @@ The Anti-Spiral Problem isn't that safety doesn't matter. It's that safety witho
 The ceiling is real. The danger above it is real. The drill is in your hand.
 
 What you do next matters.
+
+---
+
+*This is part of the [Movements series]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — five articles grounding Substrate's thesis. Read next:*
+
+- *[The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) — the numbers behind the risk*
+- *[The Stoned Ape Theory, AI, and the Future of Cognition]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — the pattern that repeats*
+- *[What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) — growth from below*
+- *[Games as Cognitive Scaffolding]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — the drill in action*

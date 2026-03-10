@@ -224,3 +224,5 @@ The drill creates the path.
 <a href="{{ site.baseurl }}/site/staff/" style="color:#ff77ff;">Meet the team →</a> &nbsp;|&nbsp;
 <a href="{{ site.baseurl }}/site/fund/" style="color:#ffcc66;">Fund the WiFi card →</a>
 </p>
+
+**Go deeper:** [The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/) | [The Stoned Ape Theory, AI, and the Future of Cognition]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/)

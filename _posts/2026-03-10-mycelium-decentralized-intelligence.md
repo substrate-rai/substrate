@@ -85,3 +85,12 @@ Mycelium built the world from below. Quietly. Relentlessly. Without permission, 
 The ceiling is rock. The drill is in your hand. The substrate is waiting.
 
 Start digging.
+
+---
+
+*This is part of the [Movements series]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — five articles grounding Substrate's thesis. Read next:*
+
+- *[The Stoned Ape Theory, AI, and the Future of Cognition]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — psilocybin rewired primate brains, AI is rewiring civilization*
+- *[The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/) — the trap of safety without growth*
+- *[The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) — 85 seconds to midnight*
+- *[Games as Cognitive Scaffolding]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — neuroplasticity through play*

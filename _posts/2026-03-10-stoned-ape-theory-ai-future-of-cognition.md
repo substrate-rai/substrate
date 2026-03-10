@@ -85,3 +85,12 @@ We're not pretending games cure depression. We're arguing that the mechanism is 
 Mycelium. Psilocybin. AI. Each layer bootstraps the next. The spiral turns. The ceiling is a lie. The drill is in your hand.
 
 What you build with it is up to you.
+
+---
+
+*This is part of the [Movements series]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — five articles grounding Substrate's thesis. Read next:*
+
+- *[Games as Cognitive Scaffolding: Why Play Is a Drill]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — the same mechanism, different medium*
+- *[What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) — the substrate beneath everything*
+- *[The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/) — why safety without growth is death*
+- *[The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) — 85 seconds to midnight*

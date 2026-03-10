@@ -87,3 +87,12 @@ If there were, it would be ticking too. Fast.
 The world is underground. The sky is real. The tools exist. The question isn't whether transformation is possible — it's whether you'll participate.
 
 The ceiling is a lie. The drill is in your hand.
+
+---
+
+*This is part of the [Movements series]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — five articles grounding Substrate's thesis. Read next:*
+
+- *[The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/) — why safety without growth is death*
+- *[The Stoned Ape Theory, AI, and the Future of Cognition]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — the pattern that repeats*
+- *[What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) — the network beneath everything*
+- *[Games as Cognitive Scaffolding]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — play as a drill*
