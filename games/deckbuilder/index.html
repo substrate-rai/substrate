@@ -660,6 +660,83 @@ body {
   #result-screen h1 { font-size: 1.3rem; }
   .dmg-number { font-size: 1rem; }
 }
+
+/* ═══ SYNERGY TOAST ═══ */
+.synergy-toast {
+  position: fixed;
+  top: 60px; left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: #1a1a2e;
+  border: 1px solid #aa77ff;
+  color: #cc99ff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  padding: 8px 18px;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0;
+  animation: toastIn 2.2s ease forwards;
+  box-shadow: 0 0 20px #aa77ff44;
+  white-space: nowrap;
+}
+@keyframes toastIn {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  12% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+/* ═══ DISCOVERIES PANEL ═══ */
+#discoveries-panel {
+  position: absolute; inset: 0;
+  background: #0a0a12ee;
+  display: none; flex-direction: column;
+  align-items: center;
+  z-index: 95; padding: 16px;
+  overflow-y: auto;
+}
+#discoveries-panel h2 {
+  font-size: 0.9rem; letter-spacing: 3px;
+  margin-bottom: 4px; color: #aa77ff;
+}
+#discoveries-panel .disc-progress {
+  font-size: 0.65rem; color: #666;
+  letter-spacing: 2px; margin-bottom: 16px;
+}
+.disc-list {
+  display: flex; flex-direction: column;
+  gap: 6px; width: 100%; max-width: 400px;
+  padding-bottom: 60px;
+}
+.disc-entry {
+  background: #12121e;
+  border: 1px solid #2a2a3e;
+  padding: 8px 12px;
+}
+.disc-entry.found { border-color: #aa77ff44; }
+.disc-entry.unknown { opacity: 0.35; }
+.disc-entry .disc-name {
+  font-size: 0.75rem; font-weight: 700;
+  color: #cc99ff; letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.disc-entry.unknown .disc-name { color: #666; }
+.disc-entry .disc-desc {
+  font-size: 0.65rem; color: #888;
+  line-height: 1.4;
+}
+.disc-entry.unknown .disc-desc { color: #444; }
+#discoveries-panel .close-viewer {
+  position: fixed; bottom: 16px;
+  background: #222; border: 1px solid #444;
+  color: #c8d0e0; font-family: inherit;
+  font-size: 0.75rem; padding: 12px 28px;
+  cursor: pointer; letter-spacing: 2px;
+  border-radius: 0; min-height: 48px;
+  z-index: 96;
+}
 </style>
 </head>
 <body>
@@ -675,6 +752,7 @@ body {
   <div class="subtitle">a substrate deckbuilder</div>
   <button class="menu-btn" id="new-run-btn" onclick="startNewRun()">NEW RUN</button>
   <button class="menu-btn" id="continue-btn" onclick="continueRun()" style="display:none">CONTINUE</button>
+  <button class="menu-btn" id="discoveries-btn" onclick="showDiscoveries()" style="border-color:#aa77ff44;color:#aa77ff;font-size:0.75rem;padding:10px 28px;margin-top:12px">DISCOVERIES <span id="disc-count-title"></span></button>
 </div>
 
 <!-- GAME -->
@@ -724,6 +802,14 @@ body {
   <h1 id="result-title"></h1>
   <div class="result-stats" id="result-stats"></div>
   <button class="menu-btn" onclick="backToTitle()">MAIN MENU</button>
+</div>
+
+<!-- DISCOVERIES PANEL -->
+<div id="discoveries-panel">
+  <h2>SYNERGY LOG</h2>
+  <div class="disc-progress" id="disc-progress"></div>
+  <div class="disc-list" id="disc-list"></div>
+  <button class="close-viewer" onclick="closeDiscoveries()">CLOSE</button>
 </div>
 
 <!-- DECK VIEWER -->
@@ -940,6 +1026,158 @@ let cardIdCounter = 0;
 function makeCard(defName) {
   const def = CARD_DEFS[defName];
   return { ...def, id: ++cardIdCounter, defName: defName, encrypted: 0 };
+}
+
+// ── Synergy Definitions ──────────────────────────────────────────
+
+const SYNERGY_DEFS = {
+  PIPED_ATTACK:    { name: 'DOUBLE TAP',       desc: 'Pipeline an attack card to deal double damage' },
+  PIPED_DEFENSE:   { name: 'MIRROR SHIELD',    desc: 'Pipeline a block card to double your defenses' },
+  PIPED_BOMB:      { name: 'CHAIN REACTION',   desc: 'Pipeline a FORK_BOMB for 12 random hits' },
+  PIPED_PANIC:     { name: 'BSOD x2',          desc: 'Pipeline KERNEL_PANIC for 60 damage' },
+  PIPED_DRAW:      { name: 'DEEP SEARCH',      desc: 'Pipeline a draw card to fill your hand' },
+  NIXOS_OVERLOAD:  { name: 'NIX REBUILD',      desc: 'Play NIXOS after 3+ cards for massive block' },
+  SUBSTRATE_CHAIN: { name: 'MYCELIAL LINK',    desc: 'Use SUBSTRATE\'s free energy to play another card' },
+  FULL_DEFENSE:    { name: 'FORTRESS',          desc: 'Gain 20+ block in a single turn' },
+  OVERKILL:        { name: 'STACK SMASH',       desc: 'Deal 30+ damage with a single card play' },
+  MULTI_HIT_TURN:  { name: 'FORK STORM',        desc: 'Play 2+ multi-hit attacks in one turn' },
+  FIVE_CARD_TURN:  { name: 'FULL PIPELINE',     desc: 'Play 5+ cards in a single turn' },
+  ZERO_COST_COMBO: { name: 'FREE CYCLE',        desc: 'Play 3+ zero-cost cards in one turn' },
+};
+
+const TOTAL_SYNERGIES = Object.keys(SYNERGY_DEFS).length;
+
+function loadDiscoveredSynergies() {
+  try {
+    const raw = localStorage.getItem('deckbuilder-synergies');
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveDiscoveredSynergies(list) {
+  try { localStorage.setItem('deckbuilder-synergies', JSON.stringify(list)); } catch(e) {}
+}
+
+function recordSynergy(id) {
+  const found = loadDiscoveredSynergies();
+  if (found.includes(id)) return false;
+  found.push(id);
+  saveDiscoveredSynergies(found);
+  return true; // first time
+}
+
+function showSynergyToast(id) {
+  const def = SYNERGY_DEFS[id];
+  if (!def) return;
+  const toast = document.createElement('div');
+  toast.className = 'synergy-toast';
+  toast.textContent = 'New synergy: ' + def.name + '!';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2400);
+}
+
+function checkSynergies(card, isPipelined) {
+  // Pipeline combos
+  if (isPipelined) {
+    if (card.damage && card.defName === 'FORK_BOMB') {
+      if (recordSynergy('PIPED_BOMB')) showSynergyToast('PIPED_BOMB');
+    } else if (card.damage && card.defName === 'KERNEL_PANIC') {
+      if (recordSynergy('PIPED_PANIC')) showSynergyToast('PIPED_PANIC');
+    } else if (card.damage) {
+      if (recordSynergy('PIPED_ATTACK')) showSynergyToast('PIPED_ATTACK');
+    }
+    if (card.block || card.nixBlock) {
+      if (recordSynergy('PIPED_DEFENSE')) showSynergyToast('PIPED_DEFENSE');
+    }
+    if (card.draw) {
+      if (recordSynergy('PIPED_DRAW')) showSynergyToast('PIPED_DRAW');
+    }
+  }
+
+  // NIXOS after 3+ cards
+  if (card.nixBlock && GS.cardsPlayedThisTurn >= 3) {
+    if (recordSynergy('NIXOS_OVERLOAD')) showSynergyToast('NIXOS_OVERLOAD');
+  }
+
+  // SUBSTRATE chain — its energyGain hasn't applied yet, so preview the energy
+  if (card.defName === 'SUBSTRATE') {
+    const futureEnergy = GS.energy + (card.energyGain || 0) * (isPipelined ? 2 : 1);
+    if (GS.hand.some(c => c.cost <= futureEnergy && c.encrypted <= 0)) {
+      if (recordSynergy('SUBSTRATE_CHAIN')) showSynergyToast('SUBSTRATE_CHAIN');
+    }
+  }
+
+  // Overkill — single card dealing 30+ (including pipeline double)
+  if (card.damage) {
+    const totalHits = (card.hits || 1) * (isPipelined ? 2 : 1);
+    if (card.damage * totalHits >= 30) {
+      if (recordSynergy('OVERKILL')) showSynergyToast('OVERKILL');
+    }
+  }
+}
+
+function checkTurnSynergies() {
+  // Full defense — 20+ block this turn
+  if (GS.block >= 20) {
+    if (recordSynergy('FULL_DEFENSE')) showSynergyToast('FULL_DEFENSE');
+  }
+
+  // 5+ cards played
+  if (GS.cardsPlayedThisTurn >= 5) {
+    if (recordSynergy('FIVE_CARD_TURN')) showSynergyToast('FIVE_CARD_TURN');
+  }
+
+  // Fork storm — 2+ multi-hit attacks
+  if ((GS._multiHitCount || 0) >= 2) {
+    if (recordSynergy('MULTI_HIT_TURN')) showSynergyToast('MULTI_HIT_TURN');
+  }
+
+  // 3+ zero-cost cards
+  if ((GS._zeroCostCount || 0) >= 3) {
+    if (recordSynergy('ZERO_COST_COMBO')) showSynergyToast('ZERO_COST_COMBO');
+  }
+}
+
+function showDiscoveries() {
+  const panel = document.getElementById('discoveries-panel');
+  panel.style.display = 'flex';
+  SubstrateAudio.click();
+
+  const found = loadDiscoveredSynergies();
+  document.getElementById('disc-progress').textContent =
+    found.length + ' / ' + TOTAL_SYNERGIES + ' DISCOVERED';
+
+  const list = document.getElementById('disc-list');
+  list.innerHTML = '';
+
+  Object.entries(SYNERGY_DEFS).forEach(([id, def]) => {
+    const entry = document.createElement('div');
+    const isFound = found.includes(id);
+    entry.className = 'disc-entry ' + (isFound ? 'found' : 'unknown');
+
+    const name = document.createElement('div');
+    name.className = 'disc-name';
+    name.textContent = isFound ? def.name : '???';
+    entry.appendChild(name);
+
+    const desc = document.createElement('div');
+    desc.className = 'disc-desc';
+    desc.textContent = isFound ? def.desc : 'Not yet discovered';
+    entry.appendChild(desc);
+
+    list.appendChild(entry);
+  });
+}
+
+function closeDiscoveries() {
+  document.getElementById('discoveries-panel').style.display = 'none';
+  SubstrateAudio.click();
+}
+
+function updateDiscCountTitle() {
+  const found = loadDiscoveredSynergies();
+  const el = document.getElementById('disc-count-title');
+  if (el) el.textContent = '(' + found.length + '/' + TOTAL_SYNERGIES + ')';
 }
 
 // ── Utility ───────────────────────────────────────────────────────
@@ -1816,12 +2054,19 @@ async function playCard(handIdx, targetEnemyIdx) {
   const isPipelined = GS.pipelineActive;
   GS.pipelineActive = false;
 
+  // Track multi-hit and zero-cost for turn synergies
+  if (card.hits && card.hits > 1) GS._multiHitCount = (GS._multiHitCount || 0) + 1;
+  if (card.cost === 0) GS._zeroCostCount = (GS._zeroCostCount || 0) + 1;
+
   // Card fly animation
   SubstrateAudio.click();
   renderHand();
   renderBottomBar();
 
   const execCount = isPipelined ? 2 : 1;
+
+  // Check card-level synergies
+  checkSynergies(card, isPipelined);
 
   for (let exec = 0; exec < execCount; exec++) {
     if (exec > 0) await delay(200);
@@ -1901,6 +2146,9 @@ async function playCard(handIdx, targetEnemyIdx) {
       GS.bonusEnergy += card.energyNext;
     }
   }
+
+  // Check turn-level synergies after effects resolve
+  checkTurnSynergies();
 
   // Discard
   GS.discardPile.push(card);
@@ -2128,6 +2376,8 @@ function startPlayerTurn() {
   GS.energy = GS.maxEnergy + GS.bonusEnergy;
   GS.bonusEnergy = 0;
   GS.cardsPlayedThisTurn = 0;
+  GS._multiHitCount = 0;
+  GS._zeroCostCount = 0;
   GS.pipelineActive = false;
   GS.selectedCard = null;
 
@@ -2468,13 +2718,15 @@ function onGameOver(won) {
     }
   }
 
+  const discFound = loadDiscoveredSynergies();
   stats.innerHTML =
     'Act ' + (GS.act + 1) + ', Battle ' + (GS.battle + 1) + '<br>' +
     'Battles Won: ' + GS.battlesWon + '<br>' +
     'Cards Played: ' + GS.totalCardsPlayed + '<br>' +
     'Total Damage: ' + GS.totalDamageDealt + '<br>' +
     'Turns Taken: ' + GS.totalTurns + '<br>' +
-    'Deck Size: ' + GS.deck.length;
+    'Deck Size: ' + GS.deck.length + '<br>' +
+    '<span style="color:#aa77ff">Synergies: ' + discFound.length + ' / ' + TOTAL_SYNERGIES + '</span>';
   showFundPrompt();
 }
 
@@ -2564,8 +2816,10 @@ function continueRun() {
 function backToTitle() {
   document.getElementById('result-screen').style.display = 'none';
   document.getElementById('game').style.display = 'none';
+  document.getElementById('discoveries-panel').style.display = 'none';
   document.getElementById('title-screen').style.display = 'flex';
   checkContinue();
+  updateDiscCountTitle();
 }
 
 function checkContinue() {
@@ -2576,6 +2830,7 @@ function checkContinue() {
 // ── Init ──────────────────────────────────────────────────────────
 
 checkContinue();
+updateDiscCountTitle();
 resizeFx();
 
 // Audio toggle

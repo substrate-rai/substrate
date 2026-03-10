@@ -11,22 +11,9 @@ redirect_from:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MYCELIUM — Substrate Arcade</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
-/* === PIXEL ART MODE === */
-button, .btn, [class*="btn"] {
-  border-radius: 0 !important;
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-  transition: none !important;
-}
-button:active, .btn:active, [class*="btn"]:active {
-  transform: translate(2px, 2px) !important;
-  box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -36,1415 +23,1458 @@ button:active, .btn:active, [class*="btn"]:active {
   }
 }
 
-a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
 
 body {
-  background: #0a0a12;
-  color: #c0c0d0;
-  font-family: 'IBM Plex Mono', monospace;
+  background: #E8F4F8;
+  color: #1a3a4a;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   overflow: hidden;
   position: fixed;
   width: 100%;
   height: 100%;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
-#game-canvas {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 1;
 }
 
-/* HUD */
+canvas {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* Frutiger Aero glass panels */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 80, 120, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #1a3a4a;
+}
+
+/* HUD bar */
 #hud {
-  position: fixed;
-  top: 0; left: 0; right: 0;
+  position: absolute;
+  top: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 6px;
+  padding: 8px 18px;
   z-index: 10;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+#hud .hud-item {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 16px 24px;
-  pointer-events: none;
+  align-items: center;
+  gap: 4px;
 }
-#hud > * { pointer-events: auto; }
-.hud-panel {
-  background: rgba(10, 10, 24, 0.85);
-  border: 1px solid rgba(0, 255, 170, 0.2);
-  border-radius: 0;
-  padding: 12px 16px;
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.4);
-}
-.hud-title {
-  font-size: 12px;
+
+#hud .hud-label {
+  opacity: 0.6;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  color: #00ffaa;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+#hud .hud-value {
+  font-variant-numeric: tabular-nums;
+}
+
+#hud .hud-sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(0, 80, 120, 0.15);
+  margin: 0 4px;
+}
+
+/* Bottom action bar */
+#action-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 10px;
+  padding: 8px 14px;
+  z-index: 10;
+  align-items: center;
+}
+
+.action-btn {
+  background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(230,240,248,0.9) 100%);
+  border: 1px solid rgba(0, 80, 120, 0.2);
+  border-radius: 10px;
+  padding: 8px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0078D4;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(0, 80, 120, 0.1);
+}
+
+.action-btn:hover {
+  background: linear-gradient(180deg, #fff 0%, #e0f0ff 100%);
+  transform: translateY(-1px);
+}
+
+.action-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 3px rgba(0, 80, 120, 0.1);
+}
+
+.action-btn.primary {
+  background: linear-gradient(180deg, #2196F3 0%, #0078D4 100%);
+  color: #fff;
+  border-color: rgba(0, 60, 140, 0.3);
+}
+
+.action-btn.primary:hover {
+  background: linear-gradient(180deg, #42A5F5 0%, #1E88E5 100%);
+}
+
+.action-btn.danger {
+  background: linear-gradient(180deg, #FF8A80 0%, #FF6B6B 100%);
+  color: #fff;
+  border-color: rgba(180, 40, 40, 0.3);
+}
+
+/* Title screen overlay */
+#title-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  background: rgba(232, 244, 248, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+#title-screen .title-card {
+  text-align: center;
+  padding: 40px 50px;
+  max-width: 420px;
+}
+
+#title-screen h1 {
+  font-size: 42px;
+  font-weight: 700;
+  color: #0078D4;
+  letter-spacing: 4px;
   margin-bottom: 6px;
 }
-.hud-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e0e0f0;
+
+#title-screen .subtitle {
+  font-size: 15px;
+  color: #4a7a8a;
+  margin-bottom: 28px;
+  font-weight: 400;
 }
-.hud-value.player { color: #00ffaa; }
-.hud-value.enemy { color: #ff6644; }
 
-#resources-panel { min-width: 160px; }
-#control-panel { min-width: 200px; text-align: center; }
-#status-panel { min-width: 180px; text-align: right; }
+#title-screen .best-stats {
+  font-size: 12px;
+  color: #5a8a9a;
+  margin-bottom: 24px;
+  line-height: 1.8;
+}
 
-.resource-row {
+#title-screen .best-stats span {
+  display: block;
+}
+
+/* Wave summary overlay */
+#wave-summary {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  background: rgba(232, 244, 248, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+#wave-summary .summary-card {
+  text-align: center;
+  padding: 32px 44px;
+  max-width: 400px;
+}
+
+#wave-summary h2 {
+  font-size: 24px;
+  color: #0078D4;
+  margin-bottom: 20px;
+}
+
+#wave-summary .stat-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-  font-size: 13px;
-}
-.resource-label { color: #888; }
-.resource-val { font-weight: 700; }
-.nutrient-color { color: #ffdd44; }
-.water-color { color: #4488ff; }
-
-/* Progress bars */
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 0;
-  margin-top: 6px;
-  overflow: hidden;
-  position: relative;
-}
-.progress-fill {
-  height: 100%;
-  border-radius: 0;
-  transition: none;
-}
-.progress-fill.player { background: linear-gradient(90deg, #00aa66, #00ffaa); }
-.progress-fill.enemy { background: linear-gradient(90deg, #cc4400, #ff6644); }
-
-/* Speed controls */
-.speed-controls {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  margin-top: 8px;
-}
-.speed-btn {
-  background: rgba(0, 255, 170, 0.1);
-  border: 1px solid rgba(0, 255, 170, 0.3);
-  color: #00ffaa;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  padding: 8px 14px;
-  border-radius: 0;
-  cursor: pointer;
-  transition: none;
-  min-height: 44px;
-  min-width: 44px;
-  -webkit-tap-highlight-color: transparent;
-}
-.speed-btn:hover { background: rgba(0, 255, 170, 0.25); }
-.speed-btn.active {
-  background: rgba(0, 255, 170, 0.3);
-  border-color: #00ffaa;
-  box-shadow: 0 0 8px rgba(0, 255, 170, 0.3);
-}
-
-/* Minimap */
-#minimap {
-  position: fixed;
-  bottom: calc(16px + env(safe-area-inset-bottom));
-  right: calc(16px + env(safe-area-inset-right));
-  width: 160px;
-  height: 160px;
-  background: rgba(10, 10, 24, 0.85);
-  border: 1px solid rgba(0, 255, 170, 0.2);
-  border-radius: 0;
-  z-index: 10;
-  overflow: hidden;
-}
-#minimap-canvas {
-  width: 100%;
-  height: 100%;
-}
-
-/* Tutorial overlay */
-#tutorial {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(5, 5, 15, 0.92);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* backdrop-filter removed for pixel art */
-}
-#tutorial.hidden { display: none; }
-.tutorial-box {
-  background: rgba(15, 15, 30, 0.95);
-  border: 1px solid rgba(0, 255, 170, 0.3);
-  border-radius: 12px;
-  padding: 40px 48px;
-  max-width: 520px;
-  text-align: center;
-  box-shadow: 0 0 60px rgba(0, 255, 170, 0.08);
-}
-.tutorial-box h1 {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 28px;
-  color: #00ffaa;
-  margin-bottom: 8px;
-  text-shadow: 0 0 20px rgba(0, 255, 170, 0.4);
-  letter-spacing: 4px;
-}
-.tutorial-box .subtitle {
-  font-family: 'Comic Neue', cursive;
-  font-size: 15px;
-  color: #888;
-  margin-bottom: 24px;
-  font-style: italic;
-}
-.tutorial-box .instructions {
-  font-family: 'Comic Neue', cursive;
+  padding: 6px 0;
   font-size: 14px;
-  color: #b0b0c0;
-  line-height: 1.8;
-  text-align: left;
-  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 80, 120, 0.08);
 }
-.tutorial-box .instructions strong {
-  color: #00ffaa;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
+
+#wave-summary .stat-row:last-of-type {
+  border-bottom: none;
 }
-.tutorial-box .instructions .enemy-text { color: #ff6644; }
-.start-btn {
-  background: linear-gradient(135deg, rgba(0, 255, 170, 0.15), rgba(0, 255, 170, 0.05));
-  border: 1px solid #00ffaa;
-  color: #00ffaa;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 16px;
-  padding: 12px 40px;
-  border-radius: 6px;
-  cursor: pointer;
-  letter-spacing: 3px;
-  transition: none;
+
+#wave-summary .stat-label {
+  color: #5a8a9a;
 }
-.start-btn:hover {
-  background: rgba(0, 255, 170, 0.25);
-  box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
-  transform: translateY(-1px);
+
+#wave-summary .stat-value {
+  font-weight: 600;
+  color: #1a3a4a;
+}
+
+#wave-summary .summary-btns {
+  margin-top: 24px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
 }
 
 /* Game over overlay */
 #game-over {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(5, 5, 15, 0.92);
-  z-index: 100;
+  position: absolute;
+  inset: 0;
   display: none;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* backdrop-filter removed for pixel art */
-}
-#game-over.visible { display: flex; }
-.gameover-box {
-  background: rgba(15, 15, 30, 0.95);
-  border-radius: 12px;
-  padding: 40px 48px;
-  max-width: 420px;
-  text-align: center;
-}
-.gameover-box.win { border: 1px solid rgba(0, 255, 170, 0.4); }
-.gameover-box.lose { border: 1px solid rgba(255, 102, 68, 0.4); }
-.gameover-box h2 {
-  font-size: 24px;
-  letter-spacing: 4px;
-  margin-bottom: 12px;
-}
-.gameover-box.win h2 { color: #00ffaa; }
-.gameover-box.lose h2 { color: #ff6644; }
-.gameover-box p {
-  font-family: 'Comic Neue', cursive;
-  font-size: 14px;
-  color: #999;
-  margin-bottom: 24px;
+  z-index: 20;
+  background: rgba(232, 244, 248, 0.85);
+  backdrop-filter: blur(8px);
 }
 
-/* Footer */
-#footer {
-  position: fixed;
-  bottom: 16px;
+#game-over .gameover-card {
+  text-align: center;
+  padding: 32px 44px;
+  max-width: 400px;
+}
+
+#game-over h2 {
+  font-size: 28px;
+  color: #FF6B6B;
+  margin-bottom: 6px;
+}
+
+#game-over .gameover-sub {
+  font-size: 14px;
+  color: #5a8a9a;
+  margin-bottom: 20px;
+}
+
+/* Phase indicator */
+#phase-indicator {
+  position: absolute;
+  top: 82px;
   left: 50%;
   transform: translateX(-50%);
+  display: none;
+  padding: 6px 18px;
   z-index: 10;
   font-size: 12px;
-  color: #555;
+  font-weight: 600;
+  text-transform: uppercase;
   letter-spacing: 1px;
+  color: #0078D4;
 }
-#footer a {
-  color: #00ffaa;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-#footer a:hover { color: #44ffcc; }
 
-/* Cursor */
-#game-canvas { cursor: crosshair; touch-action: none; }
-
-/* Tooltip */
-#tooltip {
-  position: fixed;
-  z-index: 20;
-  background: rgba(10, 10, 24, 0.9);
-  border: 1px solid rgba(0, 255, 170, 0.3);
-  border-radius: 0;
-  padding: 6px 10px;
-  font-size: 12px;
-  color: #c0c0d0;
-  pointer-events: none;
+/* Connection preview hint */
+#drag-hint {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
   display: none;
-  font-family: 'Comic Neue', cursive;
-}
-/* ═══ MOBILE RESPONSIVE ═══ */
-@media (max-width: 768px) {
-  body {
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  }
-  #hud {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 8px 10px;
-    gap: 6px;
-  }
-  .hud-panel {
-    padding: 8px 10px;
-    min-width: unset !important;
-    text-align: left !important;
-  }
-  #resources-panel, #control-panel, #status-panel {
-    min-width: unset;
-  }
-  #control-panel {
-    order: -1;
-    text-align: center !important;
-  }
-  .hud-title { font-size: 11px; margin-bottom: 4px; }
-  .hud-value { font-size: 15px; }
-  .resource-row { font-size: 12px; }
-  .speed-btn {
-    padding: 6px 12px;
-    font-size: 11px;
-    min-height: 44px;
-    min-width: 44px;
-  }
-  #minimap {
-    width: 100px;
-    height: 100px;
-    bottom: calc(10px + env(safe-area-inset-bottom));
-    right: calc(10px + env(safe-area-inset-right));
-  }
-  .tutorial-box {
-    padding: 24px 20px;
-    max-width: 90vw;
-    border-radius: 8px;
-  }
-  .tutorial-box h1 { font-size: 22px; letter-spacing: 2px; }
-  .tutorial-box .subtitle { font-size: 13px; }
-  .tutorial-box .instructions { font-size: 13px; line-height: 1.6; }
-  .start-btn { font-size: 14px; padding: 12px 32px; min-height: 48px; }
-  .gameover-box {
-    padding: 24px 20px;
-    max-width: 90vw;
-    border-radius: 8px;
-  }
-  .gameover-box h2 { font-size: 20px; }
-  .gameover-box p { font-size: 13px; }
-  #footer { font-size: 11px; bottom: calc(10px + env(safe-area-inset-bottom)); }
-  #tooltip { font-size: 11px; }
+  padding: 5px 14px;
+  z-index: 10;
+  font-size: 12px;
+  color: #5a8a9a;
+  pointer-events: none;
 }
 
-@media (max-width: 480px) {
-  #hud {
-    padding: 6px 6px;
-    gap: 4px;
-  }
-  .hud-panel { padding: 6px 8px; }
-  .hud-title { font-size: 10px; }
-  .hud-value { font-size: 13px; }
-  .resource-row { font-size: 11px; }
-  .speed-btn {
-    padding: 6px 10px;
-    font-size: 10px;
-  }
-  #minimap {
-    width: 80px;
-    height: 80px;
-  }
-  .tutorial-box {
-    padding: 20px 16px;
-    max-width: 95vw;
-  }
-  .tutorial-box h1 { font-size: 18px; }
-  .tutorial-box .subtitle { font-size: 12px; }
-  .tutorial-box .instructions { font-size: 12px; }
-  .start-btn { font-size: 13px; padding: 10px 24px; }
-  .gameover-box {
-    padding: 20px 16px;
-    max-width: 95vw;
-  }
-  .gameover-box h2 { font-size: 18px; }
-  #footer { font-size: 10px; }
+@media (max-width: 600px) {
+  #hud { font-size: 11px; padding: 6px 12px; gap: 4px; }
+  #title-screen h1 { font-size: 30px; }
+  #title-screen .title-card { padding: 28px 24px; }
+  .action-btn { padding: 6px 16px; font-size: 13px; }
 }
 </style>
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-lab.webp') center/cover no-repeat;opacity:0.12;pointer-events:none;"></div>
-
-<main id="game" role="main">
 <canvas id="game-canvas"></canvas>
 
-<div id="hud">
-  <div id="resources-panel" class="hud-panel">
-    <div class="hud-title">Resources</div>
-    <div class="resource-row">
-      <span class="resource-label">Nutrients</span>
-      <span class="resource-val nutrient-color" id="nutrient-count">0</span>
-    </div>
-    <div class="resource-row">
-      <span class="resource-label">Water</span>
-      <span class="resource-val water-color" id="water-count">0</span>
-    </div>
-    <div class="resource-row">
-      <span class="resource-label">Hyphae</span>
-      <span class="resource-val player" id="hyphae-count">0</span>
-    </div>
-  </div>
-
-  <div id="control-panel" class="hud-panel">
-    <div class="hud-title">MYCELIUM</div>
-    <div style="font-size:12px; margin-bottom:6px;">
-      <span class="player" id="player-pct">0%</span>
-      <span style="color:#555;"> vs </span>
-      <span class="enemy" id="enemy-pct">0%</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill player" id="player-bar" style="width:0%; position:absolute; left:0;"></div>
-      <div class="progress-fill enemy" id="enemy-bar" style="width:0%; position:absolute; right:0;"></div>
-    </div>
-    <div class="speed-controls">
-      <button class="speed-btn" data-speed="0" title="Pause">||</button>
-      <button class="speed-btn active" data-speed="1" title="Normal">></button>
-      <button class="speed-btn" data-speed="3" title="Fast">>></button>
-    </div>
-  </div>
-
-  <div id="status-panel" class="hud-panel">
-    <div class="hud-title">Network</div>
-    <div class="resource-row">
-      <span class="resource-label">Health</span>
-      <span class="resource-val player" id="network-health">100%</span>
-    </div>
-    <div class="resource-row">
-      <span class="resource-label">Growth</span>
-      <span class="resource-val" id="growth-rate" style="color:#aaa;">Ready</span>
-    </div>
-  </div>
+<!-- HUD -->
+<div id="hud" class="glass-panel">
+  <div class="hud-item"><span class="hud-label">Wave</span><span class="hud-value" id="hud-wave">1</span></div>
+  <div class="hud-sep"></div>
+  <div class="hud-item"><span class="hud-label">Energy</span><span class="hud-value" id="hud-energy">10</span></div>
+  <div class="hud-sep"></div>
+  <div class="hud-item"><span class="hud-label">Flow</span><span class="hud-value" id="hud-flow">0.0</span></div>
+  <div class="hud-sep"></div>
+  <div class="hud-item"><span class="hud-label">Score</span><span class="hud-value" id="hud-score">0</span></div>
+  <div class="hud-sep"></div>
+  <div class="hud-item"><span class="hud-label">Redundancy</span><span class="hud-value" id="hud-redundancy">0%</span></div>
 </div>
 
-<canvas id="minimap-canvas" width="160" height="160"></canvas>
-<div id="minimap">
-  <canvas id="minimap-render" width="160" height="160"></canvas>
+<!-- Phase indicator -->
+<div id="phase-indicator" class="glass-panel"></div>
+
+<!-- Drag hint -->
+<div id="drag-hint" class="glass-panel">Drag between nodes to connect</div>
+
+<!-- Action bar -->
+<div id="action-bar" class="glass-panel">
+  <button class="action-btn primary" id="btn-start-flow">Start Flow</button>
+  <button class="action-btn" id="btn-undo">Undo</button>
 </div>
 
-<div id="tooltip"></div>
-
-<div id="tutorial">
-  <div class="tutorial-box">
+<!-- Title screen -->
+<div id="title-screen">
+  <div class="title-card glass-panel">
     <h1>MYCELIUM</h1>
-    <div class="subtitle">grow beneath the surface</div>
-    <div class="instructions">
-      <strong>TAP / CLICK</strong> near your network to expand<br><br>
-      <strong>CREEP</strong> &mdash; your network auto-spreads from frontier nodes<br><br>
-      <strong>NUTRIENTS</strong> (yellow) are minerals &mdash; absorb them to fuel expansion<br><br>
-      <strong>WATER</strong> (blue) is vespene &mdash; accelerates your creep spread<br><br>
-      <strong class="enemy-text">ENEMY SWARM</strong> (red) is rushing &mdash; expand or be consumed<br><br>
-      <strong>WIN</strong> by controlling 75% of all nodes<br>
-      <strong>LOSE</strong> if they take 75% or your network disconnects<br><br>
-      <strong>DRAG</strong> to pan &bull; <strong>PINCH</strong> to zoom
+    <p class="subtitle">Build the network</p>
+    <div class="best-stats" id="best-stats"></div>
+    <button class="action-btn primary" id="btn-play" style="font-size: 16px; padding: 12px 36px;">Play</button>
+  </div>
+</div>
+
+<!-- Wave summary -->
+<div id="wave-summary">
+  <div class="summary-card glass-panel">
+    <h2 id="summary-title">Wave Complete</h2>
+    <div id="summary-stats"></div>
+    <div class="summary-btns">
+      <button class="action-btn primary" id="btn-next-wave">Next Wave</button>
     </div>
-    <button class="start-btn" id="start-btn">SPAWN HATCHERY</button>
   </div>
 </div>
 
+<!-- Game over -->
 <div id="game-over">
-  <div class="gameover-box" id="gameover-box">
-    <h2 id="gameover-title">VICTORY</h2>
-    <p id="gameover-msg">Your mycelial network dominates the substrate.</p>
-    <button class="start-btn" id="restart-btn">RESPORE</button>
+  <div class="gameover-card glass-panel">
+    <h2>Network Collapsed</h2>
+    <p class="gameover-sub">Too many consumers disconnected</p>
+    <div id="gameover-stats"></div>
+    <div class="summary-btns" style="margin-top: 24px;">
+      <button class="action-btn primary" id="btn-restart">Play Again</button>
+    </div>
   </div>
-</div>
-
-<div id="footer">
-  <a href="{{ site.baseurl }}/arcade/">a Substrate Arcade production</a>
 </div>
 
 <script>
-// ============================================================
-// MYCELIUM — A fungal RTS by Substrate
-// ============================================================
+// ─── MYCELIUM ─── Network Building for Systems Thinking ───────────────────
+(function() {
+'use strict';
 
-const MAP_W = 500, MAP_H = 400;
-const NUTRIENT_COUNT = 40;
-const WATER_PATCH_COUNT = 8;
-const WIN_THRESHOLD = 0.75;
-const HYPHA_COST = 2;
-const MAX_HYPHA_LEN = 60;
-const GROWTH_INTERVAL_BASE = 600; // ms between enemy growth ticks (faster = more Zerg pressure)
-const ABSORB_RADIUS = 22;
-const CONNECT_RADIUS = 55;
-const CREEP_INTERVAL = 1200; // ms between auto-spread ticks
-const CREEP_RANGE = 35; // auto-spread tendril length
+// ── Constants ──────────────────────────────────────────────────────────────
+var COLORS = {
+  bg: '#E8F4F8',
+  source: '#4CAF50',
+  sourceGlow: 'rgba(76, 175, 80, 0.3)',
+  consumer: '#0078D4',
+  consumerGlow: 'rgba(0, 120, 212, 0.3)',
+  relay: '#FFB300',
+  relayGlow: 'rgba(255, 179, 0, 0.3)',
+  dead: '#FF6B6B',
+  deadGlow: 'rgba(255, 107, 107, 0.3)',
+  connection: 'rgba(76, 175, 80, 0.35)',
+  connectionActive: 'rgba(76, 175, 80, 0.55)',
+  particle: '#4CAF50',
+  particleBoosted: '#FFB300',
+  preview: 'rgba(0, 120, 212, 0.3)',
+  gridDot: 'rgba(0, 80, 120, 0.06)'
+};
 
-let scene, camera, renderer;
-let clock = new THREE.Clock();
-let gameSpeed = 1;
-let gameRunning = false;
-let gameOver = false;
+var NODE_RADIUS = 22;
+var NODE_HIT_RADIUS = 32;
+var PARTICLE_RADIUS = 3.5;
+var MAX_PARTICLES = 200;
+var FLOW_SPEED = 1.8;
+var PARTICLE_EMIT_RATE = 0.8; // seconds between emissions per connection
+var WAVE_FLOW_DURATION = 30; // seconds per flow phase
+var FAILURE_MIN_INTERVAL = 15;
+var FAILURE_MAX_INTERVAL = 20;
+var RELAY_BOOST = 1.5;
 
-// Game state
-let playerNutrients = 10;
-let playerWater = 0;
-let playerNodes = [];    // {x, y, mesh, connections: [], isSpore: bool}
-let enemyNodes = [];
-let playerEdges = [];    // {from, to, line}
-let enemyEdges = [];
-let nutrients = [];      // {x, y, mesh, owner: null|'player'|'enemy', absorbed: false}
-let waterPatches = [];   // {x, y, mesh, radius}
-let particles = [];
-let pulseTime = 0;
+// ── Wave definitions ──────────────────────────────────────────────────────
+var WAVES = [
+  { sources: 3, consumers: 3, relays: 0, failures: 0, energy: 15 },
+  { sources: 4, consumers: 4, relays: 0, failures: 1, energy: 12 },
+  { sources: 5, consumers: 5, relays: 2, failures: 2, energy: 14 },
+  { sources: 5, consumers: 6, relays: 3, failures: 3, energy: 15 },
+  { sources: 6, consumers: 7, relays: 3, failures: 4, energy: 16 },
+  { sources: 7, consumers: 8, relays: 4, failures: 5, energy: 17 }
+];
 
-// Camera
-let camTarget = new THREE.Vector2(MAP_W / 2, MAP_H / 2);
-let camZoom = 1.0;
-let isPanning = false;
-let panStart = new THREE.Vector2();
-let camOffset = new THREE.Vector2();
-
-// Three.js setup
-function initRenderer() {
-  const canvas = document.getElementById('game-canvas');
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0x08080f);
-
-  scene = new THREE.Scene();
-
-  camera = new THREE.OrthographicCamera(
-    -window.innerWidth / 2, window.innerWidth / 2,
-    window.innerHeight / 2, -window.innerHeight / 2,
-    0.1, 1000
-  );
-  camera.position.set(MAP_W / 2, MAP_H / 2, 100);
-  camera.lookAt(MAP_W / 2, MAP_H / 2, 0);
-  updateCamera();
+function getWaveDef(w) {
+  if (w < WAVES.length) return WAVES[w];
+  var last = WAVES[WAVES.length - 1];
+  var extra = w - WAVES.length + 1;
+  return {
+    sources: last.sources + extra,
+    consumers: last.consumers + extra,
+    relays: last.relays + Math.floor(extra / 2),
+    failures: last.failures + extra,
+    energy: last.energy + extra
+  };
 }
 
-function updateCamera() {
-  const w = window.innerWidth / camZoom;
-  const h = window.innerHeight / camZoom;
-  camera.left = -w / 2;
-  camera.right = w / 2;
-  camera.top = h / 2;
-  camera.bottom = -h / 2;
-  camera.position.set(camTarget.x, camTarget.y, 100);
-  camera.lookAt(camTarget.x, camTarget.y, 0);
-  camera.updateProjectionMatrix();
-}
+// ── DOM refs ──────────────────────────────────────────────────────────────
+var canvas = document.getElementById('game-canvas');
+var ctx = canvas.getContext('2d');
+var hud = document.getElementById('hud');
+var hudWave = document.getElementById('hud-wave');
+var hudEnergy = document.getElementById('hud-energy');
+var hudFlow = document.getElementById('hud-flow');
+var hudScore = document.getElementById('hud-score');
+var hudRedundancy = document.getElementById('hud-redundancy');
+var phaseIndicator = document.getElementById('phase-indicator');
+var dragHint = document.getElementById('drag-hint');
+var actionBar = document.getElementById('action-bar');
+var btnStartFlow = document.getElementById('btn-start-flow');
+var btnUndo = document.getElementById('btn-undo');
+var titleScreen = document.getElementById('title-screen');
+var bestStatsEl = document.getElementById('best-stats');
+var btnPlay = document.getElementById('btn-play');
+var waveSummary = document.getElementById('wave-summary');
+var summaryTitle = document.getElementById('summary-title');
+var summaryStats = document.getElementById('summary-stats');
+var btnNextWave = document.getElementById('btn-next-wave');
+var gameOver = document.getElementById('game-over');
+var gameoverStats = document.getElementById('gameover-stats');
+var btnRestart = document.getElementById('btn-restart');
 
-// Background soil texture
-function createBackground() {
-  // Dark soil layers
-  const bgGeo = new THREE.PlaneGeometry(MAP_W + 100, MAP_H + 100);
-  const bgMat = new THREE.MeshBasicMaterial({ color: 0x0c0c18 });
-  const bg = new THREE.Mesh(bgGeo, bgMat);
-  bg.position.set(MAP_W / 2, MAP_H / 2, -2);
-  scene.add(bg);
+// ── Audio ─────────────────────────────────────────────────────────────────
+var audioCtx = null;
 
-  // Soil particles for texture
-  for (let i = 0; i < 250; i++) {
-    const x = Math.random() * MAP_W;
-    const y = Math.random() * MAP_H;
-    const size = 1 + Math.random() * 3;
-    const brightness = 0x111122 + Math.floor(Math.random() * 0x080808);
-    const geo = new THREE.CircleGeometry(size, 6);
-    const mat = new THREE.MeshBasicMaterial({ color: brightness, transparent: true, opacity: 0.3 + Math.random() * 0.2 });
-    const m = new THREE.Mesh(geo, mat);
-    m.position.set(x, y, -1);
-    scene.add(m);
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
   }
+  return audioCtx;
+}
 
-  // Soil layer lines
-  for (let i = 0; i < 6; i++) {
-    const y = 60 + i * 90 + (Math.random() - 0.5) * 40;
-    const pts = [];
-    for (let x = -50; x <= MAP_W + 50; x += 20) {
-      pts.push(new THREE.Vector3(x, y + (Math.random() - 0.5) * 15, -1));
+function playTone(freq, duration, type, volume) {
+  var ac = ensureAudio();
+  if (!ac) return;
+  try {
+    var osc = ac.createOscillator();
+    var gain = ac.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, ac.currentTime);
+    gain.gain.setValueAtTime(volume || 0.1, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.start();
+    osc.stop(ac.currentTime + duration);
+  } catch(e) {}
+}
+
+function sndConnect() { playTone(520, 0.15, 'sine', 0.08); setTimeout(function() { playTone(660, 0.12, 'sine', 0.06); }, 60); }
+function sndFlowStart() { playTone(440, 0.3, 'sine', 0.07); setTimeout(function() { playTone(550, 0.3, 'sine', 0.06); }, 100); setTimeout(function() { playTone(660, 0.4, 'sine', 0.05); }, 200); }
+function sndFailure() { playTone(220, 0.4, 'sawtooth', 0.08); setTimeout(function() { playTone(180, 0.5, 'sawtooth', 0.06); }, 150); }
+function sndWaveComplete() { playTone(520, 0.2, 'sine', 0.07); setTimeout(function() { playTone(660, 0.2, 'sine', 0.06); }, 120); setTimeout(function() { playTone(780, 0.3, 'sine', 0.06); }, 240); }
+function sndGameOver() { playTone(440, 0.3, 'sawtooth', 0.08); setTimeout(function() { playTone(330, 0.3, 'sawtooth', 0.07); }, 200); setTimeout(function() { playTone(220, 0.5, 'sawtooth', 0.06); }, 400); }
+function sndInvalid() { playTone(200, 0.15, 'square', 0.05); }
+
+// ── Game state ────────────────────────────────────────────────────────────
+var gameState = 'title'; // title, building, flowing, summary, gameover
+var nodes = [];
+var connections = [];
+var connectionHistory = []; // for undo
+var particles = [];
+var particlePool = [];
+var currentWave = 0;
+var energy = 0;
+var score = 0;
+var totalFlowDelivered = 0;
+var totalEnergySpent = 0;
+var waveFlowDelivered = 0;
+var waveEnergySpent = 0;
+var waveFailuresSurvived = 0;
+var waveTimer = 0;
+var failureTimer = 0;
+var failuresRemaining = 0;
+var flowRate = 0;
+var dragFrom = null;
+var dragPos = null;
+var hoveredNode = null;
+var canvasW = 0;
+var canvasH = 0;
+var dpr = 1;
+var gameAreaTop = 0;
+var lastTime = 0;
+var animId = null;
+
+// ── localStorage ──────────────────────────────────────────────────────────
+function loadBest() {
+  try {
+    return {
+      score: parseInt(localStorage.getItem('mycelium-best-score')) || 0,
+      efficiency: parseFloat(localStorage.getItem('mycelium-best-efficiency')) || 0,
+      waves: parseInt(localStorage.getItem('mycelium-waves-cleared')) || 0,
+      games: parseInt(localStorage.getItem('mycelium-games-played')) || 0
+    };
+  } catch(e) { return { score: 0, efficiency: 0, waves: 0, games: 0 }; }
+}
+
+function saveBest() {
+  try {
+    var best = loadBest();
+    if (score > best.score) localStorage.setItem('mycelium-best-score', score);
+    var eff = totalEnergySpent > 0 ? (totalFlowDelivered / totalEnergySpent) : 0;
+    if (eff > best.efficiency) localStorage.setItem('mycelium-best-efficiency', eff.toFixed(2));
+    if (currentWave > best.waves) localStorage.setItem('mycelium-waves-cleared', currentWave);
+    localStorage.setItem('mycelium-games-played', best.games + 1);
+  } catch(e) {}
+}
+
+function showBestStats() {
+  var best = loadBest();
+  if (best.games === 0) {
+    bestStatsEl.innerHTML = '';
+    return;
+  }
+  bestStatsEl.innerHTML =
+    '<span>Best score: ' + best.score + '</span>' +
+    '<span>Best efficiency: ' + best.efficiency.toFixed(1) + '</span>' +
+    '<span>Waves cleared: ' + best.waves + '</span>' +
+    '<span>Games played: ' + best.games + '</span>';
+}
+
+// ── Canvas sizing ─────────────────────────────────────────────────────────
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  canvasW = window.innerWidth;
+  canvasH = window.innerHeight;
+  canvas.width = canvasW * dpr;
+  canvas.height = canvasH * dpr;
+  canvas.style.width = canvasW + 'px';
+  canvas.style.height = canvasH + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  gameAreaTop = 36; // substrate bar height
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+// ── Node class ────────────────────────────────────────────────────────────
+function Node(x, y, type) {
+  this.x = x;
+  this.y = y;
+  this.type = type; // 'source', 'consumer', 'relay'
+  this.alive = true;
+  this.dying = false;
+  this.deathProgress = 0;
+  this.pulsePhase = Math.random() * Math.PI * 2;
+  this.flowReceived = 0;
+  this.id = Node._nextId++;
+}
+Node._nextId = 0;
+
+Node.prototype.getColor = function() {
+  if (!this.alive) return COLORS.dead;
+  if (this.type === 'source') return COLORS.source;
+  if (this.type === 'consumer') return COLORS.consumer;
+  if (this.type === 'relay') return COLORS.relay;
+  return '#888';
+};
+
+Node.prototype.getGlow = function() {
+  if (!this.alive) return COLORS.deadGlow;
+  if (this.type === 'source') return COLORS.sourceGlow;
+  if (this.type === 'consumer') return COLORS.consumerGlow;
+  if (this.type === 'relay') return COLORS.relayGlow;
+  return 'rgba(128,128,128,0.3)';
+};
+
+// ── Connection class ──────────────────────────────────────────────────────
+function Connection(a, b) {
+  this.a = a;
+  this.b = b;
+  this.active = true; // false if either node dies
+  this.emitTimer = 0;
+  this.flowCount = 0;
+  // Compute bezier control point for organic curve
+  var mx = (a.x + b.x) / 2;
+  var my = (a.y + b.y) / 2;
+  var dx = b.x - a.x;
+  var dy = b.y - a.y;
+  var dist = Math.sqrt(dx * dx + dy * dy);
+  var perpX = -dy / dist;
+  var perpY = dx / dist;
+  var offset = (Math.random() - 0.5) * dist * 0.35;
+  this.cx = mx + perpX * offset;
+  this.cy = my + perpY * offset;
+}
+
+Connection.prototype.getPointAt = function(t) {
+  var u = 1 - t;
+  return {
+    x: u * u * this.a.x + 2 * u * t * this.cx + t * t * this.b.x,
+    y: u * u * this.a.y + 2 * u * t * this.cy + t * t * this.b.y
+  };
+};
+
+Connection.prototype.checkActive = function() {
+  this.active = this.a.alive && this.b.alive;
+};
+
+// ── Particle class ────────────────────────────────────────────────────────
+function Particle() {
+  this.active = false;
+  this.connection = null;
+  this.t = 0;
+  this.speed = 0;
+  this.x = 0;
+  this.y = 0;
+  this.boosted = false;
+  this.fromSource = true; // direction: source→consumer
+}
+
+function getParticle() {
+  for (var i = 0; i < particlePool.length; i++) {
+    if (!particlePool[i].active) return particlePool[i];
+  }
+  if (particlePool.length < MAX_PARTICLES) {
+    var p = new Particle();
+    particlePool.push(p);
+    return p;
+  }
+  return null;
+}
+
+// ── Node placement ────────────────────────────────────────────────────────
+function placeNodes(waveDef) {
+  nodes = [];
+  connections = [];
+  connectionHistory = [];
+  particles = [];
+
+  var padding = 60;
+  var topPad = gameAreaTop + 80;
+  var bottomPad = 100;
+  var areaW = canvasW - padding * 2;
+  var areaH = canvasH - topPad - bottomPad;
+
+  var totalNodes = waveDef.sources + waveDef.consumers + waveDef.relays;
+  var placed = [];
+
+  function tryPlace() {
+    for (var attempt = 0; attempt < 100; attempt++) {
+      var x = padding + Math.random() * areaW;
+      var y = topPad + Math.random() * areaH;
+      var ok = true;
+      for (var j = 0; j < placed.length; j++) {
+        var dx = x - placed[j].x;
+        var dy = y - placed[j].y;
+        if (Math.sqrt(dx * dx + dy * dy) < 90) { ok = false; break; }
+      }
+      if (ok) return { x: x, y: y };
     }
-    const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
-    const lineMat = new THREE.LineBasicMaterial({ color: 0x161628, transparent: true, opacity: 0.4 });
-    scene.add(new THREE.Line(lineGeo, lineMat));
+    // fallback: grid position
+    var idx = placed.length;
+    var cols = Math.ceil(Math.sqrt(totalNodes));
+    var col = idx % cols;
+    var row = Math.floor(idx / cols);
+    return {
+      x: padding + (col + 0.5) * (areaW / cols),
+      y: topPad + (row + 0.5) * (areaH / Math.ceil(totalNodes / cols))
+    };
   }
 
-  // Border
-  const borderPts = [
-    new THREE.Vector3(0, 0, 0), new THREE.Vector3(MAP_W, 0, 0),
-    new THREE.Vector3(MAP_W, MAP_H, 0), new THREE.Vector3(0, MAP_H, 0),
-    new THREE.Vector3(0, 0, 0)
-  ];
-  const borderGeo = new THREE.BufferGeometry().setFromPoints(borderPts);
-  const borderMat = new THREE.LineBasicMaterial({ color: 0x1a1a2e, transparent: true, opacity: 0.5 });
-  scene.add(new THREE.Line(borderGeo, borderMat));
-}
-
-// Create nutrient node
-function createNutrient(x, y) {
-  const geo = new THREE.CircleGeometry(5, 8);
-  const mat = new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 0.8 });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(x, y, 1);
-  scene.add(mesh);
-
-  // Glow ring
-  const glowGeo = new THREE.RingGeometry(6, 9, 12);
-  const glowMat = new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 0.15 });
-  const glow = new THREE.Mesh(glowGeo, glowMat);
-  glow.position.set(x, y, 0.9);
-  scene.add(glow);
-
-  return { x, y, mesh, glow, owner: null, absorbed: false };
-}
-
-// Create water patch
-function createWaterPatch(x, y) {
-  const radius = 30 + Math.random() * 30;
-  const geo = new THREE.CircleGeometry(radius, 16);
-  const mat = new THREE.MeshBasicMaterial({ color: 0x1a2a55, transparent: true, opacity: 0.25 });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(x, y, -0.5);
-  scene.add(mesh);
-
-  // Inner glow
-  const innerGeo = new THREE.CircleGeometry(radius * 0.6, 12);
-  const innerMat = new THREE.MeshBasicMaterial({ color: 0x2244aa, transparent: true, opacity: 0.15 });
-  const inner = new THREE.Mesh(innerGeo, innerMat);
-  inner.position.set(x, y, -0.4);
-  scene.add(inner);
-
-  return { x, y, mesh, inner, radius };
-}
-
-// Create a network node
-function createNode(x, y, isPlayer, isSpore = false) {
-  const size = isSpore ? 8 : 4;
-  const color = isPlayer ? 0x00ffaa : 0xff6644;
-  const glowColor = isPlayer ? 0x00aa66 : 0xcc4400;
-
-  const geo = new THREE.CircleGeometry(size, isSpore ? 12 : 8);
-  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(x, y, 2);
-  scene.add(mesh);
-
-  // Glow
-  const glowGeo = new THREE.CircleGeometry(size + 4, 12);
-  const glowMat = new THREE.MeshBasicMaterial({ color: glowColor, transparent: true, opacity: 0.2 });
-  const glow = new THREE.Mesh(glowGeo, glowMat);
-  glow.position.set(x, y, 1.9);
-  scene.add(glow);
-
-  const node = { x, y, mesh, glow, connections: [], isSpore, isPlayer };
-  return node;
-}
-
-// Create edge between two nodes
-function createEdge(from, to, isPlayer) {
-  const color = isPlayer ? 0x00ffaa : 0xff6644;
-  const pts = generateHyphaPoints(from, to);
-  const geo = new THREE.BufferGeometry().setFromPoints(pts);
-  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.6, linewidth: 1 });
-  const line = new THREE.Line(geo, mat);
-  line.position.z = 1.5;
-  scene.add(line);
-  return { from, to, line, pts };
-}
-
-// Generate organic-looking hypha path
-function generateHyphaPoints(from, to) {
-  const pts = [];
-  const segments = 12;
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const wobble = Math.sin(t * Math.PI) * 8;
-    const angle = Math.atan2(dy, dx) + Math.PI / 2;
-    const nx = from.x + dx * t + Math.cos(angle) * wobble * (Math.random() - 0.5) * 2;
-    const ny = from.y + dy * t + Math.sin(angle) * wobble * (Math.random() - 0.5) * 2;
-    pts.push(new THREE.Vector3(nx, ny, 0));
+  // Place sources on left-ish, consumers on right-ish, relays in middle
+  for (var i = 0; i < waveDef.sources; i++) {
+    var pos = tryPlace();
+    // Bias sources leftward
+    pos.x = padding + Math.random() * areaW * 0.4;
+    pos.y = topPad + ((i + 0.5) / waveDef.sources) * areaH * 0.8 + Math.random() * areaH * 0.15;
+    var n = new Node(pos.x, pos.y, 'source');
+    nodes.push(n);
+    placed.push(n);
   }
-  return pts;
+
+  for (var i = 0; i < waveDef.consumers; i++) {
+    var pos = tryPlace();
+    pos.x = padding + areaW * 0.6 + Math.random() * areaW * 0.35;
+    pos.y = topPad + ((i + 0.5) / waveDef.consumers) * areaH * 0.8 + Math.random() * areaH * 0.15;
+    var n = new Node(pos.x, pos.y, 'consumer');
+    nodes.push(n);
+    placed.push(n);
+  }
+
+  for (var i = 0; i < waveDef.relays; i++) {
+    var pos = tryPlace();
+    pos.x = padding + areaW * 0.25 + Math.random() * areaW * 0.5;
+    pos.y = topPad + Math.random() * areaH;
+    // Ensure spacing from all existing nodes
+    var ok = false;
+    for (var a = 0; a < 50 && !ok; a++) {
+      ok = true;
+      for (var j = 0; j < placed.length; j++) {
+        var dx = pos.x - placed[j].x;
+        var dy = pos.y - placed[j].y;
+        if (Math.sqrt(dx * dx + dy * dy) < 80) {
+          ok = false;
+          pos.x = padding + areaW * 0.25 + Math.random() * areaW * 0.5;
+          pos.y = topPad + Math.random() * areaH;
+          break;
+        }
+      }
+    }
+    var n = new Node(pos.x, pos.y, 'relay');
+    nodes.push(n);
+    placed.push(n);
+  }
 }
 
-// Distance helper
-function dist(a, b) {
-  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
-}
-
-// Check if point is near water
-function isInWater(x, y) {
-  for (const w of waterPatches) {
-    if (dist({ x, y }, w) < w.radius) return true;
+// ── Connection helpers ────────────────────────────────────────────────────
+function connectionExists(a, b) {
+  for (var i = 0; i < connections.length; i++) {
+    var c = connections[i];
+    if ((c.a === a && c.b === b) || (c.a === b && c.b === a)) return true;
   }
   return false;
 }
 
-// Find nearest node in a network
-function nearestNode(x, y, nodes) {
-  let best = null, bestDist = Infinity;
-  for (const n of nodes) {
-    const d = dist({ x, y }, n);
-    if (d < bestDist) { bestDist = d; best = n; }
-  }
-  return { node: best, dist: bestDist };
+function addConnection(a, b) {
+  if (a === b) return false;
+  if (!a.alive || !b.alive) return false;
+  if (connectionExists(a, b)) return false;
+  if (energy <= 0) { sndInvalid(); return false; }
+
+  var conn = new Connection(a, b);
+  connections.push(conn);
+  connectionHistory.push(conn);
+  energy--;
+  waveEnergySpent++;
+  totalEnergySpent++;
+  sndConnect();
+  updateHUD();
+  return true;
 }
 
-// Check network connectivity (BFS from spore)
-function isConnected(nodes, edges) {
-  if (nodes.length <= 1) return true;
-  const spore = nodes.find(n => n.isSpore);
-  if (!spore) return false;
+function undoConnection() {
+  if (connectionHistory.length === 0) return;
+  var last = connectionHistory.pop();
+  var idx = connections.indexOf(last);
+  if (idx >= 0) {
+    connections.splice(idx, 1);
+    energy++;
+    waveEnergySpent--;
+    totalEnergySpent--;
+    updateHUD();
+  }
+}
 
-  const visited = new Set();
-  const queue = [spore];
-  visited.add(spore);
+// ── Pathfinding (BFS) ────────────────────────────────────────────────────
+function getNeighbors(node) {
+  var neighbors = [];
+  for (var i = 0; i < connections.length; i++) {
+    var c = connections[i];
+    if (!c.active) continue;
+    if (c.a === node) neighbors.push(c.b);
+    else if (c.b === node) neighbors.push(c.a);
+  }
+  return neighbors;
+}
 
+function hasPathBetween(src, dst) {
+  if (src === dst) return true;
+  if (!src.alive || !dst.alive) return false;
+  var visited = {};
+  var queue = [src];
+  visited[src.id] = true;
   while (queue.length > 0) {
-    const current = queue.shift();
-    for (const edge of edges) {
-      let neighbor = null;
-      if (edge.from === current) neighbor = edge.to;
-      else if (edge.to === current) neighbor = edge.from;
-      if (neighbor && !visited.has(neighbor)) {
-        visited.add(neighbor);
-        queue.push(neighbor);
+    var curr = queue.shift();
+    var neighbors = getNeighbors(curr);
+    for (var i = 0; i < neighbors.length; i++) {
+      var n = neighbors[i];
+      if (n === dst) return true;
+      if (!visited[n.id] && n.alive) {
+        visited[n.id] = true;
+        queue.push(n);
       }
     }
   }
-  return visited.size === nodes.length;
+  return false;
 }
 
-// Spawn absorption particle
-function spawnParticle(x, y, color, targetX, targetY) {
-  const geo = new THREE.CircleGeometry(2, 6);
-  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1.0 });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(x, y, 3);
-  scene.add(mesh);
-  particles.push({
-    mesh, x, y, targetX, targetY, life: 1.0,
-    vx: (targetX - x) * 0.02 + (Math.random() - 0.5) * 2,
-    vy: (targetY - y) * 0.02 + (Math.random() - 0.5) * 2
-  });
-}
-
-// Initialize game world
-function initGame() {
-  // Clear old state
-  while (scene.children.length > 0) scene.remove(scene.children[0]);
-  playerNodes = []; enemyNodes = [];
-  playerEdges = []; enemyEdges = [];
-  nutrients = []; waterPatches = []; particles = [];
-  playerNutrients = 10; playerWater = 0;
-  gameOver = false;
-  gameRunning = true;
-  gameSpeed = 1;
-
-  createBackground();
-
-  // Place water patches
-  for (let i = 0; i < WATER_PATCH_COUNT; i++) {
-    const x = 40 + Math.random() * (MAP_W - 80);
-    const y = 40 + Math.random() * (MAP_H - 80);
-    waterPatches.push(createWaterPatch(x, y));
-  }
-
-  // Place nutrients — distributed across the map
-  for (let i = 0; i < NUTRIENT_COUNT; i++) {
-    let x, y, valid;
-    // Ensure nutrients aren't too close to each other
-    do {
-      x = 30 + Math.random() * (MAP_W - 60);
-      y = 30 + Math.random() * (MAP_H - 60);
-      valid = true;
-      for (const n of nutrients) {
-        if (dist({ x, y }, n) < 25) { valid = false; break; }
-      }
-    } while (!valid);
-    nutrients.push(createNutrient(x, y));
-  }
-
-  // Player hatchery — left side
-  const pSpore = createNode(80, MAP_H / 2, true, true);
-  playerNodes.push(pSpore);
-
-  // Enemy hatchery — right side
-  const eSpore = createNode(MAP_W - 80, MAP_H / 2, false, true);
-  enemyNodes.push(eSpore);
-
-  // Camera center
-  camTarget.set(MAP_W / 2, MAP_H / 2);
-  camZoom = Math.min(window.innerWidth / MAP_W, window.innerHeight / MAP_H) * 0.85;
-  updateCamera();
-
-  updateHUD();
-  setSpeedBtn(1);
-}
-
-// Player action: grow hypha toward click point
-function playerGrow(worldX, worldY) {
-  if (!gameRunning || gameOver || gameSpeed === 0) return;
-
-  const nearest = nearestNode(worldX, worldY, playerNodes);
-  if (!nearest.node || nearest.dist > MAX_HYPHA_LEN * 1.5) return;
-
-  // Calculate cost
-  const inWater = isInWater(worldX, worldY);
-  const cost = inWater ? Math.max(1, HYPHA_COST - 1) : HYPHA_COST;
-
-  if (playerNutrients < cost) return;
-
-  // Clamp to max length
-  let tx = worldX, ty = worldY;
-  const d = dist({ x: tx, y: ty }, nearest.node);
-  if (d > MAX_HYPHA_LEN) {
-    const angle = Math.atan2(ty - nearest.node.y, tx - nearest.node.x);
-    tx = nearest.node.x + Math.cos(angle) * MAX_HYPHA_LEN;
-    ty = nearest.node.y + Math.sin(angle) * MAX_HYPHA_LEN;
-  }
-
-  // Clamp to map
-  tx = Math.max(10, Math.min(MAP_W - 10, tx));
-  ty = Math.max(10, Math.min(MAP_H - 10, ty));
-
-  // Check not too close to existing node
-  for (const n of playerNodes) {
-    if (dist({ x: tx, y: ty }, n) < 15) return;
-  }
-
-  playerNutrients -= cost;
-  const newNode = createNode(tx, ty, true);
-  playerNodes.push(newNode);
-  const edge = createEdge(nearest.node, newNode, true);
-  playerEdges.push(edge);
-  nearest.node.connections.push(newNode);
-  newNode.connections.push(nearest.node);
-
-  // Check nutrient absorption
-  checkAbsorption(newNode, true);
-  updateHUD();
-}
-
-// Check and absorb nearby nutrients
-function checkAbsorption(node, isPlayer) {
-  for (const nut of nutrients) {
-    if (nut.absorbed) continue;
-    if (dist(node, nut) < ABSORB_RADIUS) {
-      absorbNutrient(nut, isPlayer, node);
+function countPathsToNode(target) {
+  // Count how many sources can reach this consumer
+  var count = 0;
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i].type === 'source' && nodes[i].alive) {
+      if (hasPathBetween(nodes[i], target)) count++;
     }
   }
+  return count;
 }
 
-function absorbNutrient(nut, isPlayer, node) {
-  nut.absorbed = true;
-  nut.owner = isPlayer ? 'player' : 'enemy';
-
-  // Visual feedback
-  const color = isPlayer ? 0x00ffaa : 0xff6644;
-  nut.mesh.material.color.setHex(color);
-  nut.mesh.material.opacity = 0.5;
-  nut.glow.material.color.setHex(color);
-  nut.glow.material.opacity = 0.08;
-
-  if (isPlayer) {
-    playerNutrients += 3;
-    // Particles
-    for (let i = 0; i < 5; i++) {
-      spawnParticle(nut.x + (Math.random() - 0.5) * 10, nut.y + (Math.random() - 0.5) * 10, 0xffdd44, node.x, node.y);
-    }
+// ── Redundancy calculation ────────────────────────────────────────────────
+function calcRedundancy() {
+  var consumers = nodes.filter(function(n) { return n.type === 'consumer' && n.alive; });
+  if (consumers.length === 0) return 0;
+  var redundant = 0;
+  for (var i = 0; i < consumers.length; i++) {
+    if (countPathsToNode(consumers[i]) >= 2) redundant++;
   }
-
-  // Water bonus
-  if (isInWater(nut.x, nut.y)) {
-    if (isPlayer) {
-      playerWater += 1;
-      for (let i = 0; i < 3; i++) {
-        spawnParticle(nut.x, nut.y, 0x4488ff, node.x, node.y);
-      }
-    }
-  }
+  return Math.round((redundant / consumers.length) * 100);
 }
 
-// Enemy AI
-let enemyTimer = 0;
-let creepTimer = 0;
-function enemyTick(dt) {
-  enemyTimer += dt * 1000 * gameSpeed;
-  const interval = GROWTH_INTERVAL_BASE;
-  if (enemyTimer < interval) return;
-  enemyTimer -= interval;
-
-  if (enemyNodes.length === 0) return;
-
-  // Find nearest unabsorbed nutrient
-  let bestNut = null, bestDist = Infinity, bestNode = null;
-  for (const nut of nutrients) {
-    if (nut.absorbed && nut.owner === 'enemy') continue;
-    for (const en of enemyNodes) {
-      const d = dist(nut, en);
-      if (d < bestDist) {
-        bestDist = d; bestNut = nut; bestNode = en;
-      }
-    }
+// ── Flow tracking per consumer ────────────────────────────────────────────
+function calcFlowRate() {
+  // Flow rate = how many consumers are receiving resources
+  var consumers = nodes.filter(function(n) { return n.type === 'consumer' && n.alive; });
+  var receiving = 0;
+  for (var i = 0; i < consumers.length; i++) {
+    if (consumers[i].flowReceived > 0) receiving++;
   }
-
-  if (!bestNut || !bestNode) return;
-
-  // Grow toward it
-  const angle = Math.atan2(bestNut.y - bestNode.y, bestNut.x - bestNode.x);
-  const stepLen = 30 + Math.random() * 30;
-  let tx = bestNode.x + Math.cos(angle) * stepLen;
-  let ty = bestNode.y + Math.sin(angle) * stepLen;
-  tx = Math.max(10, Math.min(MAP_W - 10, tx));
-  ty = Math.max(10, Math.min(MAP_H - 10, ty));
-
-  // Don't place too close to existing
-  for (const n of enemyNodes) {
-    if (dist({ x: tx, y: ty }, n) < 15) return;
-  }
-
-  const newNode = createNode(tx, ty, false);
-  enemyNodes.push(newNode);
-  const edge = createEdge(bestNode, newNode, false);
-  enemyEdges.push(edge);
-  bestNode.connections.push(newNode);
-  newNode.connections.push(bestNode);
-
-  checkAbsorption(newNode, false);
+  return receiving;
 }
 
-// Zerg-style creep spread — player network auto-expands slowly
-function creepSpread(dt) {
-  creepTimer += dt * 1000 * gameSpeed;
-  // Faster near water nodes
-  const hasWaterBoost = playerNodes.some(n => isInWater(n.x, n.y));
-  const interval = hasWaterBoost ? CREEP_INTERVAL * 0.6 : CREEP_INTERVAL;
-  if (creepTimer < interval) return;
-  creepTimer -= interval;
-
-  if (playerNodes.length === 0 || playerNutrients < 1) return;
-
-  // Pick a random frontier node (one with fewer connections = edge of network)
-  const frontier = playerNodes.filter(n => n.connections.length < 3);
-  if (frontier.length === 0) return;
-  const source = frontier[Math.floor(Math.random() * frontier.length)];
-
-  // Grow a short tendril in a random direction, biased toward nearest nutrient
-  let angle;
-  const nearNut = nutrients.find(nut => !nut.absorbed && dist(source, nut) < CREEP_RANGE * 3);
-  if (nearNut && Math.random() < 0.7) {
-    angle = Math.atan2(nearNut.y - source.y, nearNut.x - source.x);
-    angle += (Math.random() - 0.5) * 0.4; // slight wobble
-  } else {
-    angle = Math.random() * Math.PI * 2;
+function calcConnectedConsumers() {
+  var consumers = nodes.filter(function(n) { return n.type === 'consumer' && n.alive; });
+  var connected = 0;
+  for (var i = 0; i < consumers.length; i++) {
+    var paths = countPathsToNode(consumers[i]);
+    if (paths > 0) connected++;
   }
-
-  const len = CREEP_RANGE * (0.6 + Math.random() * 0.4);
-  let tx = source.x + Math.cos(angle) * len;
-  let ty = source.y + Math.sin(angle) * len;
-  tx = Math.max(10, Math.min(MAP_W - 10, tx));
-  ty = Math.max(10, Math.min(MAP_H - 10, ty));
-
-  // Don't place too close to existing
-  for (const n of playerNodes) {
-    if (dist({ x: tx, y: ty }, n) < 12) return;
-  }
-
-  playerNutrients -= 1;
-  const newNode = createNode(tx, ty, true);
-  playerNodes.push(newNode);
-  const edge = createEdge(source, newNode, true);
-  playerEdges.push(edge);
-  source.connections.push(newNode);
-  newNode.connections.push(source);
-  checkAbsorption(newNode, true);
+  return { connected: connected, total: consumers.length };
 }
 
-// Check win/lose conditions
-function checkWinLose() {
-  const total = nutrients.length;
-  const playerOwned = nutrients.filter(n => n.owner === 'player').length;
-  const enemyOwned = nutrients.filter(n => n.owner === 'enemy').length;
-
-  if (playerOwned / total >= WIN_THRESHOLD) {
-    endGame(true);
-    return;
-  }
-  if (enemyOwned / total >= WIN_THRESHOLD) {
-    endGame(false);
-    return;
-  }
-
-  // Check connectivity
-  if (playerNodes.length > 1 && !isConnected(playerNodes, playerEdges)) {
-    endGame(false);
-    return;
-  }
-}
-
-function endGame(won) {
-  gameOver = true;
-  gameRunning = false;
-  const box = document.getElementById('gameover-box');
-  const title = document.getElementById('gameover-title');
-  const msg = document.getElementById('gameover-msg');
-
-  if (won) {
-    box.className = 'gameover-box win';
-    title.textContent = 'NETWORK DOMINANT';
-    const pct = Math.round(nutrients.filter(n => n.owner === 'player').length / nutrients.length * 100);
-    msg.textContent = `Your mycelium controls ${pct}% of the substrate. The soil is yours.`;
-  } else {
-    box.className = 'gameover-box lose';
-    title.textContent = 'NETWORK COLLAPSED';
-    const ePct = Math.round(nutrients.filter(n => n.owner === 'enemy').length / nutrients.length * 100);
-    if (playerNodes.length > 1 && !isConnected(playerNodes, playerEdges)) {
-      msg.textContent = 'Your network lost connectivity to the spore. The mycelium withered.';
-    } else {
-      msg.textContent = `The rival fungus controls ${ePct}% of nutrients. Your spore fades.`;
-    }
-  }
-
-  document.getElementById('game-over').classList.add('visible');
-  showFundPrompt();
-}
-
-// HUD updates
+// ── HUD update ────────────────────────────────────────────────────────────
 function updateHUD() {
-  document.getElementById('nutrient-count').textContent = playerNutrients;
-  document.getElementById('water-count').textContent = playerWater;
-  document.getElementById('hyphae-count').textContent = playerNodes.length;
-
-  const total = nutrients.length;
-  const pOwned = nutrients.filter(n => n.owner === 'player').length;
-  const eOwned = nutrients.filter(n => n.owner === 'enemy').length;
-  const pPct = Math.round(pOwned / total * 100);
-  const ePct = Math.round(eOwned / total * 100);
-
-  document.getElementById('player-pct').textContent = pPct + '%';
-  document.getElementById('enemy-pct').textContent = ePct + '%';
-  document.getElementById('player-bar').style.width = pPct + '%';
-  document.getElementById('enemy-bar').style.width = ePct + '%';
-
-  // Network health
-  const connected = playerNodes.length <= 1 || isConnected(playerNodes, playerEdges);
-  const healthEl = document.getElementById('network-health');
-  healthEl.textContent = connected ? '100%' : 'SEVERED';
-  healthEl.style.color = connected ? '#00ffaa' : '#ff4444';
-
-  // Growth rate
-  const rate = isInWater(playerNodes[0]?.x || 0, playerNodes[0]?.y || 0) ? 'Boosted' : 'Normal';
-  document.getElementById('growth-rate').textContent = playerNutrients > 0 ? rate : 'Starved';
-  document.getElementById('growth-rate').style.color = playerNutrients > 0 ? '#aaa' : '#ff4444';
+  hudWave.textContent = currentWave + 1;
+  hudEnergy.textContent = energy;
+  hudFlow.textContent = flowRate.toFixed(1);
+  hudScore.textContent = score;
+  hudRedundancy.textContent = calcRedundancy() + '%';
 }
 
-// Minimap
-function renderMinimap() {
-  const canvas = document.getElementById('minimap-render');
-  const ctx = canvas.getContext('2d');
-  const sw = canvas.width / MAP_W;
-  const sh = canvas.height / MAP_H;
+// ── Node hit test ─────────────────────────────────────────────────────────
+function nodeAt(x, y) {
+  for (var i = nodes.length - 1; i >= 0; i--) {
+    var n = nodes[i];
+    var dx = x - n.x;
+    var dy = y - n.y;
+    if (Math.sqrt(dx * dx + dy * dy) <= NODE_HIT_RADIUS) return n;
+  }
+  return null;
+}
 
-  ctx.fillStyle = '#0a0a14';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+// ── Input handling ────────────────────────────────────────────────────────
+function getCanvasPos(e) {
+  var rect = canvas.getBoundingClientRect();
+  if (e.touches && e.touches.length > 0) {
+    return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+  }
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
 
-  // Water
-  ctx.fillStyle = 'rgba(30, 60, 120, 0.3)';
-  for (const w of waterPatches) {
-    ctx.beginPath();
-    ctx.arc(w.x * sw, (MAP_H - w.y) * sh, w.radius * sw, 0, Math.PI * 2);
-    ctx.fill();
+function onPointerDown(e) {
+  if (gameState !== 'building') return;
+  var pos = getCanvasPos(e);
+  var node = nodeAt(pos.x, pos.y);
+  if (node && node.alive) {
+    dragFrom = node;
+    dragPos = pos;
+    e.preventDefault();
+  }
+}
+
+function onPointerMove(e) {
+  var pos = getCanvasPos(e);
+  hoveredNode = nodeAt(pos.x, pos.y);
+  if (dragFrom) {
+    dragPos = pos;
+    e.preventDefault();
+  }
+}
+
+function onPointerUp(e) {
+  if (dragFrom && gameState === 'building') {
+    var pos = getCanvasPos(e);
+    var target = nodeAt(pos.x, pos.y);
+    if (target && target !== dragFrom) {
+      addConnection(dragFrom, target);
+    }
+  }
+  dragFrom = null;
+  dragPos = null;
+}
+
+canvas.addEventListener('mousedown', onPointerDown);
+canvas.addEventListener('mousemove', onPointerMove);
+canvas.addEventListener('mouseup', onPointerUp);
+canvas.addEventListener('mouseleave', function() { dragFrom = null; dragPos = null; hoveredNode = null; });
+
+canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+canvas.addEventListener('touchend', function(e) {
+  if (dragFrom && gameState === 'building') {
+    // Use last known dragPos for touch
+    if (dragPos) {
+      var target = nodeAt(dragPos.x, dragPos.y);
+      if (target && target !== dragFrom) {
+        addConnection(dragFrom, target);
+      }
+    }
+  }
+  dragFrom = null;
+  dragPos = null;
+}, { passive: false });
+
+// ── Drawing ───────────────────────────────────────────────────────────────
+function drawBackground() {
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // Subtle dot grid
+  ctx.fillStyle = COLORS.gridDot;
+  var spacing = 30;
+  for (var x = spacing; x < canvasW; x += spacing) {
+    for (var y = gameAreaTop + spacing; y < canvasH; y += spacing) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+function drawConnection(conn, time) {
+  ctx.beginPath();
+  ctx.moveTo(conn.a.x, conn.a.y);
+  ctx.quadraticCurveTo(conn.cx, conn.cy, conn.b.x, conn.b.y);
+
+  if (!conn.active) {
+    ctx.strokeStyle = 'rgba(255, 107, 107, 0.2)';
+    ctx.lineWidth = 1.5;
+  } else {
+    var flowWidth = 2 + Math.min(conn.flowCount * 0.3, 4);
+    ctx.strokeStyle = conn.flowCount > 0 ? COLORS.connectionActive : COLORS.connection;
+    ctx.lineWidth = flowWidth;
+  }
+  ctx.stroke();
+}
+
+function drawConnectionPreview() {
+  if (!dragFrom || !dragPos) return;
+  ctx.beginPath();
+  ctx.moveTo(dragFrom.x, dragFrom.y);
+  ctx.lineTo(dragPos.x, dragPos.y);
+  ctx.strokeStyle = COLORS.preview;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawNode(node, time) {
+  var pulse = Math.sin(node.pulsePhase + time * 2) * 0.15 + 0.85;
+  var r = NODE_RADIUS;
+  var color = node.getColor();
+  var glow = node.getGlow();
+
+  if (node.dying) {
+    var dp = node.deathProgress;
+    // Lerp color toward dead
+    pulse = 1 + Math.sin(time * 12) * 0.3 * (1 - dp);
+    r = NODE_RADIUS * (1 - dp * 0.3);
   }
 
-  // Nutrients
-  for (const n of nutrients) {
-    if (n.owner === 'player') ctx.fillStyle = '#00ffaa';
-    else if (n.owner === 'enemy') ctx.fillStyle = '#ff6644';
-    else ctx.fillStyle = '#ffdd44';
-    ctx.fillRect(n.x * sw - 1, (MAP_H - n.y) * sh - 1, 2, 2);
+  // Glow
+  var glowR = r * 2.2 * pulse;
+  var gradient = ctx.createRadialGradient(node.x, node.y, r * 0.5, node.x, node.y, glowR);
+  gradient.addColorStop(0, glow);
+  gradient.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Node body
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r * pulse, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  // Inner highlight (Frutiger Aero gloss)
+  var innerGrad = ctx.createRadialGradient(node.x - r * 0.25, node.y - r * 0.3, r * 0.1, node.x, node.y, r);
+  innerGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
+  innerGrad.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+  innerGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = innerGrad;
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r * pulse, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Type icon
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = 'bold ' + (r * 0.7) + 'px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  if (node.type === 'source') {
+    ctx.fillText('+', node.x, node.y + 1);
+  } else if (node.type === 'consumer') {
+    ctx.fillText('\u2022', node.x, node.y + 1);
+  } else if (node.type === 'relay') {
+    ctx.fillText('\u25C6', node.x, node.y + 1);
+  }
+  if (!node.alive) {
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.font = 'bold ' + (r * 0.9) + 'px sans-serif';
+    ctx.fillText('\u00D7', node.x, node.y + 1);
   }
 
-  // Player edges
-  ctx.strokeStyle = '#00ffaa';
-  ctx.lineWidth = 1;
-  for (const e of playerEdges) {
+  // Hover highlight
+  if (node === hoveredNode && node.alive && gameState === 'building') {
     ctx.beginPath();
-    ctx.moveTo(e.from.x * sw, (MAP_H - e.from.y) * sh);
-    ctx.lineTo(e.to.x * sw, (MAP_H - e.to.y) * sh);
+    ctx.arc(node.x, node.y, r + 6, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0, 120, 212, 0.4)';
+    ctx.lineWidth = 2;
     ctx.stroke();
   }
 
-  // Enemy edges
-  ctx.strokeStyle = '#ff6644';
-  for (const e of enemyEdges) {
+  // Drag source highlight
+  if (node === dragFrom) {
     ctx.beginPath();
-    ctx.moveTo(e.from.x * sw, (MAP_H - e.from.y) * sh);
-    ctx.lineTo(e.to.x * sw, (MAP_H - e.to.y) * sh);
+    ctx.arc(node.x, node.y, r + 8, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0, 120, 212, 0.6)';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([4, 3]);
     ctx.stroke();
-  }
-
-  // Camera viewport
-  const cw = (window.innerWidth / camZoom) * sw;
-  const ch = (window.innerHeight / camZoom) * sh;
-  const cx = (camTarget.x - window.innerWidth / camZoom / 2) * sw;
-  const cy = (MAP_H - camTarget.y - window.innerHeight / camZoom / 2) * sh;
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(cx, cy, cw, ch);
-}
-
-// Animation: pulse along network
-function animatePulse(dt) {
-  pulseTime += dt * gameSpeed;
-  const pulse = (Math.sin(pulseTime * 3) + 1) * 0.5;
-
-  // Player nodes glow
-  for (const n of playerNodes) {
-    const baseBright = n.isSpore ? 0.35 : 0.2;
-    n.glow.material.opacity = baseBright + pulse * 0.15;
-  }
-
-  // Enemy nodes glow
-  for (const n of enemyNodes) {
-    const baseBright = n.isSpore ? 0.3 : 0.15;
-    n.glow.material.opacity = baseBright + pulse * 0.1;
-  }
-
-  // Player edge pulse
-  for (const e of playerEdges) {
-    e.line.material.opacity = 0.4 + pulse * 0.3;
-  }
-  for (const e of enemyEdges) {
-    e.line.material.opacity = 0.3 + pulse * 0.2;
-  }
-
-  // Nutrient glow
-  for (const nut of nutrients) {
-    if (!nut.absorbed) {
-      nut.glow.material.opacity = 0.1 + pulse * 0.1;
-      nut.mesh.material.opacity = 0.7 + pulse * 0.3;
-    }
+    ctx.setLineDash([]);
   }
 }
 
-// Animate particles
-function animateParticles(dt) {
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.life -= dt * 2;
-    p.x += p.vx * dt * 60;
-    p.y += p.vy * dt * 60;
-    p.mesh.position.set(p.x, p.y, 3);
-    p.mesh.material.opacity = Math.max(0, p.life);
+function drawParticle(p) {
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, PARTICLE_RADIUS, 0, Math.PI * 2);
+  ctx.fillStyle = p.boosted ? COLORS.particleBoosted : COLORS.particle;
+  ctx.fill();
 
-    if (p.life <= 0) {
-      scene.remove(p.mesh);
-      p.mesh.geometry.dispose();
-      p.mesh.material.dispose();
-      particles.splice(i, 1);
-    }
-  }
+  // Tiny glow
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, PARTICLE_RADIUS * 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = p.boosted ? 'rgba(255,179,0,0.15)' : 'rgba(76,175,80,0.15)';
+  ctx.fill();
 }
 
-// Passive nutrient income from absorbed nodes
-let incomeTimer = 0;
-function passiveIncome(dt) {
-  incomeTimer += dt * 1000 * gameSpeed;
-  if (incomeTimer < 3000) return;
-  incomeTimer -= 3000;
+function drawFlowTimer(time) {
+  if (gameState !== 'flowing') return;
+  var frac = waveTimer / WAVE_FLOW_DURATION;
+  var barW = 200;
+  var barH = 4;
+  var x = (canvasW - barW) / 2;
+  var y = gameAreaTop + 65;
 
-  const owned = nutrients.filter(n => n.owner === 'player').length;
-  if (owned > 0) {
-    playerNutrients += Math.ceil(owned / 5);
-  }
+  ctx.fillStyle = 'rgba(0, 80, 120, 0.1)';
+  ctx.fillRect(x, y, barW, barH);
+  ctx.fillStyle = 'rgba(0, 120, 212, 0.4)';
+  ctx.fillRect(x, y, barW * (1 - frac), barH);
 }
 
-// Screen to world coordinates
-function screenToWorld(sx, sy) {
-  const wx = camTarget.x + (sx - window.innerWidth / 2) / camZoom;
-  const wy = camTarget.y + (window.innerHeight / 2 - sy) / camZoom;
-  return { x: wx, y: wy };
-}
+// ── Particle simulation ──────────────────────────────────────────────────
+function emitParticles(dt) {
+  for (var i = 0; i < connections.length; i++) {
+    var conn = connections[i];
+    if (!conn.active) continue;
 
-// Input handling
-function setupInput() {
-  const canvas = document.getElementById('game-canvas');
-
-  canvas.addEventListener('click', (e) => {
-    if (e.button !== 0) return;
-    const w = screenToWorld(e.clientX, e.clientY);
-    playerGrow(w.x, w.y);
-  });
-
-  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-
-  canvas.addEventListener('mousedown', (e) => {
-    if (e.button === 2) {
-      isPanning = true;
-      panStart.set(e.clientX, e.clientY);
-      camOffset.copy(camTarget);
-    }
-  });
-
-  canvas.addEventListener('mousemove', (e) => {
-    if (isPanning) {
-      const dx = (e.clientX - panStart.x) / camZoom;
-      const dy = (e.clientY - panStart.y) / camZoom;
-      camTarget.set(camOffset.x - dx, camOffset.y + dy);
-      // Clamp camera
-      camTarget.x = Math.max(0, Math.min(MAP_W, camTarget.x));
-      camTarget.y = Math.max(0, Math.min(MAP_H, camTarget.y));
-      updateCamera();
-    }
-  });
-
-  window.addEventListener('mouseup', () => { isPanning = false; });
-
-  canvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-    camZoom = Math.max(0.4, Math.min(3.0, camZoom * zoomFactor));
-    updateCamera();
-  }, { passive: false });
-
-  // --- Touch controls ---
-  let touchStartTime = 0;
-  let touchStartPos = null;
-  let lastTouchDist = 0;
-  let lastTouchCenter = null;
-  let isTouchPanning = false;
-
-  canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    if (e.touches.length === 1) {
-      touchStartTime = Date.now();
-      touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      isTouchPanning = false;
-    } else if (e.touches.length === 2) {
-      // Start pinch/pan
-      const t0 = e.touches[0], t1 = e.touches[1];
-      lastTouchDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
-      lastTouchCenter = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
-      isTouchPanning = true;
-    }
-  }, { passive: false });
-
-  canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (e.touches.length === 1 && touchStartPos) {
-      const dx = e.touches[0].clientX - touchStartPos.x;
-      const dy = e.touches[0].clientY - touchStartPos.y;
-      if (Math.hypot(dx, dy) > 10) isTouchPanning = true;
-      if (isTouchPanning) {
-        camTarget.x -= dx / camZoom;
-        camTarget.y += dy / camZoom;
-        camTarget.x = Math.max(0, Math.min(MAP_W, camTarget.x));
-        camTarget.y = Math.max(0, Math.min(MAP_H, camTarget.y));
-        updateCamera();
-        touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    // Only emit from connections that have a source on one end (or lead to source via path)
+    var hasSource = false;
+    var sourceEnd = null;
+    if (conn.a.type === 'source' && conn.a.alive) { hasSource = true; sourceEnd = conn.a; }
+    else if (conn.b.type === 'source' && conn.b.alive) { hasSource = true; sourceEnd = conn.b; }
+    else {
+      // Check if either end has a path to a source
+      for (var s = 0; s < nodes.length; s++) {
+        if (nodes[s].type === 'source' && nodes[s].alive) {
+          if (hasPathBetween(nodes[s], conn.a)) { hasSource = true; sourceEnd = conn.a; break; }
+          if (hasPathBetween(nodes[s], conn.b)) { hasSource = true; sourceEnd = conn.b; break; }
+        }
       }
-    } else if (e.touches.length === 2) {
-      const t0 = e.touches[0], t1 = e.touches[1];
-      // Pinch zoom
-      const newDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
-      if (lastTouchDist > 0) {
-        const scale = newDist / lastTouchDist;
-        camZoom = Math.max(0.4, Math.min(3.0, camZoom * scale));
+    }
+
+    if (!hasSource) continue;
+
+    conn.emitTimer += dt;
+    if (conn.emitTimer >= PARTICLE_EMIT_RATE) {
+      conn.emitTimer -= PARTICLE_EMIT_RATE;
+      var p = getParticle();
+      if (p) {
+        p.active = true;
+        p.connection = conn;
+        p.t = 0;
+        p.speed = FLOW_SPEED;
+        p.boosted = false;
+        // Determine direction: particle flows from the sourceEnd
+        p.fromSource = (sourceEnd === conn.a);
+        var startPos = p.fromSource ? conn.getPointAt(0) : conn.getPointAt(1);
+        p.x = startPos.x;
+        p.y = startPos.y;
+        conn.flowCount++;
       }
-      lastTouchDist = newDist;
-      // Two-finger pan
-      const center = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
-      if (lastTouchCenter) {
-        camTarget.x -= (center.x - lastTouchCenter.x) / camZoom;
-        camTarget.y += (center.y - lastTouchCenter.y) / camZoom;
-        camTarget.x = Math.max(0, Math.min(MAP_W, camTarget.x));
-        camTarget.y = Math.max(0, Math.min(MAP_H, camTarget.y));
+    }
+  }
+}
+
+function updateParticles(dt) {
+  for (var i = 0; i < particlePool.length; i++) {
+    var p = particlePool[i];
+    if (!p.active) continue;
+
+    if (!p.connection.active) {
+      p.active = false;
+      p.connection.flowCount = Math.max(0, p.connection.flowCount - 1);
+      continue;
+    }
+
+    var tDelta = (p.speed / 200) * dt * (1 / Math.max(0.5, getConnectionLength(p.connection) / 200));
+    if (p.fromSource) {
+      p.t += tDelta;
+    } else {
+      p.t -= tDelta;
+    }
+
+    var arrived = p.fromSource ? p.t >= 1 : p.t <= 0;
+    var arrivalNode = p.fromSource ? p.connection.b : p.connection.a;
+
+    if (arrived) {
+      p.active = false;
+      p.connection.flowCount = Math.max(0, p.connection.flowCount - 1);
+
+      // Check what we arrived at
+      if (arrivalNode.alive) {
+        if (arrivalNode.type === 'consumer') {
+          // Deliver resources
+          var points = p.boosted ? 2 : 1;
+          score += points;
+          totalFlowDelivered += points;
+          waveFlowDelivered += points;
+          arrivalNode.flowReceived += points;
+        } else if (arrivalNode.type === 'relay') {
+          // Boost and forward to next connections
+          forwardFromNode(arrivalNode, p.connection, true);
+        } else {
+          // Hit another source or node - forward
+          forwardFromNode(arrivalNode, p.connection, p.boosted);
+        }
       }
-      lastTouchCenter = center;
-      updateCamera();
-      isTouchPanning = true;
+      continue;
     }
-  }, { passive: false });
 
-  canvas.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    // Single quick tap = grow
-    if (e.changedTouches.length === 1 && !isTouchPanning && Date.now() - touchStartTime < 300) {
-      const touch = e.changedTouches[0];
-      const w = screenToWorld(touch.clientX, touch.clientY);
-      playerGrow(w.x, w.y);
-    }
-    if (e.touches.length === 0) {
-      touchStartPos = null;
-      lastTouchDist = 0;
-      lastTouchCenter = null;
-      isTouchPanning = false;
-    }
-  }, { passive: false });
-
-  // Speed buttons
-  document.querySelectorAll('.speed-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      gameSpeed = parseInt(btn.dataset.speed);
-      setSpeedBtn(gameSpeed);
-    });
-  });
-
-  // Start button
-  document.getElementById('start-btn').addEventListener('click', () => {
-    document.getElementById('tutorial').classList.add('hidden');
-    initGame();
-  });
-
-  // Restart button
-  document.getElementById('restart-btn').addEventListener('click', () => {
-    document.getElementById('game-over').classList.remove('visible');
-    initGame();
-  });
-
-  // Resize
-  window.addEventListener('resize', () => {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    updateCamera();
-  });
+    var clampedT = Math.max(0, Math.min(1, p.fromSource ? p.t : p.t));
+    var pos = p.connection.getPointAt(clampedT);
+    p.x = pos.x;
+    p.y = pos.y;
+  }
 }
 
-function setSpeedBtn(speed) {
-  document.querySelectorAll('.speed-btn').forEach(btn => {
-    btn.classList.toggle('active', parseInt(btn.dataset.speed) === speed);
-  });
+function getConnectionLength(conn) {
+  // Approximate length
+  var dx = conn.b.x - conn.a.x;
+  var dy = conn.b.y - conn.a.y;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
-// Main game loop
-let hudUpdateTimer = 0;
-let winCheckTimer = 0;
-let minimapTimer = 0;
+function forwardFromNode(node, fromConn, boosted) {
+  // Find other connections from this node and emit particles along them
+  for (var i = 0; i < connections.length; i++) {
+    var c = connections[i];
+    if (c === fromConn) continue;
+    if (!c.active) continue;
+    if (c.a !== node && c.b !== node) continue;
 
-function gameLoop() {
-  requestAnimationFrame(gameLoop);
+    var p = getParticle();
+    if (!p) break;
+    p.active = true;
+    p.connection = c;
+    p.boosted = boosted || (node.type === 'relay');
+    p.speed = FLOW_SPEED * (p.boosted ? RELAY_BOOST : 1);
 
-  const dt = Math.min(clock.getDelta(), 0.05);
-
-  if (gameRunning && !gameOver && gameSpeed > 0) {
-    enemyTick(dt);
-    creepSpread(dt);
-    passiveIncome(dt);
-
-    // Periodic checks
-    hudUpdateTimer += dt;
-    if (hudUpdateTimer > 0.5) {
-      hudUpdateTimer = 0;
-      updateHUD();
+    if (c.a === node) {
+      p.fromSource = true;
+      p.t = 0;
+      var pos = c.getPointAt(0);
+      p.x = pos.x;
+      p.y = pos.y;
+    } else {
+      p.fromSource = false;
+      p.t = 1;
+      var pos = c.getPointAt(1);
+      p.x = pos.x;
+      p.y = pos.y;
     }
+    c.flowCount++;
+  }
+}
 
-    winCheckTimer += dt;
-    if (winCheckTimer > 1.0) {
-      winCheckTimer = 0;
-      checkWinLose();
-    }
+// ── Node failure ──────────────────────────────────────────────────────────
+function killRandomNode() {
+  var candidates = nodes.filter(function(n) { return n.alive && n.type !== 'source'; });
+  // Prefer killing nodes that are important (connected to things)
+  if (candidates.length === 0) {
+    candidates = nodes.filter(function(n) { return n.alive; });
+  }
+  if (candidates.length === 0) return;
+
+  var victim = candidates[Math.floor(Math.random() * candidates.length)];
+  victim.alive = false;
+  victim.dying = true;
+  victim.deathProgress = 0;
+  sndFailure();
+
+  // Deactivate connections
+  for (var i = 0; i < connections.length; i++) {
+    connections[i].checkActive();
   }
 
-  animatePulse(dt);
-  animateParticles(dt);
-
-  minimapTimer += dt;
-  if (minimapTimer > 0.3) {
-    minimapTimer = 0;
-    renderMinimap();
+  // Check if we survived (did consumers stay connected?)
+  var status = calcConnectedConsumers();
+  if (status.connected >= Math.ceil(status.total * 0.5)) {
+    waveFailuresSurvived++;
   }
-
-  renderer.render(scene, camera);
 }
 
-// Boot
-initRenderer();
-createBackground();
-setupInput();
-gameLoop();
+// ── Game flow ─────────────────────────────────────────────────────────────
+function startGame() {
+  currentWave = 0;
+  score = 0;
+  totalFlowDelivered = 0;
+  totalEnergySpent = 0;
+  particlePool = [];
 
-// Show tutorial on first load
-if (!localStorage.getItem('mycelium-played')) {
-  localStorage.setItem('mycelium-played', '1');
+  titleScreen.style.display = 'none';
+  gameOver.style.display = 'none';
+  waveSummary.style.display = 'none';
+
+  startWave(0);
 }
 
-// === ANIME EFFECTS ===
-(function() {
-  if (typeof AnimeEffects === 'undefined') return;
+function startWave(waveIndex) {
+  currentWave = waveIndex;
+  var waveDef = getWaveDef(waveIndex);
+  energy = waveDef.energy;
+  waveFlowDelivered = 0;
+  waveEnergySpent = 0;
+  waveFailuresSurvived = 0;
+  waveTimer = 0;
+  failureTimer = 0;
+  failuresRemaining = waveDef.failures;
+  flowRate = 0;
 
-  AnimeEffects.addScanlines(0.03);
+  placeNodes(waveDef);
 
-  // Show anime title card on game start
-  var origStartBtn = document.getElementById('start-btn');
-  if (origStartBtn) {
-    origStartBtn.addEventListener('click', function() {
-      setTimeout(function() {
-        AnimeEffects.showTitleCard('MYCELIUM', 'GROW BENEATH THE SURFACE', '#00ffaa');
-      }, 100);
-    });
+  // Reset particle pool
+  for (var i = 0; i < particlePool.length; i++) {
+    particlePool[i].active = false;
   }
 
-  // Speed lines on territory capture
-  var lastOwned = 0;
-  setInterval(function() {
-    if (!gameRunning || gameOver) return;
-    var owned = nutrients.filter(function(n) { return n.owner === 'player'; }).length;
-    if (owned > lastOwned && owned - lastOwned >= 2) {
-      AnimeEffects.speedLinesBurst(window.innerWidth / 2, window.innerHeight / 2, '#00ffaa', 16);
+  gameState = 'building';
+  hud.style.display = 'flex';
+  actionBar.style.display = 'flex';
+  phaseIndicator.style.display = 'block';
+  phaseIndicator.textContent = 'Building Phase — Draw Connections';
+  dragHint.style.display = 'block';
+  btnStartFlow.style.display = '';
+  btnUndo.style.display = '';
+
+  updateHUD();
+}
+
+function startFlowPhase() {
+  if (connections.length === 0) { sndInvalid(); return; }
+
+  gameState = 'flowing';
+  connectionHistory = []; // can't undo during flow
+  phaseIndicator.textContent = 'Flow Phase — Watch Your Network';
+  dragHint.style.display = 'none';
+  btnStartFlow.style.display = 'none';
+  btnUndo.style.display = 'none';
+  actionBar.style.display = 'none';
+
+  waveTimer = 0;
+  failureTimer = FAILURE_MIN_INTERVAL + Math.random() * (FAILURE_MAX_INTERVAL - FAILURE_MIN_INTERVAL);
+
+  // Reset flow counts
+  for (var i = 0; i < nodes.length; i++) {
+    nodes[i].flowReceived = 0;
+  }
+
+  sndFlowStart();
+}
+
+function endWave() {
+  gameState = 'summary';
+  phaseIndicator.style.display = 'none';
+  actionBar.style.display = 'none';
+
+  var waveDef = getWaveDef(currentWave);
+  var eff = waveEnergySpent > 0 ? (waveFlowDelivered / waveEnergySpent) : 0;
+  var redundancy = calcRedundancy();
+  var status = calcConnectedConsumers();
+
+  sndWaveComplete();
+
+  summaryTitle.textContent = 'Wave ' + (currentWave + 1) + ' Complete';
+  summaryStats.innerHTML =
+    '<div class="stat-row"><span class="stat-label">Resources delivered</span><span class="stat-value">' + waveFlowDelivered + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Energy spent</span><span class="stat-value">' + waveEnergySpent + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Efficiency</span><span class="stat-value">' + eff.toFixed(1) + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Redundancy</span><span class="stat-value">' + redundancy + '%</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Failures survived</span><span class="stat-value">' + waveFailuresSurvived + ' / ' + waveDef.failures + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Consumers connected</span><span class="stat-value">' + status.connected + ' / ' + status.total + '</span></div>';
+
+  waveSummary.style.display = 'flex';
+}
+
+function checkGameOver() {
+  var status = calcConnectedConsumers();
+  if (status.total > 0 && status.connected < Math.ceil(status.total * 0.5)) {
+    triggerGameOver();
+    return true;
+  }
+  return false;
+}
+
+function triggerGameOver() {
+  gameState = 'gameover';
+  phaseIndicator.style.display = 'none';
+  actionBar.style.display = 'none';
+  hud.style.display = 'none';
+
+  saveBest();
+  sndGameOver();
+
+  var eff = totalEnergySpent > 0 ? (totalFlowDelivered / totalEnergySpent) : 0;
+
+  gameoverStats.innerHTML =
+    '<div class="stat-row"><span class="stat-label">Total score</span><span class="stat-value">' + score + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Waves cleared</span><span class="stat-value">' + currentWave + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Total flow</span><span class="stat-value">' + totalFlowDelivered + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Efficiency</span><span class="stat-value">' + eff.toFixed(1) + '</span></div>';
+
+  gameOver.style.display = 'flex';
+}
+
+// ── Button handlers ───────────────────────────────────────────────────────
+btnPlay.addEventListener('click', function() { ensureAudio(); startGame(); });
+btnRestart.addEventListener('click', function() { startGame(); });
+btnStartFlow.addEventListener('click', function() { startFlowPhase(); });
+btnUndo.addEventListener('click', function() { if (gameState === 'building') undoConnection(); });
+btnNextWave.addEventListener('click', function() {
+  waveSummary.style.display = 'none';
+  startWave(currentWave + 1);
+});
+
+// ── Main loop ─────────────────────────────────────────────────────────────
+function update(dt) {
+  if (gameState === 'flowing') {
+    waveTimer += dt;
+
+    // Emit and update particles
+    emitParticles(dt);
+    updateParticles(dt);
+
+    // Flow rate (recalc every few frames)
+    flowRate = calcFlowRate();
+
+    // Node death animation
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].dying && nodes[i].deathProgress < 1) {
+        nodes[i].deathProgress = Math.min(1, nodes[i].deathProgress + dt * 1.5);
+        if (nodes[i].deathProgress >= 1) nodes[i].dying = false;
+      }
     }
-    lastOwned = owned;
-  }, 2000);
+
+    // Failure events
+    if (failuresRemaining > 0) {
+      failureTimer -= dt;
+      if (failureTimer <= 0) {
+        killRandomNode();
+        failuresRemaining--;
+        if (failuresRemaining > 0) {
+          failureTimer = FAILURE_MIN_INTERVAL + Math.random() * (FAILURE_MAX_INTERVAL - FAILURE_MIN_INTERVAL);
+        }
+        if (checkGameOver()) return;
+      }
+    }
+
+    // Wave timer
+    if (waveTimer >= WAVE_FLOW_DURATION) {
+      endWave();
+      return;
+    }
+
+    updateHUD();
+  }
+}
+
+function draw(time) {
+  var t = time / 1000;
+
+  drawBackground();
+
+  // Draw connections
+  for (var i = 0; i < connections.length; i++) {
+    drawConnection(connections[i], t);
+  }
+
+  // Draw connection preview
+  drawConnectionPreview();
+
+  // Draw particles
+  for (var i = 0; i < particlePool.length; i++) {
+    if (particlePool[i].active) drawParticle(particlePool[i]);
+  }
+
+  // Draw nodes
+  for (var i = 0; i < nodes.length; i++) {
+    drawNode(nodes[i], t);
+  }
+
+  // Draw flow timer bar
+  drawFlowTimer(t);
+}
+
+function loop(timestamp) {
+  if (!lastTime) lastTime = timestamp;
+  var dt = Math.min((timestamp - lastTime) / 1000, 0.05); // cap at 50ms
+  lastTime = timestamp;
+
+  update(dt);
+  draw(timestamp);
+
+  animId = requestAnimationFrame(loop);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+showBestStats();
+titleScreen.style.display = 'flex';
+
+// Start render loop (draws background even on title)
+animId = requestAnimationFrame(loop);
+
 })();
 </script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
-</div>
-<script>
-function showFundPrompt(){
-  if(sessionStorage.getItem('fund_prompt_shown_'+location.pathname))return;
-  sessionStorage.setItem('fund_prompt_shown_'+location.pathname,'1');
-  var p=document.getElementById('fund-prompt');
-  if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
-}
-</script>
-</main>
-
 <script src="../shared/substrate-frame.js" data-title="MYCELIUM" data-lore="The network itself made visible" data-agent="Arc" data-agent-color="#ffcc44"></script>
 </body>
 </html>

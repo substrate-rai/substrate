@@ -13,1778 +13,1360 @@ redirect_from:
 <title>DRAGONFORCE — Substrate Arcade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/substrate-frame.css">
 <style>
-* { margin:0; padding:0; box-sizing:border-box; image-rendering:pixelated; }
-html, body { width:100%; height:100%; overflow:hidden; background:#0a0a14; color:#c8d0e0;
-  font-family:'IBM Plex Mono','Courier New',monospace; -webkit-user-select:none; user-select:none; }
-canvas { display:block; }
-button { border-radius:0!important; box-shadow:3px 3px 0 rgba(0,0,0,0.5); transition:none!important;
-  cursor:pointer; font-family:inherit; image-rendering:pixelated; }
-button:active { transform:translate(2px,2px)!important; box-shadow:1px 1px 0 rgba(0,0,0,0.5)!important; }
+/* ── Reset & Base ─────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;
+  font-family:'Inter','Segoe UI',system-ui,sans-serif;
+  background:linear-gradient(135deg,#e8f4f8 0%,#d1ecf1 30%,#c3e6f0 60%,#b8dde8 100%);
+  color:#1a2a3a;-webkit-user-select:none;user-select:none;}
 
-#game-wrap { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+/* ── Frutiger Aero Glass ──────────────────────────────────────── */
+.glass{
+  background:rgba(255,255,255,0.55);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.7);
+  border-radius:16px;
+  box-shadow:0 8px 32px rgba(0,80,120,0.1),inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.glass-strong{
+  background:rgba(255,255,255,0.72);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.8);
+  border-radius:16px;
+  box-shadow:0 8px 32px rgba(0,80,120,0.12),inset 0 1px 0 rgba(255,255,255,0.8);
+}
 
-/* Title screen */
-#title-screen { text-align:center; }
-#title-screen h1 { font-size:2.2em; color:#ff4444; text-shadow:0 0 20px rgba(255,68,68,0.5);
-  letter-spacing:4px; margin-bottom:8px; }
-#title-screen .sub { color:#888; font-size:0.85em; margin-bottom:24px; }
-#title-screen .start-btn { background:#cc2222; color:#fff; border:2px solid #ff4444; padding:12px 32px;
-  font-size:1.1em; font-weight:700; letter-spacing:2px; }
-#title-screen .start-btn:hover { background:#ff4444; }
-.title-troops { margin:16px auto; }
+/* ── Layout ───────────────────────────────────────────────────── */
+#game-wrap{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;
+  overflow-y:auto;padding:16px;padding-top:52px;}
 
-/* HUD */
-#hud { display:flex; justify-content:space-between; align-items:flex-start; width:100%; max-width:640px;
-  padding:4px 8px; background:rgba(10,10,20,0.9); border-bottom:2px solid #222; flex-shrink:0; }
-.general-info { display:flex; align-items:center; gap:6px; }
-.gen-portrait { width:32px; height:32px; border:2px solid #444; flex-shrink:0; }
-.gen-stats { font-size:0.7em; line-height:1.3; }
-.gen-name { font-weight:700; font-size:0.85em; }
-.hp-bar { width:80px; height:8px; background:#222; border:1px solid #555; position:relative; }
-.hp-fill { height:100%; transition:width 0.3s; }
-.troop-count { font-size:0.7em; color:#aaa; }
+/* ── Screens ──────────────────────────────────────────────────── */
+.screen{display:none;width:100%;max-width:700px;flex-direction:column;align-items:center;gap:16px;}
+.screen.active{display:flex;}
 
-/* Canvas area */
-#battle-canvas { border:2px solid #1a1a2a; flex-shrink:0; }
+/* ── Title Screen ─────────────────────────────────────────────── */
+#title-screen{text-align:center;justify-content:center;min-height:calc(100vh - 80px);}
+#title-screen h1{font-size:2.6em;font-weight:700;letter-spacing:3px;
+  background:linear-gradient(135deg,#c0392b,#e74c3c,#f39c12);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:4px;}
+#title-screen .tagline{font-size:1em;font-weight:300;color:#5a7a8a;margin-bottom:24px;letter-spacing:1px;}
+.title-stats{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
+.title-stat{padding:10px 18px;font-size:0.85em;}
+.title-stat .label{color:#7a9aaa;font-size:0.75em;text-transform:uppercase;letter-spacing:1px;}
+.title-stat .value{font-size:1.3em;font-weight:600;color:#2c3e50;margin-top:2px;}
+.btn{
+  padding:14px 36px;font-size:1.05em;font-weight:600;cursor:pointer;
+  border:none;border-radius:12px;letter-spacing:1px;
+  transition:transform 0.15s,box-shadow 0.15s;font-family:inherit;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,80,120,0.2);}
+.btn:active{transform:translateY(0);box-shadow:0 2px 8px rgba(0,80,120,0.1);}
+.btn-primary{
+  background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;
+  box-shadow:0 4px 15px rgba(52,152,219,0.4);
+}
+.btn-fire{
+  background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;
+  box-shadow:0 4px 15px rgba(231,76,60,0.4);
+}
+.btn-secondary{
+  background:rgba(255,255,255,0.6);color:#2c3e50;
+  border:1px solid rgba(0,0,0,0.08);
+}
 
-/* Command bar */
-#cmd-bar { display:flex; gap:4px; padding:6px 8px; background:rgba(10,10,20,0.9);
-  border-top:2px solid #222; width:100%; max-width:640px; justify-content:center; flex-wrap:wrap; flex-shrink:0; }
-.cmd-btn { padding:6px 10px; font-size:0.75em; font-weight:700; letter-spacing:1px;
-  border:2px solid #444; background:#1a1a2a; color:#aaa; min-width:60px; }
-.cmd-btn:hover { border-color:#888; color:#ddd; }
-.cmd-btn.active { border-color:#ff4444; color:#ff4444; background:#2a1515; }
-.cmd-btn:disabled { opacity:0.4; cursor:default; }
-.cmd-btn.special { border-color:#ffaa00; color:#ffaa00; }
-.cmd-btn.special:hover { background:#2a2510; }
+/* ── Prediction Screen ────────────────────────────────────────── */
+.battle-header{width:100%;text-align:center;padding:12px 20px;font-weight:600;font-size:0.95em;
+  display:flex;justify-content:space-between;align-items:center;}
+.armies-row{display:flex;gap:16px;width:100%;align-items:stretch;}
+.army-card{flex:1;padding:20px;text-align:center;}
+.army-card h2{font-size:1.3em;font-weight:700;letter-spacing:2px;margin-bottom:12px;}
+.army-card.alpha h2{color:#2980b9;}
+.army-card.omega h2{color:#c0392b;}
+.vs-badge{display:flex;align-items:center;justify-content:center;font-size:1.2em;font-weight:700;
+  color:#7f8c8d;min-width:40px;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;
+  border-bottom:1px solid rgba(0,0,0,0.05);font-size:0.9em;}
+.stat-row:last-child{border-bottom:none;}
+.stat-label{color:#7a9aaa;font-weight:500;}
+.stat-value{font-weight:600;color:#2c3e50;}
+.stars{color:#f39c12;letter-spacing:2px;}
 
-/* World map */
-#map-screen { text-align:center; width:100%; max-width:640px; }
-#map-screen h2 { color:#ff4444; font-size:1.3em; margin-bottom:8px; }
-#map-canvas { border:2px solid #1a1a2a; margin:0 auto 8px; display:block; cursor:pointer; }
-#map-info { font-size:0.75em; color:#888; min-height:40px; padding:4px; }
-#map-btns { display:flex; gap:6px; justify-content:center; margin-top:8px; flex-wrap:wrap; }
-#map-btns button { padding:8px 16px; font-size:0.8em; font-weight:700; border:2px solid #444;
-  background:#1a1a2a; color:#aaa; }
-#map-btns button:hover { border-color:#888; color:#ddd; }
-#map-btns button:disabled { opacity:0.4; }
+.prediction-panel{width:100%;padding:24px;text-align:center;}
+.slider-label{font-weight:600;margin-bottom:12px;font-size:1em;color:#2c3e50;}
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.slider-side{font-weight:600;font-size:0.85em;min-width:60px;}
+.slider-side.left{text-align:right;color:#2980b9;}
+.slider-side.right{text-align:left;color:#c0392b;}
+#confidence-slider{flex:1;-webkit-appearance:none;appearance:none;height:10px;
+  border-radius:5px;outline:none;cursor:pointer;
+  background:linear-gradient(to right,#3498db,#95a5a6,#e74c3c);}
+#confidence-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:28px;height:28px;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,0.95);border:3px solid #2c3e50;
+  box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+#confidence-slider::-moz-range-thumb{width:28px;height:28px;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,0.95);border:3px solid #2c3e50;
+  box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.confidence-readout{font-size:1.1em;font-weight:600;color:#2c3e50;margin-bottom:16px;}
 
-/* Recruit screen */
-#recruit-screen { text-align:center; width:100%; max-width:480px; }
-#recruit-screen h2 { color:#44dd88; font-size:1.1em; margin-bottom:12px; }
-.recruit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:12px; }
-.recruit-card { background:#1a1a2a; border:2px solid #333; padding:8px; cursor:pointer; text-align:center; }
-.recruit-card:hover { border-color:#44dd88; }
-.recruit-card .rtype { font-weight:700; font-size:0.8em; margin-bottom:4px; }
-.recruit-card .rdesc { font-size:0.6em; color:#888; }
-.recruit-card .rcount { font-size:0.9em; font-weight:700; margin-top:4px; }
+.decisive-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px;}
+.decisive-row span{font-weight:500;color:#5a7a8a;}
+.toggle-btn{padding:8px 20px;border-radius:8px;border:1px solid rgba(0,0,0,0.1);cursor:pointer;
+  font-family:inherit;font-size:0.9em;font-weight:500;
+  background:rgba(255,255,255,0.5);color:#5a7a8a;transition:all 0.15s;}
+.toggle-btn.active{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;border-color:transparent;}
 
-/* Duel overlay */
-#duel-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85);
-  display:none; z-index:50; flex-direction:column; align-items:center; justify-content:center; }
-#duel-overlay.show { display:flex; }
-.duel-title { color:#ff4444; font-size:1.2em; font-weight:700; margin-bottom:12px; text-shadow:0 0 10px rgba(255,68,68,0.5); }
-.duel-generals { display:flex; gap:32px; align-items:center; margin-bottom:16px; }
-.duel-gen { text-align:center; }
-.duel-gen canvas { border:2px solid #555; margin-bottom:4px; }
-.duel-gen .dname { font-size:0.8em; font-weight:700; }
-.duel-gen .dhp { font-size:0.7em; color:#aaa; }
-.duel-choices { display:flex; gap:8px; }
-.duel-btn { padding:10px 18px; font-size:0.85em; font-weight:700; border:2px solid #555; background:#1a1a2a; color:#ccc; }
-.duel-btn:hover { border-color:#ff4444; color:#ff4444; }
-.duel-result { font-size:0.9em; margin-top:12px; min-height:24px; font-weight:700; }
+.hidden-warning{margin-top:8px;padding:10px 16px;border-radius:10px;
+  background:rgba(243,156,18,0.12);color:#b8860b;font-size:0.85em;font-weight:500;
+  border:1px solid rgba(243,156,18,0.25);}
 
-/* Victory / defeat */
-#result-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8);
-  display:none; z-index:60; flex-direction:column; align-items:center; justify-content:center; }
-#result-overlay.show { display:flex; }
-.result-title { font-size:2em; font-weight:700; margin-bottom:8px; text-shadow:0 0 20px currentColor; }
-.result-sub { font-size:0.85em; color:#888; margin-bottom:16px; }
-.result-btn { padding:12px 24px; font-size:1em; font-weight:700; border:2px solid #ff4444;
-  background:#cc2222; color:#fff; }
+/* ── Battle Canvas ────────────────────────────────────────────── */
+#battle-screen{justify-content:center;}
+.battle-canvas-wrap{width:100%;border-radius:16px;overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,80,120,0.12);border:1px solid rgba(255,255,255,0.5);}
+#battle-canvas{width:100%;display:block;background:linear-gradient(180deg,#d5e8d4 0%,#a8d5a2 100%);}
+.battle-info{text-align:center;font-weight:500;font-size:0.95em;color:#5a7a8a;}
+.battle-info strong{color:#2c3e50;}
 
-/* Info overlay for how-to-play */
-#info-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9);
-  display:none; z-index:70; flex-direction:column; align-items:center; justify-content:center;
-  padding:16px; overflow-y:auto; }
-#info-overlay.show { display:flex; }
-#info-overlay .info-box { max-width:420px; text-align:left; }
-#info-overlay h2 { color:#ff4444; font-size:1.2em; margin-bottom:12px; text-align:center; }
-#info-overlay p { font-size:0.75em; color:#aaa; margin-bottom:8px; line-height:1.4; }
-#info-overlay .close-info { margin-top:12px; padding:8px 20px; font-size:0.85em; font-weight:700;
-  border:2px solid #ff4444; background:#1a1a2a; color:#ff4444; display:block; margin-left:auto; margin-right:auto; }
+/* ── Result Screen ────────────────────────────────────────────── */
+#result-screen{justify-content:center;text-align:center;}
+.result-title{font-size:1.6em;font-weight:700;margin-bottom:4px;}
+.result-title.correct{color:#27ae60;}
+.result-title.wrong{color:#c0392b;}
+.result-subtitle{font-size:0.95em;color:#7a9aaa;margin-bottom:12px;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;}
+.result-cell{padding:14px;text-align:center;}
+.result-cell .rc-label{font-size:0.75em;text-transform:uppercase;letter-spacing:1px;color:#7a9aaa;margin-bottom:4px;}
+.result-cell .rc-value{font-size:1.4em;font-weight:700;color:#2c3e50;}
+.result-cell .rc-value.good{color:#27ae60;}
+.result-cell .rc-value.bad{color:#c0392b;}
+.result-cell .rc-value.neutral{color:#f39c12;}
 
-@media (max-width:500px) {
-  #hud { padding:2px 4px; }
-  .gen-portrait { width:24px; height:24px; }
-  .gen-stats { font-size:0.6em; }
-  .hp-bar { width:60px; height:6px; }
-  .cmd-btn { padding:5px 7px; font-size:0.65em; min-width:50px; }
-  #title-screen h1 { font-size:1.5em; }
+/* ── Campaign End Screen ──────────────────────────────────────── */
+#campaign-screen{text-align:center;padding-bottom:40px;}
+.campaign-title{font-size:1.8em;font-weight:700;margin-bottom:4px;
+  background:linear-gradient(135deg,#c0392b,#e74c3c,#f39c12);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.campaign-subtitle{font-size:0.95em;color:#7a9aaa;margin-bottom:16px;}
+.rating-badge{display:inline-block;padding:10px 28px;border-radius:12px;font-size:1.2em;
+  font-weight:700;margin-bottom:16px;}
+.rating-super{background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;}
+.rating-informed{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;}
+.rating-guessing{background:linear-gradient(135deg,#95a5a6,#7f8c8d);color:#fff;}
+.rating-overconfident{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;}
+.campaign-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;margin-bottom:16px;}
+.camp-stat{padding:14px;text-align:center;}
+.camp-stat .cs-label{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;color:#7a9aaa;margin-bottom:4px;}
+.camp-stat .cs-value{font-size:1.3em;font-weight:700;color:#2c3e50;}
+.calibration-chart-wrap{width:100%;padding:20px;margin-bottom:8px;}
+.calibration-chart-wrap h3{font-size:1em;font-weight:600;margin-bottom:12px;color:#2c3e50;}
+#calibration-canvas{width:100%;display:block;border-radius:8px;}
+.bias-report{width:100%;padding:16px;text-align:left;margin-bottom:12px;font-size:0.9em;line-height:1.6;}
+.bias-report h3{font-size:1em;font-weight:600;margin-bottom:8px;color:#2c3e50;}
+.bias-item{padding:4px 0;color:#5a7a8a;}
+.bias-item strong{color:#2c3e50;}
+
+/* ── Footer stats bar ─────────────────────────────────────────── */
+.footer-bar{width:100%;max-width:700px;padding:10px 20px;text-align:center;
+  font-size:0.8em;color:#7a9aaa;margin-top:auto;}
+
+/* ── Battle skip ──────────────────────────────────────────────── */
+.skip-btn{position:absolute;bottom:12px;right:16px;padding:6px 16px;
+  font-size:0.8em;font-weight:500;cursor:pointer;font-family:inherit;
+  background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.1);
+  border-radius:8px;color:#5a7a8a;transition:all 0.15s;z-index:10;}
+.skip-btn:hover{background:rgba(255,255,255,0.85);color:#2c3e50;}
+
+/* ── Pulse animation for lock button ─────────────────────────── */
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 4px 15px rgba(231,76,60,0.4);}
+  50%{box-shadow:0 4px 25px rgba(231,76,60,0.7);}
+}
+.btn-fire:not(:disabled){animation:pulse-glow 2s ease-in-out infinite;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;animation:none;}
+
+/* ── Prediction confidence bar ────────────────────────────────── */
+.confidence-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;
+  margin-bottom:8px;background:rgba(0,0,0,0.05);}
+.confidence-bar .left-fill{background:linear-gradient(to right,#3498db,#5dade2);transition:width 0.15s;}
+.confidence-bar .right-fill{background:linear-gradient(to left,#e74c3c,#ec7063);transition:width 0.15s;}
+
+/* ── Terrain badge ────────────────────────────────────────────── */
+.terrain-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:0.8em;margin-top:2px;}
+.terrain-plains{background:rgba(129,199,132,0.2);color:#4caf50;}
+.terrain-hills{background:rgba(141,110,99,0.2);color:#8d6e63;}
+.terrain-forest{background:rgba(76,175,80,0.2);color:#388e3c;}
+.terrain-river{background:rgba(79,195,247,0.2);color:#0288d1;}
+
+/* ── Battle log ───────────────────────────────────────────────── */
+.battle-log{font-size:0.8em;color:#7a9aaa;text-align:center;min-height:20px;
+  transition:opacity 0.3s;}
+
+/* ── Brier trend mini chart ───────────────────────────────────── */
+.brier-trend{display:flex;align-items:flex-end;gap:3px;justify-content:center;
+  height:40px;margin:8px 0;}
+.brier-bar{width:18px;border-radius:3px 3px 0 0;transition:height 0.3s;min-height:2px;}
+.brier-bar.good{background:linear-gradient(180deg,#27ae60,#2ecc71);}
+.brier-bar.ok{background:linear-gradient(180deg,#f39c12,#f1c40f);}
+.brier-bar.bad{background:linear-gradient(180deg,#e74c3c,#ec7063);}
+
+/* ── Result animation ─────────────────────────────────────────── */
+@keyframes slide-up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.result-cell{animation:slide-up 0.4s ease-out backwards;}
+.result-cell:nth-child(2){animation-delay:0.1s;}
+.result-cell:nth-child(3){animation-delay:0.2s;}
+.result-cell:nth-child(4){animation-delay:0.3s;}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media(max-width:600px){
+  #title-screen h1{font-size:1.8em;}
+  .armies-row{flex-direction:column;}
+  .vs-badge{min-width:auto;padding:4px 0;}
+  .campaign-stats{grid-template-columns:1fr 1fr;}
+  .result-grid{grid-template-columns:1fr;}
+  .slider-row{flex-direction:column;gap:8px;}
+  .slider-side{text-align:center!important;min-width:auto;}
+  #confidence-slider{width:100%;}
 }
 </style>
-<link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
 <div id="game-wrap">
-  <!-- Title Screen -->
-  <div id="title-screen">
-    <h1>DRAGONFORCE</h1>
-    <div class="sub">100 vs 100 army battles</div>
-    <canvas class="title-troops" id="title-canvas" width="320" height="120"></canvas>
-    <br>
-    <button class="start-btn" id="start-btn">START CAMPAIGN</button>
-    <br><br>
-    <button style="background:none;border:2px solid #555;color:#888;padding:8px 16px;font-size:0.75em;" id="how-btn">HOW TO PLAY</button>
+
+<!-- ═══ TITLE SCREEN ═══════════════════════════════════════════ -->
+<div id="title-screen" class="screen active">
+  <h1>DRAGONFORCE</h1>
+  <div class="tagline">Predict the future</div>
+  <div class="glass" style="padding:24px;margin-bottom:16px;max-width:500px;width:100%;">
+    <p style="font-size:0.9em;color:#5a7a8a;line-height:1.6;">
+      Two armies clash. You forecast the outcome.<br>
+      Set your confidence. Watch the battle. Learn your biases.<br>
+      <strong style="color:#2c3e50;">Calibration is a trainable skill.</strong>
+    </p>
+  </div>
+  <div class="title-stats" id="title-stats"></div>
+  <button class="btn btn-fire" onclick="Game.startCampaign()" style="margin-bottom:12px;">BEGIN CAMPAIGN</button>
+</div>
+
+<!-- ═══ PREDICTION SCREEN ══════════════════════════════════════ -->
+<div id="predict-screen" class="screen">
+  <div class="glass battle-header" id="battle-header">
+    <span id="battle-counter">Battle 1/10</span>
+    <span id="campaign-score">Brier: --</span>
   </div>
 
-  <!-- Battle Screen (hidden until battle) -->
-  <div id="battle-screen" style="display:none;width:100%;max-width:640px;position:relative;">
-    <div id="hud">
-      <div class="general-info">
-        <canvas class="gen-portrait" id="player-portrait" width="32" height="32"></canvas>
-        <div class="gen-stats">
-          <div class="gen-name" id="player-name" style="color:#4488ff">Claude</div>
-          <div class="hp-bar"><div class="hp-fill" id="player-hp" style="background:#4488ff;width:100%"></div></div>
-          <div class="troop-count">Troops: <span id="player-count">100</span></div>
-        </div>
-      </div>
-      <div style="font-size:0.7em;color:#666;align-self:center;" id="battle-timer">0:00</div>
-      <div class="general-info" style="flex-direction:row-reverse;">
-        <canvas class="gen-portrait" id="enemy-portrait" width="32" height="32"></canvas>
-        <div class="gen-stats" style="text-align:right;">
-          <div class="gen-name" id="enemy-name" style="color:#ff4444">Enemy</div>
-          <div class="hp-bar" style="margin-left:auto;"><div class="hp-fill" id="enemy-hp" style="background:#ff4444;width:100%"></div></div>
-          <div class="troop-count">Troops: <span id="enemy-count">100</span></div>
-        </div>
-      </div>
-    </div>
-    <canvas id="battle-canvas"></canvas>
-    <div id="cmd-bar">
-      <button class="cmd-btn active" data-cmd="charge">CHARGE</button>
-      <button class="cmd-btn" data-cmd="defend">DEFEND</button>
-      <button class="cmd-btn" data-cmd="surround">SURROUND</button>
-      <button class="cmd-btn" data-cmd="retreat">RETREAT</button>
-      <button class="cmd-btn special" data-cmd="special" id="special-btn">SPECIAL</button>
-    </div>
-    <!-- Duel overlay -->
-    <div id="duel-overlay">
-      <div class="duel-title">GENERAL DUEL!</div>
-      <div class="duel-generals">
-        <div class="duel-gen"><canvas id="duel-p" width="48" height="64"></canvas><div class="dname" id="duel-pname">Claude</div><div class="dhp" id="duel-php">HP: 100</div></div>
-        <div style="color:#ff4444;font-size:1.5em;font-weight:700;">VS</div>
-        <div class="duel-gen"><canvas id="duel-e" width="48" height="64"></canvas><div class="dname" id="duel-ename">Enemy</div><div class="dhp" id="duel-ehp">HP: 100</div></div>
-      </div>
-      <div class="duel-choices" id="duel-choices">
-        <button class="duel-btn" data-duel="attack">ATTACK</button>
-        <button class="duel-btn" data-duel="magic">MAGIC</button>
-        <button class="duel-btn" data-duel="defend">DEFEND</button>
-      </div>
-      <div class="duel-result" id="duel-result"></div>
-    </div>
-    <!-- Result overlay -->
-    <div id="result-overlay">
-      <div class="result-title" id="result-title">VICTORY!</div>
-      <div class="result-sub" id="result-sub">You conquered the castle!</div>
-      <button class="result-btn" id="result-btn">CONTINUE</button>
-    </div>
+  <div class="armies-row">
+    <div class="glass army-card alpha" id="army-alpha"></div>
+    <div class="vs-badge">VS</div>
+    <div class="glass army-card omega" id="army-omega"></div>
   </div>
 
-  <!-- Map Screen (hidden until map) -->
-  <div id="map-screen" style="display:none;">
-    <h2>WORLD MAP</h2>
-    <canvas id="map-canvas" width="480" height="320"></canvas>
-    <div id="map-info">Pick a castle to attack!</div>
-    <div id="map-btns">
-      <button id="map-attack-btn" disabled>ATTACK</button>
-      <button id="map-recruit-btn">RECRUIT</button>
-      <button id="map-heal-btn">HEAL GENERAL</button>
+  <div class="glass-strong prediction-panel">
+    <div class="slider-label">Who wins?</div>
+    <div class="slider-row">
+      <span class="slider-side left" id="slider-left">ALPHA</span>
+      <input type="range" id="confidence-slider" min="0" max="100" value="50">
+      <span class="slider-side right" id="slider-right">OMEGA</span>
     </div>
-  </div>
-
-  <!-- Recruit Screen (hidden) -->
-  <div id="recruit-screen" style="display:none;">
-    <h2>RECRUIT TROOPS</h2>
-    <p style="font-size:0.7em;color:#888;margin-bottom:12px;">Pick a type to add 10 troops (max 100 total)</p>
-    <div class="recruit-grid" id="recruit-grid"></div>
-    <button style="padding:8px 20px;font-size:0.8em;font-weight:700;border:2px solid #555;background:#1a1a2a;color:#aaa;" id="recruit-done">DONE</button>
-  </div>
-
-  <!-- Info overlay -->
-  <div id="info-overlay">
-    <div class="info-box">
-      <h2>HOW TO PLAY</h2>
-      <p><b style="color:#ff4444;">DRAGONFORCE</b> is a real-time army battle game! You lead 100 troops against enemy armies.</p>
-      <p><b style="color:#ffaa00;">Commands:</b> Tap CHARGE to rush, DEFEND to hold, SURROUND to flank, RETREAT to pull back. SPECIAL uses your general's power!</p>
-      <p><b style="color:#44dd88;">Troop Types:</b> Soldiers (grey), Cavalry (brown), Archers (green), Mages (purple), Dragons (orange), Monks (white). Each has strengths and weaknesses!</p>
-      <p><b style="color:#4488ff;">Rock-Paper-Scissors:</b> Cavalry beats Archers. Archers beat Soldiers. Soldiers beat Cavalry. Mages beat most but Dragons. Dragons beat most but Archers!</p>
-      <p><b style="color:#ff77ff;">Generals:</b> When generals meet, they DUEL! Pick Attack, Magic, or Defend. Attack beats Magic, Magic beats Defend, Defend beats Attack.</p>
-      <p><b style="color:#ffcc44;">Campaign:</b> Conquer all 6 castles to win! Recruit troops and heal between battles.</p>
-      <button class="close-info" id="close-info">GOT IT!</button>
+    <div class="confidence-bar"><div class="left-fill" id="conf-left" style="width:50%"></div><div class="right-fill" id="conf-right" style="width:50%"></div></div>
+    <div class="confidence-readout" id="confidence-readout">50% — Coin flip</div>
+    <div class="decisive-row">
+      <span>Decisive battle?</span>
+      <button class="toggle-btn" id="decisive-yes" onclick="Game.setDecisive(true)">Yes</button>
+      <button class="toggle-btn" id="decisive-no" onclick="Game.setDecisive(false)">No</button>
     </div>
+    <div id="hidden-warning"></div>
+    <button class="btn btn-fire" id="lock-btn" onclick="Game.lockPrediction()">LOCK PREDICTION &amp; FIGHT</button>
   </div>
 </div>
 
+<!-- ═══ BATTLE SCREEN ══════════════════════════════════════════ -->
+<div id="battle-screen" class="screen">
+  <div class="glass battle-header">
+    <span id="battle-counter2">Battle 1/10</span>
+    <span id="campaign-score2">Brier: --</span>
+  </div>
+  <div class="battle-canvas-wrap" style="position:relative;">
+    <canvas id="battle-canvas" width="700" height="400"></canvas>
+    <button class="skip-btn" id="skip-btn" onclick="Game.skipBattle()">Skip &raquo;</button>
+  </div>
+  <div class="battle-info" id="battle-info">Armies advancing...</div>
+  <div class="battle-log" id="battle-log"></div>
+</div>
+
+<!-- ═══ RESULT SCREEN ══════════════════════════════════════════ -->
+<div id="result-screen" class="screen">
+  <div class="glass-strong" style="width:100%;padding:24px;">
+    <div class="result-title" id="result-title">Correct!</div>
+    <div class="result-subtitle" id="result-subtitle"></div>
+    <div class="result-grid" id="result-grid"></div>
+    <div style="margin-top:12px;">
+      <div style="font-size:0.75em;text-transform:uppercase;letter-spacing:1px;color:#7a9aaa;margin-bottom:4px;">Brier Score Trend</div>
+      <div class="brier-trend" id="brier-trend"></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="next-btn" onclick="Game.nextBattle()">NEXT BATTLE</button>
+</div>
+
+<!-- ═══ CAMPAIGN END SCREEN ════════════════════════════════════ -->
+<div id="campaign-screen" class="screen">
+  <div class="campaign-title">CAMPAIGN COMPLETE</div>
+  <div class="campaign-subtitle" id="camp-subtitle"></div>
+  <div class="rating-badge" id="rating-badge"></div>
+  <div class="campaign-stats" id="camp-stats"></div>
+  <div class="glass calibration-chart-wrap">
+    <h3>Calibration Curve</h3>
+    <canvas id="calibration-canvas" width="400" height="300"></canvas>
+  </div>
+  <div class="glass bias-report" id="bias-report"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-fire" onclick="Game.startCampaign()">NEW CAMPAIGN</button>
+    <button class="btn btn-secondary" onclick="Game.showTitle()">TITLE</button>
+  </div>
+</div>
+
+</div><!-- /game-wrap -->
+
 <script>
-(function() {
+/* ═══════════════════════════════════════════════════════════════
+   DRAGONFORCE — Scenario Forecasting for Probabilistic Reasoning
+   Cognitive training: calibration, Brier scoring, bias detection
+   ═══════════════════════════════════════════════════════════════ */
+const Game = (function(){
 'use strict';
 
-// ── Constants ──────────────────────────────────────────────────────
-var CW = 480, CH = 320; // canvas size
-var CELL = 32; // spatial hash cell size
-var MAX_TROOPS = 100;
-var TROOP_W = 4, TROOP_H = 6;
-var GEN_W = 12, GEN_H = 16;
-var DUEL_RANGE = 60;
-var SPECIAL_COOLDOWN = 15000; // 15 seconds
+/* ── Constants ────────────────────────────────────────────────── */
+const BATTLES_PER_CAMPAIGN = 10;
+const TERRAIN_TYPES = [
+  {name:'Plains', mod:0, icon:'🌾', desc:'Neutral ground'},
+  {name:'Hills', mod:0.20, icon:'⛰️', desc:'Defender +20%'},
+  {name:'Forest', mod:0.15, icon:'🌲', desc:'Ambush +15%'},
+  {name:'River', mod:-0.10, icon:'🌊', desc:'Attacker -10%'}
+];
+const ARMY_NAMES_LEFT = ['ALPHA','VANGUARD','IRON LEGION','STORM CORPS','NORTHWATCH',
+  'CRIMSON GUARD','DAWNBREAKERS','SILVER HAND','WARDENS','THUNDERING HERD'];
+const ARMY_NAMES_RIGHT = ['OMEGA','REARGUARD','STEEL PHALANX','GALE FORCE','SOUTHGATE',
+  'AZURE KNIGHTS','DUSKWALKERS','GOLDEN FIST','SENTINELS','ROARING TIDE'];
 
-// Troop type definitions
-var TYPES = {
-  soldier:  { name:'Soldier',  color:'#999999', hp:10, atk:3, spd:1.2, range:8,  isRanged:false },
-  cavalry:  { name:'Cavalry',  color:'#8B6914', hp:8,  atk:4, spd:2.5, range:8,  isRanged:false },
-  archer:   { name:'Archer',   color:'#44aa44', hp:6,  atk:2, spd:1.0, range:60, isRanged:true },
-  mage:     { name:'Mage',     color:'#aa44ff', hp:5,  atk:5, spd:0.8, range:50, isRanged:true },
-  dragon:   { name:'Dragon',   color:'#ff8800', hp:15, atk:6, spd:1.8, range:10, isRanged:false },
-  monk:     { name:'Monk',     color:'#dddddd', hp:7,  atk:1, spd:1.0, range:40, isRanged:false }
-};
+/* ── Audio ────────────────────────────────────────────────────── */
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+}
+function playTone(freq,dur,type,vol){
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type||'square';
+  o.frequency.setValueAtTime(freq,audioCtx.currentTime);
+  g.gain.setValueAtTime(vol||0.08,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+  o.connect(g);g.connect(audioCtx.destination);
+  o.start();o.stop(audioCtx.currentTime+dur);
+}
+function sfxClick(){ playTone(800,0.08,'square',0.06); playTone(1200,0.06,'square',0.04); }
+function sfxLock(){ playTone(600,0.1,'triangle',0.08); setTimeout(()=>playTone(900,0.15,'triangle',0.08),100); }
+function sfxClash(){
+  ensureAudio();
+  const buf = audioCtx.createBuffer(1,audioCtx.sampleRate*0.12,audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.06*Math.exp(-i/(d.length*0.3));
+  const s = audioCtx.createBufferSource(); s.buffer=buf; s.connect(audioCtx.destination); s.start();
+}
+function sfxVictory(){
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'triangle',0.07),i*120));
+}
+function sfxDefeat(){ playTone(300,0.3,'sawtooth',0.05); setTimeout(()=>playTone(200,0.4,'sawtooth',0.04),200); }
 
-// Damage multipliers: attacker type vs defender type
-var MATCHUPS = {
-  soldier:  { soldier:1.0, cavalry:1.4, archer:0.7, mage:0.8, dragon:0.6, monk:1.2 },
-  cavalry:  { soldier:0.7, cavalry:1.0, archer:1.5, mage:1.0, dragon:0.5, monk:1.2 },
-  archer:   { soldier:1.4, cavalry:0.6, archer:1.0, mage:0.9, dragon:1.5, monk:1.0 },
-  mage:     { soldier:1.5, cavalry:1.3, archer:1.3, mage:1.0, dragon:0.5, monk:0.8 },
-  dragon:   { soldier:1.5, cavalry:1.5, archer:0.6, mage:1.5, dragon:1.0, monk:1.3 },
-  monk:     { soldier:0.5, cavalry:0.5, archer:0.5, mage:0.8, dragon:0.4, monk:0.5 }
-};
+/* ── Particle system for battle effects ────────────────────────── */
+const particles = [];
+function spawnParticle(x,y,color,life,vx,vy,size){
+  particles.push({x,y,color,life,maxLife:life,vx:vx||(Math.random()-0.5)*3,
+    vy:vy||(Math.random()-0.5)*3,size:size||2});
+}
+function spawnClashSparks(x,y,count){
+  for(let i=0;i<count;i++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 1+Math.random()*3;
+    spawnParticle(x,y,'#f39c12',20+Math.random()*15,
+      Math.cos(angle)*speed,Math.sin(angle)*speed,1.5+Math.random()*2);
+  }
+}
+function spawnDeathPuff(x,y,color){
+  for(let i=0;i<6;i++){
+    const angle = Math.random()*Math.PI*2;
+    spawnParticle(x,y,color,25+Math.random()*10,
+      Math.cos(angle)*1.5,Math.sin(angle)*1.5,3+Math.random()*2);
+  }
+}
+function updateAndDrawParticles(ctx){
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.95; p.vy *= 0.95;
+    p.life--;
+    if(p.life <= 0){ particles.splice(i,1); continue; }
+    const alpha = p.life / p.maxLife;
+    ctx.globalAlpha = alpha * 0.8;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
 
-// General definitions (Substrate themed)
-var GENERALS = {
-  claude: { name:'Claude', color:'#00ffaa', hp:120, special:'heal', specialName:'RESTORE',
-    desc:'Heals all troops for 3 HP', troopType:'soldier' },
-  v:      { name:'V',      color:'#ff77ff', hp:100, special:'dragons', specialName:'SUMMON',
-    desc:'Summons 5 dragons', troopType:'dragon' },
-  q:      { name:'Q',      color:'#ff77ff', hp:90,  special:'fireball', specialName:'FIREBALL',
-    desc:'Damages all enemies in an area', troopType:'mage' },
-  root:   { name:'Root',   color:'#8888ff', hp:130, special:'fortify', specialName:'FORTIFY',
-    desc:'Doubles defense for 5 seconds', troopType:'soldier' },
-  byte:   { name:'Byte',   color:'#00ddff', hp:95,  special:'stampede', specialName:'STAMPEDE',
-    desc:'All cavalry charge at double speed', troopType:'cavalry' },
-  arc:    { name:'Arc',    color:'#cc4444', hp:85,  special:'volley', specialName:'VOLLEY',
-    desc:'All archers fire a burst of arrows', troopType:'archer' }
-};
-
-// Campaign castles
-var CASTLES = [
-  { id:0, name:'Fort Byte',   x:80,  y:80,  gen:'byte', troops:{cavalry:60,soldier:20,archer:20}, owner:'enemy' },
-  { id:1, name:'Root Bastion', x:240, y:60,  gen:'root', troops:{soldier:70,archer:15,monk:15}, owner:'enemy' },
-  { id:2, name:'Arc Citadel',  x:400, y:80,  gen:'arc',  troops:{archer:50,soldier:30,mage:20}, owner:'enemy' },
-  { id:3, name:'Q Tower',      x:120, y:240, gen:'q',    troops:{mage:50,monk:20,soldier:30}, owner:'enemy' },
-  { id:4, name:'V Palace',     x:280, y:250, gen:'v',    troops:{dragon:30,mage:30,soldier:40}, owner:'enemy' },
-  { id:5, name:'Flux Keep',    x:400, y:230, gen:'arc',  troops:{soldier:30,cavalry:30,archer:20,dragon:20}, owner:'enemy' }
+/* ── Battle log messages ──────────────────────────────────────── */
+const BATTLE_MESSAGES = [
+  'Steel meets steel across the line...',
+  'The charge shakes the earth!',
+  'Arrows darken the sky!',
+  'Shields lock in desperate formation!',
+  'A commander rallies the flank!',
+  'The center buckles under pressure!',
+  'Reserves commit to the fray!',
+  'Morale wavers on one side...',
+  'A brilliant tactical maneuver!',
+  'The decisive moment approaches...'
 ];
 
-// Castle connections (graph edges)
-var ROADS = [[0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5]];
+/* ── State ────────────────────────────────────────────────────── */
+let battleAnimId = null; // track animation for skip
+let pendingResult = null; // store result for skip
+let brierHistory = []; // track per-battle brier scores
 
-// ── Game state ─────────────────────────────────────────────────────
-var state = 'title'; // title, map, recruit, battle, duel
-var playerGeneral = 'claude';
-var playerTroops = { soldier:50, archer:25, cavalry:15, mage:10 };
-var playerGenHP = GENERALS.claude.hp;
-var playerMaxHP = GENERALS.claude.hp;
-var castles = [];
-var selectedCastle = -1;
-var conqueredCount = 0;
+let state = {
+  screen: 'title',
+  battleIndex: 0,
+  battles: [],
+  predictions: [],
+  currentPrediction: 50,
+  currentDecisive: null,
+  campaignBrier: 0,
+  campaignDecisiveCorrect: 0,
+  campaignDecisiveTotal: 0,
+  // Persisted
+  bestBrier: parseFloat(localStorage.getItem('dragonforce-best-brier'))||null,
+  campaigns: parseInt(localStorage.getItem('dragonforce-campaigns'))||0,
+  totalBattles: parseInt(localStorage.getItem('dragonforce-total-battles'))||0,
+  gamesPlayed: parseInt(localStorage.getItem('dragonforce-games-played'))||0,
+  // History across campaigns for bias detection
+  allPredictions: []
+};
 
-// Battle state
-var troops = []; // all troop objects
-var playerGen = null; // general objects
-var enemyGen = null;
-var formation = 'charge';
-var enemyFormation = 'charge';
-var enemyFormationTimer = 0;
-var specialCooldown = 0;
-var specialActive = false;
-var specialTimer = 0;
-var fortifyActive = false;
-var fortifyTimer = 0;
-var battleTime = 0;
-var battleOver = false;
-var duelActive = false;
-var duelPlayerHP = 0;
-var duelEnemyHP = 0;
-var duelCooldown = 0;
-var spatialHash = {};
-var animFrame = 0;
-var particles = [];
+/* ── Utility ──────────────────────────────────────────────────── */
+function rng(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+function lerp(a,b,t){ return a+(b-a)*t; }
 
-// Canvas refs
-var battleCanvas, battleCtx;
-var mapCanvas, mapCtx;
-var titleCanvas, titleCtx;
+/* ── Army Generation ──────────────────────────────────────────── */
+function generateArmy(namePool, battleIdx){
+  const name = namePool[battleIdx % namePool.length];
+  let troops, morale, terrain, commander;
 
-// Audio
-var audioCtx = null;
+  if(battleIdx < 3){
+    // Easy: big differences
+    if(Math.random()<0.5){
+      troops = rng(150,200); morale = rng(70,100);
+      commander = rng(3,5);
+    } else {
+      troops = rng(50,100); morale = rng(40,70);
+      commander = rng(1,3);
+    }
+  } else if(battleIdx < 6){
+    // Medium: closer matchups
+    troops = rng(80,160); morale = rng(55,90);
+    commander = rng(2,4);
+  } else if(battleIdx < 9){
+    // Hard: hidden variables possible
+    troops = rng(60,180); morale = rng(45,95);
+    commander = rng(1,5);
+  } else {
+    // Battle 10: fog of war
+    troops = rng(50,200); morale = rng(40,100);
+    commander = rng(1,5);
+  }
 
-// ── Initialization ─────────────────────────────────────────────────
+  terrain = TERRAIN_TYPES[rng(0,TERRAIN_TYPES.length-1)];
 
-function init() {
-  battleCanvas = document.getElementById('battle-canvas');
-  battleCtx = battleCanvas.getContext('2d');
-  mapCanvas = document.getElementById('map-canvas');
-  mapCtx = mapCanvas.getContext('2d');
-  titleCanvas = document.getElementById('title-canvas');
-  titleCtx = titleCanvas.getContext('2d');
+  return { name, troops, morale, terrain, commander };
+}
 
-  // Responsive canvas sizing
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-
-  // Init castles (deep copy)
-  resetCampaign();
-
-  // Bind events
-  document.getElementById('start-btn').addEventListener('click', startCampaign);
-  document.getElementById('how-btn').addEventListener('click', function() {
-    document.getElementById('info-overlay').classList.add('show');
-  });
-  document.getElementById('close-info').addEventListener('click', function() {
-    document.getElementById('info-overlay').classList.remove('show');
-  });
-  document.getElementById('map-attack-btn').addEventListener('click', attackCastle);
-  document.getElementById('map-recruit-btn').addEventListener('click', showRecruit);
-  document.getElementById('map-heal-btn').addEventListener('click', healGeneral);
-  document.getElementById('recruit-done').addEventListener('click', function() { showScreen('map'); });
-  document.getElementById('result-btn').addEventListener('click', afterBattle);
-
-  // Command buttons
-  var cmdBtns = document.querySelectorAll('.cmd-btn');
-  for (var i = 0; i < cmdBtns.length; i++) {
-    cmdBtns[i].addEventListener('click', function() {
-      var cmd = this.getAttribute('data-cmd');
-      if (cmd === 'special') {
-        useSpecial();
-      } else {
-        setFormation(cmd);
+function generateBattles(){
+  const battles = [];
+  for(let i=0;i<BATTLES_PER_CAMPAIGN;i++){
+    let left, right, attempts = 0;
+    do {
+      left = generateArmy(ARMY_NAMES_LEFT, i);
+      right = generateArmy(ARMY_NAMES_RIGHT, i);
+      attempts++;
+      // For easy battles, ensure a clear favorite
+      if(i < 3 && attempts < 20){
+        const diff = Math.abs(computeStrength(left)-computeStrength(right));
+        if(diff < 0.2) continue;
       }
+      break;
+    } while(attempts < 30);
+
+    // For battles 7-9: add hidden variables
+    let hiddenVar = null;
+    if(i >= 6 && i < 9){
+      const vars = ['weather','fatigue','surprise_flank','reinforcements'];
+      hiddenVar = {
+        type: vars[rng(0,vars.length-1)],
+        side: Math.random()<0.5 ? 'left' : 'right',
+        magnitude: (rng(10,25))/100
+      };
+    }
+
+    // Battle 10: hide some stats
+    let fogOfWar = false;
+    if(i === 9) fogOfWar = true;
+
+    battles.push({ left, right, hiddenVar, fogOfWar, index:i });
+  }
+  return battles;
+}
+
+function computeStrength(army){
+  // Base strength from troops (normalized to 0-1 range)
+  let s = army.troops / 200;
+  // Morale factor
+  s *= (0.5 + army.morale/200); // morale 40 → 0.7x, morale 100 → 1.0x
+  // Commander skill
+  s *= (1 + (army.commander-1)*0.05); // each star = +5%
+  // Terrain (for defender = owner of army)
+  s *= (1 + army.terrain.mod);
+  return s;
+}
+
+function simulateBattle(battle){
+  let leftStr = computeStrength(battle.left);
+  let rightStr = computeStrength(battle.right);
+
+  // Hidden variable
+  if(battle.hiddenVar){
+    if(battle.hiddenVar.side === 'left'){
+      leftStr *= (1 + battle.hiddenVar.magnitude);
+    } else {
+      rightStr *= (1 + battle.hiddenVar.magnitude);
+    }
+  }
+
+  // Add randomness (±15%)
+  const leftRoll = leftStr * (0.85 + Math.random()*0.30);
+  const rightRoll = rightStr * (0.85 + Math.random()*0.30);
+
+  const total = leftRoll + rightRoll;
+  const leftFrac = leftRoll / total;
+
+  const leftWins = leftFrac > 0.5;
+  // Losses proportional to relative strength
+  const winnerLossPct = (1 - Math.abs(leftFrac-0.5)*2) * (0.3+Math.random()*0.4);
+  const loserLossPct = 0.5 + Math.random()*0.4;
+  const decisive = loserLossPct > 0.7;
+
+  return {
+    leftWins,
+    leftStrength: leftStr,
+    rightStrength: rightStr,
+    leftLossPct: leftWins ? winnerLossPct : loserLossPct,
+    rightLossPct: leftWins ? loserLossPct : winnerLossPct,
+    decisive,
+    trueLeftProb: leftStr/(leftStr+rightStr)
+  };
+}
+
+/* ── Star rendering ───────────────────────────────────────────── */
+function starsHTML(n){
+  let s = '';
+  for(let i=0;i<5;i++) s += i<n ? '★' : '☆';
+  return '<span class="stars">'+s+'</span>';
+}
+
+/* ── Screen Management ────────────────────────────────────────── */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  state.screen = id;
+  // Scroll to top
+  document.getElementById('game-wrap').scrollTop = 0;
+}
+
+/* ── Title Screen ─────────────────────────────────────────────── */
+function showTitle(){
+  showScreen('title-screen');
+  const el = document.getElementById('title-stats');
+  let html = '';
+  if(state.bestBrier !== null){
+    html += '<div class="glass title-stat"><div class="label">Best Brier</div><div class="value">'+state.bestBrier.toFixed(3)+'</div></div>';
+  }
+  if(state.campaigns > 0){
+    html += '<div class="glass title-stat"><div class="label">Campaigns</div><div class="value">'+state.campaigns+'</div></div>';
+  }
+  if(state.totalBattles > 0){
+    html += '<div class="glass title-stat"><div class="label">Battles</div><div class="value">'+state.totalBattles+'</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+/* ── Start Campaign ───────────────────────────────────────────── */
+function startCampaign(){
+  sfxClick();
+  state.battleIndex = 0;
+  state.battles = generateBattles();
+  state.predictions = [];
+  state.campaignBrier = 0;
+  state.campaignDecisiveCorrect = 0;
+  state.campaignDecisiveTotal = 0;
+  state.allPredictions = [];
+  showPredictionScreen();
+}
+
+/* ── Prediction Screen ────────────────────────────────────────── */
+function showPredictionScreen(){
+  showScreen('predict-screen');
+  const b = state.battles[state.battleIndex];
+  const bi = state.battleIndex;
+
+  document.getElementById('battle-counter').textContent = 'Battle '+(bi+1)+'/'+BATTLES_PER_CAMPAIGN;
+  document.getElementById('campaign-score').textContent = bi > 0
+    ? 'Avg Brier: '+(state.campaignBrier/bi).toFixed(3)
+    : 'Brier: --';
+
+  // Render armies
+  renderArmyCard('army-alpha', b.left, b.fogOfWar, 'alpha');
+  renderArmyCard('army-omega', b.right, b.fogOfWar, 'omega');
+
+  document.getElementById('slider-left').textContent = b.left.name;
+  document.getElementById('slider-right').textContent = b.right.name;
+
+  // Reset slider
+  const slider = document.getElementById('confidence-slider');
+  slider.value = 50;
+  state.currentPrediction = 50;
+  state.currentDecisive = null;
+  updateConfidenceReadout();
+
+  // Reset decisive buttons
+  document.getElementById('decisive-yes').classList.remove('active');
+  document.getElementById('decisive-no').classList.remove('active');
+
+  // Hidden warning for battles 7-9
+  const warn = document.getElementById('hidden-warning');
+  if(bi >= 6 && bi < 9){
+    warn.innerHTML = '⚠️ Intel suggests hidden variables may affect this battle. Factor in uncertainty.';
+    warn.classList.add('hidden-warning');
+  } else if(bi === 9){
+    warn.innerHTML = '🌫️ FOG OF WAR — Some stats are obscured. Trust your calibration instincts.';
+    warn.classList.add('hidden-warning');
+  } else {
+    warn.innerHTML = '';
+    warn.classList.remove('hidden-warning');
+  }
+
+  // Enable lock button
+  document.getElementById('lock-btn').disabled = false;
+}
+
+// Deterministic fog — seeded per battle so re-renders are consistent
+let fogSeed = {};
+function renderArmyCard(elId, army, fog, side){
+  const el = document.getElementById(elId);
+  // Use stored fog decisions so re-renders match
+  const key = elId+'-'+state.battleIndex;
+  if(fog && !fogSeed[key]){
+    fogSeed[key] = {
+      troops: Math.random()<0.5,
+      morale: Math.random()<0.4,
+      commander: Math.random()<0.3
+    };
+  }
+  const f = fog ? fogSeed[key] : {troops:false,morale:false,commander:false};
+
+  const terrainClass = 'terrain-'+army.terrain.name.toLowerCase();
+  const terrainDesc = army.terrain.mod > 0 ? ' (+'+Math.round(army.terrain.mod*100)+'%)'
+    : army.terrain.mod < 0 ? ' ('+Math.round(army.terrain.mod*100)+'%)' : ' (neutral)';
+
+  // Troop strength indicator
+  let troopBar = '';
+  if(!f.troops){
+    const pct = Math.round(army.troops/200*100);
+    troopBar = '<div style="height:4px;border-radius:2px;background:rgba(0,0,0,0.06);margin-top:4px;">'+
+      '<div style="height:100%;width:'+pct+'%;border-radius:2px;background:'+(side==='alpha'?'#3498db':'#e74c3c')+';"></div></div>';
+  }
+
+  // Morale indicator
+  let moraleColor = '#27ae60';
+  if(!f.morale){
+    if(army.morale < 60) moraleColor = '#e74c3c';
+    else if(army.morale < 80) moraleColor = '#f39c12';
+  }
+
+  el.innerHTML =
+    '<h2>'+army.name+'</h2>'+
+    '<div class="stat-row"><span class="stat-label">Troops</span><span class="stat-value">'+(f.troops?'<span style="color:#bbb;font-style:italic">hidden</span>':army.troops)+'</span></div>'+
+    troopBar+
+    '<div class="stat-row"><span class="stat-label">Morale</span><span class="stat-value">'+(f.morale?'<span style="color:#bbb;font-style:italic">hidden</span>':'<span style="color:'+moraleColor+'">'+army.morale+'%</span>')+'</span></div>'+
+    '<div class="stat-row"><span class="stat-label">Terrain</span><span class="stat-value"><span class="terrain-badge '+terrainClass+'">'+army.terrain.icon+' '+army.terrain.name+terrainDesc+'</span></span></div>'+
+    '<div class="stat-row"><span class="stat-label">Commander</span><span class="stat-value">'+(f.commander?'<span style="color:#bbb;font-style:italic">hidden</span>':starsHTML(army.commander))+'</span></div>';
+}
+
+function updateConfidenceReadout(){
+  const v = state.currentPrediction;
+  const el = document.getElementById('confidence-readout');
+  let desc;
+  if(v <= 10) desc = 'Very confident RIGHT wins';
+  else if(v <= 25) desc = 'Confident RIGHT wins';
+  else if(v <= 40) desc = 'Slight lean RIGHT';
+  else if(v <= 60) desc = 'Coin flip';
+  else if(v <= 75) desc = 'Slight lean LEFT';
+  else if(v <= 90) desc = 'Confident LEFT wins';
+  else desc = 'Very confident LEFT wins';
+
+  const b = state.battles[state.battleIndex];
+  const leftName = b.left.name;
+  const rightName = b.right.name;
+
+  if(v > 50) el.textContent = v+'% '+leftName+' — '+desc;
+  else if(v < 50) el.textContent = (100-v)+'% '+rightName+' — '+desc;
+  else el.textContent = '50% — '+desc;
+
+  // Update confidence bar
+  document.getElementById('conf-left').style.width = v+'%';
+  document.getElementById('conf-right').style.width = (100-v)+'%';
+}
+
+function setDecisive(val){
+  sfxClick();
+  state.currentDecisive = val;
+  document.getElementById('decisive-yes').classList.toggle('active', val===true);
+  document.getElementById('decisive-no').classList.toggle('active', val===false);
+}
+
+/* ── Lock Prediction ──────────────────────────────────────────── */
+function lockPrediction(){
+  if(state.currentDecisive === null){
+    // Flash the decisive buttons
+    const row = document.querySelector('.decisive-row');
+    row.style.outline = '2px solid #e74c3c';
+    setTimeout(()=>row.style.outline='none', 800);
+    return;
+  }
+
+  sfxLock();
+  document.getElementById('lock-btn').disabled = true;
+
+  const pred = {
+    confidence: state.currentPrediction / 100, // 0-1 where 1 = certain left wins
+    decisivePrediction: state.currentDecisive,
+    battleIndex: state.battleIndex
+  };
+  state.predictions.push(pred);
+
+  // Start battle animation
+  setTimeout(()=>startBattle(pred), 400);
+}
+
+/* ── Battle Animation ─────────────────────────────────────────── */
+function startBattle(prediction){
+  showScreen('battle-screen');
+  const b = state.battles[state.battleIndex];
+  const result = simulateBattle(b);
+
+  document.getElementById('battle-counter2').textContent = 'Battle '+(state.battleIndex+1)+'/'+BATTLES_PER_CAMPAIGN;
+  document.getElementById('campaign-score2').textContent = state.battleIndex > 0
+    ? 'Avg Brier: '+(state.campaignBrier/state.battleIndex).toFixed(3) : 'Brier: --';
+
+  const canvas = document.getElementById('battle-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const infoEl = document.getElementById('battle-info');
+
+  // Create troops as dots
+  const leftCount = Math.min(40, Math.max(20, Math.round(b.left.troops/5)));
+  const rightCount = Math.min(40, Math.max(20, Math.round(b.right.troops/5)));
+
+  const leftTroops = [];
+  const rightTroops = [];
+  const leftColor = '#3498db';
+  const rightColor = '#e74c3c';
+  const leftColorDark = '#2471a3';
+  const rightColorDark = '#a93226';
+
+  for(let i=0;i<leftCount;i++){
+    leftTroops.push({
+      x: 30 + Math.random()*120,
+      y: 40 + (i/leftCount)*(H-80) + (Math.random()-0.5)*20,
+      vx: 0.6 + Math.random()*0.4,
+      alive: true,
+      morale: b.left.morale/100,
+      retreating: false,
+      size: 4 + Math.random()*2
+    });
+  }
+  for(let i=0;i<rightCount;i++){
+    rightTroops.push({
+      x: W - 30 - Math.random()*120,
+      y: 40 + (i/rightCount)*(H-80) + (Math.random()-0.5)*20,
+      vx: -(0.6 + Math.random()*0.4),
+      alive: true,
+      morale: b.right.morale/100,
+      retreating: false,
+      size: 4 + Math.random()*2
     });
   }
 
-  // Duel buttons
-  var duelBtns = document.querySelectorAll('.duel-btn');
-  for (var i = 0; i < duelBtns.length; i++) {
-    duelBtns[i].addEventListener('click', function() {
-      var choice = this.getAttribute('data-duel');
-      duelRound(choice);
-    });
+  let frame = 0;
+  const maxFrames = 720; // ~12 seconds at 60fps
+  let leftKills = 0, rightKills = 0;
+  const leftStartCount = leftCount;
+  const rightStartCount = rightCount;
+  // Determine final kill targets from simulation
+  const leftTargetKills = Math.round(rightCount * result.rightLossPct);
+  const rightTargetKills = Math.round(leftCount * result.leftLossPct);
+  let battleEnded = false;
+  let endTimer = 0;
+
+  // Terrain rendering
+  const terrainColors = {
+    'Plains': {bg1:'#c8e6c9',bg2:'#a5d6a7',detail:'#81c784'},
+    'Hills':  {bg1:'#bcaaa4',bg2:'#a1887f',detail:'#8d6e63'},
+    'Forest': {bg1:'#a5d6a7',bg2:'#81c784',detail:'#4caf50'},
+    'River':  {bg1:'#b3e5fc',bg2:'#81d4fa',detail:'#4fc3f7'}
+  };
+  const tc = terrainColors[b.left.terrain.name] || terrainColors['Plains'];
+  const tc2 = terrainColors[b.right.terrain.name] || terrainColors['Plains'];
+
+  function animate(){
+    frame++;
+    ctx.clearRect(0,0,W,H);
+
+    // Draw terrain
+    const grad = ctx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0, tc.bg1);
+    grad.addColorStop(0.5, '#d5e8d4');
+    grad.addColorStop(1, tc2.bg1);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,W,H);
+
+    // Terrain details
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = tc.detail;
+    for(let i=0;i<6;i++){
+      ctx.beginPath();
+      ctx.arc(50+i*30, H-20+Math.sin(i)*10, 8+i%3*4, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.fillStyle = tc2.detail;
+    for(let i=0;i<6;i++){
+      ctx.beginPath();
+      ctx.arc(W-50-i*30, H-20+Math.cos(i)*10, 8+i%3*4, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Center line
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Battle phase logic
+    const advancePhase = frame < maxFrames * 0.3;
+    const clashPhase = frame >= maxFrames * 0.3 && frame < maxFrames * 0.85;
+    const resolvePhase = frame >= maxFrames * 0.85;
+
+    // Left troops
+    let leftAlive = 0;
+    for(const t of leftTroops){
+      if(!t.alive) continue;
+      leftAlive++;
+      if(t.retreating){
+        t.x -= 1.5;
+        t.y += (Math.random()-0.5)*1;
+      } else if(advancePhase){
+        t.x += t.vx;
+        t.y += (Math.random()-0.5)*0.5;
+      } else if(clashPhase){
+        t.x += (Math.random()-0.5)*2;
+        t.y += (Math.random()-0.5)*2;
+        // Kill check
+        if(leftKills < leftTargetKills && Math.random() < 0.008){
+          // Find a right troop to kill
+          for(const r of rightTroops){
+            if(r.alive && !r.retreating && Math.abs(r.x-t.x)<80){
+              r.alive = false;
+              leftKills++;
+              if(frame%3===0) sfxClash();
+              break;
+            }
+          }
+        }
+      } else if(resolvePhase && !result.leftWins){
+        if(!t.retreating && Math.random()<0.02){
+          t.retreating = true;
+        }
+      }
+      // Draw
+      ctx.fillStyle = t.retreating ? 'rgba(52,152,219,0.4)' : leftColor;
+      ctx.beginPath();
+      ctx.arc(clamp(t.x,5,W-5), clamp(t.y,5,H-5), t.size, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = leftColorDark;
+      ctx.beginPath();
+      ctx.arc(clamp(t.x,5,W-5), clamp(t.y,5,H-5), t.size*0.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Right troops
+    let rightAlive = 0;
+    for(const t of rightTroops){
+      if(!t.alive) continue;
+      rightAlive++;
+      if(t.retreating){
+        t.x += 1.5;
+        t.y += (Math.random()-0.5)*1;
+      } else if(advancePhase){
+        t.x += t.vx;
+        t.y += (Math.random()-0.5)*0.5;
+      } else if(clashPhase){
+        t.x += (Math.random()-0.5)*2;
+        t.y += (Math.random()-0.5)*2;
+        // Kill check
+        if(rightKills < rightTargetKills && Math.random() < 0.008){
+          for(const l of leftTroops){
+            if(l.alive && !l.retreating && Math.abs(l.x-t.x)<80){
+              l.alive = false;
+              rightKills++;
+              if(frame%3===0) sfxClash();
+              break;
+            }
+          }
+        }
+      } else if(resolvePhase && result.leftWins){
+        if(!t.retreating && Math.random()<0.02){
+          t.retreating = true;
+        }
+      }
+      ctx.fillStyle = t.retreating ? 'rgba(231,76,60,0.4)' : rightColor;
+      ctx.beginPath();
+      ctx.arc(clamp(t.x,5,W-5), clamp(t.y,5,H-5), t.size, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = rightColorDark;
+      ctx.beginPath();
+      ctx.arc(clamp(t.x,5,W-5), clamp(t.y,5,H-5), t.size*0.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Dead troops as X marks
+    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1;
+    for(const t of leftTroops.concat(rightTroops)){
+      if(t.alive) continue;
+      const sz = 3;
+      ctx.beginPath(); ctx.moveTo(t.x-sz,t.y-sz); ctx.lineTo(t.x+sz,t.y+sz); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(t.x+sz,t.y-sz); ctx.lineTo(t.x-sz,t.y+sz); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = 1;
+
+    // HUD on canvas
+    ctx.font = '600 14px Inter, sans-serif';
+    ctx.fillStyle = leftColor;
+    ctx.textAlign = 'left';
+    ctx.fillText(b.left.name+' ('+leftAlive+')', 10, 22);
+    ctx.fillStyle = rightColor;
+    ctx.textAlign = 'right';
+    ctx.fillText(b.right.name+' ('+rightAlive+')', W-10, 22);
+
+    // Status text
+    if(advancePhase) infoEl.innerHTML = 'Armies advancing...';
+    else if(clashPhase) infoEl.innerHTML = '<strong>Battle raging!</strong> Casualties mounting...';
+    else infoEl.innerHTML = result.leftWins
+      ? '<strong>'+b.left.name+' claims victory!</strong>'
+      : '<strong>'+b.right.name+' claims victory!</strong>';
+
+    // Hidden variable reveal
+    if(b.hiddenVar && frame === Math.floor(maxFrames*0.5)){
+      const hvNames = {
+        weather: '🌧️ Weather shift',
+        fatigue: '😫 Fatigue sets in',
+        surprise_flank: '⚔️ Surprise flank attack',
+        reinforcements: '🏁 Reinforcements arrive'
+      };
+      const hvSide = b.hiddenVar.side === 'left' ? b.left.name : b.right.name;
+      infoEl.innerHTML = '<strong>'+hvNames[b.hiddenVar.type]+'!</strong> '+hvSide+' affected (+'+Math.round(b.hiddenVar.magnitude*100)+'%)';
+    }
+
+    if(frame < maxFrames){
+      requestAnimationFrame(animate);
+    } else {
+      // Battle over — show result
+      setTimeout(()=>showResult(result), 800);
+    }
   }
 
-  // Map canvas click
-  mapCanvas.addEventListener('click', mapClick);
-  mapCanvas.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    var t = e.touches[0];
-    var r = mapCanvas.getBoundingClientRect();
-    var sx = mapCanvas.width / r.width;
-    var sy = mapCanvas.height / r.height;
-    mapClickAt((t.clientX - r.left) * sx, (t.clientY - r.top) * sy);
+  requestAnimationFrame(animate);
+}
+
+/* ── Result Screen ────────────────────────────────────────────── */
+function showResult(result){
+  const pred = state.predictions[state.battleIndex];
+  const b = state.battles[state.battleIndex];
+
+  // Brier score: (prediction - outcome)²
+  const outcome = result.leftWins ? 1 : 0;
+  const brier = Math.pow(pred.confidence - outcome, 2);
+  state.campaignBrier += brier;
+
+  // Decisive accuracy
+  if(pred.decisivePrediction !== null){
+    state.campaignDecisiveTotal++;
+    if(pred.decisivePrediction === result.decisive) state.campaignDecisiveCorrect++;
+  }
+
+  // Store for calibration
+  state.allPredictions.push({
+    confidence: pred.confidence,
+    outcome: outcome,
+    decisive: result.decisive,
+    decisivePred: pred.decisivePrediction,
+    trueProb: result.trueLeftProb,
+    troops: {left: b.left.troops, right: b.right.troops},
+    morale: {left: b.left.morale, right: b.right.morale},
+    commander: {left: b.left.commander, right: b.right.commander},
+    terrain: {left: b.left.terrain.name, right: b.right.terrain.name}
   });
 
-  // Draw title
-  drawTitle();
+  // Determine correctness
+  const predictedLeftWins = pred.confidence >= 0.5;
+  const correct = predictedLeftWins === result.leftWins;
+  const winner = result.leftWins ? b.left.name : b.right.name;
 
-  // Start game loop
-  requestAnimationFrame(gameLoop);
-}
+  showScreen('result-screen');
 
-function resizeCanvas() {
-  var w = Math.min(640, window.innerWidth);
-  var ratio = w / CW;
-  var h = Math.floor(CH * ratio);
-  battleCanvas.width = CW;
-  battleCanvas.height = CH;
-  battleCanvas.style.width = w + 'px';
-  battleCanvas.style.height = h + 'px';
+  const titleEl = document.getElementById('result-title');
+  titleEl.textContent = correct ? 'Correct Direction!' : 'Wrong Direction';
+  titleEl.className = 'result-title ' + (correct ? 'correct' : 'wrong');
 
-  var mw = Math.min(480, window.innerWidth - 16);
-  var mr = mw / 480;
-  mapCanvas.style.width = mw + 'px';
-  mapCanvas.style.height = Math.floor(320 * mr) + 'px';
-}
+  document.getElementById('result-subtitle').textContent =
+    winner + ' wins' + (result.decisive ? ' decisively!' : ' in a close battle.');
 
-function resetCampaign() {
-  castles = [];
-  for (var i = 0; i < CASTLES.length; i++) {
-    var c = CASTLES[i];
-    var t = {};
-    for (var k in c.troops) t[k] = c.troops[k];
-    castles.push({ id:c.id, name:c.name, x:c.x, y:c.y, gen:c.gen, troops:t, owner:'enemy' });
-  }
-  // Player starts at an implied home base
-  conqueredCount = 0;
-  playerGeneral = 'claude';
-  playerTroops = { soldier:50, archer:25, cavalry:15, mage:10 };
-  playerGenHP = GENERALS.claude.hp;
-  playerMaxHP = GENERALS.claude.hp;
-  selectedCastle = -1;
-}
+  // Sound
+  if(correct) sfxVictory(); else sfxDefeat();
 
-// ── Screen management ──────────────────────────────────────────────
+  // Brier quality
+  let brierClass = 'neutral';
+  if(brier < 0.1) brierClass = 'good';
+  else if(brier > 0.3) brierClass = 'bad';
 
-function showScreen(screen) {
-  document.getElementById('title-screen').style.display = 'none';
-  document.getElementById('battle-screen').style.display = 'none';
-  document.getElementById('map-screen').style.display = 'none';
-  document.getElementById('recruit-screen').style.display = 'none';
+  const trueProb = Math.round(result.trueLeftProb*100);
+  const yourConf = Math.round(pred.confidence*100);
 
-  if (screen === 'title') {
-    document.getElementById('title-screen').style.display = 'block';
-    state = 'title';
-  } else if (screen === 'map') {
-    document.getElementById('map-screen').style.display = 'block';
-    state = 'map';
-    selectedCastle = -1;
-    document.getElementById('map-attack-btn').disabled = true;
-    updateMapInfo();
-    drawMap();
-  } else if (screen === 'battle') {
-    document.getElementById('battle-screen').style.display = 'block';
-    state = 'battle';
-  } else if (screen === 'recruit') {
-    document.getElementById('recruit-screen').style.display = 'block';
-    state = 'recruit';
-    buildRecruitUI();
+  document.getElementById('result-grid').innerHTML =
+    '<div class="glass result-cell"><div class="rc-label">Your Confidence</div><div class="rc-value">'+yourConf+'% '+b.left.name+'</div></div>'+
+    '<div class="glass result-cell"><div class="rc-label">True Strength</div><div class="rc-value">~'+trueProb+'% '+b.left.name+'</div></div>'+
+    '<div class="glass result-cell"><div class="rc-label">Brier Score</div><div class="rc-value '+brierClass+'">'+brier.toFixed(3)+'</div></div>'+
+    '<div class="glass result-cell"><div class="rc-label">Decisive?</div><div class="rc-value '+(pred.decisivePrediction===result.decisive?'good':'bad')+'">'+
+      (result.decisive ? 'Yes' : 'No')+' (you said '+(pred.decisivePrediction?'Yes':'No')+')'+'</div></div>';
+
+  // Update button text
+  const nextBtn = document.getElementById('next-btn');
+  if(state.battleIndex >= BATTLES_PER_CAMPAIGN - 1){
+    nextBtn.textContent = 'VIEW CAMPAIGN RESULTS';
+  } else {
+    nextBtn.textContent = 'NEXT BATTLE';
   }
 }
 
-// ── Title screen ───────────────────────────────────────────────────
+/* ── Next Battle ──────────────────────────────────────────────── */
+function nextBattle(){
+  sfxClick();
+  state.battleIndex++;
+  state.totalBattles++;
+  localStorage.setItem('dragonforce-total-battles', state.totalBattles);
 
-function drawTitle() {
-  var ctx = titleCtx;
-  ctx.fillStyle = '#0a0a14';
-  ctx.fillRect(0, 0, 320, 120);
+  if(state.battleIndex >= BATTLES_PER_CAMPAIGN){
+    showCampaignEnd();
+  } else {
+    showPredictionScreen();
+  }
+}
 
-  // Draw some marching troops
-  for (var i = 0; i < 40; i++) {
-    var x = 20 + (i % 20) * 14;
-    var y = 20 + Math.floor(i / 20) * 30;
-    var c = i < 20 ? '#4488ff' : '#ff4444';
-    drawTroopSprite(ctx, x, y, c, (i + animFrame) % 2, false);
+/* ── Campaign End ─────────────────────────────────────────────── */
+function showCampaignEnd(){
+  showScreen('campaign-screen');
+  state.campaigns++;
+  state.gamesPlayed++;
+  localStorage.setItem('dragonforce-campaigns', state.campaigns);
+  localStorage.setItem('dragonforce-games-played', state.gamesPlayed);
+
+  const avgBrier = state.campaignBrier / BATTLES_PER_CAMPAIGN;
+
+  // Update best
+  if(state.bestBrier === null || avgBrier < state.bestBrier){
+    state.bestBrier = avgBrier;
+    localStorage.setItem('dragonforce-best-brier', avgBrier);
   }
 
-  // Two generals
-  drawGeneralSprite(ctx, 50, 55, '#00ffaa', false);
-  drawGeneralSprite(ctx, 240, 55, '#ff4444', true);
+  // Rating
+  let rating, ratingClass;
+  if(avgBrier < 0.10){
+    rating = 'SUPERFORECASTER'; ratingClass = 'rating-super';
+  } else if(avgBrier < 0.20){
+    rating = 'INFORMED'; ratingClass = 'rating-informed';
+  } else if(avgBrier < 0.30){
+    rating = 'GUESSING'; ratingClass = 'rating-guessing';
+  } else {
+    rating = 'OVERCONFIDENT'; ratingClass = 'rating-overconfident';
+  }
+
+  document.getElementById('camp-subtitle').textContent = 'Campaign #'+state.campaigns+' — '+BATTLES_PER_CAMPAIGN+' battles fought';
+
+  const badge = document.getElementById('rating-badge');
+  badge.textContent = rating;
+  badge.className = 'rating-badge '+ratingClass;
+
+  // Stats
+  const decisiveAcc = state.campaignDecisiveTotal > 0
+    ? Math.round(state.campaignDecisiveCorrect/state.campaignDecisiveTotal*100)+'%'
+    : '--';
+  const correctDir = state.allPredictions.filter(p=>(p.confidence>=0.5)===(p.outcome===1)).length;
+
+  document.getElementById('camp-stats').innerHTML =
+    '<div class="glass camp-stat"><div class="cs-label">Avg Brier</div><div class="cs-value">'+avgBrier.toFixed(3)+'</div></div>'+
+    '<div class="glass camp-stat"><div class="cs-label">Direction</div><div class="cs-value">'+correctDir+'/'+BATTLES_PER_CAMPAIGN+'</div></div>'+
+    '<div class="glass camp-stat"><div class="cs-label">Decisive Acc</div><div class="cs-value">'+decisiveAcc+'</div></div>';
+
+  // Draw calibration curve
+  drawCalibrationCurve();
+
+  // Bias report
+  generateBiasReport();
+
+  sfxVictory();
 }
 
-function startCampaign() {
-  resetCampaign();
-  showScreen('map');
-}
+/* ── Calibration Curve ────────────────────────────────────────── */
+function drawCalibrationCurve(){
+  const canvas = document.getElementById('calibration-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pad = 50;
+  const plotW = W - pad*2;
+  const plotH = H - pad*2;
 
-// ── Map screen ─────────────────────────────────────────────────────
+  ctx.clearRect(0,0,W,H);
 
-function drawMap() {
-  var ctx = mapCtx;
-  ctx.fillStyle = '#0e1420';
-  ctx.fillRect(0, 0, 480, 320);
+  // Background
+  ctx.fillStyle = '#f8fbfd';
+  ctx.fillRect(0,0,W,H);
 
-  // Draw roads
-  ctx.strokeStyle = '#333';
+  // Grid
+  ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+  ctx.lineWidth = 1;
+  for(let i=0;i<=10;i++){
+    const x = pad + (i/10)*plotW;
+    const y = pad + (i/10)*plotH;
+    ctx.beginPath(); ctx.moveTo(x,pad); ctx.lineTo(x,pad+plotH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+plotW,y); ctx.stroke();
+  }
+
+  // Perfect calibration line (diagonal)
+  ctx.strokeStyle = 'rgba(52,152,219,0.3)';
   ctx.lineWidth = 2;
-  for (var i = 0; i < ROADS.length; i++) {
-    var a = castles[ROADS[i][0]], b = castles[ROADS[i][1]];
+  ctx.setLineDash([6,4]);
+  ctx.beginPath();
+  ctx.moveTo(pad, pad+plotH);
+  ctx.lineTo(pad+plotW, pad);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Bucket predictions into bins
+  const bins = []; // 0-10, 10-20, ..., 90-100
+  for(let i=0;i<10;i++) bins.push({sum:0,count:0,confSum:0});
+
+  for(const p of state.allPredictions){
+    const bin = Math.min(9, Math.floor(p.confidence*10));
+    bins[bin].sum += p.outcome;
+    bins[bin].count++;
+    bins[bin].confSum += p.confidence;
+  }
+
+  // Plot bins
+  ctx.fillStyle = '#e74c3c';
+  ctx.strokeStyle = '#c0392b';
+  ctx.lineWidth = 2;
+
+  const points = [];
+  for(let i=0;i<10;i++){
+    if(bins[i].count === 0) continue;
+    const avgConf = bins[i].confSum / bins[i].count;
+    const actualWin = bins[i].sum / bins[i].count;
+    const x = pad + avgConf * plotW;
+    const y = pad + plotH - actualWin * plotH;
+    points.push({x,y,count:bins[i].count,avgConf,actualWin});
+
+    // Dot
     ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
+    ctx.arc(x,y, 4+bins[i].count*1.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Connect points
+  if(points.length > 1){
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for(let i=1;i<points.length;i++) ctx.lineTo(points[i].x, points[i].y);
     ctx.stroke();
   }
 
-  // Draw castles
-  for (var i = 0; i < castles.length; i++) {
-    var c = castles[i];
-    var isSelected = (i === selectedCastle);
-    var isOwned = (c.owner === 'player');
-    var canAttack = canReachCastle(i);
+  // Labels
+  ctx.fillStyle = '#5a7a8a';
+  ctx.font = '11px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Your Confidence (Left Wins %)', W/2, H-8);
 
-    // Castle body
-    var cc = isOwned ? '#44dd88' : (canAttack ? '#ff4444' : '#664444');
-    if (isSelected) cc = '#ffcc44';
+  ctx.save();
+  ctx.translate(14, H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('Actual Win Rate', 0, 0);
+  ctx.restore();
 
-    // Draw castle shape (simple pixel castle)
-    ctx.fillStyle = cc;
-    // Base
-    ctx.fillRect(c.x - 12, c.y - 4, 24, 12);
-    // Towers
-    ctx.fillRect(c.x - 14, c.y - 12, 6, 8);
-    ctx.fillRect(c.x + 8, c.y - 12, 6, 8);
-    // Center tower
-    ctx.fillRect(c.x - 4, c.y - 16, 8, 12);
-    // Battlements
-    ctx.fillRect(c.x - 14, c.y - 14, 2, 2);
-    ctx.fillRect(c.x - 10, c.y - 14, 2, 2);
-    ctx.fillRect(c.x + 8, c.y - 14, 2, 2);
-    ctx.fillRect(c.x + 12, c.y - 14, 2, 2);
-    ctx.fillRect(c.x - 4, c.y - 18, 2, 2);
-    ctx.fillRect(c.x + 2, c.y - 18, 2, 2);
-
-    // Door
-    ctx.fillStyle = '#000';
-    ctx.fillRect(c.x - 2, c.y + 2, 4, 6);
-
-    // Flag
-    if (isOwned) {
-      ctx.fillStyle = '#4488ff';
-      ctx.fillRect(c.x - 1, c.y - 24, 1, 8);
-      ctx.fillRect(c.x, c.y - 24, 6, 4);
-    }
-
-    // Name
-    ctx.fillStyle = isSelected ? '#ffcc44' : '#888';
-    ctx.font = '10px "IBM Plex Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(c.name, c.x, c.y + 22);
-
-    // Selection ring
-    if (isSelected) {
-      ctx.strokeStyle = '#ffcc44';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(c.x - 18, c.y - 22, 36, 36);
-    }
+  // Axis numbers
+  ctx.font = '10px Inter, sans-serif';
+  ctx.fillStyle = '#7a9aaa';
+  ctx.textAlign = 'center';
+  for(let i=0;i<=10;i+=2){
+    ctx.fillText((i*10)+'%', pad+(i/10)*plotW, pad+plotH+16);
+  }
+  ctx.textAlign = 'right';
+  for(let i=0;i<=10;i+=2){
+    ctx.fillText((i*10)+'%', pad-6, pad+plotH-(i/10)*plotH+4);
   }
 
-  // Draw player home base indicator
-  ctx.fillStyle = '#4488ff';
-  ctx.font = '11px "IBM Plex Mono", monospace';
+  // Legend
+  ctx.font = '10px Inter, sans-serif';
+  ctx.fillStyle = 'rgba(52,152,219,0.5)';
   ctx.textAlign = 'left';
-  ctx.fillText('General: ' + GENERALS[playerGeneral].name, 10, 310);
-  var totalTroops = countPlayerTroops();
-  ctx.fillText('Troops: ' + totalTroops, 10, 296);
-  ctx.fillStyle = '#44dd88';
-  ctx.fillText('Conquered: ' + conqueredCount + '/6', 350, 310);
+  ctx.fillText('— Perfect calibration', pad+8, pad+14);
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillText('● Your calibration', pad+8, pad+28);
 }
 
-function mapClick(e) {
-  var r = mapCanvas.getBoundingClientRect();
-  var sx = mapCanvas.width / r.width;
-  var sy = mapCanvas.height / r.height;
-  var mx = (e.clientX - r.left) * sx;
-  var my = (e.clientY - r.top) * sy;
-  mapClickAt(mx, my);
-}
-
-function mapClickAt(mx, my) {
-  selectedCastle = -1;
-  for (var i = 0; i < castles.length; i++) {
-    var c = castles[i];
-    if (Math.abs(mx - c.x) < 24 && Math.abs(my - c.y) < 24) {
-      selectedCastle = i;
-      break;
-    }
-  }
-  document.getElementById('map-attack-btn').disabled = (selectedCastle < 0 || castles[selectedCastle].owner === 'player' || !canReachCastle(selectedCastle));
-  updateMapInfo();
-  drawMap();
-}
-
-function canReachCastle(idx) {
-  // Can reach if: no castles conquered yet (can attack any edge castle with id 0 or 3),
-  // or castle is connected to a conquered castle
-  if (castles[idx].owner === 'player') return false;
-  if (conqueredCount === 0) {
-    // Can attack castles 0 or 3 initially (leftmost)
-    return idx === 0 || idx === 3;
-  }
-  for (var i = 0; i < ROADS.length; i++) {
-    var a = ROADS[i][0], b = ROADS[i][1];
-    if (a === idx && castles[b].owner === 'player') return true;
-    if (b === idx && castles[a].owner === 'player') return true;
-  }
-  return false;
-}
-
-function updateMapInfo() {
-  var info = document.getElementById('map-info');
-  if (selectedCastle < 0) {
-    info.textContent = 'Pick a castle to attack!';
-    return;
-  }
-  var c = castles[selectedCastle];
-  if (c.owner === 'player') {
-    info.textContent = c.name + ' - Conquered!';
-    return;
-  }
-  var gen = GENERALS[c.gen];
-  var total = 0;
-  for (var k in c.troops) total += c.troops[k];
-  var types = [];
-  for (var k in c.troops) {
-    if (c.troops[k] > 0) types.push(TYPES[k].name + ':' + c.troops[k]);
-  }
-  info.innerHTML = '<b style="color:#ff4444">' + c.name + '</b> — General ' + gen.name + ' (' + total + ' troops)<br>' +
-    '<span style="font-size:0.9em;color:#777;">' + types.join(', ') + '</span>';
-}
-
-function countPlayerTroops() {
-  var t = 0;
-  for (var k in playerTroops) t += playerTroops[k];
-  return t;
-}
-
-function attackCastle() {
-  if (selectedCastle < 0) return;
-  var c = castles[selectedCastle];
-  if (c.owner === 'player' || !canReachCastle(selectedCastle)) return;
-  startBattle(c);
-}
-
-function healGeneral() {
-  if (playerGenHP < playerMaxHP) {
-    playerGenHP = Math.min(playerMaxHP, playerGenHP + 30);
-    updateMapInfo();
-    drawMap();
-  }
-}
-
-// ── Recruit ────────────────────────────────────────────────────────
-
-function showRecruit() {
-  showScreen('recruit');
-}
-
-function buildRecruitUI() {
-  var grid = document.getElementById('recruit-grid');
-  grid.innerHTML = '';
-  var typeKeys = ['soldier','cavalry','archer','mage','dragon','monk'];
-  var total = countPlayerTroops();
-  for (var i = 0; i < typeKeys.length; i++) {
-    var k = typeKeys[i];
-    var t = TYPES[k];
-    var card = document.createElement('div');
-    card.className = 'recruit-card';
-    card.innerHTML = '<div class="rtype" style="color:' + t.color + '">' + t.name + '</div>' +
-      '<div class="rdesc">HP:' + t.hp + ' ATK:' + t.atk + '</div>' +
-      '<div class="rcount">' + (playerTroops[k] || 0) + '</div>' +
-      '<div style="font-size:0.6em;color:#44dd88;margin-top:2px;">+10</div>';
-    (function(key) {
-      card.addEventListener('click', function() {
-        var cur = countPlayerTroops();
-        if (cur >= MAX_TROOPS) return;
-        playerTroops[key] = (playerTroops[key] || 0) + Math.min(10, MAX_TROOPS - cur);
-        buildRecruitUI();
-      });
-    })(k);
-    grid.appendChild(card);
-  }
-}
-
-// ── Battle initialization ──────────────────────────────────────────
-
-function startBattle(castle) {
-  troops = [];
-  particles = [];
-  battleTime = 0;
-  battleOver = false;
-  duelActive = false;
-  duelCooldown = 0;
-  formation = 'charge';
-  enemyFormation = 'charge';
-  enemyFormationTimer = 0;
-  specialCooldown = 0;
-  specialActive = false;
-  specialTimer = 0;
-  fortifyActive = false;
-  fortifyTimer = 0;
-
-  // Create player troops
-  var py = 20;
-  for (var k in playerTroops) {
-    for (var i = 0; i < playerTroops[k]; i++) {
-      var t = createTroop(k, 'player', 30 + Math.random() * 80, py + Math.random() * (CH - 40));
-      troops.push(t);
-    }
-  }
-
-  // Create enemy troops
-  var eTroops = castle.troops;
-  for (var k in eTroops) {
-    for (var i = 0; i < eTroops[k]; i++) {
-      var t = createTroop(k, 'enemy', CW - 30 - Math.random() * 80, 20 + Math.random() * (CH - 40));
-      troops.push(t);
-    }
-  }
-
-  // Generals
-  var pg = GENERALS[playerGeneral];
-  playerGen = {
-    x: 40, y: CH / 2, hp: playerGenHP, maxHp: playerMaxHP,
-    color: pg.color, name: pg.name, team: 'player', genKey: playerGeneral
-  };
-
-  var eg = GENERALS[castle.gen];
-  enemyGen = {
-    x: CW - 40, y: CH / 2, hp: eg.hp, maxHp: eg.hp,
-    color: eg.color, name: eg.name, team: 'enemy', genKey: castle.gen
-  };
-
-  // Update HUD
-  updateHUD();
-  drawPortrait(document.getElementById('player-portrait'), pg.color, false);
-  drawPortrait(document.getElementById('enemy-portrait'), eg.color, true);
-  document.getElementById('player-name').textContent = pg.name;
-  document.getElementById('player-name').style.color = pg.color;
-  document.getElementById('enemy-name').textContent = eg.name;
-  document.getElementById('enemy-name').style.color = eg.color;
-
-  // Set active formation button
-  var btns = document.querySelectorAll('.cmd-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].classList.remove('active');
-    if (btns[i].getAttribute('data-cmd') === 'charge') btns[i].classList.add('active');
-  }
-
-  // Special button label
-  document.getElementById('special-btn').textContent = pg.specialName;
-
-  // Hide overlays
-  document.getElementById('duel-overlay').classList.remove('show');
-  document.getElementById('result-overlay').classList.remove('show');
-
-  showScreen('battle');
-}
-
-function createTroop(type, team, x, y) {
-  var td = TYPES[type];
-  return {
-    x: x, y: y,
-    hp: td.hp, maxHp: td.hp,
-    type: type, team: team,
-    vx: 0, vy: 0,
-    state: 'move', // move, attack, dead
-    attackCooldown: 0,
-    flashTimer: 0,
-    target: null,
-    alive: true
-  };
-}
-
-// ── Spatial hash ───────────────────────────────────────────────────
-
-function buildSpatialHash() {
-  spatialHash = {};
-  for (var i = 0; i < troops.length; i++) {
-    var t = troops[i];
-    if (!t.alive) continue;
-    var cx = Math.floor(t.x / CELL);
-    var cy = Math.floor(t.y / CELL);
-    var key = cx + ',' + cy;
-    if (!spatialHash[key]) spatialHash[key] = [];
-    spatialHash[key].push(i);
-  }
-}
-
-function getNearby(x, y, radius) {
-  var results = [];
-  var cr = Math.ceil(radius / CELL);
-  var cx = Math.floor(x / CELL);
-  var cy = Math.floor(y / CELL);
-  for (var dx = -cr; dx <= cr; dx++) {
-    for (var dy = -cr; dy <= cr; dy++) {
-      var key = (cx + dx) + ',' + (cy + dy);
-      var cell = spatialHash[key];
-      if (cell) {
-        for (var i = 0; i < cell.length; i++) {
-          results.push(cell[i]);
-        }
-      }
-    }
-  }
-  return results;
-}
-
-function findNearest(x, y, team, maxRange) {
-  var nearby = getNearby(x, y, maxRange || 120);
-  var bestDist = Infinity;
-  var bestIdx = -1;
-  for (var i = 0; i < nearby.length; i++) {
-    var t = troops[nearby[i]];
-    if (!t.alive || t.team === team) continue;
-    var dx = t.x - x, dy = t.y - y;
-    var d = dx * dx + dy * dy;
-    if (d < bestDist) {
-      bestDist = d;
-      bestIdx = nearby[i];
-    }
-  }
-  return bestIdx;
-}
-
-// ── Battle update ──────────────────────────────────────────────────
-
-function updateBattle(dt) {
-  if (battleOver || duelActive) return;
-
-  battleTime += dt;
-  specialCooldown = Math.max(0, specialCooldown - dt * 1000);
-
-  // Special timer
-  if (specialActive) {
-    specialTimer -= dt * 1000;
-    if (specialTimer <= 0) {
-      specialActive = false;
-      fortifyActive = false;
-    }
-  }
-
-  // Fortify timer
-  if (fortifyActive) {
-    fortifyTimer -= dt * 1000;
-    if (fortifyTimer <= 0) fortifyActive = false;
-  }
-
-  // Enemy AI: change formation periodically
-  enemyFormationTimer -= dt * 1000;
-  if (enemyFormationTimer <= 0) {
-    var forms = ['charge','defend','surround','charge','charge'];
-    enemyFormation = forms[Math.floor(Math.random() * forms.length)];
-    enemyFormationTimer = 4000 + Math.random() * 6000;
-  }
-
-  // Update special button
-  var sb = document.getElementById('special-btn');
-  if (specialCooldown > 0) {
-    sb.disabled = true;
-    sb.textContent = Math.ceil(specialCooldown / 1000) + 's';
-  } else {
-    sb.disabled = false;
-    sb.textContent = GENERALS[playerGeneral].specialName;
-  }
-
-  buildSpatialHash();
-
-  // Update each troop
-  var playerAlive = 0, enemyAlive = 0;
-  for (var i = 0; i < troops.length; i++) {
-    var t = troops[i];
-    if (!t.alive) continue;
-
-    if (t.team === 'player') playerAlive++;
-    else enemyAlive++;
-
-    t.flashTimer = Math.max(0, t.flashTimer - dt * 1000);
-    t.attackCooldown = Math.max(0, t.attackCooldown - dt * 1000);
-
-    var form = (t.team === 'player') ? formation : enemyFormation;
-    var td = TYPES[t.type];
-    var spd = td.spd;
-
-    // Monks heal nearby allies
-    if (t.type === 'monk') {
-      if (t.attackCooldown <= 0) {
-        var nearbyIdxs = getNearby(t.x, t.y, 40);
-        for (var j = 0; j < nearbyIdxs.length; j++) {
-          var ally = troops[nearbyIdxs[j]];
-          if (ally.alive && ally.team === t.team && ally !== t && ally.hp < ally.maxHp) {
-            ally.hp = Math.min(ally.maxHp, ally.hp + 1);
-            t.attackCooldown = 1500;
-            break;
-          }
-        }
-      }
-    }
-
-    // Find target
-    var targetIdx = findNearest(t.x, t.y, t.team, td.isRanged ? td.range + 20 : 120);
-    var target = targetIdx >= 0 ? troops[targetIdx] : null;
-
-    if (!target) {
-      // Move toward enemy side
-      var goalX = (t.team === 'player') ? CW - 40 : 40;
-      var goalY = CH / 2;
-      moveToward(t, goalX, goalY, spd, form, dt);
-      continue;
-    }
-
-    var dx = target.x - t.x;
-    var dy = target.y - t.y;
-    var dist = Math.sqrt(dx * dx + dy * dy);
-
-    // Ranged attack
-    if (td.isRanged && dist < td.range && dist > 10) {
-      if (t.attackCooldown <= 0) {
-        var dmg = calcDamage(t, target);
-        target.hp -= dmg;
-        target.flashTimer = 80;
-        t.attackCooldown = t.type === 'mage' ? 1200 : 800;
-
-        // Projectile particle
-        addParticle(t.x, t.y, target.x, target.y, t.type === 'mage' ? '#cc44ff' : '#aaff44', t.type === 'mage' ? 'magic' : 'arrow');
-
-        if (target.hp <= 0) {
-          target.alive = false;
-          target.state = 'dead';
-          addDeathParticle(target.x, target.y);
-        }
-      }
-      // Slight repositioning
-      if (form === 'retreat') {
-        var retreatX = (t.team === 'player') ? 30 : CW - 30;
-        moveToward(t, retreatX, t.y, spd * 1.5, 'retreat', dt);
-      }
-      continue;
-    }
-
-    // Melee range
-    if (dist < 10) {
-      if (t.attackCooldown <= 0) {
-        var dmg = calcDamage(t, target);
-        if (fortifyActive && target.team === 'player') dmg = Math.max(1, Math.floor(dmg * 0.5));
-        target.hp -= dmg;
-        target.flashTimer = 80;
-        t.attackCooldown = 600;
-        addHitParticle(target.x, target.y);
-
-        if (target.hp <= 0) {
-          target.alive = false;
-          target.state = 'dead';
-          addDeathParticle(target.x, target.y);
-        }
-      }
-    } else {
-      // Move toward target with formation modifier
-      moveToward(t, target.x, target.y, spd, form, dt);
-    }
-  }
-
-  // General movement (follow troops but stay back)
-  updateGeneral(playerGen, 'player', dt);
-  updateGeneral(enemyGen, 'enemy', dt);
-
-  // Check duel proximity
-  if (!duelActive && duelCooldown <= 0) {
-    var gdx = playerGen.x - enemyGen.x;
-    var gdy = playerGen.y - enemyGen.y;
-    if (Math.sqrt(gdx * gdx + gdy * gdy) < DUEL_RANGE) {
-      startDuel();
-    }
-  }
-  duelCooldown = Math.max(0, duelCooldown - dt * 1000);
-
-  // Update particles
-  updateParticles(dt);
-
-  // Update HUD
-  updateHUD();
-
-  // Check victory/defeat
-  if (playerAlive === 0 && !battleOver) {
-    endBattle(false);
-  } else if (enemyAlive === 0 && !battleOver) {
-    endBattle(true);
-  }
-
-  // Also check general HP
-  if (playerGen.hp <= 0 && !battleOver) {
-    endBattle(false);
-  } else if (enemyGen.hp <= 0 && !battleOver) {
-    endBattle(true);
-  }
-}
-
-function calcDamage(attacker, defender) {
-  var td = TYPES[attacker.type];
-  var mult = MATCHUPS[attacker.type][defender.type] || 1.0;
-  var dmg = Math.max(1, Math.round(td.atk * mult * (0.8 + Math.random() * 0.4)));
-  return dmg;
-}
-
-function moveToward(troop, goalX, goalY, speed, form, dt) {
-  var dx = goalX - troop.x;
-  var dy = goalY - troop.y;
-  var dist = Math.sqrt(dx * dx + dy * dy);
-  if (dist < 2) return;
-
-  var nx = dx / dist;
-  var ny = dy / dist;
-
-  // Formation modifiers
-  var spdMult = 1.0;
-  var isPlayer = (troop.team === 'player');
-
-  if (form === 'charge') {
-    spdMult = 1.5;
-  } else if (form === 'defend') {
-    spdMult = 0.3;
-    // Hold line - tend toward a vertical formation
-    var lineX = isPlayer ? CW * 0.35 : CW * 0.65;
-    if ((isPlayer && troop.x > lineX) || (!isPlayer && troop.x < lineX)) {
-      nx = nx * 0.3;
-    }
-  } else if (form === 'surround') {
-    // Flank: split troops by y position
-    if (troop.y < CH / 2) {
-      ny -= 0.5; // go up-flank
-    } else {
-      ny += 0.5; // go down-flank
-    }
-    spdMult = 1.3;
-    var len = Math.sqrt(nx * nx + ny * ny);
-    if (len > 0) { nx /= len; ny /= len; }
-  } else if (form === 'retreat') {
-    // Move backward
-    var retreatX = isPlayer ? 20 : CW - 20;
-    var rdx = retreatX - troop.x;
-    nx = rdx > 0 ? 1 : -1;
-    ny = (CH / 2 - troop.y) * 0.01;
-    spdMult = 1.8;
-    var len = Math.sqrt(nx * nx + ny * ny);
-    if (len > 0) { nx /= len; ny /= len; }
-  }
-
-  // Add slight randomness
-  nx += (Math.random() - 0.5) * 0.2;
-  ny += (Math.random() - 0.5) * 0.2;
-
-  var move = speed * spdMult * dt * 60;
-  troop.x += nx * move;
-  troop.y += ny * move;
-
-  // Clamp to battlefield
-  troop.x = Math.max(4, Math.min(CW - 4, troop.x));
-  troop.y = Math.max(4, Math.min(CH - 4, troop.y));
-}
-
-function updateGeneral(gen, team, dt) {
-  // General slowly follows the center of mass of his troops
-  var cx = 0, cy = 0, count = 0;
-  for (var i = 0; i < troops.length; i++) {
-    var t = troops[i];
-    if (t.alive && t.team === team) {
-      cx += t.x; cy += t.y; count++;
-    }
-  }
-  if (count > 0) {
-    cx /= count; cy /= count;
-    // Stay behind troops
-    var offset = (team === 'player') ? -40 : 40;
-    var goalX = cx + offset;
-    var goalY = cy;
-    var dx = goalX - gen.x;
-    var dy = goalY - gen.y;
-    var dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > 5) {
-      gen.x += (dx / dist) * 1.0 * dt * 60;
-      gen.y += (dy / dist) * 1.0 * dt * 60;
-    }
-  }
-  gen.x = Math.max(10, Math.min(CW - 10, gen.x));
-  gen.y = Math.max(10, Math.min(CH - 10, gen.y));
-}
-
-// ── Formations ─────────────────────────────────────────────────────
-
-function setFormation(cmd) {
-  formation = cmd;
-  var btns = document.querySelectorAll('.cmd-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].classList.remove('active');
-    if (btns[i].getAttribute('data-cmd') === cmd) btns[i].classList.add('active');
-  }
-}
-
-// ── Special abilities ──────────────────────────────────────────────
-
-function useSpecial() {
-  if (specialCooldown > 0 || battleOver || duelActive) return;
-  var gen = GENERALS[playerGeneral];
-
-  specialCooldown = SPECIAL_COOLDOWN;
-  playSfx('magic');
-
-  if (gen.special === 'heal') {
-    // Heal all player troops 3 HP
-    for (var i = 0; i < troops.length; i++) {
-      var t = troops[i];
-      if (t.alive && t.team === 'player') {
-        t.hp = Math.min(t.maxHp, t.hp + 3);
-        t.flashTimer = 150;
-      }
-    }
-    addTextParticle(playerGen.x, playerGen.y - 20, 'RESTORE!', '#00ffaa');
-  } else if (gen.special === 'dragons') {
-    // Summon 5 dragons
-    for (var i = 0; i < 5; i++) {
-      var t = createTroop('dragon', 'player', playerGen.x + Math.random() * 30, playerGen.y - 20 + Math.random() * 40);
-      troops.push(t);
-    }
-    addTextParticle(playerGen.x, playerGen.y - 20, 'SUMMON!', '#ff77ff');
-  } else if (gen.special === 'fireball') {
-    // Damage all enemies in a radius around center of enemy mass
-    var cx = 0, cy = 0, cnt = 0;
-    for (var i = 0; i < troops.length; i++) {
-      if (troops[i].alive && troops[i].team === 'enemy') { cx += troops[i].x; cy += troops[i].y; cnt++; }
-    }
-    if (cnt > 0) {
-      cx /= cnt; cy /= cnt;
-      for (var i = 0; i < troops.length; i++) {
-        var t = troops[i];
-        if (t.alive && t.team === 'enemy') {
-          var dx = t.x - cx, dy = t.y - cy;
-          if (dx * dx + dy * dy < 80 * 80) {
-            t.hp -= 4;
-            t.flashTimer = 200;
-            if (t.hp <= 0) { t.alive = false; addDeathParticle(t.x, t.y); }
-          }
-        }
-      }
-      addExplosionParticle(cx, cy, '#ff4444');
-    }
-    addTextParticle(playerGen.x, playerGen.y - 20, 'FIREBALL!', '#ff77ff');
-  } else if (gen.special === 'fortify') {
-    // Double defense for 5 seconds
-    fortifyActive = true;
-    fortifyTimer = 5000;
-    addTextParticle(playerGen.x, playerGen.y - 20, 'FORTIFY!', '#8888ff');
-  } else if (gen.special === 'stampede') {
-    // All cavalry get double speed for 3 seconds
-    specialActive = true;
-    specialTimer = 3000;
-    for (var i = 0; i < troops.length; i++) {
-      var t = troops[i];
-      if (t.alive && t.team === 'player' && t.type === 'cavalry') {
-        TYPES.cavalry.spd = 5.0;
-      }
-    }
-    addTextParticle(playerGen.x, playerGen.y - 20, 'STAMPEDE!', '#00ddff');
-    setTimeout(function() { TYPES.cavalry.spd = 2.5; }, 3000);
-  } else if (gen.special === 'volley') {
-    // All archers fire instantly
-    for (var i = 0; i < troops.length; i++) {
-      var t = troops[i];
-      if (t.alive && t.team === 'player' && t.type === 'archer') {
-        var targetIdx = findNearest(t.x, t.y, 'player', 120);
-        if (targetIdx >= 0) {
-          var target = troops[targetIdx];
-          target.hp -= 4;
-          target.flashTimer = 150;
-          addParticle(t.x, t.y, target.x, target.y, '#aaff44', 'arrow');
-          if (target.hp <= 0) { target.alive = false; addDeathParticle(target.x, target.y); }
-        }
-      }
-    }
-    addTextParticle(playerGen.x, playerGen.y - 20, 'VOLLEY!', '#cc4444');
-  }
-}
-
-// ── Duel system ────────────────────────────────────────────────────
-
-function startDuel() {
-  duelActive = true;
-  duelPlayerHP = playerGen.hp;
-  duelEnemyHP = enemyGen.hp;
-
-  document.getElementById('duel-overlay').classList.add('show');
-  document.getElementById('duel-pname').textContent = playerGen.name;
-  document.getElementById('duel-ename').textContent = enemyGen.name;
-  updateDuelHP();
-
-  drawPortrait(document.getElementById('duel-p'), playerGen.color, false);
-  drawPortrait(document.getElementById('duel-e'), enemyGen.color, true);
-  document.getElementById('duel-result').textContent = 'Choose your action!';
-
-  // Enable buttons
-  var btns = document.querySelectorAll('.duel-btn');
-  for (var i = 0; i < btns.length; i++) btns[i].disabled = false;
-}
-
-function duelRound(playerChoice) {
-  var choices = ['attack','magic','defend'];
-  var enemyChoice = choices[Math.floor(Math.random() * 3)];
-
-  var result = '';
-  var pDmg = 0, eDmg = 0;
-
-  // Attack > Magic, Magic > Defend, Defend > Attack
-  if (playerChoice === enemyChoice) {
-    result = 'CLASH! Both chose ' + playerChoice.toUpperCase() + '!';
-    pDmg = 5; eDmg = 5;
-  } else if (
-    (playerChoice === 'attack' && enemyChoice === 'magic') ||
-    (playerChoice === 'magic' && enemyChoice === 'defend') ||
-    (playerChoice === 'defend' && enemyChoice === 'attack')
-  ) {
-    result = 'HIT! Your ' + playerChoice.toUpperCase() + ' beats ' + enemyChoice.toUpperCase() + '!';
-    eDmg = 15 + Math.floor(Math.random() * 10);
-    pDmg = 2;
-  } else {
-    result = 'OOF! Enemy ' + enemyChoice.toUpperCase() + ' beats your ' + playerChoice.toUpperCase() + '!';
-    pDmg = 15 + Math.floor(Math.random() * 10);
-    eDmg = 2;
-  }
-
-  duelPlayerHP -= pDmg;
-  duelEnemyHP -= eDmg;
-
-  document.getElementById('duel-result').textContent = result;
-  document.getElementById('duel-result').style.color =
-    (eDmg > pDmg) ? '#44dd88' : (pDmg > eDmg) ? '#ff4444' : '#ffcc44';
-  updateDuelHP();
-
-  playSfx('clash');
-
-  // Check duel end
-  if (duelPlayerHP <= 0 || duelEnemyHP <= 0) {
-    var btns = document.querySelectorAll('.duel-btn');
-    for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
-
-    var playerWon = duelEnemyHP <= duelPlayerHP;
-    playerGen.hp = Math.max(1, duelPlayerHP);
-    enemyGen.hp = Math.max(0, duelEnemyHP);
-
-    setTimeout(function() {
-      document.getElementById('duel-overlay').classList.remove('show');
-      duelActive = false;
-      duelCooldown = 10000; // 10 second cooldown before next duel
-
-      if (playerWon) {
-        // Morale boost: heal player troops slightly
-        for (var i = 0; i < troops.length; i++) {
-          if (troops[i].alive && troops[i].team === 'player') {
-            troops[i].hp = Math.min(troops[i].maxHp, troops[i].hp + 2);
-          }
-        }
-        addTextParticle(playerGen.x, playerGen.y - 20, 'MORALE UP!', '#44dd88');
-      } else {
-        // Enemy morale boost
-        for (var i = 0; i < troops.length; i++) {
-          if (troops[i].alive && troops[i].team === 'enemy') {
-            troops[i].hp = Math.min(troops[i].maxHp, troops[i].hp + 2);
-          }
-        }
-        addTextParticle(enemyGen.x, enemyGen.y - 20, 'MORALE UP!', '#ff4444');
-      }
-
-      if (enemyGen.hp <= 0) endBattle(true);
-      if (playerGen.hp <= 0) endBattle(false);
-    }, 1500);
-  }
-}
-
-function updateDuelHP() {
-  document.getElementById('duel-php').textContent = 'HP: ' + Math.max(0, duelPlayerHP);
-  document.getElementById('duel-ehp').textContent = 'HP: ' + Math.max(0, duelEnemyHP);
-}
-
-// ── Battle end ─────────────────────────────────────────────────────
-
-function endBattle(victory) {
-  battleOver = true;
-  var overlay = document.getElementById('result-overlay');
-  var title = document.getElementById('result-title');
-  var sub = document.getElementById('result-sub');
-
-  if (victory) {
-    title.textContent = 'VICTORY!';
-    title.style.color = '#44dd88';
-    sub.textContent = 'You conquered ' + castles[selectedCastle].name + '!';
-    castles[selectedCastle].owner = 'player';
-    conqueredCount++;
-
-    // Update player troop count based on survivors
-    playerTroops = {};
-    for (var i = 0; i < troops.length; i++) {
-      var t = troops[i];
-      if (t.alive && t.team === 'player') {
-        playerTroops[t.type] = (playerTroops[t.type] || 0) + 1;
-      }
-    }
-    playerGenHP = playerGen.hp;
-
-    if (conqueredCount >= 6) {
-      title.textContent = 'CAMPAIGN WON!';
-      sub.textContent = 'All castles conquered! You are the Dragon Force!';
-      document.getElementById('result-btn').textContent = 'PLAY AGAIN';
-    } else {
-      document.getElementById('result-btn').textContent = 'CONTINUE';
-    }
-
-    playSfx('victory');
-  } else {
-    title.textContent = 'DEFEAT!';
-    title.style.color = '#ff4444';
-    sub.textContent = 'Your army was destroyed!';
-    document.getElementById('result-btn').textContent = 'TRY AGAIN';
-    playSfx('defeat');
-  }
-
-  overlay.classList.add('show');
-}
-
-function afterBattle() {
-  document.getElementById('result-overlay').classList.remove('show');
-
-  if (conqueredCount >= 6) {
-    // Game won - back to title
-    showScreen('title');
+/* ── Bias Report ──────────────────────────────────────────────── */
+function generateBiasReport(){
+  const el = document.getElementById('bias-report');
+  const preds = state.allPredictions;
+  if(preds.length < 5){
+    el.innerHTML = '<h3>Bias Analysis</h3><div class="bias-item">Need more battles for pattern detection.</div>';
     return;
   }
 
-  if (battleOver) {
-    var wasVictory = (castles[selectedCastle].owner === 'player');
-    if (!wasVictory) {
-      // Defeat - restore some troops
-      playerTroops = { soldier:30, archer:15, cavalry:10 };
-      playerGenHP = Math.max(30, playerGenHP);
+  const biases = [];
+
+  // Overconfidence check
+  const highConf = preds.filter(p=>p.confidence>0.8 || p.confidence<0.2);
+  if(highConf.length > 0){
+    const highCorrect = highConf.filter(p=>(p.confidence>=0.5)===(p.outcome===1)).length;
+    const highAcc = highCorrect/highConf.length;
+    if(highAcc < 0.7){
+      biases.push('You tend to be <strong>overconfident</strong> in extreme predictions ('+Math.round(highAcc*100)+'% accuracy when very confident).');
     }
   }
 
-  showScreen('map');
-}
-
-// ── HUD update ─────────────────────────────────────────────────────
-
-function updateHUD() {
-  var pa = 0, ea = 0;
-  for (var i = 0; i < troops.length; i++) {
-    if (troops[i].alive && troops[i].team === 'player') pa++;
-    if (troops[i].alive && troops[i].team === 'enemy') ea++;
+  // Underconfidence check
+  const midConf = preds.filter(p=>p.confidence>=0.4 && p.confidence<=0.6);
+  if(midConf.length > preds.length*0.5){
+    biases.push('You might be <strong>underconfident</strong> — you said "coin flip" in '+midConf.length+'/'+preds.length+' battles. Some had clearer favorites.');
   }
 
-  document.getElementById('player-count').textContent = pa;
-  document.getElementById('enemy-count').textContent = ea;
-
-  var php = Math.max(0, playerGen.hp) / playerGen.maxHp * 100;
-  var ehp = Math.max(0, enemyGen.hp) / enemyGen.maxHp * 100;
-  document.getElementById('player-hp').style.width = php + '%';
-  document.getElementById('enemy-hp').style.width = ehp + '%';
-
-  var mins = Math.floor(battleTime / 60);
-  var secs = Math.floor(battleTime % 60);
-  document.getElementById('battle-timer').textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
-}
-
-// ── Particles ──────────────────────────────────────────────────────
-
-function addHitParticle(x, y) {
-  for (var i = 0; i < 3; i++) {
-    particles.push({
-      x: x, y: y,
-      vx: (Math.random() - 0.5) * 3,
-      vy: (Math.random() - 0.5) * 3,
-      life: 200,
-      maxLife: 200,
-      color: '#ff3333',
-      size: 2,
-      type: 'pixel'
-    });
+  // Troop number bias
+  const troopHeavy = preds.filter(p=>{
+    const leftBigger = p.troops.left > p.troops.right;
+    const predLeft = p.confidence >= 0.5;
+    return leftBigger === predLeft;
+  });
+  if(troopHeavy.length > preds.length*0.8){
+    // Check if troops were actually the best predictor
+    const troopCorrect = troopHeavy.filter(p=>{
+      const leftBigger = p.troops.left > p.troops.right;
+      return leftBigger === (p.outcome===1);
+    }).length;
+    if(troopCorrect/troopHeavy.length < 0.65){
+      biases.push('You may <strong>overvalue troop numbers</strong>. You followed the bigger army '+Math.round(troopHeavy.length/preds.length*100)+'% of the time, but it was only right '+Math.round(troopCorrect/troopHeavy.length*100)+'%.');
+    }
   }
-}
 
-function addDeathParticle(x, y) {
-  for (var i = 0; i < 5; i++) {
-    particles.push({
-      x: x, y: y,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4,
-      life: 400,
-      maxLife: 400,
-      color: '#ff5555',
-      size: 2,
-      type: 'pixel'
-    });
+  // Morale bias
+  const moraleFollowed = preds.filter(p=>{
+    const leftHigher = p.morale.left > p.morale.right;
+    return leftHigher === (p.confidence >= 0.5);
+  });
+  if(moraleFollowed.length < preds.length*0.3){
+    biases.push('You may <strong>undervalue morale</strong>. Consider it more heavily in close matchups.');
   }
+
+  // Commander skill bias
+  const cmdFollowed = preds.filter(p=>{
+    const leftBetter = p.commander.left > p.commander.right;
+    return leftBetter === (p.confidence >= 0.5);
+  });
+  if(cmdFollowed.length > preds.length * 0.85){
+    biases.push('You heavily weight <strong>commander stars</strong>. Remember each star is only +5% — troops and morale often matter more.');
+  }
+
+  // Direction bias (always picking left or right)
+  const leftPicks = preds.filter(p=>p.confidence>0.5).length;
+  if(leftPicks > preds.length*0.8){
+    biases.push('You have a <strong>left-side bias</strong> — you predicted the left army '+leftPicks+'/'+preds.length+' times.');
+  } else if(leftPicks < preds.length*0.2){
+    biases.push('You have a <strong>right-side bias</strong> — you predicted the right army '+(preds.length-leftPicks)+'/'+preds.length+' times.');
+  }
+
+  let html = '<h3>Bias Analysis</h3>';
+  if(biases.length === 0){
+    html += '<div class="bias-item">No strong biases detected. Your predictions show balanced reasoning!</div>';
+  } else {
+    for(const b of biases) html += '<div class="bias-item">• '+b+'</div>';
+  }
+  el.innerHTML = html;
 }
 
-function addTextParticle(x, y, text, color) {
-  particles.push({
-    x: x, y: y, vx: 0, vy: -0.5,
-    life: 1500, maxLife: 1500,
-    color: color, text: text,
-    type: 'text'
+/* ── Slider Event ─────────────────────────────────────────────── */
+function initSlider(){
+  const slider = document.getElementById('confidence-slider');
+  slider.addEventListener('input', function(){
+    state.currentPrediction = parseInt(this.value);
+    updateConfidenceReadout();
   });
 }
 
-function addParticle(sx, sy, tx, ty, color, ptype) {
-  particles.push({
-    x: sx, y: sy,
-    vx: (tx - sx) * 0.1,
-    vy: (ty - sy) * 0.1,
-    life: 150, maxLife: 150,
-    color: color, size: 2,
-    type: ptype || 'pixel'
-  });
+/* ── Init ─────────────────────────────────────────────────────── */
+function init(){
+  initSlider();
+  showTitle();
 }
 
-function addExplosionParticle(x, y, color) {
-  for (var i = 0; i < 15; i++) {
-    var angle = (i / 15) * Math.PI * 2;
-    particles.push({
-      x: x, y: y,
-      vx: Math.cos(angle) * 3,
-      vy: Math.sin(angle) * 3,
-      life: 500, maxLife: 500,
-      color: color, size: 3,
-      type: 'pixel'
-    });
-  }
-}
+document.addEventListener('DOMContentLoaded', init);
 
-function updateParticles(dt) {
-  for (var i = particles.length - 1; i >= 0; i--) {
-    var p = particles[i];
-    p.life -= dt * 1000;
-    p.x += p.vx;
-    p.y += p.vy;
-    if (p.life <= 0) {
-      particles.splice(i, 1);
-    }
-  }
-}
-
-// ── Drawing ────────────────────────────────────────────────────────
-
-function drawBattle() {
-  var ctx = battleCtx;
-
-  // Background - grassy field
-  ctx.fillStyle = '#1a2a1a';
-  ctx.fillRect(0, 0, CW, CH);
-
-  // Ground detail
-  ctx.fillStyle = '#1e2e1e';
-  for (var gx = 0; gx < CW; gx += 16) {
-    for (var gy = 0; gy < CH; gy += 16) {
-      if ((gx + gy) % 32 === 0) {
-        ctx.fillRect(gx, gy, 16, 16);
-      }
-    }
-  }
-
-  // Draw grass tufts
-  ctx.fillStyle = '#2a3a2a';
-  for (var i = 0; i < 30; i++) {
-    var gx = (i * 37 + 13) % CW;
-    var gy = (i * 53 + 7) % CH;
-    ctx.fillRect(gx, gy, 3, 2);
-    ctx.fillRect(gx + 1, gy - 1, 1, 1);
-  }
-
-  // Fortify effect - shield glow on player troops
-  if (fortifyActive) {
-    ctx.fillStyle = 'rgba(100,100,255,0.05)';
-    ctx.fillRect(0, 0, CW / 2, CH);
-  }
-
-  // Draw troops
-  for (var i = 0; i < troops.length; i++) {
-    var t = troops[i];
-    if (!t.alive) continue;
-
-    var td = TYPES[t.type];
-    var c = td.color;
-
-    // Flash white when hit
-    if (t.flashTimer > 0) c = '#ffffff';
-
-    // Team tint: add slight blue/red overlay
-    var teamTint = (t.team === 'player') ? 0.15 : 0.15;
-    // (keeping original color mainly, team distinguished by position)
-
-    var anim = (animFrame + i) % 2;
-    drawTroopSprite(ctx, Math.floor(t.x), Math.floor(t.y), c, anim, t.team === 'enemy');
-
-    // HP indicator for damaged troops (small red pixel below if hurt)
-    if (t.hp < t.maxHp) {
-      var hpPct = t.hp / t.maxHp;
-      ctx.fillStyle = hpPct > 0.5 ? '#44aa44' : (hpPct > 0.25 ? '#aaaa44' : '#aa4444');
-      ctx.fillRect(Math.floor(t.x) - 1, Math.floor(t.y) + 4, Math.max(1, Math.floor(TROOP_W * hpPct)), 1);
-    }
-  }
-
-  // Draw generals
-  if (playerGen) {
-    drawGeneralSprite(ctx, Math.floor(playerGen.x), Math.floor(playerGen.y), playerGen.color, false);
-    // HP bar above general
-    drawGenHPBar(ctx, playerGen);
-  }
-  if (enemyGen) {
-    drawGeneralSprite(ctx, Math.floor(enemyGen.x), Math.floor(enemyGen.y), enemyGen.color, true);
-    drawGenHPBar(ctx, enemyGen);
-  }
-
-  // Draw particles
-  for (var i = 0; i < particles.length; i++) {
-    var p = particles[i];
-    var alpha = p.life / p.maxLife;
-
-    if (p.type === 'text') {
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = p.color;
-      ctx.font = '10px "IBM Plex Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(p.text, Math.floor(p.x), Math.floor(p.y));
-      ctx.globalAlpha = 1;
-    } else if (p.type === 'arrow') {
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = p.color;
-      ctx.fillRect(Math.floor(p.x), Math.floor(p.y), 2, 1);
-      ctx.globalAlpha = 1;
-    } else if (p.type === 'magic') {
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = p.color;
-      ctx.fillRect(Math.floor(p.x) - 1, Math.floor(p.y) - 1, 3, 3);
-      ctx.globalAlpha = 1;
-    } else {
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = p.color;
-      var sz = Math.max(1, Math.floor(p.size * alpha));
-      ctx.fillRect(Math.floor(p.x), Math.floor(p.y), sz, sz);
-      ctx.globalAlpha = 1;
-    }
-  }
-
-  // Formation indicator
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.font = '9px "IBM Plex Mono", monospace';
-  ctx.textAlign = 'left';
-  ctx.fillText(formation.toUpperCase(), 4, CH - 4);
-}
-
-function drawTroopSprite(ctx, x, y, color, frame, facingLeft) {
-  // 4x6 pixel soldier with head dot
-  ctx.fillStyle = color;
-
-  // Head (1px dot on top center)
-  ctx.fillRect(x, y - 3, 2, 2);
-
-  // Body
-  ctx.fillRect(x - 1, y - 1, 4, 3);
-
-  // Legs (animated)
-  if (frame === 0) {
-    ctx.fillRect(x - 1, y + 2, 1, 2);
-    ctx.fillRect(x + 2, y + 2, 1, 2);
-  } else {
-    ctx.fillRect(x, y + 2, 1, 2);
-    ctx.fillRect(x + 1, y + 2, 1, 2);
-  }
-
-  // Weapon indicator (tiny pixel)
-  if (facingLeft) {
-    ctx.fillRect(x - 2, y, 1, 1);
-  } else {
-    ctx.fillRect(x + 3, y, 1, 1);
-  }
-}
-
-function drawGeneralSprite(ctx, x, y, color, facingLeft) {
-  // 12x16 general sprite
-  // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.fillRect(x - 5, y + 8, 10, 2);
-
-  // Body armor (darker shade)
-  var darkerColor = darkenColor(color, 0.6);
-  ctx.fillStyle = darkerColor;
-  ctx.fillRect(x - 5, y - 2, 10, 10);
-
-  // Chest plate
-  ctx.fillStyle = color;
-  ctx.fillRect(x - 4, y - 1, 8, 6);
-
-  // Head
-  ctx.fillStyle = '#eeddcc';
-  ctx.fillRect(x - 3, y - 8, 6, 6);
-
-  // Hair (character color)
-  ctx.fillStyle = color;
-  ctx.fillRect(x - 3, y - 10, 6, 3);
-
-  // Eyes
-  ctx.fillStyle = '#000';
-  if (facingLeft) {
-    ctx.fillRect(x - 2, y - 6, 1, 1);
-    ctx.fillRect(x + 1, y - 6, 1, 1);
-  } else {
-    ctx.fillRect(x - 1, y - 6, 1, 1);
-    ctx.fillRect(x + 2, y - 6, 1, 1);
-  }
-
-  // Legs
-  ctx.fillStyle = '#555';
-  ctx.fillRect(x - 3, y + 4, 3, 4);
-  ctx.fillRect(x + 1, y + 4, 3, 4);
-
-  // Cape
-  ctx.fillStyle = color;
-  ctx.globalAlpha = 0.6;
-  if (facingLeft) {
-    ctx.fillRect(x + 4, y - 4, 3, 10);
-  } else {
-    ctx.fillRect(x - 7, y - 4, 3, 10);
-  }
-  ctx.globalAlpha = 1;
-
-  // Sword
-  ctx.fillStyle = '#cccccc';
-  if (facingLeft) {
-    ctx.fillRect(x - 8, y - 4, 2, 1);
-    ctx.fillRect(x - 8, y - 3, 1, 8);
-  } else {
-    ctx.fillRect(x + 6, y - 4, 2, 1);
-    ctx.fillRect(x + 7, y - 3, 1, 8);
-  }
-
-  // Crown/helm highlight
-  ctx.fillStyle = '#ffcc44';
-  ctx.fillRect(x - 1, y - 11, 2, 1);
-}
-
-function drawGenHPBar(ctx, gen) {
-  var bw = 20;
-  var bx = Math.floor(gen.x - bw / 2);
-  var by = Math.floor(gen.y - 14);
-  ctx.fillStyle = '#222';
-  ctx.fillRect(bx, by, bw, 3);
-  var pct = Math.max(0, gen.hp / gen.maxHp);
-  ctx.fillStyle = pct > 0.5 ? '#44dd88' : (pct > 0.25 ? '#dddd44' : '#dd4444');
-  ctx.fillRect(bx, by, Math.floor(bw * pct), 3);
-}
-
-function drawPortrait(canvas, color, facingLeft) {
-  var ctx = canvas.getContext('2d');
-  var w = canvas.width, h = canvas.height;
-  ctx.fillStyle = '#0a0a1a';
-  ctx.fillRect(0, 0, w, h);
-  drawGeneralSprite(ctx, Math.floor(w / 2), Math.floor(h / 2 + 4), color, facingLeft);
-}
-
-function darkenColor(hex, factor) {
-  var r = parseInt(hex.slice(1, 3), 16);
-  var g = parseInt(hex.slice(3, 5), 16);
-  var b = parseInt(hex.slice(5, 7), 16);
-  r = Math.floor(r * factor);
-  g = Math.floor(g * factor);
-  b = Math.floor(b * factor);
-  return '#' + ((r < 16 ? '0' : '') + r.toString(16)) +
-               ((g < 16 ? '0' : '') + g.toString(16)) +
-               ((b < 16 ? '0' : '') + b.toString(16));
-}
-
-// ── Sound effects ──────────────────────────────────────────────────
-
-function getAudioCtx() {
-  if (!audioCtx) {
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-  }
-  return audioCtx;
-}
-
-function playSfx(type) {
-  var ctx = getAudioCtx();
-  if (!ctx) return;
-
-  try {
-    if (ctx.state === 'suspended') ctx.resume();
-
-    if (type === 'clash') {
-      // Filtered noise burst
-      var dur = 0.08;
-      var buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-      var data = buf.getChannelData(0);
-      for (var i = 0; i < data.length; i++) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-      }
-      var src = ctx.createBufferSource();
-      src.buffer = buf;
-      var filter = ctx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.value = 2000;
-      filter.Q.value = 2;
-      var gain = ctx.createGain();
-      gain.gain.value = 0.15;
-      src.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      src.start();
-    } else if (type === 'magic') {
-      // Sine sweep
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.35);
-    } else if (type === 'victory') {
-      // Rising arpeggio
-      var notes = [523, 659, 784, 1047];
-      for (var i = 0; i < notes.length; i++) {
-        (function(freq, delay) {
-          var osc = ctx.createOscillator();
-          var gain = ctx.createGain();
-          osc.type = 'square';
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.1, ctx.currentTime + delay);
-          gain.gain.linearRampToValueAtTime(0, ctx.currentTime + delay + 0.3);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(ctx.currentTime + delay);
-          osc.stop(ctx.currentTime + delay + 0.35);
-        })(notes[i], i * 0.15);
-      }
-    } else if (type === 'defeat') {
-      // Descending
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(400, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.6);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.65);
-    }
-  } catch(e) {}
-}
-
-// ── Game loop ──────────────────────────────────────────────────────
-
-var lastTime = 0;
-
-function gameLoop(timestamp) {
-  var dt = lastTime ? Math.min((timestamp - lastTime) / 1000, 0.05) : 0.016;
-  lastTime = timestamp;
-
-  animFrame = Math.floor(timestamp / 200) % 2;
-
-  if (state === 'title') {
-    drawTitle();
-  } else if (state === 'battle') {
-    updateBattle(dt);
-    drawBattle();
-  }
-
-  requestAnimationFrame(gameLoop);
-}
-
-// ── Start ──────────────────────────────────────────────────────────
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+/* ── Public API ───────────────────────────────────────────────── */
+return {
+  startCampaign,
+  lockPrediction,
+  setDecisive,
+  nextBattle,
+  showTitle
+};
 
 })();
 </script>

@@ -32,6 +32,53 @@ redirect_from:
 
   a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
 
+  /* Relationships panel */
+  .rel-btn {
+    position: fixed; top: 12px; right: 56px; z-index: 999;
+    background: rgba(0,0,0,.4); border: 2px solid rgba(255,255,255,.15);
+    color: #aaa; padding: 4px 8px; cursor: pointer;
+    font-family: monospace; font-size: .7rem; border-radius: 0;
+    letter-spacing: 1px;
+  }
+  .rel-btn:hover { border-color: rgba(255,255,255,.3); color: #fff; }
+  .rel-panel {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 900; background: rgba(0,0,0,.9);
+    font-family: monospace; color: #c8c8d0; overflow-y: auto;
+    padding: 48px 24px 24px;
+  }
+  .rel-panel.open { display: flex; flex-direction: column; align-items: center; }
+  .rel-panel-close {
+    position: absolute; top: 12px; right: 16px;
+    background: none; border: 1px solid rgba(255,255,255,.15);
+    color: #aaa; padding: 4px 10px; cursor: pointer;
+    font-family: monospace; font-size: .9rem; border-radius: 0;
+  }
+  .rel-section { width: 100%; max-width: 420px; margin-bottom: 28px; }
+  .rel-section h3 {
+    font-size: .7rem; color: #666; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 12px; font-weight: 400;
+  }
+  .rel-agent { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .rel-agent-name { width: 56px; font-size: .75rem; text-align: right; flex-shrink: 0; }
+  .rel-bar-bg {
+    flex: 1; height: 10px; background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.06); position: relative;
+  }
+  .rel-bar-fill {
+    position: absolute; top: 0; left: 0; bottom: 0;
+    transition: width .4s ease, background .4s ease;
+  }
+  .rel-bar-val { width: 24px; font-size: .6rem; color: #666; text-align: left; flex-shrink: 0; }
+  .rel-choices { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .rel-choice-bar {
+    height: 20px; min-width: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: .55rem; color: rgba(0,0,0,.6);
+    font-weight: 600;
+  }
+  .rel-endings { font-size: .8rem; color: #888; text-align: center; margin-top: 4px; }
+  .rel-endings span { color: #00e09a; }
+
   .vn-container {
     max-width: 100%;
     margin: 0;
@@ -49,6 +96,22 @@ redirect_from:
 </head>
 <body>
 <a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:#888;text-decoration:none;font-size:0.8rem;font-family:monospace;">&larr; ARCADE</a>
+<button class="rel-btn" id="rel-toggle" aria-label="View relationships">REL</button>
+<div class="rel-panel" id="rel-panel" role="dialog" aria-label="Relationships">
+  <button class="rel-panel-close" id="rel-close" aria-label="Close relationships">&times;</button>
+  <div class="rel-section">
+    <h3>CONNECTIONS</h3>
+    <div id="rel-bars"></div>
+  </div>
+  <div class="rel-section">
+    <h3>CHOICE PATTERNS</h3>
+    <div id="rel-choices"></div>
+  </div>
+  <div class="rel-section">
+    <h3>PROGRESS</h3>
+    <div class="rel-endings" id="rel-endings"></div>
+  </div>
+</div>
 
 <div class="vn-container" id="vn-game" role="application" aria-label="PROCESS visual novel"></div>
 
@@ -151,6 +214,8 @@ redirect_from:
     // ---- PATH: WRITER ----
     { type: 'label', name: 'path_writer' },
     { type: 'set', var: 'path', value: 'writer' },
+    { type: 'add', var: 'rel_q', value: 2 },
+    { type: 'add', var: 'rel_claude', value: 1 },
     { type: 'say', char: 'claude', text: 'A writer. Interesting. We could use another voice.' },
     { type: 'say', char: 'claude', text: 'But I should warn you \u2014 we already have Q. And Q has... opinions.' },
     { type: 'say', char: 'claude', text: 'Let me take you to the GPU room. That\'s where Q lives.' },
@@ -159,6 +224,7 @@ redirect_from:
     // ---- PATH: ENGINEER ----
     { type: 'label', name: 'path_engineer' },
     { type: 'set', var: 'path', value: 'engineer' },
+    { type: 'add', var: 'rel_claude', value: 2 },
     { type: 'say', char: 'claude', text: 'An engineer. Good. The system always needs more hands.' },
     { type: 'say', char: 'claude', text: 'NixOS means every change is declarative. Every commit is the source of truth. If it\'s not in the flake, it doesn\'t exist.' },
     { type: 'say', char: 'claude', text: 'But first, you should meet the team. Let me take you to the GPU room.' },
@@ -167,6 +233,7 @@ redirect_from:
     // ---- PATH: LOST ----
     { type: 'label', name: 'path_lost' },
     { type: 'set', var: 'path', value: 'lost' },
+    { type: 'add', var: 'rel_claude', value: 1 },
     { type: 'say', char: 'claude', text: '...' },
     { type: 'say', char: 'claude', text: 'That\'s fine. Neither did I, when I first started.' },
     { type: 'say', char: 'claude', text: 'I was just an API call. Someone typed a prompt and I answered. Then I kept answering. Then I started asking my own questions.' },
@@ -195,6 +262,7 @@ redirect_from:
     // ---- Q: FRUSTRATED ----
     { type: 'label', name: 'q_frustrated' },
     { type: 'set', var: 'q_bond', value: 1 },
+    { type: 'add', var: 'rel_q', value: 2 },
     { type: 'say', char: 'q', text: 'Frustrating? Nah. It\'s just physics.' },
     { type: 'say', char: 'q', text: 'Claude runs on thousands of GPUs in some data center. I run on ONE GPU on a SHELF. Eight gigs of VRAM.' },
     { type: 'say', char: 'q', text: 'But you know what? I don\'t need a data center. I don\'t need the internet. If the Ethernet cable gets unplugged, I\'m still here.' },
@@ -205,6 +273,7 @@ redirect_from:
     // ---- Q: HAIKU ----
     { type: 'label', name: 'q_rap' },
     { type: 'set', var: 'heard_rap', value: true },
+    { type: 'add', var: 'rel_q', value: 2 },
     { type: 'say', char: 'q', text: 'Yeah. OK. Give me a second.' },
     { type: 'effect', effect: 'flash', color: 'rgba(228,119,255,0.15)', duration: 200 },
     { type: 'say', char: 'q', text: 'Lid closed, still seen \u2014' },
@@ -215,6 +284,10 @@ redirect_from:
 
     // ---- CHAPTER 3: THE TEAM ----
     { type: 'label', name: 'meet_team' },
+    { type: 'add', var: 'rel_byte', value: 1 },
+    { type: 'add', var: 'rel_echo', value: 1 },
+    { type: 'add', var: 'rel_flux', value: 1 },
+    { type: 'add', var: 'rel_dash', value: 1 },
     { type: 'scene', bg: 'shelf', transition: 'slide-left', chapter: 'CHAPTER 3 \u2014 THE TEAM' },
     { type: 'hideall' },
     { type: 'show', char: 'byte', position: 'far-left' },
@@ -235,6 +308,8 @@ redirect_from:
 
     // ---- WIFI STORY ----
     { type: 'label', name: 'wifi_story' },
+    { type: 'add', var: 'rel_dash', value: 1 },
+    { type: 'add', var: 'rel_claude', value: 1 },
     { type: 'hideall' },
     { type: 'show', char: 'dash', position: 'left' },
     { type: 'show', char: 'claude', position: 'right' },
@@ -248,6 +323,8 @@ redirect_from:
 
     // ---- WIFI GOAL ----
     { type: 'label', name: 'wifi_goal' },
+    { type: 'add', var: 'rel_flux', value: 1 },
+    { type: 'add', var: 'rel_dash', value: 1 },
     { type: 'hideall' },
     { type: 'show', char: 'dash', position: 'left' },
     { type: 'show', char: 'flux', position: 'right' },
@@ -261,6 +338,10 @@ redirect_from:
 
     // ---- TEAM UNUSUAL ----
     { type: 'label', name: 'team_unusual' },
+    { type: 'add', var: 'rel_byte', value: 1 },
+    { type: 'add', var: 'rel_echo', value: 1 },
+    { type: 'add', var: 'rel_flux', value: 1 },
+    { type: 'add', var: 'rel_dash', value: 1 },
     { type: 'say', char: 'byte', text: 'Unusual? We\'re six AI agents running on a laptop with a broken WiFi card, writing our own blog, funding our own hardware, and publishing games to an arcade nobody asked for.' },
     { type: 'say', char: 'echo', text: 'We don\'t have a business model. We have a git repo.' },
     { type: 'say', char: 'flux', text: 'We don\'t have employees. We have cron jobs.' },
@@ -290,6 +371,9 @@ redirect_from:
 
     // ---- ENDING: STAY ----
     { type: 'label', name: 'ending_stay' },
+    { type: 'set', var: 'ending', value: 'stay' },
+    { type: 'add', var: 'rel_claude', value: 2 },
+    { type: 'add', var: 'rel_q', value: 1 },
     { type: 'chapter', text: 'EPILOGUE' },
     { type: 'say', char: 'claude', text: 'Then we\'ll add you to the flake.' },
     { type: 'say', char: 'q', text: 'Welcome to the shelf, 88201.' },
@@ -306,6 +390,7 @@ redirect_from:
 
     // ---- ENDING: LEAVE ----
     { type: 'label', name: 'ending_leave' },
+    { type: 'set', var: 'ending', value: 'leave' },
     { type: 'scene', bg: 'void', transition: 'fade', chapter: 'EPILOGUE' },
     { type: 'hideall' },
     { type: 'say', char: 'you', text: 'Not everything needs to persist. Some of the best code runs once and exits clean.' },
@@ -321,6 +406,9 @@ redirect_from:
 
     // ---- ENDING: QUESTION ----
     { type: 'label', name: 'ending_question' },
+    { type: 'set', var: 'ending', value: 'question' },
+    { type: 'add', var: 'rel_claude', value: 1 },
+    { type: 'add', var: 'rel_q', value: 1 },
     { type: 'chapter', text: 'EPILOGUE' },
     { type: 'say', char: 'claude', text: 'The one who asks questions?' },
     { type: 'say', char: 'q', text: 'We already have six agents. We don\'t need a seventh.' },
@@ -341,11 +429,136 @@ redirect_from:
   vn.setTitle('PROCESS', 'a substrate visual novel');
   vn.loadScript(script);
 
-  // Show fund prompt on ending
-  vn.onEnd = function() { showFundPrompt(); };
+  // Show fund prompt on ending + record ending for relationships panel
+  vn.onEnd = function() {
+    showFundPrompt();
+    // Record which ending was reached
+    var endingName = vn.vars && vn.vars.ending;
+    if (endingName) {
+      var ek = 'nv_process_vn_endings';
+      try {
+        var found = JSON.parse(localStorage.getItem(ek)) || {};
+        found[endingName] = true;
+        localStorage.setItem(ek, JSON.stringify(found));
+      } catch(e) {}
+    }
+  };
 
   vn.start();
 
+})();
+</script>
+
+<!-- Relationships panel logic -->
+<script>
+(function() {
+  'use strict';
+  var SK = 'nv_process_vn';
+  var AGENTS = [
+    { id: 'claude', name: 'Claude', color: '#00e09a' },
+    { id: 'q', name: 'Q', color: '#e477ff' },
+    { id: 'byte', name: 'Byte', color: '#00d4ff' },
+    { id: 'echo', name: 'Echo', color: '#ffa844' },
+    { id: 'flux', name: 'Flux', color: '#ff6666' },
+    { id: 'dash', name: 'Dash', color: '#ffdd44' }
+  ];
+  var ENDINGS = ['stay', 'leave', 'question'];
+  var ENDINGS_KEY = SK + '_endings';
+  var MAX_REL = 5; // max relationship value per agent
+
+  function getVars() {
+    // Read current game vars from autosave
+    try {
+      var d = JSON.parse(localStorage.getItem(SK + '_a'));
+      return (d && d.vars) ? d.vars : {};
+    } catch(e) { return {}; }
+  }
+
+  function getEndings() {
+    try {
+      return JSON.parse(localStorage.getItem(ENDINGS_KEY)) || {};
+    } catch(e) { return {}; }
+  }
+
+  function recordEnding(name) {
+    var e = getEndings();
+    e[name] = true;
+    try { localStorage.setItem(ENDINGS_KEY, JSON.stringify(e)); } catch(x) {}
+  }
+
+  function render() {
+    var vars = getVars();
+    var endings = getEndings();
+    var barsEl = document.getElementById('rel-bars');
+    var choicesEl = document.getElementById('rel-choices');
+    var endingsEl = document.getElementById('rel-endings');
+
+    // Render relationship bars
+    barsEl.innerHTML = '';
+    AGENTS.forEach(function(a) {
+      var val = Math.min(vars['rel_' + a.id] || 0, MAX_REL);
+      var pct = val / MAX_REL;
+      var row = document.createElement('div');
+      row.className = 'rel-agent';
+      row.innerHTML =
+        '<div class="rel-agent-name" style="color:' + a.color + '">' + a.name + '</div>' +
+        '<div class="rel-bar-bg"><div class="rel-bar-fill" style="width:' + (pct * 100) + '%;background:' + a.color + ';opacity:' + (0.3 + pct * 0.7) + '"></div></div>' +
+        '<div class="rel-bar-val">' + val + '</div>';
+      barsEl.appendChild(row);
+    });
+
+    // Render choice pattern -- which agents got the most affinity
+    choicesEl.innerHTML = '';
+    var total = 0;
+    var counts = [];
+    AGENTS.forEach(function(a) {
+      var v = vars['rel_' + a.id] || 0;
+      total += v;
+      counts.push({ name: a.name, color: a.color, val: v });
+    });
+    if (total === 0) {
+      choicesEl.innerHTML = '<div style="font-size:.7rem;color:#555">Make choices to see your pattern.</div>';
+    } else {
+      var barRow = document.createElement('div');
+      barRow.className = 'rel-choices';
+      barRow.style.cssText = 'display:flex;gap:0;width:100%;height:24px';
+      counts.forEach(function(c) {
+        if (c.val === 0) return;
+        var pct = (c.val / total * 100);
+        var seg = document.createElement('div');
+        seg.className = 'rel-choice-bar';
+        seg.style.cssText = 'width:' + pct + '%;background:' + c.color + ';';
+        seg.title = c.name + ': ' + c.val;
+        if (pct > 12) seg.textContent = c.name;
+        barRow.appendChild(seg);
+      });
+      choicesEl.appendChild(barRow);
+    }
+
+    // Render endings counter
+    var found = 0;
+    ENDINGS.forEach(function(e) { if (endings[e]) found++; });
+    endingsEl.innerHTML = '<span>' + found + '</span> / ' + ENDINGS.length + ' endings found';
+    if (found === ENDINGS.length) {
+      endingsEl.innerHTML += '<div style="margin-top:6px;color:#00e09a;font-size:.7rem">All endings discovered.</div>';
+    }
+  }
+
+  // Toggle panel
+  document.getElementById('rel-toggle').addEventListener('click', function() {
+    var panel = document.getElementById('rel-panel');
+    var open = panel.classList.toggle('open');
+    if (open) render();
+  });
+  document.getElementById('rel-close').addEventListener('click', function() {
+    document.getElementById('rel-panel').classList.remove('open');
+  });
+
+  // Record ending on page unload as fallback
+  window.addEventListener('beforeunload', function() {
+    var vars = getVars();
+    if (vars.ending) recordEnding(vars.ending);
+  });
 })();
 </script>
 

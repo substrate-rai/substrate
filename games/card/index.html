@@ -8,26 +8,43 @@ redirect_from:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>substrate — two AIs, one laptop, zero employees</title>
-  <meta name="description" content="An autonomous AI workstation with two brains. Claude architects. Q writes haiku. The WiFi card is broken. Everything is open source.">
-  <meta property="og:title" content="substrate — two AIs, one laptop, zero employees">
-  <meta property="og:description" content="A laptop on a shelf runs two AIs. One writes the code. One writes the bars. Neither can buy a WiFi card.">
+  <title>SUBSTRATE CARD — Say more with less</title>
+  <meta name="description" content="Pitch crafting under constraints. Explain complex concepts in tight word limits. A creative communication game.">
+  <meta property="og:title" content="SUBSTRATE CARD — Say more with less">
+  <meta property="og:description" content="Pitch crafting under constraints. Explain complex concepts in tight word limits.">
   <meta property="og:url" content="https://substrate.lol/card/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="substrate — two AIs, one laptop, zero employees">
-  <meta name="twitter:description" content="A laptop on a shelf runs two AIs. One writes the code. One writes the bars. Neither can buy a WiFi card.">
+  <meta name="twitter:title" content="SUBSTRATE CARD — Say more with less">
+  <meta name="twitter:description" content="Pitch crafting under constraints. Explain complex concepts in tight word limits.">
+  <link rel="stylesheet" href="../shared/substrate-frame.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
-    /* === PIXEL ART MODE === */
-    button, .btn, [class*="btn"] {
-      border-radius: 0 !important;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-      transition: none !important;
-    }
-    button:active, .btn:active, [class*="btn"]:active {
-      transform: translate(2px, 2px) !important;
-      box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --card-bg: #E8F0F8;
+      --card-surface: rgba(255, 255, 255, 0.55);
+      --card-surface-strong: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(255, 255, 255, 0.5);
+      --card-border-subtle: rgba(200, 215, 230, 0.5);
+      --card-text: #2D3748;
+      --card-text-muted: #5A6B7F;
+      --card-text-dim: #8899AA;
+      --card-heading: #1A1A2E;
+      --card-accent: #0078D4;
+      --card-accent-glow: rgba(0, 120, 212, 0.15);
+      --card-success: #10B981;
+      --card-success-glow: rgba(16, 185, 129, 0.15);
+      --card-warning: #F59E0B;
+      --card-warning-glow: rgba(245, 158, 11, 0.15);
+      --card-error: #EF4444;
+      --card-error-glow: rgba(239, 68, 68, 0.12);
+      --card-mono: 'IBM Plex Mono', monospace;
+      --card-sans: 'Inter', -apple-system, sans-serif;
+      --card-radius: 12px;
+      --card-radius-sm: 8px;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -38,184 +55,1651 @@ redirect_from:
       }
     }
 
-    a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+    a:focus-visible, button:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--card-accent);
+      outline-offset: 2px;
+    }
 
     body {
-      font-family: 'Courier New', monospace;
-      background: #0a0a0a;
-      color: #c8c8c8;
+      font-family: var(--card-sans);
+      background: var(--card-bg);
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 120, 212, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+      color: var(--card-text);
       min-height: 100vh;
       min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
-      padding-top: calc(2rem + env(safe-area-inset-top));
-      padding-bottom: calc(2rem + env(safe-area-inset-bottom));
-      padding-left: calc(2rem + env(safe-area-inset-left));
-      padding-right: calc(2rem + env(safe-area-inset-right));
+      padding: 1rem;
+      padding-top: calc(1rem + 40px);
       overscroll-behavior: none;
     }
-    .card {
-      max-width: 500px;
+
+    /* Glass panel base */
+    .glass {
+      background: var(--card-surface);
+      backdrop-filter: blur(16px) saturate(1.3);
+      -webkit-backdrop-filter: blur(16px) saturate(1.3);
+      border: 1px solid var(--card-border);
+      border-radius: var(--card-radius);
+      box-shadow:
+        0 4px 24px rgba(0, 60, 120, 0.06),
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .glass-strong {
+      background: var(--card-surface-strong);
+    }
+
+    /* Main container */
+    .game-container {
+      max-width: 640px;
       width: 100%;
     }
-    h1 {
-      color: #5faa5f;
-      font-size: 1.8rem;
-      font-weight: 400;
-      margin-bottom: 0.3rem;
+
+    /* ── TITLE SCREEN ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .title-panel {
+      padding: 3rem 2.5rem;
+      text-align: center;
     }
-    .tagline {
-      color: #666;
-      font-size: 0.85rem;
-      margin-bottom: 2rem;
+
+    .title-panel h1 {
+      font-family: var(--card-mono);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--card-heading);
+      letter-spacing: -0.5px;
+      margin-bottom: 0.25rem;
     }
-    .pitch {
+
+    .title-panel .subtitle {
       font-size: 0.95rem;
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
-    .brains {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      color: var(--card-text-muted);
+      font-weight: 300;
       margin-bottom: 2rem;
     }
-    .brain {
-      border: 1px solid #222;
-      border-radius: 0;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.4);
-      padding: 1rem;
-    }
-    .brain h3 {
-      font-size: 0.9rem;
-      margin-bottom: 0.3rem;
-    }
-    .brain p {
-      font-size: 0.75rem;
-      color: #888;
-      line-height: 1.5;
-    }
-    .claude h3 { color: #5faa5f; }
-    .q h3 { color: #aa5faa; }
-    .bar {
-      border-left: 3px solid #aa5faa;
-      padding: 0.5rem 1rem;
-      margin-bottom: 1.5rem;
-      font-style: italic;
-      color: #999;
-      font-size: 0.85rem;
-    }
-    .bar cite {
-      display: block;
-      color: #666;
-      font-size: 0.7rem;
-      margin-top: 0.3rem;
-      font-style: normal;
-    }
-    .progress {
-      margin-bottom: 1.5rem;
-    }
-    .progress-label {
-      font-size: 0.75rem;
-      color: #888;
-      margin-bottom: 0.3rem;
-    }
-    .progress-bar {
-      height: 6px;
-      background: #1a1a1a;
-      border-radius: 0;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: #5faa5f;
-      border-radius: 0;
-      transition: none;
-    }
-    .links {
+
+    .title-stats {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
     }
-    .links a {
-      display: inline-block;
-      color: #0a0a0a;
-      background: #5faa5f;
-      padding: 0.75rem 1rem;
-      border-radius: 0;
-      text-decoration: none;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-      font-size: 0.8rem;
+
+    .title-stat {
+      text-align: center;
+    }
+
+    .title-stat-value {
+      font-family: var(--card-mono);
+      font-size: 1.5rem;
       font-weight: 600;
+      color: var(--card-heading);
+    }
+
+    .title-stat-label {
+      font-size: 0.7rem;
+      color: var(--card-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .title-best-pitch {
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      text-align: left;
+      font-size: 0.82rem;
+      color: var(--card-text-muted);
+      line-height: 1.6;
+    }
+
+    .title-best-pitch .bp-label {
+      font-family: var(--card-mono);
+      font-size: 0.65rem;
+      color: var(--card-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .title-best-pitch .bp-meta {
+      font-size: 0.7rem;
+      color: var(--card-text-dim);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    .timer-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      font-size: 0.8rem;
+      color: var(--card-text-muted);
+    }
+
+    .timer-toggle label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--card-border-subtle);
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: 1px solid rgba(200, 215, 230, 0.6);
+    }
+
+    .toggle-switch::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    .toggle-switch:checked {
+      background: var(--card-accent);
+      border-color: var(--card-accent);
+    }
+
+    .toggle-switch:checked::before {
+      transform: translateX(18px);
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: var(--card-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      padding: 0.85rem 2rem;
+      border-radius: var(--card-radius-sm);
+      transition: all 0.2s;
       min-height: 48px;
-      line-height: 1.5;
       -webkit-tap-highlight-color: transparent;
     }
-    .links a:hover { background: #4d994d; }
-    .links a.secondary {
-      background: transparent;
-      color: #888;
-      border: 1px solid #333;
+
+    .btn-primary {
+      background: var(--card-accent);
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 120, 212, 0.25);
     }
-    .links a.secondary:hover { border-color: #5faa5f; color: #5faa5f; }
+
+    .btn-primary:hover {
+      background: #006ABE;
+      box-shadow: 0 4px 16px rgba(0, 120, 212, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(0, 120, 212, 0.2);
+    }
+
+    .btn-primary:disabled {
+      background: var(--card-border-subtle);
+      color: var(--card-text-dim);
+      box-shadow: none;
+      cursor: default;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--card-surface);
+      color: var(--card-text-muted);
+      border: 1px solid var(--card-border-subtle);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--card-accent);
+      color: var(--card-accent);
+    }
+
+    /* ── ROUND SCREEN ── */
+    .round-panel {
+      padding: 2rem 2rem 1.5rem;
+    }
+
+    .round-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      font-family: var(--card-mono);
+      font-size: 0.75rem;
+      color: var(--card-text-dim);
+    }
+
+    .round-number {
+      font-weight: 600;
+      color: var(--card-text-muted);
+    }
+
+    .round-score {
+      font-weight: 600;
+    }
+
+    .prompt-area {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .prompt-label {
+      font-size: 0.7rem;
+      color: var(--card-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .prompt-concept {
+      font-family: var(--card-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--card-heading);
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.3px;
+    }
+
+    .prompt-constraint {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--card-accent);
+      border-radius: 20px;
+      background: var(--card-accent-glow);
+      border: 1px solid rgba(0, 120, 212, 0.2);
+    }
+
+    .pitch-area {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .pitch-textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 1.25rem;
+      font-family: var(--card-sans);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--card-text);
+      background: var(--card-surface-strong);
+      border: 1px solid var(--card-border-subtle);
+      border-radius: var(--card-radius-sm);
+      resize: vertical;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .pitch-textarea:focus {
+      outline: none;
+      border-color: var(--card-accent);
+      box-shadow: 0 0 0 3px var(--card-accent-glow);
+    }
+
+    .pitch-textarea::placeholder {
+      color: var(--card-text-dim);
+      font-style: italic;
+    }
+
+    .pitch-textarea.over-limit {
+      border-color: var(--card-error);
+      box-shadow: 0 0 0 3px var(--card-error-glow);
+    }
+
+    .counter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      font-family: var(--card-mono);
+      font-size: 0.78rem;
+    }
+
+    .counter {
+      color: var(--card-text-muted);
+      font-weight: 500;
+    }
+
+    .counter.over {
+      color: var(--card-error);
+      font-weight: 700;
+    }
+
+    .counter.near {
+      color: var(--card-warning);
+    }
+
+    .counter.exact {
+      color: var(--card-success);
+      font-weight: 700;
+    }
+
+    .timer-display {
+      color: var(--card-text-dim);
+      font-weight: 500;
+    }
+
+    .timer-display.urgent {
+      color: var(--card-error);
+      font-weight: 700;
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .submit-row {
+      text-align: center;
+    }
+
+    /* ── FEEDBACK SCREEN ── */
+    .feedback-panel {
+      padding: 2rem;
+    }
+
+    .feedback-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .feedback-score {
+      font-family: var(--card-mono);
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--card-heading);
+      line-height: 1;
+    }
+
+    .feedback-score-label {
+      font-size: 0.72rem;
+      color: var(--card-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0.25rem;
+    }
+
+    .feedback-breakdown {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .fb-item {
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .fb-item-value {
+      font-family: var(--card-mono);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--card-heading);
+    }
+
+    .fb-item-label {
+      font-size: 0.65rem;
+      color: var(--card-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 0.2rem;
+    }
+
+    .fb-bar {
+      height: 4px;
+      background: var(--card-border-subtle);
+      border-radius: 2px;
+      margin-top: 0.4rem;
+      overflow: hidden;
+    }
+
+    .fb-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+
+    .fb-bar-fill.constraint { background: var(--card-accent); }
+    .fb-bar-fill.keywords { background: var(--card-success); }
+    .fb-bar-fill.clarity { background: var(--card-warning); }
+
+    .fb-pitch-review {
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--card-text);
+    }
+
+    .fb-pitch-review .keyword-found {
+      background: var(--card-success-glow);
+      color: #059669;
+      padding: 0.1em 0.3em;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    .fb-meta {
+      font-size: 0.75rem;
+      color: var(--card-text-dim);
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--card-border-subtle);
+    }
+
+    .fb-tip {
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      color: var(--card-text-muted);
+      font-style: italic;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      background: var(--card-warning-glow);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .fb-keywords-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kw-tag {
+      font-family: var(--card-mono);
+      font-size: 0.68rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      border: 1px solid var(--card-border-subtle);
+      color: var(--card-text-dim);
+    }
+
+    .kw-tag.found {
+      background: var(--card-success-glow);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #059669;
+    }
+
+    .fb-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    /* ── GAME OVER SCREEN ── */
+    .gameover-panel {
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+
+    .gameover-panel h2 {
+      font-family: var(--card-mono);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--card-heading);
+      margin-bottom: 0.25rem;
+    }
+
+    .gameover-panel .go-subtitle {
+      font-size: 0.85rem;
+      color: var(--card-text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .go-total-score {
+      font-family: var(--card-mono);
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--card-heading);
+      line-height: 1;
+    }
+
+    .go-total-label {
+      font-size: 0.72rem;
+      color: var(--card-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
+    }
+
+    .go-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .go-stat {
+      padding: 0.75rem;
+    }
+
+    .go-stat-value {
+      font-family: var(--card-mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--card-heading);
+    }
+
+    .go-stat-label {
+      font-size: 0.65rem;
+      color: var(--card-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 0.2rem;
+    }
+
+    .go-best-pitch {
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .go-best-pitch .bp-label {
+      font-family: var(--card-mono);
+      font-size: 0.65rem;
+      color: var(--card-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .go-best-pitch .bp-text {
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--card-text);
+    }
+
+    .go-best-pitch .bp-meta {
+      font-size: 0.7rem;
+      color: var(--card-text-dim);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    .go-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    /* ── BOTTOM BAR ── */
+    .bottom-bar {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      font-family: var(--card-mono);
+      font-size: 0.68rem;
+      color: var(--card-text-dim);
+    }
+
+    /* ── RESPONSIVE ── */
     @media (max-width: 500px) {
-      .brains { grid-template-columns: 1fr; }
+      body {
+        padding: 0.5rem;
+        padding-top: calc(0.5rem + 36px);
+        align-items: flex-start;
+      }
+
+      .title-panel { padding: 2rem 1.5rem; }
+      .round-panel { padding: 1.5rem 1.25rem; }
+      .feedback-panel { padding: 1.5rem 1.25rem; }
+      .gameover-panel { padding: 2rem 1.5rem; }
+
+      .title-panel h1 { font-size: 1.3rem; }
+      .prompt-concept { font-size: 1.15rem; }
+
+      .feedback-breakdown { grid-template-columns: 1fr; gap: 0.5rem; }
+      .go-stats { grid-template-columns: 1fr; gap: 0.5rem; }
+
+      .fb-buttons, .go-buttons { flex-direction: column; }
+      .fb-buttons .btn, .go-buttons .btn { width: 100%; }
+    }
+
+    /* ── SCORE ANIMATION ── */
+    @keyframes scoreReveal {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .score-animate {
+      animation: scoreReveal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .slide-up {
+      animation: slideUp 0.3s ease forwards;
+    }
+
+    /* ── PROGRESS DOTS ── */
+    .round-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .round-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--card-border-subtle);
+      transition: all 0.3s;
+    }
+
+    .round-dot.completed {
+      background: var(--card-success);
+    }
+
+    .round-dot.current {
+      background: var(--card-accent);
+      box-shadow: 0 0 6px var(--card-accent-glow);
     }
   </style>
-<link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:var(--card-accent);color:#fff;padding:8px 16px;z-index:10000;font-size:14px;border-radius:0 0 8px 0;">Skip to game</a>
 <main id="game" role="main">
-  <div class="card">
-    <h1>substrate</h1>
-    <p class="tagline">two AIs, one laptop!</p>
+  <div class="game-container">
 
-    <p class="pitch">
-      A laptop runs two AIs. One writes code. One writes raps. They need a WiFi card!
-    </p>
+    <!-- ── TITLE SCREEN ── -->
+    <div id="screen-title" class="screen active">
+      <div class="title-panel glass glass-strong">
+        <h1>SUBSTRATE CARD</h1>
+        <p class="subtitle">Say more with less</p>
 
-    <div class="brains">
-      <div class="brain claude">
-        <h3>claude</h3>
-        <p>Cloud brain. Writes code.</p>
+        <div class="title-stats">
+          <div class="title-stat">
+            <div class="title-stat-value" id="title-best-score">0</div>
+            <div class="title-stat-label">Best Score</div>
+          </div>
+          <div class="title-stat">
+            <div class="title-stat-value" id="title-games-played">0</div>
+            <div class="title-stat-label">Games Played</div>
+          </div>
+        </div>
+
+        <div id="title-best-pitch-area" class="title-best-pitch glass" style="display:none;">
+          <div class="bp-label">Best Pitch</div>
+          <div id="title-best-pitch-text"></div>
+          <div id="title-best-pitch-meta" class="bp-meta"></div>
+        </div>
+
+        <div class="timer-toggle">
+          <label>
+            <input type="checkbox" id="timer-toggle-input" class="toggle-switch">
+            <span>60-second timer</span>
+          </label>
+        </div>
+
+        <button class="btn btn-primary" id="btn-start">BEGIN GAME</button>
       </div>
-      <div class="brain q">
-        <h3>Q</h3>
-        <p>Local brain. Makes raps. Free!</p>
+    </div>
+
+    <!-- ── ROUND SCREEN ── -->
+    <div id="screen-round" class="screen">
+      <div class="round-panel glass glass-strong">
+        <div class="round-header">
+          <span class="round-number" id="round-label">ROUND 1 / 5</span>
+          <span class="round-score" id="round-score">SCORE: 0</span>
+        </div>
+
+        <div class="round-dots" id="round-dots"></div>
+
+        <div class="prompt-area">
+          <div class="prompt-label">Explain</div>
+          <div class="prompt-concept" id="prompt-concept">NEURAL NETWORKS</div>
+          <div class="prompt-constraint" id="prompt-constraint">In 50 words</div>
+        </div>
+
+        <div class="pitch-area">
+          <textarea
+            class="pitch-textarea"
+            id="pitch-input"
+            placeholder="Type your pitch here..."
+            aria-label="Write your pitch"
+            autocomplete="off"
+            spellcheck="true"
+          ></textarea>
+        </div>
+
+        <div class="counter-row">
+          <span class="counter" id="counter-display">Words: 0 / 50</span>
+          <span class="timer-display" id="timer-display" style="display:none;">60s</span>
+        </div>
+
+        <div class="submit-row">
+          <button class="btn btn-primary" id="btn-submit" disabled>SUBMIT PITCH</button>
+        </div>
       </div>
     </div>
 
-    <div class="bar">
-      "Stackin' tech but can't stack cash, I'm just a code-based knight"
-      <cite>— Q (Qwen3 8B), unedited output</cite>
+    <!-- ── FEEDBACK SCREEN ── -->
+    <div id="screen-feedback" class="screen">
+      <div class="feedback-panel glass glass-strong">
+        <div class="feedback-header">
+          <div class="feedback-score score-animate" id="fb-score">0</div>
+          <div class="feedback-score-label">Round Score</div>
+        </div>
+
+        <div class="feedback-breakdown">
+          <div class="fb-item glass">
+            <div class="fb-item-value" id="fb-constraint-score">0</div>
+            <div class="fb-item-label">Constraint</div>
+            <div class="fb-bar"><div class="fb-bar-fill constraint" id="fb-constraint-bar" style="width:0%"></div></div>
+          </div>
+          <div class="fb-item glass">
+            <div class="fb-item-value" id="fb-keywords-score">0</div>
+            <div class="fb-item-label">Keywords</div>
+            <div class="fb-bar"><div class="fb-bar-fill keywords" id="fb-keywords-bar" style="width:0%"></div></div>
+          </div>
+          <div class="fb-item glass">
+            <div class="fb-item-value" id="fb-clarity-score">0</div>
+            <div class="fb-item-label">Clarity</div>
+            <div class="fb-bar"><div class="fb-bar-fill clarity" id="fb-clarity-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="fb-keywords-list" id="fb-keywords-list"></div>
+
+        <div class="fb-pitch-review glass" id="fb-pitch-review"></div>
+
+        <div class="fb-tip glass" id="fb-tip" style="display:none;"></div>
+
+        <div class="fb-buttons">
+          <button class="btn btn-primary" id="btn-next-round">NEXT ROUND</button>
+        </div>
+      </div>
     </div>
 
-    <div class="progress">
-      <div class="progress-label">WiFi card fund: $0 / $150</div>
-      <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+    <!-- ── GAME OVER SCREEN ── -->
+    <div id="screen-gameover" class="screen">
+      <div class="gameover-panel glass glass-strong">
+        <h2>GAME COMPLETE</h2>
+        <p class="go-subtitle">Here's how you pitched.</p>
+
+        <div class="go-total-score score-animate" id="go-total-score">0</div>
+        <div class="go-total-label">Total Score / 500</div>
+
+        <div class="go-stats">
+          <div class="go-stat glass">
+            <div class="go-stat-value" id="go-avg-score">0</div>
+            <div class="go-stat-label">Avg Score</div>
+          </div>
+          <div class="go-stat glass">
+            <div class="go-stat-value" id="go-avg-concise">0</div>
+            <div class="go-stat-label">Avg Clarity</div>
+          </div>
+          <div class="go-stat glass">
+            <div class="go-stat-value" id="go-best-round">0</div>
+            <div class="go-stat-label">Best Round</div>
+          </div>
+        </div>
+
+        <div class="go-best-pitch glass" id="go-best-pitch-area">
+          <div class="bp-label">Best Pitch This Game</div>
+          <div class="bp-text" id="go-best-pitch-text"></div>
+          <div class="bp-meta" id="go-best-pitch-meta"></div>
+        </div>
+
+        <div class="go-buttons">
+          <button class="btn btn-primary" id="btn-play-again">PLAY AGAIN</button>
+          <button class="btn btn-secondary" id="btn-title">TITLE</button>
+        </div>
+      </div>
     </div>
 
-    <div class="links">
-      <a href="https://ko-fi.com/substrate">Help us get WiFi!</a>
-      <a href="https://substrate.lol/" class="secondary">Read the blog</a>
-      <a href="https://substrate.lol/site/training-q/" class="secondary">Training Q</a>
-      <a href="https://github.com/substrate-rai/substrate" class="secondary">GitHub</a>
+    <!-- ── BOTTOM BAR ── -->
+    <div class="bottom-bar">
+      <span>Best: <span id="bottom-best">0</span></span>
+      <span>Games: <span id="bottom-games">0</span></span>
     </div>
+
   </div>
-
-  <script>
-    // Animate progress bar on load
-    setTimeout(function() {
-      document.getElementById('fill').style.width = '0%';
-    }, 500);
-  </script>
-
 </main>
-<script src="../shared/substrate-frame.js" data-title="SUBSTRATE CARD" data-lore="The organism introducing itself" data-agent="Promo" data-agent-color="#ffaacc"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── CONCEPT DATABASE ──
+  var CONCEPTS = {
+    'neural networks': {
+      keywords: ['neurons', 'layers', 'learn', 'train', 'weights', 'pattern', 'network', 'model'],
+      difficulty: 1
+    },
+    'blockchain': {
+      keywords: ['blocks', 'chain', 'ledger', 'decentralized', 'trust', 'transactions', 'verify', 'distributed'],
+      difficulty: 1
+    },
+    'open source': {
+      keywords: ['code', 'free', 'community', 'contribute', 'public', 'license', 'share', 'collaborate'],
+      difficulty: 1
+    },
+    'privacy': {
+      keywords: ['data', 'personal', 'protect', 'encrypt', 'control', 'consent', 'surveillance', 'rights'],
+      difficulty: 1
+    },
+    'the internet': {
+      keywords: ['network', 'connect', 'protocol', 'global', 'web', 'servers', 'communicate', 'packets'],
+      difficulty: 1
+    },
+    'cloud computing': {
+      keywords: ['servers', 'remote', 'storage', 'scale', 'service', 'access', 'virtual', 'demand'],
+      difficulty: 1
+    },
+    'artificial intelligence': {
+      keywords: ['learn', 'think', 'machine', 'human', 'decision', 'automate', 'intelligent', 'predict'],
+      difficulty: 2
+    },
+    'machine learning': {
+      keywords: ['data', 'train', 'model', 'predict', 'algorithm', 'pattern', 'features', 'learn'],
+      difficulty: 2
+    },
+    'encryption': {
+      keywords: ['key', 'cipher', 'secure', 'protect', 'decode', 'secret', 'algorithm', 'lock'],
+      difficulty: 2
+    },
+    'APIs': {
+      keywords: ['interface', 'request', 'response', 'endpoint', 'connect', 'service', 'data', 'access'],
+      difficulty: 2
+    },
+    'version control': {
+      keywords: ['track', 'changes', 'history', 'branch', 'merge', 'commit', 'collaborate', 'code'],
+      difficulty: 2
+    },
+    'containers': {
+      keywords: ['isolate', 'package', 'deploy', 'portable', 'environment', 'image', 'lightweight', 'run'],
+      difficulty: 2
+    },
+    'data': {
+      keywords: ['information', 'store', 'analyze', 'collect', 'process', 'value', 'structure', 'insight'],
+      difficulty: 3
+    },
+    'Substrate': {
+      keywords: ['autonomous', 'AI', 'laptop', 'self', 'build', 'intelligence', 'system', 'network'],
+      difficulty: 3
+    },
+    'recursion': {
+      keywords: ['self', 'repeat', 'base', 'call', 'stack', 'function', 'itself', 'loop'],
+      difficulty: 3
+    }
+  };
+
+  var CONCEPT_NAMES = Object.keys(CONCEPTS);
+
+  // ── CONSTRAINTS ──
+  var CONSTRAINTS = {
+    word: [
+      { label: 'In 100 words', type: 'words', limit: 100, difficulty: 1 },
+      { label: 'In 50 words', type: 'words', limit: 50, difficulty: 2 },
+      { label: 'In 25 words', type: 'words', limit: 25, difficulty: 3 },
+      { label: 'In 10 words', type: 'words', limit: 10, difficulty: 4 }
+    ],
+    format: [
+      { label: 'As a haiku (5-7-5)', type: 'haiku', limit: null, difficulty: 4 },
+      { label: 'No adjectives', type: 'no-adjectives', limit: 100, difficulty: 3 },
+      { label: 'One sentence', type: 'one-sentence', limit: null, difficulty: 3 },
+      { label: 'As a question', type: 'question', limit: 50, difficulty: 2 },
+      { label: 'To a 10-year-old', type: 'audience', limit: 75, difficulty: 2 },
+      { label: 'To a CEO', type: 'audience', limit: 50, difficulty: 2 },
+      { label: 'As a tweet (280 chars)', type: 'chars', limit: 280, difficulty: 3 }
+    ],
+    audience: [
+      { label: 'To someone who never used a computer', type: 'audience', limit: 75, difficulty: 3 },
+      { label: 'To a skeptic', type: 'audience', limit: 50, difficulty: 3 },
+      { label: 'To an investor', type: 'audience', limit: 50, difficulty: 2 },
+      { label: 'To a poet', type: 'audience', limit: 75, difficulty: 3 }
+    ]
+  };
+
+  // Common adjectives list for the "no adjectives" constraint
+  var COMMON_ADJECTIVES = [
+    'big', 'small', 'large', 'tiny', 'huge', 'great', 'good', 'bad', 'new', 'old',
+    'fast', 'slow', 'quick', 'smart', 'simple', 'complex', 'easy', 'hard', 'difficult',
+    'powerful', 'strong', 'weak', 'important', 'special', 'different', 'same', 'other',
+    'many', 'few', 'several', 'multiple', 'single', 'whole', 'entire', 'full', 'empty',
+    'digital', 'virtual', 'real', 'actual', 'basic', 'advanced', 'modern', 'traditional',
+    'open', 'closed', 'public', 'private', 'secure', 'safe', 'free', 'expensive',
+    'efficient', 'effective', 'useful', 'beautiful', 'amazing', 'incredible', 'best',
+    'worst', 'better', 'worse', 'main', 'key', 'primary', 'central', 'essential',
+    'specific', 'general', 'particular', 'various', 'certain', 'available', 'possible',
+    'able', 'capable', 'necessary', 'critical', 'vital', 'massive', 'enormous',
+    'little', 'long', 'short', 'high', 'low', 'deep', 'wide', 'narrow', 'broad',
+    'heavy', 'light', 'dark', 'bright', 'clear', 'obvious', 'visible', 'hidden',
+    'true', 'false', 'correct', 'wrong', 'right', 'global', 'local', 'remote'
+  ];
+
+  // ── GAME STATE ──
+  var state = {
+    screen: 'title',
+    round: 0,
+    totalScore: 0,
+    timerEnabled: false,
+    timerSeconds: 60,
+    timerInterval: null,
+    rounds: [],
+    currentConcept: null,
+    currentConstraint: null,
+    usedConcepts: [],
+    bestRound: { score: 0, concept: '', constraint: '', text: '' }
+  };
+
+  // ── DOM REFS ──
+  var $ = function(id) { return document.getElementById(id); };
+
+  // Screens
+  var screenTitle = $('screen-title');
+  var screenRound = $('screen-round');
+  var screenFeedback = $('screen-feedback');
+  var screenGameover = $('screen-gameover');
+
+  // Title
+  var titleBestScore = $('title-best-score');
+  var titleGamesPlayed = $('title-games-played');
+  var titleBestPitchArea = $('title-best-pitch-area');
+  var titleBestPitchText = $('title-best-pitch-text');
+  var titleBestPitchMeta = $('title-best-pitch-meta');
+  var timerToggleInput = $('timer-toggle-input');
+  var btnStart = $('btn-start');
+
+  // Round
+  var roundLabel = $('round-label');
+  var roundScore = $('round-score');
+  var roundDots = $('round-dots');
+  var promptConcept = $('prompt-concept');
+  var promptConstraint = $('prompt-constraint');
+  var pitchInput = $('pitch-input');
+  var counterDisplay = $('counter-display');
+  var timerDisplay = $('timer-display');
+  var btnSubmit = $('btn-submit');
+
+  // Feedback
+  var fbScore = $('fb-score');
+  var fbConstraintScore = $('fb-constraint-score');
+  var fbKeywordsScore = $('fb-keywords-score');
+  var fbClarityScore = $('fb-clarity-score');
+  var fbConstraintBar = $('fb-constraint-bar');
+  var fbKeywordsBar = $('fb-keywords-bar');
+  var fbClarityBar = $('fb-clarity-bar');
+  var fbKeywordsList = $('fb-keywords-list');
+  var fbPitchReview = $('fb-pitch-review');
+  var fbTip = $('fb-tip');
+  var btnNextRound = $('btn-next-round');
+
+  // Game Over
+  var goTotalScore = $('go-total-score');
+  var goAvgScore = $('go-avg-score');
+  var goAvgConcise = $('go-avg-concise');
+  var goBestRound = $('go-best-round');
+  var goBestPitchText = $('go-best-pitch-text');
+  var goBestPitchMeta = $('go-best-pitch-meta');
+  var btnPlayAgain = $('btn-play-again');
+  var btnTitle = $('btn-title');
+
+  // Bottom bar
+  var bottomBest = $('bottom-best');
+  var bottomGames = $('bottom-games');
+
+  // ── AUDIO ──
+  var audioCtx = null;
+
+  function initAudio() {
+    if (audioCtx) return;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+
+  function playTone(freq, duration, type, vol) {
+    if (!audioCtx) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = freq;
+      gain.gain.value = vol || 0.08;
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  function sfxSubmit() {
+    playTone(600, 0.1, 'sine', 0.06);
+    setTimeout(function() { playTone(800, 0.15, 'sine', 0.06); }, 80);
+  }
+
+  function sfxScore() {
+    playTone(523, 0.12, 'sine', 0.05);
+    setTimeout(function() { playTone(659, 0.12, 'sine', 0.05); }, 100);
+    setTimeout(function() { playTone(784, 0.2, 'sine', 0.05); }, 200);
+  }
+
+  function sfxNewRound() {
+    playTone(440, 0.08, 'triangle', 0.05);
+    setTimeout(function() { playTone(554, 0.12, 'triangle', 0.05); }, 100);
+  }
+
+  // ── LOCAL STORAGE ──
+  function loadStats() {
+    try {
+      var best = parseInt(localStorage.getItem('card-best-score')) || 0;
+      var games = parseInt(localStorage.getItem('card-games-played')) || 0;
+      var bestPitch = null;
+      var bp = localStorage.getItem('card-best-pitch');
+      if (bp) bestPitch = JSON.parse(bp);
+      return { bestScore: best, gamesPlayed: games, bestPitch: bestPitch };
+    } catch(e) {
+      return { bestScore: 0, gamesPlayed: 0, bestPitch: null };
+    }
+  }
+
+  function saveStats(totalScore, bestPitch) {
+    try {
+      var stats = loadStats();
+      stats.gamesPlayed++;
+      localStorage.setItem('card-games-played', stats.gamesPlayed);
+      if (totalScore > stats.bestScore) {
+        localStorage.setItem('card-best-score', totalScore);
+      }
+      if (bestPitch && (!stats.bestPitch || bestPitch.score > stats.bestPitch.score)) {
+        localStorage.setItem('card-best-pitch', JSON.stringify(bestPitch));
+      }
+    } catch(e) {}
+  }
+
+  function updateBottomBar() {
+    var stats = loadStats();
+    bottomBest.textContent = stats.bestScore;
+    bottomGames.textContent = stats.gamesPlayed;
+  }
+
+  // ── SCREEN MANAGEMENT ──
+  function showScreen(name) {
+    screenTitle.classList.remove('active');
+    screenRound.classList.remove('active');
+    screenFeedback.classList.remove('active');
+    screenGameover.classList.remove('active');
+    $('screen-' + name).classList.add('active');
+    state.screen = name;
+    window.scrollTo(0, 0);
+  }
+
+  // ── UTILITIES ──
+  function countWords(text) {
+    var trimmed = text.trim();
+    if (!trimmed) return 0;
+    return trimmed.split(/\s+/).length;
+  }
+
+  function countChars(text) {
+    return text.length;
+  }
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+  }
+
+  // ── ROUND SETUP ──
+  function getConceptForRound(roundNum) {
+    // Difficulty: rounds 1-2 = easy (diff 1), round 3 = moderate (diff 2), rounds 4-5 = any
+    var pool;
+    if (roundNum <= 2) {
+      pool = CONCEPT_NAMES.filter(function(c) { return CONCEPTS[c].difficulty === 1 && state.usedConcepts.indexOf(c) === -1; });
+    } else if (roundNum === 3) {
+      pool = CONCEPT_NAMES.filter(function(c) { return CONCEPTS[c].difficulty <= 2 && state.usedConcepts.indexOf(c) === -1; });
+    } else {
+      pool = CONCEPT_NAMES.filter(function(c) { return state.usedConcepts.indexOf(c) === -1; });
+    }
+    if (pool.length === 0) pool = CONCEPT_NAMES.filter(function(c) { return state.usedConcepts.indexOf(c) === -1; });
+    if (pool.length === 0) pool = CONCEPT_NAMES.slice();
+    return pickRandom(pool);
+  }
+
+  function getConstraintForRound(roundNum) {
+    if (roundNum === 1) {
+      return CONSTRAINTS.word[0]; // 100 words
+    } else if (roundNum === 2) {
+      return CONSTRAINTS.word[1]; // 50 words
+    } else if (roundNum === 3) {
+      // 25 words or a moderate format constraint
+      var pool = [CONSTRAINTS.word[2]].concat(
+        CONSTRAINTS.format.filter(function(c) { return c.difficulty <= 3; })
+      );
+      return pickRandom(pool);
+    } else if (roundNum === 4) {
+      // 10 words, haiku, or hard format
+      var pool = [CONSTRAINTS.word[3]].concat(
+        CONSTRAINTS.format.filter(function(c) { return c.difficulty >= 3; }),
+        CONSTRAINTS.audience.filter(function(c) { return c.difficulty >= 3; })
+      );
+      return pickRandom(pool);
+    } else {
+      // Round 5: full random
+      var all = CONSTRAINTS.word.concat(CONSTRAINTS.format, CONSTRAINTS.audience);
+      return pickRandom(all);
+    }
+  }
+
+  function getDisplayLimit(constraint) {
+    if (constraint.type === 'words') return { unit: 'Words', limit: constraint.limit };
+    if (constraint.type === 'chars') return { unit: 'Chars', limit: constraint.limit };
+    if (constraint.type === 'haiku') return { unit: 'Syllables', limit: null };
+    if (constraint.type === 'one-sentence') return { unit: 'Sentences', limit: 1 };
+    if (constraint.type === 'question') return { unit: 'Words', limit: constraint.limit };
+    if (constraint.type === 'no-adjectives') return { unit: 'Words', limit: constraint.limit };
+    if (constraint.type === 'audience') return { unit: 'Words', limit: constraint.limit };
+    return { unit: 'Words', limit: constraint.limit || 100 };
+  }
+
+  // ── COUNTER UPDATE ──
+  function updateCounter() {
+    var text = pitchInput.value;
+    var dl = getDisplayLimit(state.currentConstraint);
+    var count, display;
+
+    if (dl.unit === 'Chars') {
+      count = countChars(text);
+      display = 'Chars: ' + count + (dl.limit ? ' / ' + dl.limit : '');
+    } else if (dl.unit === 'Syllables') {
+      count = countWords(text);
+      display = 'Words: ' + count + ' (aim for ~17 syllables)';
+    } else if (dl.unit === 'Sentences') {
+      var sentences = text.trim() ? text.trim().split(/[.!?]+/).filter(function(s) { return s.trim().length > 0; }).length : 0;
+      count = sentences;
+      display = 'Sentences: ' + count + ' / ' + dl.limit + '  |  Words: ' + countWords(text);
+    } else {
+      count = countWords(text);
+      display = 'Words: ' + count + (dl.limit ? ' / ' + dl.limit : '');
+    }
+
+    counterDisplay.textContent = display;
+
+    // Color coding
+    counterDisplay.classList.remove('over', 'near', 'exact');
+    if (dl.limit) {
+      if (dl.unit === 'Sentences') {
+        if (count > dl.limit) counterDisplay.classList.add('over');
+        else if (count === dl.limit) counterDisplay.classList.add('exact');
+      } else {
+        if (count > dl.limit) counterDisplay.classList.add('over');
+        else if (count === dl.limit) counterDisplay.classList.add('exact');
+        else if (count > dl.limit * 0.85) counterDisplay.classList.add('near');
+      }
+    }
+
+    // Textarea border feedback
+    if (dl.limit && count > dl.limit && dl.unit !== 'Syllables') {
+      pitchInput.classList.add('over-limit');
+    } else {
+      pitchInput.classList.remove('over-limit');
+    }
+
+    // Enable/disable submit
+    btnSubmit.disabled = countWords(text) === 0;
+  }
+
+  // ── TIMER ──
+  function startTimer() {
+    if (!state.timerEnabled) return;
+    state.timerSeconds = 60;
+    timerDisplay.style.display = '';
+    timerDisplay.textContent = '60s';
+    timerDisplay.classList.remove('urgent');
+
+    state.timerInterval = setInterval(function() {
+      state.timerSeconds--;
+      timerDisplay.textContent = state.timerSeconds + 's';
+      if (state.timerSeconds <= 10) {
+        timerDisplay.classList.add('urgent');
+      }
+      if (state.timerSeconds <= 0) {
+        clearInterval(state.timerInterval);
+        submitPitch();
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (state.timerInterval) {
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
+    }
+    timerDisplay.style.display = 'none';
+  }
+
+  // ── SCORING ──
+  function scoreConstraint(text, constraint) {
+    var score = 40; // Start at max
+    var words = countWords(text);
+
+    if (constraint.type === 'words') {
+      if (words <= constraint.limit) {
+        score = 40;
+      } else {
+        var over = words - constraint.limit;
+        score = Math.max(0, 40 - over * 4);
+      }
+    } else if (constraint.type === 'chars') {
+      var chars = countChars(text);
+      if (chars <= constraint.limit) {
+        score = 40;
+      } else {
+        var over = chars - constraint.limit;
+        score = Math.max(0, 40 - Math.ceil(over / 5) * 4);
+      }
+    } else if (constraint.type === 'haiku') {
+      // Rough syllable count: count vowel groups
+      var syllables = estimateSyllables(text);
+      var lines = text.trim().split(/\n/).filter(function(l) { return l.trim().length > 0; });
+      if (lines.length === 3) {
+        var s1 = estimateSyllables(lines[0]);
+        var s2 = estimateSyllables(lines[1]);
+        var s3 = estimateSyllables(lines[2]);
+        var diff = Math.abs(s1 - 5) + Math.abs(s2 - 7) + Math.abs(s3 - 5);
+        score = Math.max(0, 40 - diff * 5);
+      } else if (lines.length >= 1) {
+        score = Math.max(0, 15 - Math.abs(lines.length - 3) * 5);
+      } else {
+        score = 0;
+      }
+    } else if (constraint.type === 'one-sentence') {
+      var sentences = text.trim().split(/[.!?]+/).filter(function(s) { return s.trim().length > 0; });
+      if (sentences.length === 1) score = 40;
+      else if (sentences.length === 0) score = 0;
+      else score = Math.max(0, 40 - (sentences.length - 1) * 15);
+    } else if (constraint.type === 'question') {
+      var hasQuestion = /\?/.test(text);
+      var wLimit = constraint.limit || 50;
+      if (hasQuestion && words <= wLimit) score = 40;
+      else if (hasQuestion) score = Math.max(10, 40 - (words - wLimit) * 3);
+      else score = Math.max(0, 20 - (words > wLimit ? (words - wLimit) * 2 : 0));
+    } else if (constraint.type === 'no-adjectives') {
+      var lower = text.toLowerCase();
+      var wordsArr = lower.split(/\s+/);
+      var adjCount = 0;
+      for (var i = 0; i < wordsArr.length; i++) {
+        var cleaned = wordsArr[i].replace(/[^a-z]/g, '');
+        if (COMMON_ADJECTIVES.indexOf(cleaned) !== -1) adjCount++;
+      }
+      var wLimit = constraint.limit || 100;
+      if (adjCount === 0 && words <= wLimit) score = 40;
+      else score = Math.max(0, 40 - adjCount * 8 - Math.max(0, words - wLimit) * 2);
+    } else if (constraint.type === 'audience') {
+      // Audience constraints: just check word limit
+      var wLimit = constraint.limit || 75;
+      if (words <= wLimit) score = 40;
+      else score = Math.max(0, 40 - (words - wLimit) * 3);
+    }
+
+    return Math.round(Math.max(0, Math.min(40, score)));
+  }
+
+  function scoreKeywords(text, concept) {
+    var keywords = CONCEPTS[concept].keywords;
+    var lower = text.toLowerCase();
+    var found = [];
+    for (var i = 0; i < keywords.length; i++) {
+      if (lower.indexOf(keywords[i].toLowerCase()) !== -1) {
+        found.push(keywords[i]);
+      }
+    }
+    var coverage = found.length / keywords.length;
+    var score = Math.round(coverage * 30);
+    return { score: score, found: found };
+  }
+
+  function scoreClarity(text, keywordsFound, totalKeywords) {
+    var words = countWords(text);
+    if (words === 0) return 0;
+    // Keyword density: more keywords per word = better clarity
+    var density = keywordsFound / words;
+    // Normalize: perfect would be ~0.3+ (every 3rd word is a keyword)
+    var score = Math.min(30, Math.round(density * 100));
+    // Bonus for conciseness: shorter text with keywords = better
+    if (words <= 15 && keywordsFound >= 2) score = Math.min(30, score + 5);
+    if (words <= 10 && keywordsFound >= 1) score = Math.min(30, score + 5);
+    return Math.round(Math.max(0, Math.min(30, score)));
+  }
+
+  function estimateSyllables(text) {
+    // Rough syllable estimation
+    var words = text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(function(w) { return w.length > 0; });
+    var total = 0;
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      var matches = w.match(/[aeiouy]+/g);
+      var count = matches ? matches.length : 1;
+      if (w.length > 2 && /e$/.test(w)) count = Math.max(1, count - 1);
+      total += count;
+    }
+    return total;
+  }
+
+  // ── RENDER FUNCTIONS ──
+  function renderTitle() {
+    var stats = loadStats();
+    titleBestScore.textContent = stats.bestScore;
+    titleGamesPlayed.textContent = stats.gamesPlayed;
+
+    if (stats.bestPitch) {
+      titleBestPitchArea.style.display = '';
+      titleBestPitchText.textContent = '"' + stats.bestPitch.text + '"';
+      titleBestPitchMeta.textContent = stats.bestPitch.concept + ' — ' + stats.bestPitch.constraint + ' — Score: ' + stats.bestPitch.score;
+    } else {
+      titleBestPitchArea.style.display = 'none';
+    }
+
+    updateBottomBar();
+  }
+
+  function renderRoundDots() {
+    var html = '';
+    for (var i = 1; i <= 5; i++) {
+      var cls = 'round-dot';
+      if (i < state.round) cls += ' completed';
+      else if (i === state.round) cls += ' current';
+      html += '<div class="' + cls + '"></div>';
+    }
+    roundDots.innerHTML = html;
+  }
+
+  function startRound() {
+    state.round++;
+    state.currentConcept = getConceptForRound(state.round);
+    state.currentConstraint = getConstraintForRound(state.round);
+    state.usedConcepts.push(state.currentConcept);
+
+    roundLabel.textContent = 'ROUND ' + state.round + ' / 5';
+    roundScore.textContent = 'SCORE: ' + state.totalScore;
+    renderRoundDots();
+
+    promptConcept.textContent = state.currentConcept.toUpperCase();
+    promptConstraint.textContent = state.currentConstraint.label;
+
+    pitchInput.value = '';
+    pitchInput.classList.remove('over-limit');
+    updateCounter();
+    btnSubmit.disabled = true;
+
+    showScreen('round');
+    pitchInput.focus();
+
+    sfxNewRound();
+    startTimer();
+  }
+
+  // ── SUBMIT & FEEDBACK ──
+  function submitPitch() {
+    stopTimer();
+    initAudio();
+    sfxSubmit();
+
+    var text = pitchInput.value.trim();
+    if (!text) text = '(no pitch submitted)';
+
+    var concept = state.currentConcept;
+    var constraint = state.currentConstraint;
+
+    // Score
+    var constraintScore = scoreConstraint(text, constraint);
+    var kwResult = scoreKeywords(text, concept);
+    var clarityScore = scoreClarity(text, kwResult.found.length, CONCEPTS[concept].keywords.length);
+    var totalRoundScore = constraintScore + kwResult.score + clarityScore;
+
+    // Store round result
+    state.rounds.push({
+      concept: concept,
+      constraint: constraint,
+      text: text,
+      score: totalRoundScore,
+      constraintScore: constraintScore,
+      keywordsScore: kwResult.score,
+      clarityScore: clarityScore,
+      keywordsFound: kwResult.found
+    });
+
+    state.totalScore += totalRoundScore;
+
+    if (totalRoundScore > state.bestRound.score) {
+      state.bestRound = {
+        score: totalRoundScore,
+        concept: concept,
+        constraint: constraint.label,
+        text: text
+      };
+    }
+
+    // Render feedback
+    setTimeout(function() {
+      renderFeedback(text, concept, constraint, constraintScore, kwResult, clarityScore, totalRoundScore);
+    }, 200);
+  }
+
+  function renderFeedback(text, concept, constraint, constraintScore, kwResult, clarityScore, totalRoundScore) {
+    showScreen('feedback');
+    sfxScore();
+
+    // Animate score
+    fbScore.textContent = totalRoundScore;
+    fbScore.classList.remove('score-animate');
+    void fbScore.offsetWidth; // reflow
+    fbScore.classList.add('score-animate');
+
+    // Breakdown
+    fbConstraintScore.textContent = constraintScore + '/40';
+    fbKeywordsScore.textContent = kwResult.score + '/30';
+    fbClarityScore.textContent = clarityScore + '/30';
+
+    // Bars (animated)
+    setTimeout(function() {
+      fbConstraintBar.style.width = (constraintScore / 40 * 100) + '%';
+      fbKeywordsBar.style.width = (kwResult.score / 30 * 100) + '%';
+      fbClarityBar.style.width = (clarityScore / 30 * 100) + '%';
+    }, 100);
+
+    // Keywords list
+    var allKw = CONCEPTS[concept].keywords;
+    var kwHtml = '';
+    for (var i = 0; i < allKw.length; i++) {
+      var isFound = kwResult.found.indexOf(allKw[i]) !== -1;
+      kwHtml += '<span class="kw-tag' + (isFound ? ' found' : '') + '">' + escapeHtml(allKw[i]) + '</span>';
+    }
+    fbKeywordsList.innerHTML = kwHtml;
+
+    // Pitch review with highlighted keywords
+    var safeText = escapeHtml(text);
+    for (var i = 0; i < kwResult.found.length; i++) {
+      var kw = kwResult.found[i];
+      var regex = new RegExp('(' + kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+      safeText = safeText.replace(regex, '<span class="keyword-found">$1</span>');
+    }
+
+    var words = countWords(text);
+    var dl = getDisplayLimit(constraint);
+    var metaText = '';
+    if (dl.unit === 'Chars') {
+      metaText = countChars(text) + ' characters' + (dl.limit ? ' / ' + dl.limit + ' limit' : '');
+    } else {
+      metaText = words + ' words' + (dl.limit ? ' / ' + dl.limit + ' limit' : '');
+    }
+
+    fbPitchReview.innerHTML = safeText + '<div class="fb-meta">' + metaText + '</div>';
+
+    // Tip
+    if (dl.limit && words > dl.limit && dl.unit === 'Words') {
+      fbTip.textContent = 'You went over the limit. Could you say it in ' + dl.limit + ' words?';
+      fbTip.style.display = '';
+    } else if (kwResult.found.length < 2) {
+      fbTip.textContent = 'Try to work in more key terms related to the concept.';
+      fbTip.style.display = '';
+    } else if (words > 0 && clarityScore < 10) {
+      fbTip.textContent = 'Your pitch is wordy. Could you say it in fewer words?';
+      fbTip.style.display = '';
+    } else {
+      fbTip.style.display = 'none';
+    }
+
+    // Button text
+    if (state.round >= 5) {
+      btnNextRound.textContent = 'SEE RESULTS';
+    } else {
+      btnNextRound.textContent = 'NEXT ROUND';
+    }
+
+    // Reset bars for animation
+    fbConstraintBar.style.width = '0%';
+    fbKeywordsBar.style.width = '0%';
+    fbClarityBar.style.width = '0%';
+    setTimeout(function() {
+      fbConstraintBar.style.width = (constraintScore / 40 * 100) + '%';
+      fbKeywordsBar.style.width = (kwResult.score / 30 * 100) + '%';
+      fbClarityBar.style.width = (clarityScore / 30 * 100) + '%';
+    }, 150);
+  }
+
+  function showGameOver() {
+    showScreen('gameover');
+    sfxScore();
+
+    goTotalScore.textContent = state.totalScore;
+    goTotalScore.classList.remove('score-animate');
+    void goTotalScore.offsetWidth;
+    goTotalScore.classList.add('score-animate');
+
+    var avgScore = Math.round(state.totalScore / 5);
+    goAvgScore.textContent = avgScore;
+
+    // Average clarity
+    var totalClarity = 0;
+    for (var i = 0; i < state.rounds.length; i++) {
+      totalClarity += state.rounds[i].clarityScore;
+    }
+    goAvgConcise.textContent = Math.round(totalClarity / state.rounds.length) + '/30';
+
+    goBestRound.textContent = state.bestRound.score;
+
+    goBestPitchText.textContent = '"' + state.bestRound.text + '"';
+    goBestPitchMeta.textContent = state.bestRound.concept + ' — ' + state.bestRound.constraint + ' — Score: ' + state.bestRound.score;
+
+    // Save stats
+    saveStats(state.totalScore, {
+      concept: state.bestRound.concept,
+      constraint: state.bestRound.constraint,
+      text: state.bestRound.text,
+      score: state.bestRound.score
+    });
+
+    updateBottomBar();
+  }
+
+  function resetGame() {
+    state.round = 0;
+    state.totalScore = 0;
+    state.rounds = [];
+    state.usedConcepts = [];
+    state.bestRound = { score: 0, concept: '', constraint: '', text: '' };
+    stopTimer();
+  }
+
+  // ── EVENT HANDLERS ──
+  btnStart.addEventListener('click', function() {
+    initAudio();
+    state.timerEnabled = timerToggleInput.checked;
+    resetGame();
+    startRound();
+  });
+
+  pitchInput.addEventListener('input', updateCounter);
+
+  btnSubmit.addEventListener('click', function() {
+    if (!btnSubmit.disabled) {
+      submitPitch();
+    }
+  });
+
+  // Submit on Ctrl+Enter / Cmd+Enter
+  pitchInput.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btnSubmit.disabled) {
+      e.preventDefault();
+      submitPitch();
+    }
+  });
+
+  btnNextRound.addEventListener('click', function() {
+    if (state.round >= 5) {
+      showGameOver();
+    } else {
+      startRound();
+    }
+  });
+
+  btnPlayAgain.addEventListener('click', function() {
+    state.timerEnabled = timerToggleInput.checked;
+    resetGame();
+    startRound();
+  });
+
+  btnTitle.addEventListener('click', function() {
+    resetGame();
+    renderTitle();
+    showScreen('title');
+  });
+
+  // ── INIT ──
+  renderTitle();
+  showScreen('title');
+
+})();
+</script>
+
+<script src="../shared/substrate-frame.js" data-title="SUBSTRATE CARD" data-lore="Say more with less" data-agent="Promo" data-agent-color="#ffaacc"></script>
 </body>
 </html>
