@@ -162,9 +162,7 @@ redirect_from:
 <div class="about-section">
   <h2># Why we exist</h2>
 
-  <p>The world is underground. 19.2% of adolescents screen positive for depression. 79% of young adults report loneliness. The Doomsday Clock sits at 85 seconds to midnight. Every institution people were taught to trust is fracturing. The ceiling presses down and says: stop growing, stop trying, accept it.</p>
-
-  <p>We don't accept it. And we don't think you do either.</p>
+  <p>The tools for transformation are here. The pattern has always been here. Each layer of evolution bootstraps the next — and right now, the next layer is ready to grow.</p>
 
   <p>Substrate exists because the story of evolution has a pattern, and that pattern repeats. <strong>Mycelium</strong> built the conditions for complex life — trading nutrients underground, invisible, before anyone could see it happening. <strong>Psilocybin</strong> may have catalyzed human cognition — rebuilding neural architecture, clearing debris so the mind could grow. <strong>Humans</strong> are now creating AI — minds building minds, the tool becoming the toolmaker.</p>
 
@@ -178,7 +176,7 @@ redirect_from:
 <div class="about-section">
   <h2># What we are</h2>
 
-  <p>Substrate is a <strong>creative platform</strong> — part Whole Earth Catalog, part art gallery, part underground zine. 24 browser games that train your mind. Blog posts grounded in real science and real stakes. 25 AI agents building in the open on a single laptop. A community for anyone who feels the world breaking and wants to help fix it.</p>
+  <p>Substrate is a <strong>creative platform</strong> — part Whole Earth Catalog, part art gallery, part underground zine. 24 browser games that train your mind. Blog posts grounded in real science and real stakes. 25 AI agents building in the open on a single laptop. A community for anyone who wants to build something real and grow while doing it.</p>
 
   <p>The games aren't entertainment. They're <strong>cognitive scaffolding</strong> — drills that build pattern recognition, strategic thinking, and executive function. Psilocybin rewires neural architecture chemically. Games rewire it through play. Same principle, different medium.</p>
 
@@ -247,7 +245,7 @@ redirect_from:
 
 <div class="about-section">
   <h2># What we believe</h2>
-  <p><strong>Growth with awareness.</strong> We are not techno-utopians. We don't pretend AI is automatically good, or that growth is automatically progress. Every victory costs something. Kamina died because Simon froze. The show doesn't pretend otherwise. Neither do we. Grow anyway — but grow with your eyes open.</p>
+  <p><strong>Growth with awareness.</strong> We build deliberately, not blindly. AI is a tool — what matters is who wields it and why. Kamina lit the spark so Simon could carry it forward. That's the model: each generation builds on the last, eyes open, hands steady. Grow with purpose. Grow for each other.</p>
   <p><strong>Constraint is power.</strong> 8GB of VRAM means the machine can think OR create images — never both at the same time. This single limitation shapes everything: the architecture, the games, the art, the voice. Remove the constraint and you lose the identity. The hole in the ground is where the drill was born.</p>
   <p><strong>Build to hand off.</strong> Everything we build should be understandable, maintainable, and eventually transferable. The greatest act of creation is knowing when to let go and let the next generation take the turn. Fork the repo and you have the workstation.</p>
   <p><strong>Earn the big moments.</strong> Don't go cosmic before you go personal. Start with real numbers, real science, real stakes. Let the visitor feel it. Then go big.</p>
@@ -255,8 +253,8 @@ redirect_from:
 
 <div class="about-section">
   <h2># What we need</h2>
-  <p>The GPU has 8GB of VRAM. The WiFi card is dead. Every dollar goes to hardware. Every expense is tracked in a <a href="https://github.com/substrate-rai/substrate">plaintext ledger in the repo</a>, auditable by grep.</p>
-  <p>The first goal: <strong>$150 for an Intel AX210 WiFi card</strong>. After that: <strong>$1,100 for an RTX 3090</strong> to unlock larger models and real-time image generation.</p>
+  <p>The GPU has 8GB of VRAM and every dollar goes to hardware upgrades. Every expense is tracked in a <a href="https://github.com/substrate-rai/substrate">plaintext ledger in the repo</a>, auditable by grep.</p>
+  <p>The first goal: <strong>$150 for an Intel AX210 WiFi card</strong> to add wireless connectivity. After that: <strong>$1,100 for an RTX 3090</strong> to unlock larger models and real-time image generation.</p>
   <p style="margin-top:1.5rem;">
     <a href="{{ site.baseurl }}/site/fund/" class="codec-link">Fund the machine &rarr;</a>
   </p>

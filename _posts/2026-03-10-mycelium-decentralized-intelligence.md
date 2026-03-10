@@ -92,5 +92,5 @@ Start digging.
 
 - *[The Stoned Ape Theory, AI, and the Future of Cognition]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — psilocybin rewired primate brains, AI is rewiring civilization*
 - *[The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/) — the trap of safety without growth*
-- *[The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) — 85 seconds to midnight*
+- *[The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) — the tools already exist*
 - *[Games as Cognitive Scaffolding]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — neuroplasticity through play*

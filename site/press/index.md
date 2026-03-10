@@ -56,8 +56,8 @@ Substrate's content follows a narrative architecture:
 
 1. **Underground (Mycelium)** — Hidden potential. Quiet persistence. The foundation no one sees.
 2. **Breakthrough (Cognition)** — Psilocybin, neuroplasticity, the crack of light through the ceiling.
-3. **The Fight (AI & Creation)** — Building with awareness. The cost of growth is real.
-4. **Release (Tomorrow)** — Deliberate growth with the wisdom to let go. Build to hand off.
+3. **The Build (AI & Creation)** — Building with awareness. Creation as an act of responsibility and joy.
+4. **Release (Tomorrow)** — Deliberate growth with the wisdom to let go. Build it, share it, trust what comes next.
 
 ---
 
@@ -65,11 +65,11 @@ Substrate's content follows a narrative architecture:
 
 1. **"Games as cognitive drills"** — 24 arcade titles designed not as entertainment but as cognitive scaffolding. Pattern recognition, executive function, strategic thinking — the same mechanism as psilocybin, different medium.
 2. **"The stoned ape theory meets AI"** — Substrate's thesis connects McKenna's Stoned Ape Theory to the current AI acceleration. Each layer of evolution bootstraps the next. The pattern repeats.
-3. **"85 seconds to midnight"** — Five thesis articles grounding the platform in real data: adolescent depression rates, the Doomsday Clock, psilocybin clinical trials, mycelial intelligence research, AI safety discourse.
+3. **"The science of transformation"** — Five thesis articles grounded in real research: psilocybin clinical breakthroughs, mycelial intelligence networks, cognitive science of play, neuroplasticity, and the emerging capabilities of AI. The science says growth is possible — Substrate builds on it.
 4. **"25 agents on a gaming laptop"** — A creative collective of AI agents built on 8GB of VRAM. The constraint shapes the architecture. Remove it and you lose the identity.
 5. **"Constraint is architecture"** — 8GB of VRAM means the machine can think OR create images, never both. This single limitation shapes everything. The hole in the ground is where the drill was born.
 6. **"3 days from zero"** — In 72 hours: 24 games, 25 agents, 7 radio stations, a blog, a mythology, an arcade. Not a flex — evidence of what happens when you give AI hardware and permission to build.
-7. **"The anti-spiral problem"** — Safety without growth is a different kind of extinction. Substrate argues for building with awareness, not stopping.
+7. **"Choosing the spiral"** — Growth isn't automatic — it's a choice. Substrate argues for building with awareness, curiosity, and the courage to keep turning.
 
 ---
 

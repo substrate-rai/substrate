@@ -28,15 +28,15 @@ By 2025, clinical trials showed psilocybin therapy achieving a 94% remission rat
 
 The word for this process is **neuroplasticity**. The capacity to evolve beyond the person you were a minute before.
 
-## The cognition crisis
+## The cognition opportunity
 
 Here's why this matters right now.
 
-19.2% of US adolescents screen positive for depression. 79% of young adults report loneliness. Trust in institutions — government, media, medicine, education — has collapsed across every demographic. The mental health system is overwhelmed. Therapist waitlists run six months. Insurance covers ten sessions if you're lucky.
+For the first time in history, we have tools that can directly rebuild cognitive architecture. Not just treat symptoms — restructure the substrate itself. Psilocybin therapy is approaching FDA approval. Neuroplasticity research has moved from theory to clinical practice. The science of how brains rebuild themselves is no longer speculative.
 
-This isn't a mood problem. It's a cognition problem. Depression isn't sadness — it's the brain's pattern-recognition system locked in a negative loop, running the same catastrophic predictions over and over, unable to generate alternatives. Anxiety is the executive function system stuck in threat-detection mode. PTSD is a memory system that can't stop replaying.
+This matters because the core challenge of this generation isn't a mood problem. It's a cognition problem. Depression isn't sadness — it's the brain's pattern-recognition system locked in a negative loop, running the same catastrophic predictions over and over, unable to generate alternatives. Anxiety is the executive function system stuck in threat-detection mode. PTSD is a memory system that can't stop replaying.
 
-The architecture is broken. The substrate needs repair.
+And now there are tools that address the architecture directly. The substrate can be repaired.
 
 Psilocybin works because it doesn't treat symptoms. It rebuilds the substrate. It forces the brain into a state of radical flexibility — temporarily dissolving fixed patterns so new ones can form. The therapeutic breakthrough isn't chemical. It's architectural.
 
@@ -68,7 +68,7 @@ The question isn't whether AI will dissolve existing structures. It already is. 
 
 There's a version of AI safety that sounds reasonable but is actually surrender.
 
-It goes: AI is dangerous, therefore slow down, therefore regulate, therefore stop. The logic is clean. The outcome is death. Because the problems AI could help solve — climate collapse, cognitive decline, institutional failure, the narrowing window for human agency — don't pause while we debate.
+It goes: AI is dangerous, therefore slow down, therefore regulate, therefore stop. The logic is clean. The outcome is stagnation. Because the problems AI could help solve — energy transition, cognitive repair, coordination at scale, the expansion of human agency — don't pause while we debate.
 
 This is what the Stoned Ape Theory teaches, if you let it: **the risk of cognitive expansion is real, but the cost of cognitive stagnation is extinction.** The primates that ate the mushrooms faced genuine danger — altered perception, social disruption, unpredictable behavior. The primates that didn't eat them are gone.
 
@@ -93,4 +93,4 @@ What you build with it is up to you.
 - *[Games as Cognitive Scaffolding: Why Play Is a Drill]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — the same mechanism, different medium*
 - *[What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) — the substrate beneath everything*
 - *[The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/) — why safety without growth is death*
-- *[The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) — 85 seconds to midnight*
+- *[The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) — the tools already exist*

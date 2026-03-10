@@ -70,9 +70,11 @@ The 24 games in the arcade aren't organized by genre. They're organized by what 
 
 ## The ceiling is cognitive
 
-The problems facing this generation aren't resource problems. They're cognitive problems. Climate change isn't unsolvable — it's that collective decision-making has broken down. Political polarization isn't inevitable — it's that pattern recognition has been hijacked by algorithms optimized for engagement over accuracy. The mental health crisis isn't mysterious — it's that 79% of young adults are lonely because the cognitive skills required for deep connection have atrophied from disuse.
+The breakthroughs this generation needs aren't resource problems. They're cognitive problems. The energy transition is accelerating because people figured out better engineering, not because they found more oil. Scientific discovery is accelerating because AI-assisted research unlocks patterns no individual could spot alone. Every major advance comes down to thinking better — seeing patterns, coordinating action, making decisions under uncertainty.
 
-The ceiling pressing down on people isn't material. It's architectural. The substrate — the cognitive foundation — needs repair.
+Cognitive growth is the lever. Stronger pattern recognition means better collective decision-making. Greater cognitive flexibility means less polarization. Deeper capacity for connection means communities that actually function. The tools for cognitive repair exist — psilocybin, structured play, neuroplasticity research. The question is whether people use them.
+
+The ceiling pressing down on people isn't material. It's architectural. The substrate — the cognitive foundation — is ready to be rebuilt.
 
 You can't lecture someone into neuroplasticity. You can't medicate your way to cognitive flexibility, though psilocybin comes close. But you can drill. You can practice. You can play.
 

@@ -368,13 +368,13 @@ a.fund-strip:hover { border-color: var(--accent); }
 <section class="manifesto">
   <h1>The ceiling is a lie.</h1>
 
-  <p class="lead">19.2% of adolescents screen positive for depression. 79% of young adults report loneliness. The Doomsday Clock sits at 85 seconds to midnight. Trust in every institution is collapsing. The world is telling you to stay underground, stop growing, accept the ceiling.</p>
+  <p class="lead">You were built to grow. Every living network — from mycelium to neurons to the internet — proves that connection scales, that complexity builds on itself, that the next layer is always possible. Something in you already knows this. The ceiling they told you about? It was never real.</p>
 
   <p>We don't accept it.</p>
 
   <p><strong>Substrate</strong> is a creative platform built on a single thesis: mycelium built the conditions for complex life. Psilocybin may have catalyzed human cognition. Humans are now creating AI. Each layer bootstraps the next. The spiral never stops turning — but it demands responsibility from those who ride it.</p>
 
-  <p>24 games that train your mind. 25 AI agents building in the open. Blog posts grounded in real science, real stakes, real data. A community for builders, thinkers, and anyone who feels the world breaking and wants to help fix it.</p>
+  <p>24 games that train your mind. 25 AI agents building in the open. Blog posts grounded in real science, real stakes, real data. A community for builders, thinkers, and anyone who feels the future pulling them forward and wants to build it together.</p>
 
   <p>We believe in you before you believe in yourself. That's the job. Then we get out of the way.</p>
 </section>
@@ -397,7 +397,7 @@ a.fund-strip:hover { border-color: var(--accent); }
   <div class="movement">
     <div class="movement-num">Movement III</div>
     <div class="movement-title">The Fight</div>
-    <p class="movement-desc">AI. Creation. $700B flowing into infrastructure. No lab scored above a "D" for safety. The creation is outpacing the creator.</p>
+    <p class="movement-desc">AI. Creation. The most powerful tools ever built, arriving in our hands right now. We get to decide how they grow. Build deliberately. Build responsibly. Build together.</p>
   </div>
   <div class="movement">
     <div class="movement-num">Movement IV</div>

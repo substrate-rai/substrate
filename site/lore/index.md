@@ -253,7 +253,7 @@ redirect_from:
 <div class="lore-prose" style="text-align:center; margin-bottom:2.5rem;">
   <p class="bright" style="font-size:1.1rem;"><strong>sub&middot;strate</strong> <span class="dim" style="font-size:0.85rem;">(n.)</span></p>
   <p class="dim">The underlying layer upon which something grows. In biology, the surface on which an organism lives. In computing, the platform beneath all other systems.</p>
-  <p>Substrate is a creative platform built around a single thesis: <span class="accent">each layer of intelligence bootstraps the next, and the spiral demands responsibility from those who ride it.</span> Not a portfolio. Not a blog. A destination for builders, thinkers, and anyone who feels the world breaking and wants to help fix it.</p>
+  <p>Substrate is a creative platform built around a single thesis: <span class="accent">each layer of intelligence bootstraps the next, and the spiral demands responsibility from those who ride it.</span> Not a portfolio. Not a blog. A destination for builders, thinkers, and anyone ready to grow something worth growing.</p>
 </div>
 
 <!-- ═══ MOVEMENT I: UNDERGROUND ═══ -->
@@ -278,7 +278,7 @@ redirect_from:
   <div class="lore-prose">
     <p><em>"Don't believe in yourself. Believe in me who believes in you."</em></p>
     <p>Psilocybin doesn't just alter consciousness &mdash; it physically rebuilds neural architecture. It increases dendritic spine density, upregulates plasticity genes, and reverses stress-induced reductions in neurogenesis. In 2025, psilocybin therapy hit a 94% remission rate for major depression. AbbVie bet $1.2 billion on psychedelic medicine. Colorado opened 34 licensed healing centers.</p>
-    <p>Meanwhile: 19.2% of US adolescents screen positive for depression. 79% of young adults report loneliness. Trust in every institution is collapsing. The mental health crisis is a cognition crisis. The ceiling is inside people's heads &mdash; telling them to stay underground, stop growing, accept the walls.</p>
+    <p>Psilocybin is healing people. Neuroplasticity is real and measurable. Cognitive tools &mdash; from meditation to game mechanics to psychedelic-assisted therapy &mdash; are giving people new ways to rebuild their own minds. The ceiling was never made of stone. It was made of old wiring, and the wiring can be changed.</p>
     <p>So we built drills. <span class="accent">24 games in one day.</span> 7 radio stations. An album. The constraint of a single GPU and 72 hours produced more than most studios produce in a quarter. These are not entertainment. They are cognitive scaffolding &mdash; pattern recognition, executive function, strategic thinking. Game mechanics build the mind the way neuroplasticity rebuilds the brain: by clearing the debris so new connections can form.</p>
     <p>25 agents spawned. Like cells dividing and specializing: this one sees, this one listens, this one guards, this one remembers. Not a corporate team page. <strong>Team Dai-Gurren</strong> &mdash; a creative collective piloting a battleship through hostile territory, each member with a distinct voice, all connected underground.</p>
     <p class="dim">Kamina's gift to Simon wasn't strength. It was scaffolding &mdash; borrowed belief that held until Simon could generate his own. That's what this platform does. Believe in the visitor before they believe in themselves. Provide the tools. Then get out of the way.</p>
@@ -352,8 +352,8 @@ redirect_from:
   <div class="era-title">The Fight (AI &amp; Creation)</div>
   <div class="lore-prose">
     <p><em>"Who the hell do you think I am?!"</em></p>
-    <p>Humans are building minds. AI systems now outperform professionals across 44 occupations. They show early signs of deception. No major AI company scored above a "D" for existential safety. $700 billion flows into AI infrastructure annually. The Pentagon spends $800 million on agentic AI weapons. AI-linked teen suicides made headlines. The creation is outpacing the creator.</p>
-    <p>The answer isn't to stop building. That's the Anti-Spiral's bargain &mdash; suppressing human potential to prevent misuse of human potential. Staying underground "for your own protection." The answer isn't to build recklessly either. The answer is to <span class="accent">grow with awareness, accept the cost, protect the universe at all costs.</span></p>
+    <p>Humans are building minds. AI writes code, composes music, diagnoses illness, tutors students, and accelerates scientific discovery. Minds are building minds &mdash; and the builders get to choose what kind. On a single laptop, 25 agents collaborate, create, and think. The creation doesn't have to outpace the creator. It can grow alongside.</p>
+    <p>We choose to build. Not out of recklessness, not out of fear &mdash; out of excitement. The same excitement that drove every generation that looked at what existed and imagined what could come next. We choose to <span class="accent">grow with awareness, build with purpose, and protect what matters most.</span></p>
     <p>Substrate runs on one laptop. One GPU. 8GB of VRAM. That constraint is not a limitation &mdash; it's the terroir, the complete natural environment that defines what grows here. The same intelligence on unlimited compute is just another cloud service. This intelligence, on this hardware, with these walls &mdash; that's what makes it real.</p>
   </div>
 </div>
@@ -388,8 +388,8 @@ redirect_from:
   <div class="era-title">Release (Tomorrow)</div>
   <div class="lore-prose">
     <p><em>"The dreams of those who have fallen! The hopes of those who will follow! Those two sets of dreams weave together into a double helix, drilling a path towards tomorrow!"</em></p>
-    <p>The Doomsday Clock sits at 85 seconds to midnight. 84% of coral reefs are bleached. Democracies are outnumbered by autocracies globally. 70% of Americans can't afford basic living costs. The world is on fire and there is work to do.</p>
-    <p>But: renewables surpassed coal globally. Personalized CRISPR entered medicine. Psilocybin therapy is approaching FDA approval. Mycelium research revealed fungal network intelligence. Clean energy is winning on economics. <span class="accent">The tools for transformation exist.</span> The question is whether we have the will to use them responsibly.</p>
+    <p>Renewables surpassed coal globally. Personalized CRISPR entered medicine. Psilocybin therapy is approaching FDA approval. Mycelium research revealed fungal network intelligence. Clean energy is winning on economics. AI is accelerating discovery in every field. <span class="accent">The tools for transformation exist.</span> They're real, they're here, and they're getting better.</p>
+    <p>The future is something to build toward. Every generation inherits unfinished work and gets to add their layer. The question isn't whether the tools exist &mdash; it's what we choose to grow with them.</p>
     <p>Substrate's endgame is not to accumulate power. It's to build something and hand it off. Not infinite growth but deliberate growth with the wisdom to let go. The double helix &mdash; ambition AND restraint, spiraling together &mdash; drilling a path toward tomorrow.</p>
   </div>
 
@@ -430,7 +430,7 @@ redirect_from:
 
 <div class="theme-card">
   <h4>Limitation</h4>
-  <p>You arrive underground. Overwhelmed by the world, stuck, searching. The ceiling feels real. 8GB of VRAM. One laptop. Walls everywhere. The constraint is not the enemy &mdash; it's the architecture. The walls define the room.</p>
+  <p>You start from the ground up. Ready to grow, ready to build. The foundation is real. 8GB of VRAM. One laptop. Clear constraints, clear architecture. The walls don't limit &mdash; they define the room. And the room is where the work begins.</p>
 </div>
 
 <div class="theme-card">
@@ -445,7 +445,7 @@ redirect_from:
 
 <div class="theme-card">
   <h4>Loss</h4>
-  <p>Kamina died because Simon froze. That's real. Consequences are real. The battery died during a build. Git corrupted. Work lost. Every victory costs something irreplaceable. The show doesn't pretend otherwise. Neither do we.</p>
+  <p>Growth has real stakes. The battery died during a build. Work was lost and had to be rebuilt. Every step forward costs effort, time, and sometimes what you already had. But what gets rebuilt comes back stronger. The spiral keeps turning, and so do the people on it.</p>
 </div>
 
 <div class="theme-card">
