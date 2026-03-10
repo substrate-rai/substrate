@@ -7,492 +7,1395 @@ permalink: /games/signal/
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SIGNAL — AI Deduction Game</title>
-  <meta name="description" content="A text-based deduction game playable by humans and LLMs. Decode signals, find the compromised node.">
-  <script src="{{ site.baseurl }}/assets/js/substrate-audio.js"></script>
-  <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
+  <title>SIGNAL — Network Deduction | Substrate Arcade</title>
+  <meta name="description" content="Identify compromised nodes from signal patterns. Procedurally generated puzzles with progressive difficulty scaling.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../shared/substrate-frame.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/substrate-frame.css">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
-    /* === PIXEL ART MODE === */
-    button, .btn, [class*="btn"] {
-      border-radius: 0 !important;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-      transition: none !important;
-    }
-    button:active, .btn:active, [class*="btn"]:active {
-      transform: translate(2px, 2px) !important;
-      box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
-    }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
-    a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
 
-    body {
-      font-family: 'IBM Plex Mono', monospace;
-      background: #0a0a12;
-      color: #c8c8d0;
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      padding-top: calc(20px + env(safe-area-inset-top));
-      padding-bottom: calc(20px + env(safe-area-inset-bottom));
-      padding-left: calc(20px + env(safe-area-inset-left));
-      padding-right: calc(20px + env(safe-area-inset-right));
-      overscroll-behavior: none;
-    }
+:root {
+  --bg: #E8F4F8;
+  --bg-grad-top: #dff0f7;
+  --bg-grad-bottom: #c8e6f0;
+  --surface: rgba(255,255,255,0.55);
+  --surface-strong: rgba(255,255,255,0.85);
+  --border: rgba(255,255,255,0.5);
+  --shadow: rgba(0,40,80,0.08);
+  --shadow-strong: rgba(0,40,80,0.15);
+  --text: #1a3a4a;
+  --text-dim: #5a7a8a;
+  --text-muted: #8899AA;
+  --heading: #1A1A2E;
+  --blue: #0078D4;
+  --blue-dim: rgba(0,120,212,0.12);
+  --green: #2E9E5A;
+  --green-dim: rgba(46,158,90,0.12);
+  --red: #D04848;
+  --red-dim: rgba(208,72,72,0.1);
+  --amber: #CC8800;
+  --amber-dim: rgba(204,136,0,0.1);
+  --purple: #8855CC;
+  --purple-dim: rgba(136,85,204,0.1);
+  --glass-border: rgba(255,255,255,0.6);
+  --glass-bg: rgba(255,255,255,0.45);
+  --glass-bg-strong: rgba(255,255,255,0.7);
+}
 
-    .game-container {
-      max-width: 700px;
-      width: 100%;
-    }
+body {
+  background: linear-gradient(180deg, var(--bg-grad-top) 0%, var(--bg) 40%, var(--bg-grad-bottom) 100%);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  min-height: 100vh;
+  min-height: 100dvh;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
 
-    header {
-      text-align: center;
-      margin-bottom: 24px;
-      border-bottom: 1px solid #1e1e2a;
-      padding-bottom: 16px;
-    }
-    header h1 {
-      font-size: 1.6rem;
-      color: #cc4444;
-      letter-spacing: 2px;
-    }
-    header p {
-      font-size: 0.8rem;
-      color: #6a6a78;
-      margin-top: 4px;
-    }
+/* Sky decoration */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(135,206,235,0.15) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-    .network-display {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin: 20px 0;
-    }
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 12px;
+  padding-top: 48px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  position: relative;
+  z-index: 1;
+}
 
-    .node {
-      border: 1px solid #1e1e2a;
-      border-radius: 0;
-      padding: 14px;
-      background: #12121a;
-      text-align: center;
-      transition: none;
-      cursor: pointer;
-      min-height: 48px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .node:hover { border-color: #2a2a3a; background: #1a1a24; }
-    .node.selected { border-color: #cc4444; background: rgba(204, 68, 68, 0.08); }
-    .node.scanned { border-color: #00e09a; }
-    .node.compromised-revealed { border-color: #ff4444; background: rgba(255,68,68,0.1); }
-    .node.clean-revealed { border-color: #00e09a; background: rgba(0,224,154,0.05); }
+/* Glass panels */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.5);
+}
 
-    .node-name {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #e8e8ef;
-      margin-bottom: 4px;
-    }
-    .node-type {
-      font-size: 0.75rem;
-      color: #6a6a78;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .node-signal {
-      font-size: 0.75rem;
-      color: #44aacc;
-      margin-top: 6px;
-      font-style: italic;
-    }
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.6);
+}
 
-    .game-log {
-      background: #0e0e16;
-      border: 1px solid #1e1e2a;
-      border-radius: 0;
-      padding: 16px;
-      margin: 16px 0;
-      max-height: 300px;
-      overflow-y: auto;
-      font-size: 0.8rem;
-      line-height: 1.7;
-    }
-    .game-log .log-entry { padding: 2px 0; }
-    .log-system { color: #6a6a78; }
-    .log-signal { color: #44aacc; }
-    .log-action { color: #00e09a; }
-    .log-error { color: #cc4444; }
-    .log-deduction { color: #e477ff; }
+/* ── Title Screen ── */
+#title-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  text-align: center;
+  gap: 20px;
+}
 
-    .controls {
-      display: flex;
-      gap: 8px;
-      margin: 16px 0;
-      flex-wrap: wrap;
-    }
-    .btn {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 12px 16px;
-      border-radius: 0;
-      border: 1px solid #1e1e2a;
-      background: #12121a;
-      color: #c8c8d0;
-      cursor: pointer;
-      transition: none;
-      min-height: 48px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn:hover { border-color: #2a2a3a; color: #e8e8ef; }
-    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .btn.primary { border-color: #cc4444; color: #cc4444; }
-    .btn.primary:hover { background: rgba(204,68,68,0.1); }
+.title-card {
+  padding: 40px 48px;
+  max-width: 520px;
+  width: 100%;
+}
 
-    .stats-bar {
-      display: flex;
-      gap: 24px;
-      margin: 12px 0;
-      font-size: 0.75rem;
-      color: #6a6a78;
-    }
-    .stats-bar strong { color: #e8e8ef; }
+.title-card h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: var(--heading);
+  margin-bottom: 6px;
+}
 
-    .api-section {
-      margin-top: 32px;
-      border-top: 1px solid #1e1e2a;
-      padding-top: 20px;
-    }
-    .api-section h2 {
-      font-size: 0.85rem;
-      color: #cc4444;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .api-section pre {
-      background: #0e0e16;
-      border: 1px solid #1e1e2a;
-      border-radius: 0;
-      padding: 12px;
-      font-size: 0.7rem;
-      overflow-x: auto;
-      color: #aaa;
-    }
-    .api-section code { color: #44aacc; }
+.title-card .subtitle {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+}
 
-    .difficulty {
-      margin: 12px 0;
-      font-size: 0.75rem;
-    }
-    .difficulty label { color: #6a6a78; margin-right: 8px; }
-    .difficulty select {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      background: #12121a;
-      color: #c8c8d0;
-      border: 1px solid #1e1e2a;
-      border-radius: 0;
-      padding: 4px 8px;
-    }
+.title-card .tagline {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
 
-    .result-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(10,10,18,0.9);
-      z-index: 100;
-      justify-content: center;
-      align-items: center;
-    }
-    .result-overlay.show { display: flex; }
-    .result-box {
-      background: #12121a;
-      border: 1px solid #1e1e2a;
-      border-radius: 0;
-      padding: 32px;
-      text-align: center;
-      max-width: 400px;
-    }
-    .result-box h2 { font-size: 1.3rem; margin-bottom: 12px; }
-    .result-box p { font-size: 0.85rem; color: #6a6a78; margin-bottom: 16px; line-height: 1.6; }
-    .result-box .btn { margin: 4px; }
+.title-stats {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
 
-    @media (max-width: 500px) {
-      .network-display { grid-template-columns: repeat(2, 1fr); }
-      .controls { flex-direction: column; }
-      .btn { width: 100%; text-align: center; min-height: 48px; }
-      .difficulty select { min-height: 48px; padding: 8px 12px; }
-    }
-  </style>
+.title-stat {
+  text-align: center;
+}
+
+.title-stat .val {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.title-stat .label {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(8px);
+}
+.btn:hover { background: rgba(255,255,255,0.9); box-shadow: 0 2px 12px var(--shadow); }
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border-color: rgba(0,120,212,0.3);
+}
+.btn-primary:hover { background: #0068BE; }
+
+.btn-danger {
+  background: var(--red-dim);
+  color: var(--red);
+  border-color: rgba(208,72,72,0.2);
+}
+.btn-danger:hover { background: rgba(208,72,72,0.18); }
+
+.btn-success {
+  background: var(--green-dim);
+  color: var(--green);
+  border-color: rgba(46,158,90,0.2);
+}
+.btn-success:hover { background: rgba(46,158,90,0.18); }
+
+.title-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.title-actions .btn { min-width: 220px; }
+
+/* ── Game Screen ── */
+#game-screen {
+  display: none;
+  width: 100%;
+  max-width: 780px;
+  gap: 12px;
+  flex-direction: column;
+}
+
+#game-screen.active {
+  display: flex;
+}
+
+/* Status bar */
+.status-bar {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.status-item {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+.status-item strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.level-badge {
+  background: var(--blue-dim);
+  color: var(--blue);
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+/* Network canvas area */
+.network-panel {
+  padding: 20px;
+  position: relative;
+  min-height: 300px;
+}
+
+.network-panel h2 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+.network-canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  min-height: 250px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.4);
+  overflow: hidden;
+}
+
+.network-canvas-wrap canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Node grid (below canvas for small screens, or overlaid) */
+.node-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.node-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.node-card:hover {
+  background: var(--glass-bg-strong);
+  box-shadow: 0 2px 12px var(--shadow);
+}
+
+.node-card.selected {
+  border-color: var(--blue);
+  background: rgba(0,120,212,0.08);
+  box-shadow: 0 0 0 2px rgba(0,120,212,0.15);
+}
+
+.node-card.scanned {
+  border-color: rgba(46,158,90,0.4);
+}
+
+.node-card.revealed-clean {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+
+.node-card.revealed-compromised {
+  border-color: var(--red);
+  background: var(--red-dim);
+}
+
+.node-card .node-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--heading);
+  margin-bottom: 2px;
+}
+
+.node-card .node-type {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.node-card .node-signals {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.node-card .node-signals .anomaly {
+  color: var(--amber);
+  font-weight: 500;
+}
+
+.node-card .node-signals .clean {
+  color: var(--green);
+}
+
+.node-card .node-badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.node-badge.badge-scanned {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.node-badge.badge-clean {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.node-badge.badge-compromised {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+/* Controls */
+.controls-bar {
+  padding: 14px 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.controls-bar .btn { flex: 1; min-width: 120px; text-align: center; font-size: 0.7rem; }
+
+/* Log panel */
+.log-panel {
+  padding: 16px 20px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.log-panel h3 {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.log-entry {
+  font-size: 0.68rem;
+  line-height: 1.7;
+  padding: 1px 0;
+}
+
+.log-system { color: var(--text-dim); }
+.log-signal { color: var(--blue); }
+.log-action { color: var(--green); }
+.log-error { color: var(--red); }
+.log-deduction { color: var(--purple); }
+
+/* ── Result Overlay ── */
+.result-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(232,244,248,0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+
+.result-overlay.show { display: flex; }
+
+.result-box {
+  padding: 40px;
+  text-align: center;
+  max-width: 440px;
+  width: 90%;
+}
+
+.result-box h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.result-box .result-detail {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+.result-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.result-stat {
+  text-align: center;
+}
+.result-stat .val {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.result-stat .label {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── Career Stats Panel ── */
+.career-panel {
+  padding: 16px 20px;
+}
+
+.career-panel h3 {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.career-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.career-item {
+  text-align: center;
+  padding: 8px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 8px;
+}
+
+.career-item .val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.career-item .label {
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* ── Difficulty indicator ── */
+.difficulty-track {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.diff-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0,120,212,0.15);
+  border: 1px solid rgba(0,120,212,0.2);
+  transition: all 0.2s ease;
+}
+
+.diff-pip.filled {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.diff-pip.current {
+  background: var(--blue);
+  border-color: var(--blue);
+  box-shadow: 0 0 6px rgba(0,120,212,0.4);
+  transform: scale(1.3);
+}
+
+/* ── Scan result indicator ── */
+.scan-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.scan-clean { background: var(--green); }
+.scan-suspicious { background: var(--amber); }
+.scan-danger { background: var(--red); }
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .title-card { padding: 28px 20px; }
+  .title-card h1 { font-size: 2rem; }
+  .node-grid { grid-template-columns: repeat(2, 1fr); }
+  .controls-bar { flex-direction: column; }
+  .controls-bar .btn { min-width: 100%; }
+  .status-bar { flex-direction: column; gap: 6px; align-items: flex-start; }
+  .network-canvas-wrap { aspect-ratio: 4/3; }
+}
+
+/* ── Pulse animation for active scan ── */
+@keyframes pulse-scan {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,120,212,0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(0,120,212,0); }
+}
+
+.node-card.scanning {
+  animation: pulse-scan 0.6s ease-out;
+}
+
+/* ── API Section ── */
+.api-section {
+  padding: 20px;
+  margin-top: 8px;
+}
+
+.api-section h3 {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.api-section p {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.api-section pre {
+  background: rgba(255,255,255,0.5);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.65rem;
+  overflow-x: auto;
+  color: var(--text-dim);
+}
+.api-section code { color: var(--blue); }
+</style>
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-network.webp') center/cover no-repeat;opacity:0.12;pointer-events:none;"></div>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:var(--blue);color:#fff;padding:8px 16px;z-index:1000;font-size:14px;border-radius:0 0 8px 0;">Skip to game</a>
+
 <main id="game" role="main">
-<div class="game-container">
-  <header>
+
+<!-- ═══════ TITLE SCREEN ═══════ -->
+<div id="title-screen">
+  <div class="title-card glass-strong">
     <h1>SIGNAL</h1>
-    <p>find the compromised node in the network</p>
-  </header>
+    <div class="subtitle">network deduction</div>
+    <div class="tagline">
+      Analyze signal patterns. Identify compromised nodes.<br>
+      Each network is procedurally generated. Difficulty scales with your skill.
+    </div>
 
-  <div class="stats-bar">
-    <span>round: <strong id="round-num">1</strong>/<strong id="max-rounds">5</strong></span>
-    <span>scans: <strong id="scans-left">3</strong></span>
-    <span>network: <strong id="node-count">7</strong> nodes</span>
-    <span>score: <strong id="score">0</strong></span>
+    <div class="title-stats" id="title-career">
+      <div class="title-stat"><div class="val" id="ts-games">0</div><div class="label">games</div></div>
+      <div class="title-stat"><div class="val" id="ts-accuracy">--</div><div class="label">accuracy</div></div>
+      <div class="title-stat"><div class="val" id="ts-level">1</div><div class="label">level</div></div>
+      <div class="title-stat"><div class="val" id="ts-streak">0</div><div class="label">streak</div></div>
+    </div>
+
+    <div class="title-actions">
+      <button class="btn btn-primary" onclick="startGame()">Begin Scan</button>
+      <button class="btn" onclick="resetCareer()" style="font-size:0.65rem;opacity:0.6;">Reset Career</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ GAME SCREEN ═══════ -->
+<div id="game-screen">
+
+  <!-- Status bar -->
+  <div class="status-bar glass">
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      <span class="level-badge" id="level-badge">Level 1</span>
+      <span class="status-item">Round <strong id="round-num">1</strong>/<strong id="max-rounds">5</strong></span>
+      <span class="status-item">Scans: <strong id="scans-left">3</strong></span>
+      <span class="status-item">Nodes: <strong id="node-count">3</strong></span>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      <span class="status-item">Threats: <strong id="threats-found">0</strong>/<strong id="threats-total">1</strong></span>
+      <span class="status-item">Score: <strong id="score">0</strong></span>
+    </div>
   </div>
 
-  <div class="difficulty">
-    <label>difficulty:</label>
-    <select id="difficulty" onchange="newGame()">
-      <option value="easy">easy (5 nodes, 1 compromised)</option>
-      <option value="medium" selected>medium (7 nodes, 1 compromised)</option>
-      <option value="hard">hard (9 nodes, 2 compromised)</option>
-      <option value="nightmare">nightmare (12 nodes, 3 compromised)</option>
-    </select>
+  <!-- Difficulty track -->
+  <div style="padding:0 20px;">
+    <div class="difficulty-track" id="diff-track"></div>
   </div>
 
-  <div class="network-display" id="network"></div>
-
-  <div class="controls">
-    <button class="btn" id="btn-scan" onclick="doScan()" disabled>scan selected node</button>
-    <button class="btn primary" id="btn-accuse" onclick="doAccuse()" disabled>accuse selected node</button>
-    <button class="btn" id="btn-analyze" onclick="doAnalyze()">analyze signals</button>
-    <button class="btn" onclick="newGame()">new game</button>
+  <!-- Network visualization -->
+  <div class="network-panel glass">
+    <h2>Network Topology</h2>
+    <div class="network-canvas-wrap">
+      <canvas id="net-canvas"></canvas>
+    </div>
+    <div class="node-grid" id="node-grid"></div>
   </div>
 
-  <div class="game-log" id="log"></div>
+  <!-- Controls -->
+  <div class="controls-bar glass">
+    <button class="btn" id="btn-scan" onclick="doScan()" disabled>Scan Node</button>
+    <button class="btn btn-danger" id="btn-accuse" onclick="doAccuse()" disabled>Accuse Node</button>
+    <button class="btn btn-success" id="btn-analyze" onclick="doAnalyze()">Analyze Signals</button>
+    <button class="btn" onclick="showTitle()">Quit</button>
+  </div>
 
-  <div class="api-section">
-    <h2>Bot API</h2>
-    <p style="font-size:0.75rem;color:#6a6a78;margin-bottom:8px;">
-      LLMs can play SIGNAL via JavaScript console. Paste this into your agent:
-    </p>
+  <!-- Log -->
+  <div class="log-panel glass">
+    <h3>Signal Log</h3>
+    <div id="log"></div>
+  </div>
+
+  <!-- Career stats -->
+  <div class="career-panel glass" id="career-panel">
+    <h3>Career Stats</h3>
+    <div class="career-grid" id="career-grid"></div>
+  </div>
+
+  <!-- Bot API -->
+  <div class="api-section glass">
+    <h3>Bot API</h3>
+    <p>LLMs can play SIGNAL via JavaScript console:</p>
     <pre><code>// Get current game state (JSON)
 SIGNAL.getState()
 
 // Available actions:
 SIGNAL.scan(nodeIndex)    // scan a node (uses 1 scan)
-SIGNAL.accuse(nodeIndex)  // accuse a node of being compromised
-SIGNAL.analyze()          // get signal analysis hints
-SIGNAL.newGame("medium")  // start new game
+SIGNAL.accuse(nodeIndex)  // accuse a node
+SIGNAL.analyze()          // get signal analysis
+SIGNAL.newGame()          // start new game at current level
 
 // Example bot loop:
 const s = SIGNAL.getState();
 s.nodes.forEach((n, i) => {
   if (!n.scanned) SIGNAL.scan(i);
 });
-// Pick the most suspicious node
 SIGNAL.accuse(suspiciousIndex);</code></pre>
   </div>
 </div>
 
+<!-- ═══════ RESULT OVERLAY ═══════ -->
 <div class="result-overlay" id="result-overlay">
-  <div class="result-box">
+  <div class="result-box glass-strong">
     <h2 id="result-title"></h2>
-    <p id="result-desc"></p>
-    <button class="btn primary" onclick="closeResult(); newGame();">play again</button>
-    <button class="btn" onclick="closeResult();">review</button>
+    <div class="result-detail" id="result-detail"></div>
+    <div class="result-stats" id="result-stats"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" onclick="nextLevel()">Continue</button>
+      <button class="btn" onclick="closeResult()">Review</button>
+    </div>
   </div>
 </div>
+
+</main>
 
 <script>
 (function() {
   'use strict';
 
-  // ── Game Config ──────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════
+  // PROCEDURAL PUZZLE GENERATION ENGINE
+  // ═══════════════════════════════════════════════════════════════════════
 
-  const DIFFICULTIES = {
-    easy:      { nodes: 5,  compromised: 1, scans: 3, rounds: 4 },
-    medium:    { nodes: 7,  compromised: 1, scans: 3, rounds: 5 },
-    hard:      { nodes: 9,  compromised: 2, scans: 4, rounds: 6 },
-    nightmare: { nodes: 12, compromised: 3, scans: 5, rounds: 7 },
-  };
-
-  const NODE_NAMES = [
-    'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA', 'ETA', 'THETA',
-    'IOTA', 'KAPPA', 'LAMBDA', 'MU'
-  ];
-
-  const NODE_TYPES = [
-    'relay', 'compute', 'storage', 'gateway', 'monitor', 'cache',
-    'proxy', 'scheduler', 'router', 'broker', 'sentinel', 'arbiter'
-  ];
-
-  // Signal patterns — compromised nodes have subtly different signals
-  const CLEAN_SIGNALS = [
-    'heartbeat nominal', 'latency 2ms', 'throughput stable',
-    'checksum valid', 'uptime 99.9%', 'load balanced',
-    'packets clean', 'auth verified', 'cert valid',
-    'no anomalies', 'sync complete', 'buffer clear'
-  ];
-
-  const COMPROMISED_SIGNALS = [
-    'heartbeat irregular', 'latency 14ms', 'throughput fluctuating',
-    'checksum mismatch', 'uptime 97.2%', 'load unbalanced',
-    'packet duplication', 'auth retry x3', 'cert expiring',
-    'minor anomaly detected', 'sync delayed', 'buffer overflow risk'
-  ];
-
-  const AMBIGUOUS_SIGNALS = [
-    'heartbeat nominal', 'latency 5ms', 'throughput moderate',
-    'checksum valid', 'uptime 99.1%', 'load nominal',
-    'packets clean', 'auth verified', 'cert valid',
-    'no anomalies', 'sync complete', 'buffer clear'
-  ];
-
-  // ── Game State ───────────────────────────────────────────────────────
-
-  let state = {};
-
-  function initState(difficulty) {
-    const cfg = DIFFICULTIES[difficulty] || DIFFICULTIES.medium;
-    const names = shuffle([...NODE_NAMES]).slice(0, cfg.nodes);
-    const types = shuffle([...NODE_TYPES]).slice(0, cfg.nodes);
-
-    // Pick compromised nodes
-    const compromisedSet = new Set();
-    while (compromisedSet.size < cfg.compromised) {
-      compromisedSet.add(Math.floor(Math.random() * cfg.nodes));
-    }
-
-    const nodes = names.map((name, i) => {
-      const isCompromised = compromisedSet.has(i);
-      // 70% chance compromised nodes show suspicious signal, 30% they hide it
-      const showsSuspicious = isCompromised && Math.random() < 0.7;
-      // 15% chance clean nodes show an ambiguous signal (red herring)
-      const showsAmbiguous = !isCompromised && Math.random() < 0.15;
-
-      let signal;
-      if (showsSuspicious) {
-        signal = COMPROMISED_SIGNALS[Math.floor(Math.random() * COMPROMISED_SIGNALS.length)];
-      } else if (showsAmbiguous) {
-        signal = AMBIGUOUS_SIGNALS[Math.floor(Math.random() * AMBIGUOUS_SIGNALS.length)];
-      } else {
-        signal = CLEAN_SIGNALS[Math.floor(Math.random() * CLEAN_SIGNALS.length)];
-      }
-
-      return {
-        name: name,
-        type: types[i],
-        compromised: isCompromised,
-        signal: signal,
-        scanned: false,
-        accused: false,
-        revealed: false,
-      };
-    });
-
-    state = {
-      difficulty: difficulty,
-      nodes: nodes,
-      scansLeft: cfg.scans,
-      maxRounds: cfg.rounds,
-      round: 1,
-      selected: -1,
-      accusationsLeft: cfg.compromised,
-      found: 0,
-      totalCompromised: cfg.compromised,
-      gameOver: false,
-      score: 0,
-      log: [],
+  // Seeded RNG for reproducible puzzles
+  function mulberry32(seed) {
+    return function() {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────
+  // ── Signal vocabulary ──────────────────────────────────────────────
 
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+  // Each signal dimension has a metric name, clean range, and anomalous range
+  var SIGNAL_DIMENSIONS = [
+    { metric: 'heartbeat',  unit: 'bpm', cleanRange: [59, 61],  anomRange: [54, 58],  fmt: function(v) { return v.toFixed(0) + ' bpm'; } },
+    { metric: 'latency',    unit: 'ms',  cleanRange: [1, 4],    anomRange: [8, 22],   fmt: function(v) { return v.toFixed(1) + 'ms'; } },
+    { metric: 'throughput', unit: '%',   cleanRange: [94, 100],  anomRange: [68, 88],  fmt: function(v) { return v.toFixed(0) + '%'; } },
+    { metric: 'checksum',   unit: '',    cleanRange: [0, 0],     anomRange: [1, 4],    fmt: function(v) { return v === 0 ? 'valid' : v.toFixed(0) + ' err'; } },
+    { metric: 'packet_loss',unit: '%',   cleanRange: [0, 0.2],   anomRange: [1.5, 6],  fmt: function(v) { return v.toFixed(1) + '%'; } },
+    { metric: 'jitter',     unit: 'ms',  cleanRange: [0.1, 1.2], anomRange: [3, 12],   fmt: function(v) { return v.toFixed(1) + 'ms'; } },
+    { metric: 'auth_fails', unit: '',    cleanRange: [0, 0],     anomRange: [1, 5],    fmt: function(v) { return v === 0 ? 'none' : v.toFixed(0); } },
+    { metric: 'cpu_load',   unit: '%',   cleanRange: [10, 45],   anomRange: [72, 98],  fmt: function(v) { return v.toFixed(0) + '%'; } },
+    { metric: 'mem_usage',  unit: '%',   cleanRange: [20, 55],   anomRange: [80, 97],  fmt: function(v) { return v.toFixed(0) + '%'; } },
+    { metric: 'uptime',     unit: 'h',   cleanRange: [200, 800], anomRange: [1, 24],   fmt: function(v) { return v.toFixed(0) + 'h'; } },
+    { metric: 'connections',unit: '',    cleanRange: [5, 30],    anomRange: [80, 300],  fmt: function(v) { return v.toFixed(0); } },
+    { metric: 'dns_resolve',unit: 'ms',  cleanRange: [1, 8],    anomRange: [40, 200],  fmt: function(v) { return v.toFixed(0) + 'ms'; } },
+  ];
+
+  var NODE_NAMES = [
+    'ALPHA','BETA','GAMMA','DELTA','EPSILON','ZETA','ETA','THETA',
+    'IOTA','KAPPA','LAMBDA','MU','NU','XI','OMICRON','PI'
+  ];
+
+  var NODE_TYPES = [
+    'relay','compute','storage','gateway','monitor','cache',
+    'proxy','scheduler','router','broker','sentinel','arbiter',
+    'firewall','balancer','indexer','registry'
+  ];
+
+  // ── Level Definitions (progressive difficulty) ─────────────────────
+
+  // Level config: how many nodes, compromised nodes, scans, signals per node,
+  // noise level (chance of misleading data), rounds
+  function getLevelConfig(level) {
+    var l = Math.min(level, 20);
+    var nodes, compromised, scans, signalsPerNode, noiseLevel, rounds;
+
+    if (l <= 2) {
+      // Tutorial: 2-3 nodes, obvious anomalies
+      nodes = 2 + Math.min(l - 1, 1);
+      compromised = 1;
+      scans = 3;
+      signalsPerNode = 2;
+      noiseLevel = 0;
+      rounds = 6;
+    } else if (l <= 5) {
+      // Early: 4-5 nodes, slight noise
+      nodes = 2 + l;
+      compromised = 1;
+      scans = 3;
+      signalsPerNode = 3;
+      noiseLevel = 0.1;
+      rounds = 7;
+    } else if (l <= 8) {
+      // Mid: 5-7 nodes, moderate noise, 1-2 compromised
+      nodes = 3 + l - (l > 7 ? 1 : 0);
+      compromised = l >= 7 ? 2 : 1;
+      scans = 3 + (l >= 7 ? 1 : 0);
+      signalsPerNode = 3 + Math.floor((l - 5) / 2);
+      noiseLevel = 0.15 + (l - 5) * 0.03;
+      rounds = 7 + Math.floor((l - 5) / 2);
+    } else if (l <= 12) {
+      // Hard: 7-10 nodes, 2-3 compromised, significant noise
+      nodes = l - 1;
+      compromised = 2 + (l >= 11 ? 1 : 0);
+      scans = 4;
+      signalsPerNode = 4;
+      noiseLevel = 0.25 + (l - 8) * 0.03;
+      rounds = 8 + Math.floor((l - 8) / 2);
+    } else {
+      // Expert: 8-12 nodes, 2-4 compromised, heavy noise, fewer signals
+      nodes = Math.min(7 + Math.floor(l / 3), 12);
+      compromised = Math.min(2 + Math.floor((l - 10) / 3), 4);
+      scans = Math.max(3, 5 - Math.floor((l - 12) / 3));
+      signalsPerNode = 4 + Math.floor((l - 12) / 4);
+      noiseLevel = Math.min(0.4 + (l - 12) * 0.02, 0.55);
+      rounds = 9 + Math.floor((l - 12) / 3);
     }
-    return arr;
+
+    return {
+      nodes: nodes,
+      compromised: compromised,
+      scans: scans,
+      signalsPerNode: signalsPerNode,
+      noiseLevel: noiseLevel,
+      rounds: rounds,
+      level: level
+    };
   }
+
+  // ── Procedural Signal Generation ───────────────────────────────────
+
+  function generateSignals(node, dims, rng, cfg) {
+    var signals = [];
+    for (var i = 0; i < dims.length; i++) {
+      var dim = dims[i];
+      var isAnomaly;
+
+      if (node.compromised) {
+        // Compromised: each dimension has a chance to show anomaly
+        // Higher levels = fewer dimensions are anomalous (subtler)
+        var anomChance = cfg.level <= 2 ? 0.85 : Math.max(0.35, 0.75 - cfg.level * 0.03);
+        isAnomaly = rng() < anomChance;
+      } else {
+        // Clean: occasional noise creates false positives
+        isAnomaly = rng() < cfg.noiseLevel;
+      }
+
+      var range = isAnomaly ? dim.anomRange : dim.cleanRange;
+      var value = range[0] + rng() * (range[1] - range[0]);
+      signals.push({
+        metric: dim.metric,
+        value: value,
+        display: dim.fmt(value),
+        isAnomaly: isAnomaly
+      });
+    }
+    return signals;
+  }
+
+  function generatePuzzle(level, seed) {
+    var rng = mulberry32(seed);
+    var cfg = getLevelConfig(level);
+
+    // Pick random dimensions for this puzzle
+    var allDims = SIGNAL_DIMENSIONS.slice();
+    // Shuffle dimensions
+    for (var i = allDims.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1));
+      var tmp = allDims[i]; allDims[i] = allDims[j]; allDims[j] = tmp;
+    }
+    var activeDims = allDims.slice(0, cfg.signalsPerNode);
+
+    // Shuffle node names
+    var names = NODE_NAMES.slice();
+    for (i = names.length - 1; i > 0; i--) {
+      j = Math.floor(rng() * (i + 1));
+      tmp = names[i]; names[i] = names[j]; names[j] = tmp;
+    }
+    names = names.slice(0, cfg.nodes);
+
+    // Shuffle types
+    var types = NODE_TYPES.slice();
+    for (i = types.length - 1; i > 0; i--) {
+      j = Math.floor(rng() * (i + 1));
+      tmp = types[i]; types[i] = types[j]; types[j] = tmp;
+    }
+    types = types.slice(0, cfg.nodes);
+
+    // Pick compromised indices
+    var compromisedSet = {};
+    var count = 0;
+    while (count < cfg.compromised) {
+      var idx = Math.floor(rng() * cfg.nodes);
+      if (!compromisedSet[idx]) {
+        compromisedSet[idx] = true;
+        count++;
+      }
+    }
+
+    // Generate nodes with signals
+    var nodes = [];
+    for (i = 0; i < cfg.nodes; i++) {
+      var node = {
+        name: names[i],
+        type: types[i],
+        compromised: !!compromisedSet[i],
+        scanned: false,
+        accused: false,
+        revealed: false,
+        signals: []
+      };
+      node.signals = generateSignals(node, activeDims, rng, cfg);
+      nodes.push(node);
+    }
+
+    // Generate network topology (connections for visualization)
+    var edges = [];
+    // Ensure connected graph: chain first
+    for (i = 0; i < cfg.nodes - 1; i++) {
+      edges.push([i, i + 1]);
+    }
+    // Add extra edges for complexity
+    var extraEdges = Math.floor(cfg.nodes * 0.6);
+    for (i = 0; i < extraEdges; i++) {
+      var a = Math.floor(rng() * cfg.nodes);
+      var b = Math.floor(rng() * cfg.nodes);
+      if (a !== b) {
+        var exists = false;
+        for (j = 0; j < edges.length; j++) {
+          if ((edges[j][0] === a && edges[j][1] === b) || (edges[j][0] === b && edges[j][1] === a)) {
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) edges.push([a, b]);
+      }
+    }
+
+    // Generate node positions for canvas (force-directed simple layout)
+    var positions = [];
+    var angleStep = (Math.PI * 2) / cfg.nodes;
+    var cx = 0.5, cy = 0.5;
+    var radius = 0.32;
+    for (i = 0; i < cfg.nodes; i++) {
+      var angle = angleStep * i - Math.PI / 2;
+      positions.push({
+        x: cx + Math.cos(angle) * radius + (rng() - 0.5) * 0.08,
+        y: cy + Math.sin(angle) * radius + (rng() - 0.5) * 0.08
+      });
+    }
+
+    return {
+      cfg: cfg,
+      activeDims: activeDims,
+      nodes: nodes,
+      edges: edges,
+      positions: positions,
+      seed: seed
+    };
+  }
+
+  // ── Deep Scan Results (procedural) ─────────────────────────────────
+
+  function generateScanResult(node, level, rng) {
+    var compromised = node.compromised;
+    var anomCount = 0;
+    for (var i = 0; i < node.signals.length; i++) {
+      if (node.signals[i].isAnomaly) anomCount++;
+    }
+
+    if (compromised) {
+      // Higher levels = harder to detect in scan
+      var detectChance = level <= 3 ? 0.90 : Math.max(0.55, 0.85 - level * 0.025);
+      if (rng() < detectChance) {
+        return { type: 'danger', text: 'Deep scan: anomalous behavior patterns detected. Elevated risk.' };
+      } else {
+        return { type: 'suspicious', text: 'Deep scan: behavior within parameters. Minor irregularities noted.' };
+      }
+    } else {
+      var falseAlarm = level > 5 ? Math.min(0.15, (level - 5) * 0.025) : 0.05;
+      if (rng() < falseAlarm) {
+        return { type: 'suspicious', text: 'Deep scan: intermittent irregularities detected. Possibly benign.' };
+      } else {
+        return { type: 'clean', text: 'Deep scan: no indicators of compromise. Node appears clean.' };
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // CAREER / PERSISTENCE
+  // ═══════════════════════════════════════════════════════════════════════
+
+  var STORAGE_KEY = 'signal_career_v2';
+
+  function defaultCareer() {
+    return {
+      gamesPlayed: 0,
+      gamesWon: 0,
+      totalAccusations: 0,
+      correctAccusations: 0,
+      falsePositives: 0,
+      level: 1,
+      bestLevel: 1,
+      streak: 0,
+      bestStreak: 0,
+      totalScore: 0,
+      bestScore: 0
+    };
+  }
+
+  function loadCareer() {
+    try {
+      var data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        var parsed = JSON.parse(data);
+        // Merge with defaults for forward compat
+        var def = defaultCareer();
+        for (var k in def) {
+          if (parsed[k] === undefined) parsed[k] = def[k];
+        }
+        return parsed;
+      }
+    } catch(e) {}
+    return defaultCareer();
+  }
+
+  function saveCareer() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(career)); } catch(e) {}
+  }
+
+  var career = loadCareer();
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // GAME STATE
+  // ═══════════════════════════════════════════════════════════════════════
+
+  var puzzle = null;
+  var state = {};
+
+  function initGame() {
+    var seed = Date.now() ^ (Math.random() * 0xFFFFFFFF >>> 0);
+    puzzle = generatePuzzle(career.level, seed);
+
+    state = {
+      level: career.level,
+      nodes: puzzle.nodes,
+      edges: puzzle.edges,
+      positions: puzzle.positions,
+      scansLeft: puzzle.cfg.scans,
+      maxRounds: puzzle.cfg.rounds,
+      round: 1,
+      selected: -1,
+      accusationsLeft: puzzle.cfg.compromised + 1, // 1 extra accusation
+      found: 0,
+      totalCompromised: puzzle.cfg.compromised,
+      gameOver: false,
+      score: 0,
+      log: [],
+      scanRng: mulberry32(seed + 1000)
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // CANVAS RENDERER — Network Topology Visualization
+  // ═══════════════════════════════════════════════════════════════════════
+
+  var canvasEl = null;
+  var canvasCtx = null;
+  var canvasAnimFrame = null;
+  var pulsePhase = 0;
+
+  function initCanvas() {
+    canvasEl = document.getElementById('net-canvas');
+    if (!canvasEl) return;
+    var wrap = canvasEl.parentElement;
+    var rect = wrap.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    canvasEl.width = rect.width * dpr;
+    canvasEl.height = rect.height * dpr;
+    canvasCtx = canvasEl.getContext('2d');
+    canvasCtx.scale(dpr, dpr);
+    canvasEl.style.width = rect.width + 'px';
+    canvasEl.style.height = rect.height + 'px';
+  }
+
+  function drawNetwork() {
+    if (!canvasCtx || !puzzle) return;
+    var wrap = canvasEl.parentElement;
+    var W = wrap.getBoundingClientRect().width;
+    var H = wrap.getBoundingClientRect().height;
+    var ctx = canvasCtx;
+
+    ctx.clearRect(0, 0, W, H);
+    pulsePhase += 0.02;
+
+    var nodes = state.nodes;
+    var pos = state.positions;
+    var edges = state.edges;
+
+    // Draw edges
+    for (var e = 0; e < edges.length; e++) {
+      var a = edges[e][0], b = edges[e][1];
+      var ax = pos[a].x * W, ay = pos[a].y * H;
+      var bx = pos[b].x * W, by = pos[b].y * H;
+
+      // Color edges connected to revealed compromised nodes
+      var aComp = nodes[a].revealed && nodes[a].compromised;
+      var bComp = nodes[b].revealed && nodes[b].compromised;
+      if (aComp || bComp) {
+        ctx.strokeStyle = 'rgba(208,72,72,0.3)';
+        ctx.lineWidth = 2;
+      } else {
+        ctx.strokeStyle = 'rgba(0,120,212,0.12)';
+        ctx.lineWidth = 1;
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.stroke();
+
+      // Animated data packets along edges
+      var t = (Math.sin(pulsePhase + e * 0.7) + 1) / 2;
+      var px = ax + (bx - ax) * t;
+      var py = ay + (by - ay) * t;
+      ctx.beginPath();
+      ctx.arc(px, py, 2, 0, Math.PI * 2);
+      ctx.fillStyle = (aComp || bComp) ? 'rgba(208,72,72,0.5)' : 'rgba(0,120,212,0.25)';
+      ctx.fill();
+    }
+
+    // Draw nodes
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      var x = pos[i].x * W;
+      var y = pos[i].y * H;
+      var r = Math.max(14, Math.min(22, W / (nodes.length * 2.5)));
+
+      // Node glow
+      if (i === state.selected) {
+        ctx.beginPath();
+        ctx.arc(x, y, r + 8 + Math.sin(pulsePhase * 2) * 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,120,212,0.1)';
+        ctx.fill();
+      }
+
+      // Node circle
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+
+      if (n.revealed && n.compromised) {
+        ctx.fillStyle = 'rgba(208,72,72,0.25)';
+        ctx.strokeStyle = '#D04848';
+        ctx.lineWidth = 2.5;
+      } else if (n.revealed && !n.compromised) {
+        ctx.fillStyle = 'rgba(46,158,90,0.15)';
+        ctx.strokeStyle = '#2E9E5A';
+        ctx.lineWidth = 2;
+      } else if (n.scanned) {
+        ctx.fillStyle = 'rgba(46,158,90,0.08)';
+        ctx.strokeStyle = 'rgba(46,158,90,0.5)';
+        ctx.lineWidth = 1.5;
+      } else if (i === state.selected) {
+        ctx.fillStyle = 'rgba(0,120,212,0.12)';
+        ctx.strokeStyle = '#0078D4';
+        ctx.lineWidth = 2;
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.strokeStyle = 'rgba(0,120,212,0.2)';
+        ctx.lineWidth = 1;
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Node label
+      ctx.font = '600 ' + Math.max(9, r * 0.55) + 'px "IBM Plex Mono"';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = (n.revealed && n.compromised) ? '#D04848' : '#1A1A2E';
+      ctx.fillText(n.name.substring(0, 3), x, y);
+    }
+
+    canvasAnimFrame = requestAnimationFrame(drawNetwork);
+  }
+
+  function startCanvasAnim() {
+    initCanvas();
+    if (canvasAnimFrame) cancelAnimationFrame(canvasAnimFrame);
+    drawNetwork();
+  }
+
+  function stopCanvasAnim() {
+    if (canvasAnimFrame) {
+      cancelAnimationFrame(canvasAnimFrame);
+      canvasAnimFrame = null;
+    }
+  }
+
+  // Handle canvas click — select node
+  function handleCanvasClick(e) {
+    if (!puzzle || state.gameOver) return;
+    var rect = canvasEl.getBoundingClientRect();
+    var mx = (e.clientX - rect.left) / rect.width;
+    var my = (e.clientY - rect.top) / rect.height;
+
+    // Find nearest node
+    var best = -1, bestDist = Infinity;
+    for (var i = 0; i < state.positions.length; i++) {
+      var dx = state.positions[i].x - mx;
+      var dy = state.positions[i].y - my;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d < bestDist && d < 0.08) {
+        best = i;
+        bestDist = d;
+      }
+    }
+
+    if (best >= 0) {
+      state.selected = (state.selected === best) ? -1 : best;
+      render();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDERING
+  // ═══════════════════════════════════════════════════════════════════════
+
+  function render() {
+    var grid = document.getElementById('node-grid');
+    grid.innerHTML = '';
+
+    for (var i = 0; i < state.nodes.length; i++) {
+      (function(idx) {
+        var n = state.nodes[idx];
+        var div = document.createElement('div');
+        div.className = 'node-card';
+        if (idx === state.selected) div.classList.add('selected');
+        if (n.scanned && !n.revealed) div.classList.add('scanned');
+        if (n.revealed && !n.compromised) div.classList.add('revealed-clean');
+        if (n.revealed && n.compromised) div.classList.add('revealed-compromised');
+
+        var html = '<div class="node-name">' + n.name + '</div>';
+        html += '<div class="node-type">' + n.type + '</div>';
+        html += '<div class="node-signals">';
+
+        for (var s = 0; s < n.signals.length; s++) {
+          var sig = n.signals[s];
+          // Only show anomaly coloring if scanned or revealed
+          var cls = '';
+          if (n.scanned || n.revealed) {
+            cls = sig.isAnomaly ? ' class="anomaly"' : ' class="clean"';
+          }
+          html += '<div' + cls + '>' + sig.metric + ': ' + sig.display + '</div>';
+        }
+        html += '</div>';
+
+        // Badges
+        if (n.revealed) {
+          var label = n.compromised ? 'COMPROMISED' : 'CLEAN';
+          var badgeCls = n.compromised ? 'badge-compromised' : 'badge-clean';
+          html += '<span class="node-badge ' + badgeCls + '">' + label + '</span>';
+        } else if (n.scanned) {
+          html += '<span class="node-badge badge-scanned">SCANNED</span>';
+        }
+
+        div.innerHTML = html;
+
+        div.addEventListener('click', function() {
+          if (state.gameOver) return;
+          state.selected = (state.selected === idx) ? -1 : idx;
+          render();
+        });
+
+        grid.appendChild(div);
+      })(i);
+    }
+
+    // Update status bar
+    document.getElementById('level-badge').textContent = 'Level ' + state.level;
+    document.getElementById('round-num').textContent = state.round;
+    document.getElementById('max-rounds').textContent = state.maxRounds;
+    document.getElementById('scans-left').textContent = state.scansLeft;
+    document.getElementById('node-count').textContent = state.nodes.length;
+    document.getElementById('threats-found').textContent = state.found;
+    document.getElementById('threats-total').textContent = state.totalCompromised;
+    document.getElementById('score').textContent = state.score;
+
+    // Difficulty track
+    renderDiffTrack();
+
+    // Button states
+    document.getElementById('btn-scan').disabled = state.selected < 0 || state.scansLeft <= 0 || state.gameOver || (state.selected >= 0 && state.nodes[state.selected].scanned);
+    document.getElementById('btn-accuse').disabled = state.selected < 0 || state.gameOver || (state.selected >= 0 && state.nodes[state.selected].revealed);
+
+    // Career stats
+    renderCareer();
+  }
+
+  function renderDiffTrack() {
+    var track = document.getElementById('diff-track');
+    var html = '';
+    var maxShow = Math.max(career.bestLevel + 2, state.level + 2, 10);
+    for (var i = 1; i <= Math.min(maxShow, 20); i++) {
+      var cls = 'diff-pip';
+      if (i < state.level) cls += ' filled';
+      if (i === state.level) cls += ' current';
+      html += '<div class="' + cls + '" title="Level ' + i + '"></div>';
+    }
+    track.innerHTML = html;
+  }
+
+  function renderCareer() {
+    var grid = document.getElementById('career-grid');
+    var accuracy = career.totalAccusations > 0
+      ? Math.round(career.correctAccusations / career.totalAccusations * 100)
+      : 0;
+    var fpRate = career.totalAccusations > 0
+      ? Math.round(career.falsePositives / career.totalAccusations * 100)
+      : 0;
+
+    grid.innerHTML =
+      '<div class="career-item"><div class="val">' + career.gamesPlayed + '</div><div class="label">Games</div></div>' +
+      '<div class="career-item"><div class="val">' + (accuracy || '--') + '%</div><div class="label">Accuracy</div></div>' +
+      '<div class="career-item"><div class="val">' + fpRate + '%</div><div class="label">False +</div></div>' +
+      '<div class="career-item"><div class="val">' + career.streak + '</div><div class="label">Streak</div></div>' +
+      '<div class="career-item"><div class="val">' + career.bestLevel + '</div><div class="label">Best Lvl</div></div>' +
+      '<div class="career-item"><div class="val">' + career.bestScore + '</div><div class="label">Best Score</div></div>';
+  }
+
+  function updateTitleStats() {
+    var accuracy = career.totalAccusations > 0
+      ? Math.round(career.correctAccusations / career.totalAccusations * 100) + '%'
+      : '--';
+    document.getElementById('ts-games').textContent = career.gamesPlayed;
+    document.getElementById('ts-accuracy').textContent = accuracy;
+    document.getElementById('ts-level').textContent = career.level;
+    document.getElementById('ts-streak').textContent = career.streak;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // LOG
+  // ═══════════════════════════════════════════════════════════════════════
 
   function log(msg, cls) {
     state.log.push({ msg: msg, cls: cls || 'system' });
-    const el = document.getElementById('log');
-    const entry = document.createElement('div');
+    var el = document.getElementById('log');
+    var entry = document.createElement('div');
     entry.className = 'log-entry log-' + (cls || 'system');
     entry.textContent = '> ' + msg;
     el.appendChild(entry);
     el.scrollTop = el.scrollHeight;
   }
 
-  // ── Rendering ────────────────────────────────────────────────────────
-
-  function render() {
-    const net = document.getElementById('network');
-    net.innerHTML = '';
-
-    state.nodes.forEach(function(node, i) {
-      const div = document.createElement('div');
-      div.className = 'node';
-      if (i === state.selected) div.classList.add('selected');
-      if (node.scanned) div.classList.add('scanned');
-      if (node.revealed && node.compromised) div.classList.add('compromised-revealed');
-      if (node.revealed && !node.compromised) div.classList.add('clean-revealed');
-
-      div.innerHTML =
-        '<div class="node-name">' + node.name + '</div>' +
-        '<div class="node-type">' + node.type + '</div>' +
-        '<div class="node-signal">' + node.signal + '</div>';
-
-      if (node.scanned && !node.revealed) {
-        div.innerHTML += '<div style="font-size:0.75rem;color:#00e09a;margin-top:4px;">SCANNED</div>';
-      }
-      if (node.revealed) {
-        const label = node.compromised ? 'COMPROMISED' : 'CLEAN';
-        const color = node.compromised ? '#ff4444' : '#00e09a';
-        div.innerHTML += '<div style="font-size:0.75rem;color:' + color + ';margin-top:4px;font-weight:700;">' + label + '</div>';
-      }
-
-      div.addEventListener('click', function() {
-        if (state.gameOver) return;
-        state.selected = (state.selected === i) ? -1 : i;
-        render();
-        if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.click();
-      });
-
-      net.appendChild(div);
-    });
-
-    // Update stats
-    document.getElementById('round-num').textContent = state.round;
-    document.getElementById('max-rounds').textContent = state.maxRounds;
-    document.getElementById('scans-left').textContent = state.scansLeft;
-    document.getElementById('node-count').textContent = state.nodes.length;
-    document.getElementById('score').textContent = state.score;
-
-    // Button states
-    document.getElementById('btn-scan').disabled = state.selected < 0 || state.scansLeft <= 0 || state.gameOver;
-    document.getElementById('btn-accuse').disabled = state.selected < 0 || state.gameOver;
-  }
-
-  // ── Actions ──────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════
+  // ACTIONS
+  // ═══════════════════════════════════════════════════════════════════════
 
   function doScan() {
     if (state.selected < 0 || state.scansLeft <= 0 || state.gameOver) return;
-    const node = state.nodes[state.selected];
+    var node = state.nodes[state.selected];
 
     if (node.scanned) {
-      log(node.name + ' already scanned', 'error');
+      log(node.name + ' already scanned.', 'error');
+      return;
+    }
+    if (node.revealed) {
+      log(node.name + ' already revealed.', 'error');
       return;
     }
 
@@ -500,64 +1403,66 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
     state.scansLeft--;
     state.round++;
 
-    if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.grow();
+    var result = generateScanResult(node, state.level, state.scanRng);
 
-    // Deep scan reveals more info
-    if (node.compromised) {
-      // Compromised nodes have a 80% chance of being detected by scan
-      if (Math.random() < 0.8) {
-        log('SCAN ' + node.name + ': anomalous behavior detected — elevated risk', 'error');
-      } else {
-        log('SCAN ' + node.name + ': behavior within acceptable parameters', 'signal');
-      }
+    if (result.type === 'danger') {
+      log('SCAN ' + node.name + ': ' + result.text, 'error');
+    } else if (result.type === 'suspicious') {
+      log('SCAN ' + node.name + ': ' + result.text, 'signal');
     } else {
-      // Clean nodes have 90% chance of clean scan
-      if (Math.random() < 0.9) {
-        log('SCAN ' + node.name + ': clean — no indicators of compromise', 'action');
-      } else {
-        log('SCAN ' + node.name + ': minor irregularity — likely benign', 'signal');
-      }
+      log('SCAN ' + node.name + ': ' + result.text, 'action');
     }
+
+    // Animate the card
+    var cards = document.querySelectorAll('.node-card');
+    if (cards[state.selected]) cards[state.selected].classList.add('scanning');
+    setTimeout(function() {
+      var c = document.querySelectorAll('.node-card');
+      if (c[state.selected]) c[state.selected].classList.remove('scanning');
+    }, 600);
 
     checkRoundLimit();
     render();
-    return { node: node.name, scansLeft: state.scansLeft };
+    return { node: node.name, scansLeft: state.scansLeft, result: result.type };
   }
 
   function doAccuse() {
     if (state.selected < 0 || state.gameOver) return;
-    const node = state.nodes[state.selected];
+    var node = state.nodes[state.selected];
 
     if (node.revealed) {
-      log(node.name + ' already revealed', 'error');
+      log(node.name + ' already revealed.', 'error');
       return;
     }
 
     node.revealed = true;
     node.accused = true;
     state.round++;
+    career.totalAccusations++;
 
     if (node.compromised) {
       state.found++;
-      state.score += state.scansLeft > 0 ? 150 : 100; // bonus for efficient play
-      log('CORRECT — ' + node.name + ' was compromised! (' + state.found + '/' + state.totalCompromised + ')', 'action');
-      if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.success();
+      career.correctAccusations++;
+      var bonus = state.scansLeft > 0 ? 150 : 100;
+      bonus += Math.max(0, (state.maxRounds - state.round) * 10); // Speed bonus
+      state.score += bonus;
+      log('CORRECT: ' + node.name + ' was compromised! (' + state.found + '/' + state.totalCompromised + ' found, +' + bonus + ' pts)', 'action');
 
       if (state.found >= state.totalCompromised) {
         endGame(true);
       }
     } else {
-      state.score -= 50;
-      log('WRONG — ' + node.name + ' was clean. Wasted accusation.', 'error');
-      if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.error();
+      state.score = Math.max(0, state.score - 50);
+      career.falsePositives++;
+      log('FALSE POSITIVE: ' + node.name + ' was clean. -50 pts.', 'error');
       state.accusationsLeft--;
 
       if (state.accusationsLeft <= 0 && state.found < state.totalCompromised) {
-        // Ran out of accusations
         endGame(false);
       }
     }
 
+    saveCareer();
     checkRoundLimit();
     render();
     return { correct: node.compromised, found: state.found, total: state.totalCompromised };
@@ -565,31 +1470,50 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
 
   function doAnalyze() {
     if (state.gameOver) return;
-    if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.click();
 
     log('--- SIGNAL ANALYSIS ---', 'deduction');
 
-    // Count suspicious vs clean signals
-    let suspicious = 0;
-    let clean = 0;
-    state.nodes.forEach(function(n) {
-      if (n.revealed) return;
-      const isSuspicious = COMPROMISED_SIGNALS.includes(n.signal);
-      if (isSuspicious) suspicious++;
-      else clean++;
-    });
-
-    log('Unrevealed nodes: ' + (suspicious + clean), 'signal');
-    log('Nodes with suspicious signals: ' + suspicious, 'signal');
-    log('Nodes with clean signals: ' + clean, 'signal');
-
-    // Hint based on scanned nodes
-    const scannedCompromised = state.nodes.filter(function(n) { return n.scanned && n.compromised && !n.revealed; }).length;
-    if (scannedCompromised > 0) {
-      log('WARNING: ' + scannedCompromised + ' scanned node(s) showed anomalies — investigate further', 'error');
+    // Count anomalous dimensions across unrevealed nodes
+    var report = {};
+    var unrevealed = 0;
+    for (var i = 0; i < state.nodes.length; i++) {
+      var n = state.nodes[i];
+      if (n.revealed) continue;
+      unrevealed++;
+      for (var s = 0; s < n.signals.length; s++) {
+        var sig = n.signals[s];
+        if (!report[sig.metric]) report[sig.metric] = { anomalous: 0, clean: 0 };
+        if (sig.isAnomaly) {
+          report[sig.metric].anomalous++;
+        } else {
+          report[sig.metric].clean++;
+        }
+      }
     }
 
-    log('Tip: compromised nodes often show irregular heartbeat, high latency, or checksum issues', 'deduction');
+    log('Unrevealed nodes: ' + unrevealed, 'signal');
+
+    // Show per-metric analysis
+    var metrics = Object.keys(report);
+    for (var m = 0; m < metrics.length; m++) {
+      var r = report[metrics[m]];
+      if (r.anomalous > 0) {
+        log(metrics[m] + ': ' + r.anomalous + ' anomalous, ' + r.clean + ' normal', 'signal');
+      }
+    }
+
+    // Scanned node warnings
+    var scannedSuspect = 0;
+    for (i = 0; i < state.nodes.length; i++) {
+      if (state.nodes[i].scanned && !state.nodes[i].revealed && state.nodes[i].compromised) {
+        scannedSuspect++;
+      }
+    }
+    if (scannedSuspect > 0) {
+      log('WARNING: ' + scannedSuspect + ' scanned node(s) require further investigation.', 'error');
+    }
+
+    log('Tip: Compare metrics across nodes. Outliers suggest compromise.', 'deduction');
     log('---', 'deduction');
 
     state.round++;
@@ -599,7 +1523,7 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
 
   function checkRoundLimit() {
     if (state.round > state.maxRounds && !state.gameOver && state.found < state.totalCompromised) {
-      log('Round limit reached — time ran out!', 'error');
+      log('Round limit reached. Investigation timed out.', 'error');
       endGame(false);
     }
   }
@@ -607,43 +1531,124 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
   function endGame(won) {
     state.gameOver = true;
 
-    // Reveal all nodes
-    state.nodes.forEach(function(n) { n.revealed = true; });
+    // Reveal all
+    for (var i = 0; i < state.nodes.length; i++) {
+      state.nodes[i].revealed = true;
+    }
     render();
 
-    const overlay = document.getElementById('result-overlay');
-    const title = document.getElementById('result-title');
-    const desc = document.getElementById('result-desc');
+    // Update career
+    career.gamesPlayed++;
+    if (won) {
+      career.gamesWon++;
+      career.streak++;
+      state.score += state.scansLeft * 25; // unused scan bonus
+      if (career.streak > career.bestStreak) career.bestStreak = career.streak;
+      // Level up
+      career.level++;
+      if (career.level > career.bestLevel) career.bestLevel = career.level;
+    } else {
+      career.streak = 0;
+      // Level down on loss (minimum 1)
+      career.level = Math.max(1, career.level - 1);
+    }
+    if (state.score > career.bestScore) career.bestScore = state.score;
+    career.totalScore += state.score;
+    saveCareer();
+
+    // Show result
+    var overlay = document.getElementById('result-overlay');
+    var title = document.getElementById('result-title');
+    var detail = document.getElementById('result-detail');
+    var stats = document.getElementById('result-stats');
+
+    var accuracy = career.totalAccusations > 0
+      ? Math.round(career.correctAccusations / career.totalAccusations * 100) : 0;
+    var fpRate = career.totalAccusations > 0
+      ? Math.round(career.falsePositives / career.totalAccusations * 100) : 0;
 
     if (won) {
-      state.score += state.scansLeft * 25; // bonus for unused scans
       title.textContent = 'NETWORK SECURED';
-      title.style.color = '#00e09a';
-      desc.textContent = 'All compromised nodes identified. Score: ' + state.score + '. The network is safe.';
-      if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.victory();
+      title.style.color = 'var(--green)';
+      detail.textContent = 'All compromised nodes identified. Advancing to Level ' + career.level + '.';
     } else {
       title.textContent = 'NETWORK BREACHED';
-      title.style.color = '#cc4444';
-      const missed = state.totalCompromised - state.found;
-      desc.textContent = missed + ' compromised node(s) remain undetected. Score: ' + state.score + '. The network is vulnerable.';
-      if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.defeat();
+      title.style.color = 'var(--red)';
+      var missed = state.totalCompromised - state.found;
+      detail.textContent = missed + ' compromised node(s) went undetected. Returning to Level ' + career.level + '.';
     }
+
+    stats.innerHTML =
+      '<div class="result-stat"><div class="val" style="color:var(--blue)">' + state.score + '</div><div class="label">Score</div></div>' +
+      '<div class="result-stat"><div class="val" style="color:var(--green)">' + accuracy + '%</div><div class="label">Accuracy</div></div>' +
+      '<div class="result-stat"><div class="val" style="color:var(--red)">' + fpRate + '%</div><div class="label">False +</div></div>' +
+      '<div class="result-stat"><div class="val" style="color:var(--purple)">' + career.streak + '</div><div class="label">Streak</div></div>';
 
     overlay.classList.add('show');
     document.getElementById('score').textContent = state.score;
     showFundPrompt();
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // SCREEN MANAGEMENT
+  // ═══════════════════════════════════════════════════════════════════════
+
+  function showTitle() {
+    stopCanvasAnim();
+    document.getElementById('title-screen').style.display = 'flex';
+    document.getElementById('game-screen').classList.remove('active');
+    document.getElementById('result-overlay').classList.remove('show');
+    updateTitleStats();
+  }
+
+  function startGame() {
+    document.getElementById('title-screen').style.display = 'none';
+    document.getElementById('game-screen').classList.add('active');
+
+    initGame();
+    document.getElementById('log').innerHTML = '';
+    document.getElementById('result-overlay').classList.remove('show');
+
+    var cfg = puzzle.cfg;
+    log('SIGNAL v2.0 — Level ' + state.level, 'system');
+    log('Network: ' + state.nodes.length + ' nodes, ' + state.totalCompromised + ' compromised', 'system');
+    log('Resources: ' + state.scansLeft + ' scans, ' + state.maxRounds + ' rounds', 'system');
+    log('Read signal data. Form hypotheses. Test and identify.', 'system');
+
+    render();
+
+    // Start canvas after DOM is visible
+    setTimeout(function() {
+      startCanvasAnim();
+      canvasEl.addEventListener('click', handleCanvasClick);
+    }, 50);
+  }
+
+  function nextLevel() {
+    document.getElementById('result-overlay').classList.remove('show');
+    startGame();
+  }
+
   function closeResult() {
     document.getElementById('result-overlay').classList.remove('show');
   }
 
-  // ── Public API (for bots) ────────────────────────────────────────────
+  function resetCareer() {
+    if (confirm('Reset all career stats and return to Level 1?')) {
+      career = defaultCareer();
+      saveCareer();
+      updateTitleStats();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PUBLIC API (for bots)
+  // ═══════════════════════════════════════════════════════════════════════
 
   window.SIGNAL = {
     getState: function() {
       return {
-        difficulty: state.difficulty,
+        level: state.level,
         round: state.round,
         maxRounds: state.maxRounds,
         scansLeft: state.scansLeft,
@@ -656,12 +1661,22 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
             index: i,
             name: n.name,
             type: n.type,
-            signal: n.signal,
+            signals: n.signals.map(function(s) {
+              return { metric: s.metric, value: s.display };
+            }),
             scanned: n.scanned,
             revealed: n.revealed,
             compromised: n.revealed ? n.compromised : undefined,
           };
         }),
+        career: {
+          accuracy: career.totalAccusations > 0
+            ? Math.round(career.correctAccusations / career.totalAccusations * 100) : null,
+          falsePositiveRate: career.totalAccusations > 0
+            ? Math.round(career.falsePositives / career.totalAccusations * 100) : null,
+          level: career.level,
+          streak: career.streak
+        }
       };
     },
     scan: function(i) {
@@ -675,143 +1690,50 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
       return doAccuse();
     },
     analyze: function() { doAnalyze(); return 'analysis complete'; },
-    newGame: function(diff) {
-      document.getElementById('difficulty').value = diff || 'medium';
-      newGame();
-      return 'new game started';
+    newGame: function() {
+      startGame();
+      return 'new game started at level ' + career.level;
     },
   };
 
-  // ── Init ─────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════
+  // WINDOW RESIZE HANDLER
+  // ═══════════════════════════════════════════════════════════════════════
 
-  window.newGame = function() {
-    const diff = document.getElementById('difficulty').value;
-    initState(diff);
-    document.getElementById('log').innerHTML = '';
-    document.getElementById('result-overlay').classList.remove('show');
-    log('SIGNAL v1.0 — find ' + state.totalCompromised + ' compromised node(s) in ' + state.nodes.length + ' nodes', 'system');
-    log('You have ' + state.scansLeft + ' scans and ' + state.maxRounds + ' rounds', 'system');
-    log('Read the signals. Scan suspects. Accuse when ready.', 'system');
-    if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.boot();
-    render();
-  };
+  var resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      if (canvasEl && document.getElementById('game-screen').classList.contains('active')) {
+        initCanvas();
+      }
+    }, 150);
+  });
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // EXPOSE & INIT
+  // ═══════════════════════════════════════════════════════════════════════
+
+  window.startGame = startGame;
+  window.showTitle = showTitle;
+  window.nextLevel = nextLevel;
+  window.closeResult = closeResult;
+  window.resetCareer = resetCareer;
   window.doScan = doScan;
   window.doAccuse = doAccuse;
   window.doAnalyze = doAnalyze;
-  window.closeResult = closeResult;
 
-  newGame();
+  // Show title screen
+  updateTitleStats();
+
 })();
 </script>
-<script>if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.createToggle();</script>
 
-<!-- Anime Effects: Cyberpunk background, scanlines, analysis effects -->
-<canvas id="anime-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
-<script>
-(function() {
-  if (typeof AnimeEffects === 'undefined') return;
-
-  // Scanlines
-  AnimeEffects.addScanlines(0.04);
-
-  // Cyberpunk city grid background
-  var bgCanvas = document.getElementById('anime-bg');
-  if (bgCanvas) {
-    bgCanvas.width = window.innerWidth;
-    bgCanvas.height = window.innerHeight;
-    var ctx = bgCanvas.getContext('2d');
-
-    // Dark gradient
-    var grad = ctx.createRadialGradient(bgCanvas.width/2, bgCanvas.height/2, 0, bgCanvas.width/2, bgCanvas.height/2, bgCanvas.width);
-    grad.addColorStop(0, '#0e0e1a');
-    grad.addColorStop(1, '#060608');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
-
-    // Grid lines (perspective city grid)
-    ctx.strokeStyle = '#cc444422';
-    ctx.lineWidth = 0.5;
-    for (var i = 0; i < 30; i++) {
-      var x = (bgCanvas.width / 30) * i;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, bgCanvas.height);
-      ctx.stroke();
-    }
-    for (var j = 0; j < 20; j++) {
-      var y = (bgCanvas.height / 20) * j;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(bgCanvas.width, y);
-      ctx.stroke();
-    }
-
-    // Neon node dots
-    for (var n = 0; n < 15; n++) {
-      var nx = Math.random() * bgCanvas.width;
-      var ny = Math.random() * bgCanvas.height;
-      ctx.beginPath();
-      ctx.arc(nx, ny, 2 + Math.random() * 3, 0, Math.PI * 2);
-      ctx.fillStyle = Math.random() > 0.5 ? '#cc444444' : '#00e09a33';
-      ctx.fill();
-      // Glow
-      ctx.beginPath();
-      ctx.arc(nx, ny, 8 + Math.random() * 8, 0, Math.PI * 2);
-      ctx.fillStyle = Math.random() > 0.5 ? '#cc444411' : '#00e09a0a';
-      ctx.fill();
-    }
-
-    // Connection lines between dots
-    ctx.strokeStyle = '#cc444418';
-    ctx.lineWidth = 0.5;
-    for (var k = 0; k < 8; k++) {
-      ctx.beginPath();
-      ctx.moveTo(Math.random() * bgCanvas.width, Math.random() * bgCanvas.height);
-      ctx.lineTo(Math.random() * bgCanvas.width, Math.random() * bgCanvas.height);
-      ctx.stroke();
-    }
-  }
-
-  // Override analyze to show anime "ANALYSIS COMPLETE" effect
-  var origAnalyze = window.doAnalyze;
-  if (origAnalyze) {
-    window.doAnalyze = function() {
-      origAnalyze();
-      AnimeEffects.textSlam('ANALYSIS', '#44aacc', 1000);
-      setTimeout(function() {
-        AnimeEffects.textSlam('COMPLETE', '#00e09a', 1000);
-      }, 400);
-    };
-  }
-
-  // Override endGame to show dramatic results
-  var origClose = window.closeResult;
-  var origNewGame = window.newGame;
-
-  // Patch result overlay for anime flair
-  var resultOverlay = document.getElementById('result-overlay');
-  if (resultOverlay) {
-    var origObserver = new MutationObserver(function(mutations) {
-      mutations.forEach(function(m) {
-        if (resultOverlay.classList.contains('show')) {
-          var title = document.getElementById('result-title');
-          if (title && title.style.color === 'rgb(0, 224, 154)') {
-            AnimeEffects.screenFlash('#00e09a', 300);
-          } else {
-            AnimeEffects.screenFlash('#cc4444', 300);
-          }
-        }
-      });
-    });
-    origObserver.observe(resultOverlay, { attributes: true, attributeFilter: ['class'] });
-  }
-})();
-</script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
+<!-- Fund prompt (shown after game over) -->
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(232,244,248,0.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,0.5);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-dim);z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(0,40,80,0.06);">
+  <span style="color:var(--text)">This game runs on one laptop.</span>
+  <a href="/site/fund/" style="color:var(--blue);margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss" style="background:none;border:none;color:var(--text-muted);cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){
@@ -821,7 +1743,7 @@ function showFundPrompt(){
   if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
 }
 </script>
-</main>
-<script src="../shared/substrate-frame.js" data-title="SIGNAL" data-lore="Distinguishing signal from noise" data-agent="Sentinel" data-agent-color="#ff4444"></script>
+
+<script src="../shared/substrate-frame.js" data-title="SIGNAL" data-lore="Distinguishing signal from noise" data-agent="Sentinel" data-agent-color="#D04848"></script>
 </body>
 </html>

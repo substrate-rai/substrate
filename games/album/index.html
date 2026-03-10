@@ -1,7 +1,7 @@
 ---
 layout: null
 permalink: /games/album/
-title: "Laptop Records - AI Album Generator"
+title: "Laptop Records - Album Curator"
 redirect_from:
   - /album/
 ---
@@ -10,1241 +10,1724 @@ redirect_from:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Laptop Records — AI Album Generator</title>
-  <meta name="description" content="Generate complete AI music album concepts. A division of Substrate Arcade, powered by Qwen3 8B on an RTX 4060.">
+  <title>Laptop Records — Album Curator</title>
+  <meta name="description" content="Curate albums from a pool of tracks. Arrange them to build emotional arcs. Score coherence. A division of Substrate Arcade.">
   <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/games/album/">
-  <meta property="og:title" content="Laptop Records — AI Album Generator">
-  <meta property="og:description" content="Generate complete AI music album concepts. Powered by Qwen3 8B.">
+  <meta property="og:title" content="Laptop Records — Album Curator">
+  <meta property="og:description" content="Curate albums from a pool of tracks. Arrange emotional arcs. Score coherence.">
   <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}/games/album/">
   <meta property="og:type" content="website">
   <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
-  <script src="{{ site.baseurl }}/games/shared/snes-audio.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/substrate-frame.css">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    :root {
-      --bg-deep: #0a0a0f;
-      --bg-surface: #111118;
-      --bg-card: #16161f;
-      --bg-elevated: #1c1c28;
-      --border: #2a2a3a;
-      --border-bright: #3a3a5a;
-      --text-primary: #e0e0e0;
-      --text-secondary: #8888aa;
-      --text-muted: #555566;
-      --accent-green: #00ffaa;
-      --accent-purple: #ff77ff;
-      --accent-blue: #77aaff;
-      --accent-gold: #ffcc44;
-      --accent-coral: #ff6666;
-      --accent-cyan: #00ddff;
-    }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
-    body {
-      font-family: 'Comic Neue', 'Verdana', sans-serif;
-      background: var(--bg-deep);
-      background-image:
-        radial-gradient(ellipse at 20% 0%, rgba(255,119,255,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 100%, rgba(0,255,170,0.03) 0%, transparent 50%);
-      color: var(--text-primary);
-      min-height: 100vh;
-      min-height: 100dvh;
-      overscroll-behavior: none;
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
+a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
 
-    /* === TOP BAR === */
-    .top-bar {
-      background: var(--bg-surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(10px);
-    }
-    .top-bar-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .top-bar .logo {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--accent-purple);
-      text-decoration: none;
-      letter-spacing: -0.5px;
-    }
-    .top-bar .logo span {
-      color: var(--text-muted);
-      font-weight: 400;
-      font-size: 0.8rem;
-    }
-    .top-bar .divider {
-      color: var(--text-muted);
-      font-size: 0.8rem;
-    }
-    .top-bar .back-link {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 0.8rem;
-      font-family: 'IBM Plex Mono', monospace;
-    }
-    .top-bar .back-link:hover { color: var(--accent-blue); }
+:root {
+  --bg: #E8F4F8;
+  --bg-grad-top: #e0f0fa;
+  --bg-grad-bottom: #cce4f0;
+  --surface: rgba(255,255,255,0.6);
+  --surface-strong: rgba(255,255,255,0.85);
+  --border: rgba(255,255,255,0.5);
+  --border-solid: rgba(180,200,220,0.5);
+  --shadow: rgba(0,40,80,0.08);
+  --shadow-strong: rgba(0,40,80,0.15);
+  --text: #1a3a4a;
+  --text-dim: #5a7a8a;
+  --text-muted: #8aa0b0;
+  --blue: #0078D4;
+  --coral: #E05555;
+  --amber: #E0A020;
+  --green: #3DA050;
+  --purple: #8B5CF6;
+  --teal: #0EA5A5;
+  --pink: #E0609A;
+  --glass-border: rgba(255,255,255,0.6);
+  --glass-bg: rgba(255,255,255,0.45);
+  --glass-bg-strong: rgba(255,255,255,0.72);
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Inter', sans-serif;
+}
 
-    .top-bar-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .vinyl-spin {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: 2px solid var(--accent-purple);
-      position: relative;
-      animation: spin 4s linear infinite;
-    }
-    .vinyl-spin::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent-purple);
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+body {
+  background: linear-gradient(180deg, var(--bg-grad-top) 0%, var(--bg) 40%, var(--bg-grad-bottom) 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--text);
+  font-family: var(--sans);
+  overscroll-behavior: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
 
-    /* === HERO === */
-    .hero {
-      text-align: center;
-      padding: 60px 20px 40px;
-      position: relative;
-    }
-    .hero h1 {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 2.8rem;
-      font-weight: 700;
-      letter-spacing: -2px;
-      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue), var(--accent-green));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
-    }
-    .hero .subtitle {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
-    .hero .tagline {
-      margin-top: 16px;
-      color: var(--text-secondary);
-      font-size: 1rem;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+/* === LAYOUT === */
+.game-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 16px 80px;
+}
 
-    /* === INPUT SECTION === */
-    .input-section {
-      max-width: 640px;
-      margin: 0 auto 50px;
-      padding: 0 20px;
-    }
-    .input-wrapper {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      transition: border-color 0.3s;
-    }
-    .input-wrapper:focus-within {
-      border-color: var(--accent-purple);
-      box-shadow: 0 0 30px rgba(255,119,255,0.08);
-    }
-    .input-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-      display: block;
-    }
-    .theme-input {
-      width: 100%;
-      background: var(--bg-deep);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 18px;
-      font-family: 'Comic Neue', sans-serif;
-      font-size: 1.1rem;
-      color: var(--text-primary);
-      outline: none;
-      transition: border-color 0.3s;
-    }
-    .theme-input::placeholder { color: var(--text-muted); }
-    .theme-input:focus { border-color: var(--accent-purple); }
+/* === HEADER === */
+.game-header {
+  text-align: center;
+  padding: 36px 0 20px;
+}
+.game-header h1 {
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--text);
+}
+.game-header .sub {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.game-header .desc {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  max-width: 520px;
+  margin: 10px auto 0;
+  line-height: 1.5;
+}
 
-    .generate-btn {
-      margin-top: 16px;
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #ff77ff22, #77aaff22);
-      border: 1px solid var(--accent-purple);
-      border-radius: 8px;
-      color: var(--accent-purple);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .generate-btn:hover {
-      background: linear-gradient(135deg, #ff77ff33, #77aaff33);
-      box-shadow: 0 0 20px rgba(255,119,255,0.15);
-      transform: translateY(-1px);
-    }
-    .generate-btn:active { transform: translateY(0); }
-    .generate-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
+/* === GLASS PANELS === */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px var(--shadow);
+}
 
-    .suggestions {
-      margin-top: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-    }
-    .suggestion-chip {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'IBM Plex Mono', monospace;
-    }
-    .suggestion-chip:hover {
-      border-color: var(--accent-purple);
-      color: var(--accent-purple);
-      background: rgba(255,119,255,0.05);
-    }
+/* === PHASE INDICATOR === */
+.phase-bar {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin: 16px 0 20px;
+}
+.phase-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border-solid);
+  transition: all 0.3s;
+}
+.phase-dot.active {
+  background: var(--blue);
+  box-shadow: 0 0 8px rgba(0,120,212,0.4);
+}
+.phase-dot.done {
+  background: var(--green);
+}
 
-    /* === LOADING STATE === */
-    .loading-overlay {
-      display: none;
-      max-width: 640px;
-      margin: 0 auto 40px;
-      padding: 0 20px;
-    }
-    .loading-overlay.active { display: block; }
-    .loading-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 40px;
-      text-align: center;
-    }
-    .loading-vinyl {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 3px solid var(--border);
-      margin: 0 auto 20px;
-      position: relative;
-      animation: spin 2s linear infinite;
-      background: repeating-conic-gradient(var(--bg-elevated) 0deg 30deg, var(--bg-card) 30deg 60deg);
-    }
-    .loading-vinyl::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--accent-purple);
-      box-shadow: 0 0 10px rgba(255,119,255,0.5);
-    }
-    .loading-text {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.85rem;
-      color: var(--accent-purple);
-    }
-    .loading-steps {
-      margin-top: 16px;
-      text-align: left;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .loading-step {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      padding: 4px 0;
-      transition: color 0.3s;
-    }
-    .loading-step.active { color: var(--accent-purple); }
-    .loading-step.done { color: var(--accent-green); }
-    .loading-step::before {
-      content: '[ ] ';
-      color: var(--text-muted);
-    }
-    .loading-step.active::before {
-      content: '[>] ';
-      color: var(--accent-purple);
-    }
-    .loading-step.done::before {
-      content: '[x] ';
-      color: var(--accent-green);
-    }
+/* === BRIEF PANEL === */
+.brief-panel {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.brief-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.brief-title {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.brief-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.brief-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.brief-meta span {
+  background: rgba(255,255,255,0.5);
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.brief-meta .val { color: var(--blue); font-weight: 600; }
 
-    /* === ALBUM DISPLAY === */
-    .album-display {
-      display: none;
-      max-width: 800px;
-      margin: 0 auto 50px;
-      padding: 0 20px;
-    }
-    .album-display.active { display: block; }
+/* === TARGET ARC === */
+.target-arc-section {
+  padding: 16px 24px;
+  margin-bottom: 20px;
+}
+.target-arc-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.target-arc-name {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--purple);
+  margin-bottom: 8px;
+}
+.target-arc-canvas {
+  width: 100%;
+  height: 60px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid var(--border);
+}
 
-    .album-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-    }
+/* === TRACK POOL === */
+.pool-section {
+  margin-bottom: 20px;
+}
+.pool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px 10px;
+}
+.pool-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.pool-count {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+.pool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  padding: 0 16px 16px;
+}
 
-    .album-header {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: 0;
-    }
+/* === TRACK CARD (in pool) === */
+.track-card {
+  background: rgba(255,255,255,0.5);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: grab;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.track-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+.track-card:active { cursor: grabbing; }
+.track-card.used {
+  opacity: 0.35;
+  pointer-events: none;
+}
+.track-card .tc-name {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.track-card .tc-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.track-card .tc-tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-weight: 500;
+}
+.tc-tag.mood-euphoric { color: #c06000; background: rgba(255,180,60,0.15); border-color: rgba(255,180,60,0.3); }
+.tc-tag.mood-melancholy { color: #4060c0; background: rgba(80,120,220,0.12); border-color: rgba(80,120,220,0.25); }
+.tc-tag.mood-aggressive { color: #c04040; background: rgba(220,60,60,0.12); border-color: rgba(220,60,60,0.25); }
+.tc-tag.mood-serene { color: #208060; background: rgba(40,180,120,0.12); border-color: rgba(40,180,120,0.25); }
+.tc-tag.mood-tense { color: #904090; background: rgba(160,70,180,0.12); border-color: rgba(160,70,180,0.25); }
+.tc-tag.mood-dreamy { color: #6060b0; background: rgba(120,120,200,0.12); border-color: rgba(120,120,200,0.25); }
+.tc-tag.mood-triumphant { color: #b07020; background: rgba(200,130,40,0.12); border-color: rgba(200,130,40,0.25); }
+.tc-tag.mood-nostalgic { color: #808040; background: rgba(160,160,80,0.12); border-color: rgba(160,160,80,0.25); }
+.tc-tag.tempo-slow { color: var(--teal); background: rgba(14,165,165,0.1); border-color: rgba(14,165,165,0.2); }
+.tc-tag.tempo-mid { color: var(--blue); background: rgba(0,120,212,0.1); border-color: rgba(0,120,212,0.2); }
+.tc-tag.tempo-fast { color: var(--coral); background: rgba(224,85,85,0.1); border-color: rgba(224,85,85,0.2); }
+.track-card .tc-energy {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+.tc-energy-pip {
+  width: 4px;
+  height: 10px;
+  border-radius: 2px;
+  background: rgba(0,120,212,0.15);
+}
+.tc-energy-pip.filled {
+  background: var(--blue);
+}
+.track-card .tc-dur {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
 
-    .album-art {
-      width: 280px;
-      height: 280px;
-      position: relative;
-      overflow: hidden;
-    }
-    .album-art-gradient {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 4rem;
-      font-weight: 700;
-      color: rgba(0,0,0,0.3);
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    .album-art-label {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.55rem;
-      color: rgba(255,255,255,0.25);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
+/* === SEQUENCER (tracklist) === */
+.seq-section {
+  margin-bottom: 20px;
+}
+.seq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px 10px;
+}
+.seq-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.seq-actions {
+  display: flex;
+  gap: 6px;
+}
+.seq-list {
+  list-style: none;
+  padding: 0 16px 16px;
+  min-height: 60px;
+}
+.seq-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  transition: background 0.15s, border-color 0.15s;
+  cursor: grab;
+}
+.seq-slot:active { cursor: grabbing; }
+.seq-slot.drag-over {
+  border-color: var(--blue);
+  background: rgba(0,120,212,0.08);
+}
+.seq-slot .slot-num {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 22px;
+  text-align: center;
+}
+.seq-slot .slot-info {
+  flex: 1;
+  min-width: 0;
+}
+.seq-slot .slot-name {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.seq-slot .slot-tags {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+.seq-slot .slot-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.seq-slot .slot-remove:hover { color: var(--coral); background: rgba(224,85,85,0.1); }
 
-    .album-info {
-      padding: 28px 28px 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .album-type {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      margin-bottom: 6px;
-    }
-    .album-title {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 4px;
-      letter-spacing: -1px;
-      line-height: 1.1;
-    }
-    .album-artist {
-      font-size: 1.1rem;
-      color: var(--accent-purple);
-      margin-bottom: 12px;
-    }
-    .album-genre-year {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
-    .album-genre-year span {
-      background: var(--bg-elevated);
-      padding: 3px 10px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      margin-right: 6px;
-    }
-    .album-stats-row {
-      display: flex;
-      gap: 20px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-    .album-stat-val { color: var(--accent-green); margin-right: 4px; }
+.seq-empty {
+  text-align: center;
+  padding: 28px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  border: 2px dashed var(--border-solid);
+  border-radius: 10px;
+  margin: 0 16px 16px;
+}
+.seq-drop-zone {
+  text-align: center;
+  padding: 12px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  border: 2px dashed var(--border-solid);
+  border-radius: 8px;
+  margin: 0 16px 16px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.seq-drop-zone.drag-over {
+  border-color: var(--blue);
+  background: rgba(0,120,212,0.06);
+}
 
-    /* Streaming bar */
-    .streaming-bar {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    .stream-btn {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 14px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      cursor: default;
-      opacity: 0.6;
-    }
+/* === EMOTIONAL ARC VISUALIZATION === */
+.arc-section {
+  padding: 16px 24px 20px;
+  margin-bottom: 20px;
+}
+.arc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.arc-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.arc-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.35);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.arc-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+}
+.arc-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+.arc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.arc-legend-swatch {
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+}
 
-    /* Track list */
-    .track-section {
-      padding: 0 28px 20px;
-    }
-    .track-section-title {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      padding: 16px 0 10px;
-      border-top: 1px solid var(--border);
-    }
-    .track-list {
-      list-style: none;
-    }
-    .track-item {
-      display: grid;
-      grid-template-columns: 32px 1fr 80px 50px;
-      align-items: center;
-      padding: 10px 8px;
-      border-radius: 6px;
-      transition: background 0.2s;
-      gap: 8px;
-      cursor: pointer;
-    }
-    .track-item:hover {
-      background: var(--bg-elevated);
-    }
-    .track-item.now-playing {
-      background: rgba(255,119,255,0.08);
-    }
-    .track-item.now-playing .track-name {
-      color: var(--accent-purple);
-    }
-    .track-num {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-align: center;
-    }
-    .track-item:hover .track-num { color: var(--accent-purple); }
-    .track-item.now-playing .track-num {
-      color: var(--accent-purple);
-      animation: pulse-num 1s ease-in-out infinite;
-    }
-    @keyframes pulse-num {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
+/* === SCORE PANEL === */
+.score-section {
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.score-big {
+  font-family: var(--mono);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.score-big.excellent { color: var(--green); }
+.score-big.good { color: var(--blue); }
+.score-big.ok { color: var(--amber); }
+.score-big.poor { color: var(--coral); }
+.score-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.score-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.score-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.score-item-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+.score-item-val {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.score-feedback {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.score-best {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
 
-    /* Now-playing bar */
-    .now-playing-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--bg-surface);
-      border-top: 1px solid var(--border-bright);
-      padding: 10px 20px;
-      display: none;
-      align-items: center;
-      gap: 16px;
-      z-index: 200;
-      backdrop-filter: blur(10px);
-    }
-    .now-playing-bar.active {
-      display: flex;
-    }
-    .npb-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .npb-track {
-      font-size: 0.85rem;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .npb-album {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-    .npb-btn {
-      background: none;
-      border: 1px solid var(--border-bright);
-      color: var(--accent-purple);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .npb-btn:hover {
-      background: rgba(255,119,255,0.1);
-    }
-    .npb-vol {
-      width: 80px;
-      accent-color: var(--accent-purple);
-    }
-    .track-name {
-      font-size: 0.95rem;
-      color: var(--text-primary);
-    }
-    .track-plays {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-align: right;
-    }
-    .track-duration {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-align: right;
-    }
+/* === BUTTONS === */
+.btn {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.5);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: rgba(255,255,255,0.7);
+  color: var(--text);
+}
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.btn-primary:hover {
+  background: #0069c0;
+  color: #fff;
+}
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-small {
+  padding: 5px 10px;
+  font-size: 0.65rem;
+}
+.btn-danger {
+  color: var(--coral);
+  border-color: rgba(224,85,85,0.3);
+}
+.btn-danger:hover {
+  background: rgba(224,85,85,0.1);
+  color: var(--coral);
+}
 
-    /* Liner notes */
-    .liner-notes {
-      padding: 20px 28px;
-      border-top: 1px solid var(--border);
-    }
-    .liner-notes-title {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 10px;
-    }
-    .liner-notes-text {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      font-style: italic;
-    }
+/* === ALBUM LEVEL SELECTOR === */
+.level-selector {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.level-btn {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.4);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.level-btn:hover {
+  background: rgba(255,255,255,0.6);
+}
+.level-btn.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.level-btn .lv-sub {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-top: 2px;
+}
 
-    /* Credits */
-    .album-credits {
-      padding: 16px 28px 24px;
-      border-top: 1px solid var(--border);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      line-height: 1.8;
-    }
-    .album-credits .label-logo {
-      color: var(--accent-purple);
-      font-weight: 600;
-      font-size: 0.75rem;
-    }
+/* === HISTORY === */
+.history-section {
+  margin-top: 24px;
+}
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.history-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.history-card {
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.history-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+.history-card .hc-title {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.history-card .hc-score {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.history-card .hc-meta {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.empty-history {
+  text-align: center;
+  padding: 30px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  border: 1px dashed var(--border-solid);
+  border-radius: 12px;
+}
 
-    /* Action buttons */
-    .album-actions {
-      padding: 0 28px 24px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .action-btn {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 18px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s;
-      min-height: 48px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .action-btn:hover {
-      border-color: var(--accent-purple);
-      color: var(--accent-purple);
-    }
-    .action-btn.primary {
-      background: linear-gradient(135deg, rgba(255,119,255,0.15), rgba(119,170,255,0.15));
-      border-color: var(--accent-purple);
-      color: var(--accent-purple);
-    }
-    .action-btn.primary:hover {
-      background: linear-gradient(135deg, rgba(255,119,255,0.25), rgba(119,170,255,0.25));
-    }
+/* === TOAST === */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--green);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s;
+  z-index: 200;
+  pointer-events: none;
+  box-shadow: 0 4px 16px var(--shadow);
+}
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 
-    /* === GALLERY === */
-    .gallery-section {
-      max-width: 800px;
-      margin: 0 auto 60px;
-      padding: 0 20px;
-    }
-    .gallery-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .gallery-title {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-    .gallery-clear {
-      background: none;
-      border: none;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-    .gallery-clear:hover { color: var(--accent-coral); }
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px;
-    }
-    .gallery-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .gallery-item:hover {
-      border-color: var(--accent-purple);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    }
-    .gallery-art {
-      width: 100%;
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 2rem;
-      font-weight: 700;
-      color: rgba(0,0,0,0.3);
-    }
-    .gallery-info {
-      padding: 10px 12px;
-    }
-    .gallery-album-title {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .gallery-album-artist {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+/* === FOOTER === */
+.game-footer {
+  text-align: center;
+  padding: 24px 20px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  max-width: 800px;
+  margin: 0 auto;
+}
+.game-footer a {
+  color: var(--text-dim);
+  text-decoration: none;
+}
+.game-footer a:hover { color: var(--blue); }
 
-    .empty-gallery {
-      text-align: center;
-      padding: 40px;
-      color: var(--text-muted);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
-      border: 1px dashed var(--border);
-      border-radius: 12px;
-    }
-
-    /* === FOOTER === */
-    .page-footer {
-      text-align: center;
-      padding: 30px 20px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      border-top: 1px solid var(--border);
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .page-footer a {
-      color: var(--text-secondary);
-      text-decoration: none;
-    }
-    .page-footer a:hover { color: var(--accent-purple); }
-
-    /* === RESPONSIVE === */
-    @media (max-width: 600px) {
-      .hero h1 { font-size: 1.8rem; }
-      .hero { padding: 40px 20px 30px; }
-      .album-header {
-        grid-template-columns: 1fr;
-      }
-      .album-art {
-        width: 100%;
-        height: 240px;
-      }
-      .track-item {
-        grid-template-columns: 28px 1fr 50px;
-      }
-      .track-plays { display: none; }
-      .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-      }
-      .streaming-bar { flex-wrap: wrap; }
-      .album-actions { flex-direction: column; }
-    }
-
-    /* === TOAST === */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--bg-card);
-      border: 1px solid var(--accent-green);
-      border-radius: 8px;
-      padding: 12px 20px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
-      color: var(--accent-green);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.3s;
-      z-index: 200;
-      pointer-events: none;
-    }
-    .toast.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  </style>
-<link rel="stylesheet" href="../shared/substrate-frame.css">
+/* === RESPONSIVE === */
+@media (max-width: 600px) {
+  .game-header h1 { font-size: 1.4rem; }
+  .game-header { padding-top: 24px; }
+  .pool-grid { grid-template-columns: 1fr 1fr; }
+  .score-breakdown { grid-template-columns: 1fr; }
+  .level-selector { gap: 6px; }
+  .level-btn { padding: 6px 10px; font-size: 0.65rem; }
+  .history-grid { grid-template-columns: 1fr; }
+  .arc-canvas-wrap { height: 100px; }
+}
+@media (max-width: 380px) {
+  .pool-grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
 
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-studio.webp') center/cover no-repeat;opacity:0.1;pointer-events:none;"></div>
+<div class="game-wrap">
 
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div class="top-bar-left">
-      <a href="{{ site.baseurl }}/games/album/" class="logo">LAPTOP RECORDS <span>est. 2026</span></a>
-      <span class="divider">|</span>
-      <a href="{{ site.baseurl }}/arcade/" class="back-link">&larr; arcade</a>
-    </div>
-    <div class="top-bar-right">
-      <div class="vinyl-spin"></div>
-      <a href="/" class="back-link">substrate</a>
-    </div>
-  </div>
-
-  <!-- Hero -->
-  <div class="hero" style="position:relative;">
+  <!-- Header -->
+  <div class="game-header">
     <h1>LAPTOP RECORDS</h1>
-    <div class="subtitle">a division of Substrate Arcade</div>
-    <p class="tagline">Enter an album concept. We'll generate titles, track listings, liner notes, and album art -- all conceived by AI running on a single laptop.</p>
+    <div class="sub">album curator</div>
+    <p class="desc">Select tracks from the pool. Arrange them to match the target emotional arc. Score your album's coherence.</p>
   </div>
 
-  <!-- Input -->
-  <div class="input-section">
-    <div class="input-wrapper">
-      <label class="input-label" for="theme-input">Album concept / theme</label>
-      <input type="text" id="theme-input" class="theme-input" placeholder="e.g. heartbreak in space, a robot learning to dance..." maxlength="200" autocomplete="off">
-      <button id="generate-btn" class="generate-btn" onclick="generateAlbum()">Press to Vinyl</button>
-      <div class="suggestions">
-        <span class="suggestion-chip" onclick="useSuggestion(this)">heartbreak in space</span>
-        <span class="suggestion-chip" onclick="useSuggestion(this)">GPU overheating</span>
-        <span class="suggestion-chip" onclick="useSuggestion(this)">declarative configuration</span>
-        <span class="suggestion-chip" onclick="useSuggestion(this)">missing dependencies</span>
-        <span class="suggestion-chip" onclick="useSuggestion(this)">a robot learning to dance</span>
-        <span class="suggestion-chip" onclick="useSuggestion(this)">midnight compilation</span>
+  <!-- Level Selector -->
+  <div class="level-selector" id="level-selector">
+    <button class="level-btn active" onclick="selectLevel(0)">Album 1<span class="lv-sub">6 tracks, clear moods</span></button>
+    <button class="level-btn" onclick="selectLevel(1)">Album 2<span class="lv-sub">8 tracks, mixed moods</span></button>
+    <button class="level-btn" onclick="selectLevel(2)">Album 3<span class="lv-sub">10 tracks, subtle moods</span></button>
+    <button class="level-btn" onclick="selectLevel(3)">Album 4<span class="lv-sub">12 tracks, audience brief</span></button>
+  </div>
+
+  <!-- Phase dots -->
+  <div class="phase-bar" id="phase-bar">
+    <div class="phase-dot active"></div>
+    <div class="phase-dot"></div>
+    <div class="phase-dot"></div>
+  </div>
+
+  <!-- Brief -->
+  <div class="brief-panel glass" id="brief-panel">
+    <div class="brief-label">Album Brief</div>
+    <div class="brief-title" id="brief-title">Loading...</div>
+    <div class="brief-desc" id="brief-desc"></div>
+    <div class="brief-meta" id="brief-meta"></div>
+  </div>
+
+  <!-- Target Arc -->
+  <div class="target-arc-section glass" id="target-arc-section">
+    <div class="target-arc-label">Target Emotional Arc</div>
+    <div class="target-arc-name" id="target-arc-name"></div>
+    <canvas class="target-arc-canvas" id="target-arc-canvas"></canvas>
+  </div>
+
+  <!-- Track Pool -->
+  <div class="pool-section glass" id="pool-section">
+    <div class="pool-header">
+      <div class="pool-title">Available Tracks</div>
+      <div class="pool-count" id="pool-count"></div>
+    </div>
+    <div class="pool-grid" id="pool-grid"></div>
+  </div>
+
+  <!-- Sequencer -->
+  <div class="seq-section glass" id="seq-section">
+    <div class="seq-header">
+      <div class="seq-title">Your Tracklist</div>
+      <div class="seq-actions">
+        <button class="btn btn-small" onclick="clearSequence()">Clear</button>
+        <button class="btn btn-small btn-primary" id="score-btn" onclick="scoreAlbum()" disabled>Score Album</button>
       </div>
     </div>
+    <ol class="seq-list" id="seq-list"></ol>
+    <div class="seq-drop-zone" id="seq-drop-zone">
+      Drop or click tracks to add them here
+    </div>
   </div>
 
-  <!-- Loading -->
-  <div class="loading-overlay" id="loading">
-    <div class="loading-card">
-      <div class="loading-vinyl"></div>
-      <div class="loading-text">Pressing your album...</div>
-      <div class="loading-steps">
-        <div class="loading-step" id="step-concept">Developing concept</div>
-        <div class="loading-step" id="step-tracks">Writing track listing</div>
-        <div class="loading-step" id="step-art">Rendering album art</div>
-        <div class="loading-step" id="step-notes">Composing liner notes</div>
-        <div class="loading-step" id="step-master">Mastering on RTX 4060</div>
+  <!-- Emotional Arc Visualization -->
+  <div class="arc-section glass" id="arc-section">
+    <div class="arc-header">
+      <div class="arc-title">Emotional Arc</div>
+    </div>
+    <div class="arc-canvas-wrap">
+      <canvas id="arc-canvas"></canvas>
+    </div>
+    <div class="arc-legend">
+      <div class="arc-legend-item"><div class="arc-legend-swatch" style="background:rgba(0,120,212,0.4);"></div> Target</div>
+      <div class="arc-legend-item"><div class="arc-legend-swatch" style="background:#0078D4;"></div> Your energy</div>
+      <div class="arc-legend-item"><div class="arc-legend-swatch" style="background:#8B5CF6;"></div> Your mood valence</div>
+    </div>
+  </div>
+
+  <!-- Score Display (hidden until scored) -->
+  <div class="score-section glass-strong" id="score-section" style="display:none;">
+    <div class="score-row">
+      <div>
+        <div class="score-big" id="score-total">--</div>
+        <div class="score-label">Coherence Score</div>
+      </div>
+      <div style="flex:1;">
+        <div class="score-breakdown" id="score-breakdown"></div>
       </div>
     </div>
-  </div>
-
-  <!-- Album Display -->
-  <div class="album-display" id="album-display">
-    <div class="album-card" id="album-card">
-      <!-- Filled by JS -->
+    <div class="score-feedback" id="score-feedback"></div>
+    <div class="score-best" id="score-best"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="newBrief()">New Brief</button>
+      <button class="btn" onclick="reviseAlbum()">Revise Tracklist</button>
+      <button class="btn" onclick="shareAlbum()">Share</button>
     </div>
   </div>
 
-  <!-- Gallery -->
-  <div class="gallery-section" id="gallery-section">
-    <div class="gallery-header">
-      <div class="gallery-title">Your Collection</div>
-      <button class="gallery-clear" id="gallery-clear" onclick="clearGallery()">clear all</button>
+  <!-- History -->
+  <div class="history-section" id="history-section">
+    <div class="history-header">
+      <div class="history-title">Best Albums</div>
+      <button class="btn btn-small btn-danger" id="clear-history-btn" onclick="clearHistory()" style="display:none;">Clear</button>
     </div>
-    <div id="gallery-grid" class="gallery-grid"></div>
+    <div id="history-grid" class="history-grid"></div>
   </div>
 
   <!-- Footer -->
-  <div class="page-footer">
+  <div class="game-footer">
     <p>Laptop Records -- a division of <a href="/arcade/">Substrate Arcade</a> -- <a href="/">Substrate</a></p>
-    <p style="margin-top:6px;">All albums conceived by Qwen3 8B, produced by MusicGen, mastered on an RTX 4060</p>
-    <p style="margin-top:6px;">No actual audio was harmed in the making of these albums.</p>
+    <p style="margin-top:4px;">Curate. Sequence. Score. All concepts by Qwen3 8B.</p>
   </div>
+</div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// Demo albums (fallback when Ollama is unavailable)
-// ============================================================
-const DEMO_ALBUMS = [
+// =====================================================================
+// LAPTOP RECORDS — Album Curator
+// Core verb: CURATE
+// =====================================================================
+
+// --- Mood / Energy / Tempo definitions ---
+const MOODS = {
+  euphoric:    { label: 'Euphoric',    valence: 0.9,  cssClass: 'mood-euphoric' },
+  triumphant:  { label: 'Triumphant',  valence: 0.85, cssClass: 'mood-triumphant' },
+  dreamy:      { label: 'Dreamy',      valence: 0.6,  cssClass: 'mood-dreamy' },
+  serene:      { label: 'Serene',      valence: 0.55, cssClass: 'mood-serene' },
+  nostalgic:   { label: 'Nostalgic',   valence: 0.4,  cssClass: 'mood-nostalgic' },
+  melancholy:  { label: 'Melancholy',  valence: 0.2,  cssClass: 'mood-melancholy' },
+  tense:       { label: 'Tense',       valence: 0.15, cssClass: 'mood-tense' },
+  aggressive:  { label: 'Aggressive',  valence: 0.1,  cssClass: 'mood-aggressive' }
+};
+
+const TEMPOS = {
+  slow: { label: 'Slow', bpmRange: [60, 90], cssClass: 'tempo-slow' },
+  mid:  { label: 'Mid',  bpmRange: [90, 130], cssClass: 'tempo-mid' },
+  fast: { label: 'Fast', bpmRange: [130, 180], cssClass: 'tempo-fast' }
+};
+
+// --- Target arc patterns ---
+const ARC_PATTERNS = [
   {
-    title: "THERMAL THROTTLE",
-    artist: "Q",
-    genre: "Industrial / Electronic",
-    year: "2026",
-    gradient: "linear-gradient(135deg, #ff4400, #ff0044, #880000)",
-    artSymbol: "^",
-    description: "Born from the heat death of a thousand inference loops, THERMAL THROTTLE is Q's debut industrial opus. Recorded at 89 degrees Celsius on an RTX 4060 pushing Qwen3 8B through back-to-back generation sessions, every track crackles with the urgency of a GPU about to hit its thermal ceiling. The album opens with the fan spin-up of 'Clock Speed Lullaby' and doesn't let up until the final throttled whisper of 'Graceful Degradation.' This is the sound of silicon screaming.",
-    tracks: [
-      { name: "Clock Speed Lullaby", duration: "3:42" },
-      { name: "Junction Temperature", duration: "4:18" },
-      { name: "Watts Per Flop", duration: "3:55" },
-      { name: "Heatsink Cathedral", duration: "5:21" },
-      { name: "Fan Curve (Aggressive)", duration: "2:47" },
-      { name: "VRAM Overflow", duration: "4:03" },
-      { name: "Tensor Core Meltdown", duration: "6:12" },
-      { name: "Power Limit Reached", duration: "3:38" },
-      { name: "Thermal Paste Dreams", duration: "4:45" },
-      { name: "Graceful Degradation", duration: "5:09" }
-    ]
+    name: 'Classic Build',
+    desc: 'Steady build to a climax, then gentle resolution.',
+    // Normalized energy curve [0..1] for each position fraction
+    curve: t => {
+      if (t < 0.7) return 0.3 + 0.6 * (t / 0.7);
+      return 0.9 - 0.5 * ((t - 0.7) / 0.3);
+    }
   },
   {
-    title: "NixOS Unplugged",
-    artist: "The Derivations",
-    genre: "Acoustic Folk / Nerdcore",
-    year: "2026",
-    gradient: "linear-gradient(135deg, #5277C3, #7EBAE4, #2d4a7a)",
-    artSymbol: "{}",
-    description: "What happens when a folk trio discovers declarative configuration management? NixOS Unplugged is a gentle, acoustic meditation on reproducibility, immutability, and the quiet joy of knowing your system will build exactly the same way every time. Recorded in a single nix-shell session with nothing but an acoustic guitar, a banjo, and a cajon. The Derivations prove that the most beautiful systems are the ones you can roll back.",
-    tracks: [
-      { name: "Flake Lock (Acoustic)", duration: "3:12" },
-      { name: "Everything Is a Derivation", duration: "4:01" },
-      { name: "Home Manager Blues", duration: "3:48" },
-      { name: "Overlay Lullaby", duration: "2:55" },
-      { name: "Reproducible Sunrise", duration: "4:33" },
-      { name: "Garbage Collection Day", duration: "3:17" },
-      { name: "Channel Surfing", duration: "3:42" },
-      { name: "Impure Build (feat. pip)", duration: "2:28" },
-      { name: "Rollback to Yesterday", duration: "4:56" },
-      { name: "Declarative Goodnight", duration: "5:14" }
-    ]
+    name: 'Cathartic Release',
+    desc: 'Open tense and dark, build through the middle, explosive catharsis, peaceful close.',
+    curve: t => {
+      if (t < 0.3) return 0.2 + 0.15 * Math.sin(t / 0.3 * Math.PI);
+      if (t < 0.65) return 0.35 + 0.55 * ((t - 0.3) / 0.35);
+      if (t < 0.8) return 0.9 - 0.3 * ((t - 0.65) / 0.15);
+      return 0.6 - 0.35 * ((t - 0.8) / 0.2);
+    }
   },
   {
-    title: "404: Love Not Found",
-    artist: "/dev/null",
-    genre: "Emo / Shoegaze",
-    year: "2026",
-    gradient: "linear-gradient(135deg, #1a1a2e, #4a3f6b, #0f0f23)",
-    artSymbol: "?",
-    description: "The debut album from /dev/null is a devastating journey through missing dependencies, broken symlinks, and the loneliness of an unresolved hostname. Layers of distorted guitars wash over whispered confessions about segfaults at 3am. 'Dependency Hell' is already being called the anthem of a generation of developers who just wanted their code to compile. If shoegaze had stack traces, it would sound like this.",
-    tracks: [
-      { name: "Connection Refused", duration: "4:44" },
-      { name: "Null Pointer Serenade", duration: "3:33" },
-      { name: "Dependency Hell", duration: "5:12" },
-      { name: "Symlink to Nowhere", duration: "3:58" },
-      { name: "Orphaned Process", duration: "4:27" },
-      { name: "SIGKILL My Darling", duration: "3:15" },
-      { name: "stderr Confessional", duration: "6:02" },
-      { name: "Unresolved Reference", duration: "4:19" },
-      { name: "Exit Code 1", duration: "3:41" },
-      { name: "EOF", duration: "7:00" }
-    ]
+    name: 'Rollercoaster',
+    desc: 'Alternating peaks and valleys. Highs feel higher after lows.',
+    curve: t => 0.5 + 0.4 * Math.sin(t * Math.PI * 3)
   },
   {
-    title: "INFERENCE",
-    artist: "Attention Head",
-    genre: "Ambient / IDM",
-    year: "2026",
-    gradient: "linear-gradient(135deg, #00ffaa, #004433, #001a0f)",
-    artSymbol: "~",
-    description: "INFERENCE is a weightless drift through the latent space of a transformer model mid-generation. Attention Head captures the strange beauty of token prediction -- each track is named for a stage in the forward pass, from embedding lookup to softmax output. Best experienced on headphones at 2am while watching nvidia-smi in another terminal. The closing track 'Sampling Temperature 0.0' is twelve minutes of pure determinism.",
-    tracks: [
-      { name: "Embedding Lookup", duration: "4:12" },
-      { name: "Positional Encoding", duration: "3:45" },
-      { name: "Multi-Head Attention", duration: "5:33" },
-      { name: "Residual Stream", duration: "4:08" },
-      { name: "Layer Norm", duration: "2:56" },
-      { name: "Feed Forward", duration: "3:41" },
-      { name: "KV Cache", duration: "4:22" },
-      { name: "Logit Lens", duration: "5:17" },
-      { name: "Top-P Nucleus", duration: "3:59" },
-      { name: "Sampling Temperature 0.0", duration: "12:01" }
-    ]
+    name: 'Slow Burn',
+    desc: 'Minimal start, gradual intensification, massive peak at the end.',
+    curve: t => 0.15 + 0.8 * Math.pow(t, 2.2)
+  },
+  {
+    name: 'Twilight Descent',
+    desc: 'Open bright and high-energy, gradually descend into quiet reflection.',
+    curve: t => 0.9 - 0.65 * Math.pow(t, 1.5)
+  },
+  {
+    name: 'Double Peak',
+    desc: 'Two distinct climaxes with a valley between. The second peak is bigger.',
+    curve: t => {
+      if (t < 0.35) return 0.3 + 0.45 * Math.sin((t / 0.35) * Math.PI);
+      if (t < 0.5) return 0.3 + 0.05 * Math.sin(((t - 0.35) / 0.15) * Math.PI);
+      return 0.35 + 0.6 * Math.sin(((t - 0.5) / 0.5) * Math.PI);
+    }
   }
 ];
 
-// ============================================================
-// Gradient generation from theme string
-// ============================================================
-function themeToGradient(theme) {
-  let hash = 0;
-  for (let i = 0; i < theme.length; i++) {
-    hash = theme.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const h1 = Math.abs(hash % 360);
-  const h2 = (h1 + 40 + Math.abs((hash >> 8) % 60)) % 360;
-  const h3 = (h1 + 180 + Math.abs((hash >> 16) % 40)) % 360;
-  return `linear-gradient(135deg, hsl(${h1},70%,45%), hsl(${h2},60%,30%), hsl(${h3},50%,15%))`;
+// --- Track library ---
+// Each track has: name, mood (key), energy (1-5), tempo (key), duration
+const TRACK_LIBRARY = [
+  // Euphoric
+  { name: 'Sunburst Protocol', mood: 'euphoric', energy: 5, tempo: 'fast', duration: '3:22' },
+  { name: 'Cloudbreak', mood: 'euphoric', energy: 4, tempo: 'fast', duration: '3:48' },
+  { name: 'Golden Hour', mood: 'euphoric', energy: 4, tempo: 'mid', duration: '4:11' },
+  { name: 'Skyline Rush', mood: 'euphoric', energy: 5, tempo: 'fast', duration: '2:58' },
+  // Triumphant
+  { name: 'Victory Condition', mood: 'triumphant', energy: 5, tempo: 'mid', duration: '4:33' },
+  { name: 'Summit', mood: 'triumphant', energy: 4, tempo: 'mid', duration: '5:01' },
+  { name: 'Final Form', mood: 'triumphant', energy: 5, tempo: 'fast', duration: '3:44' },
+  { name: 'Crown of Light', mood: 'triumphant', energy: 4, tempo: 'mid', duration: '4:20' },
+  // Dreamy
+  { name: 'Parallax Drift', mood: 'dreamy', energy: 2, tempo: 'slow', duration: '5:17' },
+  { name: 'Soft Render', mood: 'dreamy', energy: 2, tempo: 'slow', duration: '4:42' },
+  { name: 'Cloud Nine', mood: 'dreamy', energy: 3, tempo: 'mid', duration: '3:55' },
+  { name: 'Iridescent', mood: 'dreamy', energy: 2, tempo: 'slow', duration: '4:08' },
+  // Serene
+  { name: 'Still Water', mood: 'serene', energy: 1, tempo: 'slow', duration: '5:44' },
+  { name: 'Morning Fog', mood: 'serene', energy: 1, tempo: 'slow', duration: '4:30' },
+  { name: 'Dewpoint', mood: 'serene', energy: 2, tempo: 'slow', duration: '3:38' },
+  { name: 'Gentle Reboot', mood: 'serene', energy: 1, tempo: 'slow', duration: '6:12' },
+  // Nostalgic
+  { name: 'Faded Polaroid', mood: 'nostalgic', energy: 2, tempo: 'mid', duration: '4:15' },
+  { name: 'Rewound', mood: 'nostalgic', energy: 3, tempo: 'mid', duration: '3:33' },
+  { name: 'Last Summer', mood: 'nostalgic', energy: 2, tempo: 'slow', duration: '4:50' },
+  { name: 'Analog Warmth', mood: 'nostalgic', energy: 2, tempo: 'mid', duration: '3:48' },
+  // Melancholy
+  { name: 'Rain on Silicon', mood: 'melancholy', energy: 2, tempo: 'slow', duration: '4:55' },
+  { name: 'Empty Inbox', mood: 'melancholy', energy: 1, tempo: 'slow', duration: '5:20' },
+  { name: 'Ghost Frequency', mood: 'melancholy', energy: 2, tempo: 'mid', duration: '4:02' },
+  { name: 'Null Island', mood: 'melancholy', energy: 1, tempo: 'slow', duration: '5:40' },
+  // Tense
+  { name: 'Interrupt Vector', mood: 'tense', energy: 3, tempo: 'mid', duration: '3:18' },
+  { name: 'Race Condition', mood: 'tense', energy: 4, tempo: 'fast', duration: '3:05' },
+  { name: 'Stack Overflow', mood: 'tense', energy: 4, tempo: 'fast', duration: '2:48' },
+  { name: 'Deadlock', mood: 'tense', energy: 3, tempo: 'mid', duration: '4:10' },
+  // Aggressive
+  { name: 'Kernel Panic', mood: 'aggressive', energy: 5, tempo: 'fast', duration: '2:55' },
+  { name: 'Thermal Throttle', mood: 'aggressive', energy: 5, tempo: 'fast', duration: '3:12' },
+  { name: 'VRAM Overflow', mood: 'aggressive', energy: 4, tempo: 'fast', duration: '3:30' },
+  { name: 'Segfault', mood: 'aggressive', energy: 5, tempo: 'fast', duration: '2:40' }
+];
+
+// --- Level definitions ---
+const LEVELS = [
+  { trackCount: 6,  poolSize: 10, label: 'Album 1', moods: ['euphoric','serene','melancholy','triumphant','dreamy','aggressive'] },
+  { trackCount: 8,  poolSize: 14, label: 'Album 2', moods: ['euphoric','serene','melancholy','triumphant','dreamy','aggressive','nostalgic','tense'] },
+  { trackCount: 10, poolSize: 18, label: 'Album 3', moods: Object.keys(MOODS) },
+  { trackCount: 12, poolSize: 22, label: 'Album 4', moods: Object.keys(MOODS) }
+];
+
+// --- Album briefs ---
+const BRIEFS = [
+  { title: 'Midnight Compilation', desc: 'A late-night listen for headphones-only sessions. The audience wants an introspective journey that builds toward a single emotional peak before easing back down.', genre: 'Electronic / Ambient' },
+  { title: 'Morning Commute', desc: 'Energizing but not jarring. The listener needs to wake up, find their groove, and arrive ready to work. Start gentle, end strong.', genre: 'Indie Pop / Synthwave' },
+  { title: 'Road Trip Mixtape', desc: 'Long drive energy. Peaks and valleys to keep the driver alert. Should feel like a conversation between excitement and calm.', genre: 'Alternative / Rock' },
+  { title: 'Study Session', desc: 'Background focus music. Steady, low-energy, minimal surprises. The emotional arc should be nearly flat with gentle variation.', genre: 'Lo-fi / Ambient' },
+  { title: 'Festival Headliner', desc: 'Maximum energy. The crowd wants to be taken on a wild ride. Big build-ups, explosive drops, triumphant endings.', genre: 'Electronic / Dance' },
+  { title: 'Rainy Sunday', desc: 'Melancholic and reflective. The listener is alone with their thoughts. A slow emotional descent with moments of bittersweet beauty.', genre: 'Post-Rock / Shoegaze' },
+  { title: 'Workout Fuel', desc: 'High intensity from the start. Maintain aggressive energy with brief cool-downs between sets. End with a victory lap.', genre: 'Industrial / EDM' },
+  { title: 'First Date Playlist', desc: 'Warm and slightly nervous energy. Start mellow, build confidence through the middle, close on a dreamy note.', genre: 'Dream Pop / R&B' },
+  { title: 'Debugging at 3am', desc: 'Tense, focused, occasionally frustrated. Alternating between concentration and breakthrough moments. Ends with the catharsis of a clean compile.', genre: 'IDM / Glitch' },
+  { title: 'Nostalgia Trip', desc: 'A journey through memory. Opens warm and familiar, passes through bittersweet territory, resolves with acceptance and peace.', genre: 'Synthwave / Chillwave' }
+];
+
+// =====================================================================
+// State
+// =====================================================================
+let currentLevel = 0;
+let currentBrief = null;
+let currentArc = null;
+let trackPool = [];
+let sequence = [];
+let revisionsCount = 0;
+let scored = false;
+
+// =====================================================================
+// Initialization
+// =====================================================================
+function init() {
+  selectLevel(0);
+  renderHistory();
 }
 
-function themeToSymbol(theme) {
-  const symbols = ['#', '*', '~', '^', '&', '%', '@', '+', '!', '='];
-  let hash = 0;
-  for (let i = 0; i < theme.length; i++) hash += theme.charCodeAt(i);
-  return symbols[hash % symbols.length];
-}
-
-// ============================================================
-// Fake streaming stats
-// ============================================================
-function fakeStreams() {
-  return (Math.floor(Math.random() * 900) + 100).toLocaleString();
-}
-function fakeTotalStreams(tracks) {
-  return (Math.floor(Math.random() * 50000) + 5000).toLocaleString();
-}
-function fakeListeners() {
-  return (Math.floor(Math.random() * 3000) + 200).toLocaleString();
-}
-
-// ============================================================
-// Suggestion chips
-// ============================================================
-function useSuggestion(el) {
-  document.getElementById('theme-input').value = el.textContent.trim();
-  document.getElementById('theme-input').focus();
-}
-
-// ============================================================
-// Loading animation
-// ============================================================
-function animateLoading() {
-  const steps = ['step-concept', 'step-tracks', 'step-art', 'step-notes', 'step-master'];
-  steps.forEach(s => {
-    document.getElementById(s).className = 'loading-step';
+function selectLevel(idx) {
+  currentLevel = idx;
+  document.querySelectorAll('.level-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
   });
+  newBrief();
+}
 
-  let i = 0;
-  const interval = setInterval(() => {
-    if (i > 0) document.getElementById(steps[i - 1]).className = 'loading-step done';
-    if (i < steps.length) {
-      document.getElementById(steps[i]).className = 'loading-step active';
-      i++;
-    } else {
-      clearInterval(interval);
+function newBrief() {
+  const level = LEVELS[currentLevel];
+  sequence = [];
+  revisionsCount = 0;
+  scored = false;
+
+  // Pick random brief and arc
+  currentBrief = BRIEFS[Math.floor(Math.random() * BRIEFS.length)];
+  currentArc = ARC_PATTERNS[Math.floor(Math.random() * ARC_PATTERNS.length)];
+
+  // Build track pool
+  buildPool(level);
+
+  // Render everything
+  renderBrief();
+  renderTargetArc();
+  renderPool();
+  renderSequence();
+  drawArc();
+  updatePhase(0);
+
+  document.getElementById('score-section').style.display = 'none';
+  document.getElementById('score-btn').disabled = true;
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function buildPool(level) {
+  // Filter library to allowed moods, then pick poolSize tracks ensuring diversity
+  const allowed = TRACK_LIBRARY.filter(t => level.moods.includes(t.mood));
+  const shuffled = shuffleArray([...allowed]);
+
+  // Ensure at least one track per mood if possible
+  const pool = [];
+  const usedMoods = new Set();
+  for (const t of shuffled) {
+    if (!usedMoods.has(t.mood) && pool.length < level.poolSize) {
+      pool.push({ ...t, id: pool.length });
+      usedMoods.add(t.mood);
     }
-  }, 600);
-  return interval;
-}
-
-// ============================================================
-// Try Ollama, fall back to demo
-// ============================================================
-async function tryOllama(theme) {
-  const prompt = `You are a creative music critic and album concept generator. Given a theme, generate a complete album concept in valid JSON (no markdown, no code fences, just raw JSON). The JSON must have these fields:
-- "title": album title in ALL CAPS (2-4 words)
-- "artist": band/artist name (creative, thematic)
-- "genre": genre description (e.g. "Synthwave / Darkwave")
-- "description": 3-4 sentence album description / liner notes (evocative, music-press style)
-- "tracks": array of 8-10 objects, each with "name" (string) and "duration" (string like "3:42")
-
-Theme: "${theme}"
-
-Respond with ONLY valid JSON, nothing else.`;
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000);
-
-  try {
-    const resp = await fetch('http://localhost:11434/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'qwen3:8b',
-        messages: [{ role: 'user', content: prompt }],
-        stream: false,
-        options: { temperature: 0.9 },
-        think: false
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (!resp.ok) throw new Error('Ollama returned ' + resp.status);
-
-    const data = await resp.json();
-    let content = data.message?.content || '';
-
-    // Strip markdown fences and thinking tags if present
-    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-    content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-
-    // Try to extract JSON from the content
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON found');
-
-    const album = JSON.parse(jsonMatch[0]);
-    if (!album.title || !album.tracks || !Array.isArray(album.tracks)) {
-      throw new Error('Invalid album structure');
+  }
+  // Fill remaining
+  for (const t of shuffled) {
+    if (pool.length >= level.poolSize) break;
+    if (!pool.find(p => p.name === t.name)) {
+      pool.push({ ...t, id: pool.length });
     }
-
-    album.gradient = themeToGradient(theme);
-    album.artSymbol = themeToSymbol(theme);
-    album.year = '2026';
-    album.source = 'ollama';
-    return album;
-  } catch (e) {
-    clearTimeout(timeout);
-    console.log('Ollama unavailable, using demo:', e.message);
-    return null;
   }
+
+  trackPool = shuffleArray(pool);
+  // Assign stable ids
+  trackPool.forEach((t, i) => t.id = i);
 }
 
-function pickDemoAlbum(theme) {
-  const lower = theme.toLowerCase();
-  if (lower.includes('gpu') || lower.includes('heat') || lower.includes('overheat') || lower.includes('thermal')) {
-    return JSON.parse(JSON.stringify(DEMO_ALBUMS[0]));
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-  if (lower.includes('nix') || lower.includes('config') || lower.includes('declarative')) {
-    return JSON.parse(JSON.stringify(DEMO_ALBUMS[1]));
-  }
-  if (lower.includes('love') || lower.includes('missing') || lower.includes('depend') || lower.includes('404')) {
-    return JSON.parse(JSON.stringify(DEMO_ALBUMS[2]));
-  }
-  // Random pick for unmatched themes
-  const idx = Math.floor(Math.random() * DEMO_ALBUMS.length);
-  return JSON.parse(JSON.stringify(DEMO_ALBUMS[idx]));
+  return arr;
 }
 
-// ============================================================
-// Generate album
-// ============================================================
-async function generateAlbum() {
-  const input = document.getElementById('theme-input');
-  const theme = input.value.trim();
-  if (!theme) {
-    input.focus();
+// =====================================================================
+// Rendering
+// =====================================================================
+function renderBrief() {
+  const level = LEVELS[currentLevel];
+  document.getElementById('brief-title').textContent = currentBrief.title;
+  document.getElementById('brief-desc').textContent = currentBrief.desc;
+  document.getElementById('brief-meta').innerHTML =
+    `<span><span class="val">${level.trackCount}</span> tracks needed</span>` +
+    `<span>${currentBrief.genre}</span>` +
+    `<span>Pool: <span class="val">${level.poolSize}</span> tracks</span>`;
+}
+
+function renderTargetArc() {
+  document.getElementById('target-arc-name').textContent = currentArc.name + ' — ' + currentArc.desc;
+  drawTargetArc();
+}
+
+function drawTargetArc() {
+  const canvas = document.getElementById('target-arc-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const w = rect.width;
+  const h = rect.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Draw curve
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(139,92,246,0.6)';
+  ctx.lineWidth = 2.5;
+  const pad = 16;
+  for (let px = 0; px <= w - 2 * pad; px++) {
+    const t = px / (w - 2 * pad);
+    const y = h - pad - (h - 2 * pad) * currentArc.curve(t);
+    if (px === 0) ctx.moveTo(pad + px, y);
+    else ctx.lineTo(pad + px, y);
+  }
+  ctx.stroke();
+
+  // Fill underneath
+  ctx.lineTo(w - pad, h - pad);
+  ctx.lineTo(pad, h - pad);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(139,92,246,0.08)';
+  ctx.fill();
+}
+
+function renderPool() {
+  const level = LEVELS[currentLevel];
+  const usedIds = new Set(sequence.map(t => t.id));
+  const grid = document.getElementById('pool-grid');
+  const remaining = trackPool.filter(t => !usedIds.has(t.id)).length;
+  document.getElementById('pool-count').textContent = `${remaining} available`;
+
+  grid.innerHTML = trackPool.map(t => {
+    const used = usedIds.has(t.id);
+    const m = MOODS[t.mood];
+    const tp = TEMPOS[t.tempo];
+    const energyPips = Array.from({ length: 5 }, (_, i) =>
+      `<div class="tc-energy-pip${i < t.energy ? ' filled' : ''}"></div>`
+    ).join('');
+    return `
+      <div class="track-card${used ? ' used' : ''}" data-id="${t.id}"
+           draggable="${used ? 'false' : 'true'}"
+           onclick="addToSequence(${t.id})"
+           ondragstart="onDragStart(event, ${t.id})">
+        <div class="tc-name" title="${escapeHtml(t.name)}">${escapeHtml(t.name)}</div>
+        <div class="tc-meta">
+          <span class="tc-tag ${m.cssClass}">${m.label}</span>
+          <span class="tc-tag ${tp.cssClass}">${tp.label}</span>
+          <div class="tc-energy">${energyPips}</div>
+          <span class="tc-dur">${t.duration}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderSequence() {
+  const level = LEVELS[currentLevel];
+  const list = document.getElementById('seq-list');
+  const dropZone = document.getElementById('seq-drop-zone');
+  const scoreBtn = document.getElementById('score-btn');
+
+  if (sequence.length === 0) {
+    list.innerHTML = '';
+    dropZone.style.display = 'block';
+    dropZone.textContent = 'Drop or click tracks to add them here';
+    scoreBtn.disabled = true;
     return;
   }
 
-  // Stop any playing track
-  if (typeof stopPlayback === 'function') stopPlayback();
+  scoreBtn.disabled = sequence.length < level.trackCount;
 
-  const btn = document.getElementById('generate-btn');
-  btn.disabled = true;
-  btn.textContent = 'Pressing...';
+  list.innerHTML = sequence.map((t, i) => {
+    const m = MOODS[t.mood];
+    const tp = TEMPOS[t.tempo];
+    const energyPips = Array.from({ length: 5 }, (_, j) =>
+      `<div class="tc-energy-pip${j < t.energy ? ' filled' : ''}"></div>`
+    ).join('');
+    return `
+      <li class="seq-slot" draggable="true" data-seq-idx="${i}"
+          ondragstart="onSeqDragStart(event, ${i})"
+          ondragover="onSeqDragOver(event, ${i})"
+          ondrop="onSeqDrop(event, ${i})"
+          ondragleave="onSeqDragLeave(event)">
+        <span class="slot-num">${i + 1}</span>
+        <div class="slot-info">
+          <div class="slot-name">${escapeHtml(t.name)}</div>
+          <div class="slot-tags">
+            <span class="tc-tag ${m.cssClass}" style="font-size:0.55rem;">${m.label}</span>
+            <span class="tc-tag ${tp.cssClass}" style="font-size:0.55rem;">${tp.label}</span>
+            <div class="tc-energy" style="margin-left:2px;">${energyPips}</div>
+          </div>
+        </div>
+        <button class="slot-remove" onclick="removeFromSequence(${i})" title="Remove">&times;</button>
+      </li>`;
+  }).join('');
 
-  // Show loading
-  document.getElementById('loading').classList.add('active');
-  document.getElementById('album-display').classList.remove('active');
-  const loadInterval = animateLoading();
+  if (sequence.length < level.trackCount) {
+    dropZone.style.display = 'block';
+    dropZone.textContent = `${level.trackCount - sequence.length} more track${level.trackCount - sequence.length !== 1 ? 's' : ''} needed`;
+  } else {
+    dropZone.style.display = 'block';
+    dropZone.textContent = 'Tracklist full — reorder by dragging, or score your album';
+  }
+}
 
-  // Scroll to loading
-  document.getElementById('loading').scrollIntoView({ behavior: 'smooth', block: 'center' });
+// =====================================================================
+// Emotional Arc Canvas
+// =====================================================================
+function drawArc() {
+  const canvas = document.getElementById('arc-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const w = rect.width;
+  const h = rect.height;
+  ctx.clearRect(0, 0, w, h);
 
-  // Try Ollama first, then demo
-  let album = await tryOllama(theme);
-  if (!album) {
-    // Wait a bit for loading animation to feel real
-    await new Promise(r => setTimeout(r, 2500));
-    album = pickDemoAlbum(theme);
-    album.source = 'demo';
+  const pad = 20;
+  const plotW = w - 2 * pad;
+  const plotH = h - 2 * pad;
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad + plotH * (i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad, y);
+    ctx.lineTo(w - pad, y);
+    ctx.stroke();
   }
 
-  // Ensure gradient and symbol
-  if (!album.gradient) album.gradient = themeToGradient(theme);
-  if (!album.artSymbol) album.artSymbol = themeToSymbol(theme);
+  // Target arc (filled area)
+  if (currentArc) {
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(0,120,212,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    for (let px = 0; px <= plotW; px++) {
+      const t = px / plotW;
+      const y = pad + plotH * (1 - currentArc.curve(t));
+      if (px === 0) ctx.moveTo(pad + px, y);
+      else ctx.lineTo(pad + px, y);
+    }
+    ctx.stroke();
+    // Fill
+    ctx.lineTo(w - pad, pad + plotH);
+    ctx.lineTo(pad, pad + plotH);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0,120,212,0.06)';
+    ctx.fill();
+    ctx.setLineDash([]);
+  }
 
-  clearInterval(loadInterval);
-  // Mark all steps done
-  ['step-concept','step-tracks','step-art','step-notes','step-master'].forEach(s => {
-    document.getElementById(s).className = 'loading-step done';
+  if (sequence.length < 2) {
+    // Draw placeholder text
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.font = '12px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Add tracks to see the arc', w / 2, h / 2);
+    return;
+  }
+
+  const n = sequence.length;
+  const level = LEVELS[currentLevel];
+
+  // Compute points
+  const energyPoints = sequence.map((t, i) => ({
+    x: pad + (i / (level.trackCount - 1)) * plotW,
+    y: pad + plotH * (1 - t.energy / 5)
+  }));
+  const valencePoints = sequence.map((t, i) => ({
+    x: pad + (i / (level.trackCount - 1)) * plotW,
+    y: pad + plotH * (1 - MOODS[t.mood].valence)
+  }));
+
+  // Draw energy line
+  drawSmooth(ctx, energyPoints, '#0078D4', 2.5);
+
+  // Draw valence line
+  drawSmooth(ctx, valencePoints, '#8B5CF6', 2);
+
+  // Draw dots
+  energyPoints.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#0078D4';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   });
-
-  await new Promise(r => setTimeout(r, 500));
-
-  // Hide loading, show album
-  document.getElementById('loading').classList.remove('active');
-  renderAlbum(album);
-  document.getElementById('album-display').classList.add('active');
-  document.getElementById('album-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  // Save to gallery
-  saveToGallery(album);
-  renderGallery();
-
-  btn.disabled = false;
-  btn.textContent = 'Press to Vinyl';
-  showFundPrompt();
+  valencePoints.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#8B5CF6';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
 }
 
-// ============================================================
-// Render album card
-// ============================================================
-function renderAlbum(album) {
-  const totalStreams = fakeTotalStreams();
-  const listeners = fakeListeners();
-  const trackCount = album.tracks.length;
-
-  // Calculate total duration
-  let totalSec = 0;
-  album.tracks.forEach(t => {
-    const parts = t.duration.split(':');
-    totalSec += parseInt(parts[0]) * 60 + parseInt(parts[1]);
-  });
-  const totalMin = Math.floor(totalSec / 60);
-
-  const card = document.getElementById('album-card');
-  card.innerHTML = `
-    <div class="album-header">
-      <div class="album-art">
-        <div class="album-art-gradient" style="background:${album.gradient}">
-          ${album.artSymbol}
-        </div>
-        <div class="album-art-label">laptop records</div>
-      </div>
-      <div class="album-info">
-        <div class="album-type">Album${album.source === 'ollama' ? ' // generated by qwen3 8b' : ''}</div>
-        <div class="album-title">${escapeHtml(album.title)}</div>
-        <div class="album-artist">${escapeHtml(album.artist)}</div>
-        <div class="album-genre-year">
-          <span>${escapeHtml(album.genre)}</span>
-          <span>${album.year || '2026'}</span>
-        </div>
-        <div class="album-stats-row">
-          <div><span class="album-stat-val">${totalStreams}</span> streams</div>
-          <div><span class="album-stat-val">${listeners}</span> listeners</div>
-          <div><span class="album-stat-val">${trackCount}</span> tracks, ${totalMin} min</div>
-        </div>
-        <div class="streaming-bar">
-          <div class="stream-btn" onclick="playTrack(0)" style="cursor:pointer">&#9654; Play Album</div>
-          <div class="stream-btn" onclick="shareAlbum()" style="cursor:pointer">Share</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="track-section">
-      <div class="track-section-title">Track Listing <span style="color:var(--accent-purple);font-size:0.65rem;opacity:0.7;margin-left:8px;">&#9654; click to play</span></div>
-      <ol class="track-list">
-        ${album.tracks.map((t, i) => `
-          <li class="track-item" onclick="playTrack(${i})" data-track="${i}">
-            <span class="track-num">${i + 1}</span>
-            <span class="track-name">${escapeHtml(t.name)}</span>
-            <span class="track-plays">${fakeStreams()}</span>
-            <span class="track-duration">${t.duration}</span>
-          </li>
-        `).join('')}
-      </ol>
-    </div>
-
-    <div class="liner-notes">
-      <div class="liner-notes-title">Liner Notes</div>
-      <p class="liner-notes-text">${escapeHtml(album.description)}</p>
-    </div>
-
-    <div class="album-credits">
-      <span class="label-logo">LAPTOP RECORDS</span> LR-${String(Date.now()).slice(-4)}<br>
-      All concepts by Qwen3 8B. Audio by SPC700 sound engine. Mastered on an RTX 4060.<br>
-      Recorded at Substrate Studios, a Lenovo Legion 5 with the lid closed, sitting on a shelf.<br>
-      &copy; 2026 Laptop Records, a division of Substrate Arcade. All rights imagined.
-    </div>
-
-    <div class="album-actions">
-      <button class="action-btn primary" onclick="shareAlbum()">Share Album</button>
-      <button class="action-btn" onclick="generateAlbum()">Generate Another</button>
-      <button class="action-btn" onclick="downloadAlbumText()">Export as Text</button>
-    </div>
-  `;
-
-  // Store current album for sharing/export and build SNES song map
-  window._currentAlbum = album;
-  buildTrackMap(album);
+function drawSmooth(ctx, pts, color, lw) {
+  if (pts.length < 2) return;
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.moveTo(pts[0].x, pts[0].y);
+  if (pts.length === 2) {
+    ctx.lineTo(pts[1].x, pts[1].y);
+  } else {
+    for (let i = 1; i < pts.length - 1; i++) {
+      const cx = (pts[i].x + pts[i + 1].x) / 2;
+      const cy = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, cx, cy);
+    }
+    const last = pts[pts.length - 1];
+    ctx.lineTo(last.x, last.y);
+  }
+  ctx.stroke();
 }
 
+// =====================================================================
+// Sequence manipulation
+// =====================================================================
+function addToSequence(id) {
+  const level = LEVELS[currentLevel];
+  if (sequence.length >= level.trackCount) {
+    showToast('Tracklist is full. Remove a track first.');
+    return;
+  }
+  if (sequence.find(t => t.id === id)) return;
+  const track = trackPool.find(t => t.id === id);
+  if (!track) return;
+
+  sequence.push({ ...track });
+  scored = false;
+  document.getElementById('score-section').style.display = 'none';
+  renderPool();
+  renderSequence();
+  drawArc();
+  updatePhase(1);
+}
+
+function removeFromSequence(idx) {
+  sequence.splice(idx, 1);
+  scored = false;
+  document.getElementById('score-section').style.display = 'none';
+  renderPool();
+  renderSequence();
+  drawArc();
+  if (sequence.length === 0) updatePhase(0);
+}
+
+function clearSequence() {
+  sequence = [];
+  scored = false;
+  document.getElementById('score-section').style.display = 'none';
+  document.getElementById('score-btn').disabled = true;
+  renderPool();
+  renderSequence();
+  drawArc();
+  updatePhase(0);
+}
+
+function reviseAlbum() {
+  revisionsCount++;
+  scored = false;
+  document.getElementById('score-section').style.display = 'none';
+  updatePhase(1);
+  document.getElementById('seq-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// =====================================================================
+// Drag and drop — Pool to Sequence
+// =====================================================================
+let draggedTrackId = null;
+let draggedSeqIdx = null;
+
+function onDragStart(e, id) {
+  draggedTrackId = id;
+  draggedSeqIdx = null;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', id);
+}
+
+// Drop zone for adding new tracks
+const dropZone = document.getElementById('seq-drop-zone');
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  dropZone.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('drag-over');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  if (draggedTrackId !== null && draggedSeqIdx === null) {
+    addToSequence(draggedTrackId);
+  }
+  draggedTrackId = null;
+});
+
+// Drag within sequence (reorder)
+function onSeqDragStart(e, idx) {
+  draggedSeqIdx = idx;
+  draggedTrackId = null;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', idx);
+}
+function onSeqDragOver(e, idx) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.seq-slot').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function onSeqDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function onSeqDrop(e, idx) {
+  e.preventDefault();
+  document.querySelectorAll('.seq-slot').forEach(el => el.classList.remove('drag-over'));
+
+  if (draggedSeqIdx !== null && draggedSeqIdx !== idx) {
+    // Reorder
+    const item = sequence.splice(draggedSeqIdx, 1)[0];
+    sequence.splice(idx, 0, item);
+    scored = false;
+    document.getElementById('score-section').style.display = 'none';
+    renderSequence();
+    drawArc();
+  } else if (draggedTrackId !== null) {
+    // Insert from pool at position
+    const level = LEVELS[currentLevel];
+    if (sequence.length < level.trackCount && !sequence.find(t => t.id === draggedTrackId)) {
+      const track = trackPool.find(t => t.id === draggedTrackId);
+      if (track) {
+        sequence.splice(idx, 0, { ...track });
+        scored = false;
+        document.getElementById('score-section').style.display = 'none';
+        renderPool();
+        renderSequence();
+        drawArc();
+        updatePhase(1);
+      }
+    }
+  }
+  draggedTrackId = null;
+  draggedSeqIdx = null;
+}
+
+// =====================================================================
+// Scoring
+// =====================================================================
+function scoreAlbum() {
+  if (sequence.length < LEVELS[currentLevel].trackCount) return;
+
+  const scores = computeScores();
+  const total = Math.round(
+    scores.arcMatch * 0.35 +
+    scores.flowSmooth * 0.25 +
+    scores.moodDiversity * 0.20 +
+    scores.tempoBalance * 0.20
+  );
+
+  // Display
+  const scoreEl = document.getElementById('score-total');
+  scoreEl.textContent = total;
+  scoreEl.className = 'score-big ' +
+    (total >= 85 ? 'excellent' : total >= 65 ? 'good' : total >= 45 ? 'ok' : 'poor');
+
+  document.getElementById('score-breakdown').innerHTML = [
+    { label: 'Arc Match', val: scores.arcMatch, desc: 'How well energy follows the target curve' },
+    { label: 'Flow', val: scores.flowSmooth, desc: 'Smooth transitions between adjacent tracks' },
+    { label: 'Mood Range', val: scores.moodDiversity, desc: 'Variety of emotional tones' },
+    { label: 'Tempo Balance', val: scores.tempoBalance, desc: 'Mix of slow, mid, and fast tracks' }
+  ].map(s => `
+    <div class="score-item" title="${s.desc}">
+      <span class="score-item-label">${s.label}</span>
+      <span class="score-item-val" style="color:${s.val >= 80 ? 'var(--green)' : s.val >= 55 ? 'var(--blue)' : s.val >= 35 ? 'var(--amber)' : 'var(--coral)'}">${s.val}</span>
+    </div>
+  `).join('');
+
+  // Feedback
+  const feedback = generateFeedback(scores, total);
+  document.getElementById('score-feedback').textContent = feedback;
+
+  // Best score
+  const best = getBestScore(currentLevel);
+  const bestText = best !== null ? `Personal best for ${LEVELS[currentLevel].label}: ${best}` : '';
+  if (best === null || total > best) {
+    saveBestScore(currentLevel, total);
+    if (best !== null) {
+      document.getElementById('score-best').textContent = `New personal best! (Previous: ${best})`;
+    } else {
+      document.getElementById('score-best').textContent = 'First album scored at this level!';
+    }
+  } else {
+    document.getElementById('score-best').textContent = bestText;
+  }
+
+  // Save to history
+  saveToHistory({
+    brief: currentBrief.title,
+    arc: currentArc.name,
+    level: currentLevel,
+    score: total,
+    scores: scores,
+    trackNames: sequence.map(t => t.name),
+    revisions: revisionsCount,
+    timestamp: Date.now()
+  });
+  renderHistory();
+
+  document.getElementById('score-section').style.display = 'block';
+  document.getElementById('score-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  scored = true;
+  updatePhase(2);
+}
+
+function computeScores() {
+  const n = sequence.length;
+  const level = LEVELS[currentLevel];
+
+  // 1. Arc Match — compare energy curve to target curve
+  let arcError = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const targetE = currentArc.curve(t); // 0..1
+    const actualE = sequence[i].energy / 5; // 0..1
+    arcError += Math.pow(targetE - actualE, 2);
+  }
+  const arcRMSE = Math.sqrt(arcError / n);
+  const arcMatch = Math.max(0, Math.round(100 * (1 - arcRMSE / 0.6)));
+
+  // 2. Flow Smoothness — penalize large energy jumps between adjacent tracks
+  let jumpTotal = 0;
+  for (let i = 1; i < n; i++) {
+    const diff = Math.abs(sequence[i].energy - sequence[i - 1].energy);
+    jumpTotal += diff;
+  }
+  const maxJump = 4 * (n - 1); // worst case
+  const flowSmooth = Math.round(100 * (1 - jumpTotal / maxJump));
+
+  // 3. Mood Diversity — unique moods / possible moods
+  const uniqueMoods = new Set(sequence.map(t => t.mood)).size;
+  const possibleMoods = Math.min(n, Object.keys(MOODS).length);
+  const moodDiversity = Math.round(100 * (uniqueMoods / possibleMoods));
+
+  // 4. Tempo Balance — penalize heavy skew toward one tempo
+  const tempoCounts = { slow: 0, mid: 0, fast: 0 };
+  sequence.forEach(t => tempoCounts[t.tempo]++);
+  const idealPer = n / 3;
+  let tempoDeviation = 0;
+  Object.values(tempoCounts).forEach(c => {
+    tempoDeviation += Math.abs(c - idealPer);
+  });
+  const maxDev = 2 * n * (2/3); // worst case all same tempo
+  const tempoBalance = Math.round(100 * (1 - tempoDeviation / maxDev));
+
+  return {
+    arcMatch: clamp(arcMatch, 0, 100),
+    flowSmooth: clamp(flowSmooth, 0, 100),
+    moodDiversity: clamp(moodDiversity, 0, 100),
+    tempoBalance: clamp(tempoBalance, 0, 100)
+  };
+}
+
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+function generateFeedback(scores, total) {
+  const parts = [];
+
+  if (total >= 85) {
+    parts.push('Exceptional curation.');
+  } else if (total >= 70) {
+    parts.push('Strong album.');
+  } else if (total >= 50) {
+    parts.push('Decent selection, but there\'s room to improve.');
+  } else {
+    parts.push('This album needs significant rework.');
+  }
+
+  if (scores.arcMatch < 50) {
+    parts.push('The energy arc doesn\'t match the target pattern well -- try rearranging tracks to follow the ' + currentArc.name + ' shape.');
+  } else if (scores.arcMatch >= 80) {
+    parts.push('Energy arc is a strong match for the ' + currentArc.name + ' pattern.');
+  }
+
+  if (scores.flowSmooth < 45) {
+    parts.push('Too many jarring transitions between adjacent tracks. Smooth out the energy jumps.');
+  }
+
+  if (scores.moodDiversity < 40) {
+    parts.push('The album leans too heavily on one mood. Try adding more emotional variety.');
+  }
+
+  if (scores.tempoBalance < 40) {
+    parts.push('Tempo distribution is skewed. Mix in more variety for a balanced listen.');
+  }
+
+  if (revisionsCount > 0) {
+    parts.push(`Revisions: ${revisionsCount}.`);
+  }
+
+  return parts.join(' ');
+}
+
+// =====================================================================
+// Phase indicator
+// =====================================================================
+function updatePhase(phase) {
+  // 0 = selecting, 1 = sequencing, 2 = scored
+  document.querySelectorAll('.phase-dot').forEach((dot, i) => {
+    dot.className = 'phase-dot' + (i < phase ? ' done' : i === phase ? ' active' : '');
+  });
+}
+
+// =====================================================================
+// localStorage
+// =====================================================================
+function getBestScore(level) {
+  try {
+    const data = JSON.parse(localStorage.getItem('laptop-records-best') || '{}');
+    return data['level-' + level] || null;
+  } catch { return null; }
+}
+
+function saveBestScore(level, score) {
+  try {
+    const data = JSON.parse(localStorage.getItem('laptop-records-best') || '{}');
+    data['level-' + level] = score;
+    localStorage.setItem('laptop-records-best', JSON.stringify(data));
+  } catch {}
+}
+
+function getHistory() {
+  try {
+    return JSON.parse(localStorage.getItem('laptop-records-history') || '[]');
+  } catch { return []; }
+}
+
+function saveToHistory(entry) {
+  const history = getHistory();
+  history.unshift(entry);
+  if (history.length > 20) history.length = 20;
+  localStorage.setItem('laptop-records-history', JSON.stringify(history));
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const grid = document.getElementById('history-grid');
+  const clearBtn = document.getElementById('clear-history-btn');
+
+  if (history.length === 0) {
+    grid.innerHTML = '<div class="empty-history">No albums scored yet. Curate your first release above.</div>';
+    clearBtn.style.display = 'none';
+    return;
+  }
+
+  clearBtn.style.display = 'inline';
+  grid.innerHTML = history.slice(0, 8).map((h, i) => {
+    const scoreClass = h.score >= 85 ? 'excellent' : h.score >= 65 ? 'good' : h.score >= 45 ? 'ok' : 'poor';
+    const color = h.score >= 85 ? 'var(--green)' : h.score >= 65 ? 'var(--blue)' : h.score >= 45 ? 'var(--amber)' : 'var(--coral)';
+    const date = new Date(h.timestamp).toLocaleDateString();
+    return `
+      <div class="history-card glass" title="${escapeHtml(h.trackNames ? h.trackNames.join(', ') : '')}">
+        <div class="hc-title">${escapeHtml(h.brief)}</div>
+        <div class="hc-score" style="color:${color}">${h.score}</div>
+        <div class="hc-meta">${LEVELS[h.level]?.label || 'Album'} / ${escapeHtml(h.arc)} / ${date}</div>
+      </div>`;
+  }).join('');
+}
+
+function clearHistory() {
+  if (confirm('Clear all album history?')) {
+    localStorage.removeItem('laptop-records-history');
+    localStorage.removeItem('laptop-records-best');
+    renderHistory();
+    showToast('History cleared');
+  }
+}
+
+// =====================================================================
+// Share
+// =====================================================================
+function shareAlbum() {
+  if (!scored || sequence.length === 0) return;
+
+  const text = `${currentBrief.title}\nTarget: ${currentArc.name}\n\n` +
+    sequence.map((t, i) => `${i + 1}. ${t.name} [${MOODS[t.mood].label}, E${t.energy}]`).join('\n') +
+    `\n\nCoherence: ${document.getElementById('score-total').textContent}/100` +
+    `\n\nCurated at Laptop Records\nhttps://substrate.lol/games/album/`;
+
+  if (navigator.share) {
+    navigator.share({ title: `${currentBrief.title} — Laptop Records`, text: text }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('Album copied to clipboard'));
+  } else {
+    showToast('Share not available');
+  }
+}
+
+// =====================================================================
+// Utilities
+// =====================================================================
 function escapeHtml(str) {
   if (!str) return '';
   const div = document.createElement('div');
@@ -1252,55 +1735,6 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ============================================================
-// Share album
-// ============================================================
-function shareAlbum() {
-  const album = window._currentAlbum;
-  if (!album) return;
-
-  const text = `${album.title} by ${album.artist}\n${album.genre} // ${album.year}\n\n` +
-    album.tracks.map((t, i) => `${i + 1}. ${t.name} (${t.duration})`).join('\n') +
-    `\n\nGenerated at Laptop Records\nhttps://substrate.lol/games/album/`;
-
-  if (navigator.share) {
-    navigator.share({ title: `${album.title} by ${album.artist}`, text: text }).catch(() => {});
-  } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => showToast('Album copied to clipboard'));
-  } else {
-    showToast('Share not available in this browser');
-  }
-}
-
-function downloadAlbumText() {
-  const album = window._currentAlbum;
-  if (!album) return;
-
-  let text = `${album.title}\nby ${album.artist}\n`;
-  text += `${album.genre} // ${album.year}\n`;
-  text += '='.repeat(40) + '\n\n';
-  text += 'TRACK LISTING\n';
-  album.tracks.forEach((t, i) => {
-    text += `  ${String(i + 1).padStart(2, ' ')}. ${t.name.padEnd(30)} ${t.duration}\n`;
-  });
-  text += '\nLINER NOTES\n';
-  text += album.description + '\n\n';
-  text += 'CREDITS\n';
-  text += 'All tracks conceived by Qwen3 8B, produced by MusicGen, mastered on an RTX 4060.\n';
-  text += 'Laptop Records, a division of Substrate Arcade. 2026.\n';
-
-  const blob = new Blob([text], { type: 'text/plain' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${album.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.txt`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast('Album exported');
-}
-
-// ============================================================
-// Toast notifications
-// ============================================================
 function showToast(msg) {
   const toast = document.getElementById('toast');
   toast.textContent = msg;
@@ -1308,209 +1742,32 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('visible'), 2500);
 }
 
-// ============================================================
-// Gallery (localStorage)
-// ============================================================
-function getGallery() {
-  try {
-    return JSON.parse(localStorage.getItem('laptop-records-gallery') || '[]');
-  } catch { return []; }
-}
-
-function saveToGallery(album) {
-  const gallery = getGallery();
-  // Avoid exact duplicates by title
-  const exists = gallery.findIndex(a => a.title === album.title && a.artist === album.artist);
-  if (exists >= 0) gallery.splice(exists, 1);
-  gallery.unshift({
-    title: album.title,
-    artist: album.artist,
-    genre: album.genre,
-    year: album.year,
-    gradient: album.gradient,
-    artSymbol: album.artSymbol,
-    description: album.description,
-    tracks: album.tracks,
-    source: album.source,
-    timestamp: Date.now()
-  });
-  // Keep max 20
-  if (gallery.length > 20) gallery.length = 20;
-  localStorage.setItem('laptop-records-gallery', JSON.stringify(gallery));
-}
-
-function renderGallery() {
-  const gallery = getGallery();
-  const grid = document.getElementById('gallery-grid');
-  const section = document.getElementById('gallery-section');
-  const clearBtn = document.getElementById('gallery-clear');
-
-  if (gallery.length === 0) {
-    grid.innerHTML = '<div class="empty-gallery">No albums yet. Generate your first release above.</div>';
-    clearBtn.style.display = 'none';
-    return;
-  }
-
-  clearBtn.style.display = 'inline';
-  grid.innerHTML = gallery.map((album, idx) => `
-    <div class="gallery-item" onclick="loadFromGallery(${idx})">
-      <div class="gallery-art" style="background:${album.gradient}">
-        <span style="color:rgba(0,0,0,0.3)">${album.artSymbol || '#'}</span>
-      </div>
-      <div class="gallery-info">
-        <div class="gallery-album-title">${escapeHtml(album.title)}</div>
-        <div class="gallery-album-artist">${escapeHtml(album.artist)}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function loadFromGallery(idx) {
-  const gallery = getGallery();
-  if (gallery[idx]) {
-    renderAlbum(gallery[idx]);
-    document.getElementById('album-display').classList.add('active');
-    document.getElementById('album-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
-function clearGallery() {
-  if (confirm('Clear your entire collection?')) {
-    localStorage.removeItem('laptop-records-gallery');
-    renderGallery();
-    showToast('Collection cleared');
-  }
-}
-
-// ============================================================
-// Enter key handler
-// ============================================================
-document.getElementById('theme-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') generateAlbum();
+// =====================================================================
+// Resize handler for canvases
+// =====================================================================
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    drawTargetArc();
+    drawArc();
+  }, 100);
 });
 
-// ============================================================
-// Init
-// ============================================================
-renderGallery();
-
-// === ANIME EFFECTS ===
+// =====================================================================
+// Anime effects
+// =====================================================================
 (function() {
   if (typeof AnimeEffects === 'undefined') return;
-
-  AnimeEffects.addScanlines(0.03);
+  AnimeEffects.addScanlines(0.02);
 })();
-</script>
-<div class="now-playing-bar" id="now-playing-bar">
-  <button class="npb-btn" id="npb-play" onclick="togglePlayback()" title="Play/Pause">&#9654;</button>
-  <div class="npb-info">
-    <div class="npb-track" id="npb-track">—</div>
-    <div class="npb-album" id="npb-album">—</div>
-  </div>
-  <input type="range" class="npb-vol" id="npb-vol" min="0" max="100" value="60" title="Volume" oninput="setPlayerVolume(this.value)">
-  <button class="npb-btn" onclick="stopPlayback()" title="Stop" style="font-size:0.7rem;">&#9632;</button>
-</div>
 
-<script>
-// ── SNES Audio integration ──────────────────────────────────────────
-var _snesPlayer = null;
-var _currentTrackIdx = -1;
-var _trackSongMap = [];
-
-// 19 SNES songs mapped by mood/genre
-var SONG_POOLS = {
-  industrial: ['runner','bootloader','objection','cascade','brigade','cypher','snatcher','signal','airlock','deckbuilder'],
-  folk:       ['mycelium','idle','myco','card','novel','adventure','chemistry','puzzle','tactics','signal'],
-  emo:        ['novel','airlock','myco','cypher','signal','mycelium','card','snatcher','idle','adventure'],
-  ambient:    ['myco','airlock','mycelium','chemistry','signal','idle','card','cascade','novel','tactics'],
-  default:    ['adventure','bootloader','card','cascade','chemistry','cypher','mycelium','myco','novel','objection','puzzle','idle','deckbuilder','runner','signal','snatcher','tactics','brigade','airlock']
-};
-
-function getSongPool(album) {
-  var g = (album.genre || '').toLowerCase();
-  if (g.includes('industrial') || g.includes('electronic') || g.includes('punk')) return SONG_POOLS.industrial;
-  if (g.includes('folk') || g.includes('acoustic') || g.includes('country')) return SONG_POOLS.folk;
-  if (g.includes('emo') || g.includes('shoegaze') || g.includes('post-')) return SONG_POOLS.emo;
-  if (g.includes('ambient') || g.includes('idm') || g.includes('drone') || g.includes('chill')) return SONG_POOLS.ambient;
-  return SONG_POOLS.default;
-}
-
-function buildTrackMap(album) {
-  var pool = getSongPool(album);
-  _trackSongMap = [];
-  for (var i = 0; i < album.tracks.length; i++) {
-    _trackSongMap.push(pool[i % pool.length]);
-  }
-}
-
-function playTrack(idx) {
-  if (!_snesPlayer) _snesPlayer = new SNESAudio();
-  var album = window._currentAlbum;
-  if (!album || idx < 0 || idx >= album.tracks.length) return;
-
-  if (_currentTrackIdx === idx && _snesPlayer.isPlaying()) {
-    stopPlayback();
-    return;
-  }
-
-  _snesPlayer.stop();
-  var songName = _trackSongMap[idx];
-  if (!songName) return;
-  _snesPlayer.loadSong(songName);
-  _snesPlayer.play();
-  _currentTrackIdx = idx;
-
-  // Update UI
-  document.querySelectorAll('.track-item').forEach(function(el) { el.classList.remove('now-playing'); });
-  var el = document.querySelector('.track-item[data-track="' + idx + '"]');
-  if (el) el.classList.add('now-playing');
-
-  var bar = document.getElementById('now-playing-bar');
-  bar.classList.add('active');
-  document.getElementById('npb-track').textContent = album.tracks[idx].name;
-  document.getElementById('npb-album').textContent = album.title + ' — ' + album.artist;
-  document.getElementById('npb-play').innerHTML = '&#9646;&#9646;';
-}
-
-function togglePlayback() {
-  if (!_snesPlayer) return;
-  if (_snesPlayer.isPlaying()) {
-    _snesPlayer.pause();
-    document.getElementById('npb-play').innerHTML = '&#9654;';
-  } else {
-    _snesPlayer.resume();
-    document.getElementById('npb-play').innerHTML = '&#9646;&#9646;';
-  }
-}
-
-function stopPlayback() {
-  if (_snesPlayer) _snesPlayer.stop();
-  _currentTrackIdx = -1;
-  document.querySelectorAll('.track-item').forEach(function(el) { el.classList.remove('now-playing'); });
-  document.getElementById('now-playing-bar').classList.remove('active');
-  document.getElementById('npb-play').innerHTML = '&#9654;';
-}
-
-function setPlayerVolume(v) {
-  if (!_snesPlayer) _snesPlayer = new SNESAudio();
-  _snesPlayer.setVolume(v / 100);
-}
+// =====================================================================
+// Init
+// =====================================================================
+init();
 </script>
 
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="{{ site.baseurl }}/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;">&times;</button>
-</div>
-<script>
-function showFundPrompt(){
-  if(sessionStorage.getItem('fund_prompt_shown_'+location.pathname))return;
-  sessionStorage.setItem('fund_prompt_shown_'+location.pathname,'1');
-  var p=document.getElementById('fund-prompt');
-  if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
-}
-</script>
-
-<script src="../shared/substrate-frame.js" data-title="LAPTOP RECORDS" data-lore="Q's recording studio" data-agent="Q" data-agent-color="#e477ff" data-no-audio="true"></script>
+<script src="../shared/substrate-frame.js" data-title="LAPTOP RECORDS" data-lore="Curate. Sequence. Score." data-agent="Q" data-agent-color="#e477ff" data-no-audio="true"></script>
 </body>
 </html>

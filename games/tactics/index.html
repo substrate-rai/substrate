@@ -18,8 +18,8 @@ redirect_from:
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #1a1a2e;
-  color: #c8d0e0;
+  background: linear-gradient(180deg, #d4eaf7 0%, #b6d8f2 30%, #9ec5e0 60%, #e8f4f8 100%);
+  color: #2D3748;
   font-family: 'IBM Plex Mono', monospace;
   overflow: hidden;
   position: fixed;
@@ -50,11 +50,15 @@ body {
   width: 480px;
   max-width: 96vw;
   padding: 6px 10px;
-  background: #0d0d1a;
-  border: 2px solid #2a2a5a;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-bottom: none;
+  border-radius: 10px 10px 0 0;
   font-size: 12px;
   gap: 8px;
+  box-shadow: 0 -2px 12px rgba(0, 80, 160, 0.06);
 }
 
 #top-bar .turn-info {
@@ -69,10 +73,17 @@ body {
   letter-spacing: 2px;
 }
 
-#top-bar .phase-label.blue { color: #4488ff; }
-#top-bar .phase-label.red { color: #ff4444; }
+#top-bar .phase-label.blue { color: #2266cc; }
+#top-bar .phase-label.red { color: #cc2222; }
 
-#top-bar .turn-num { color: #888; font-size: 11px; }
+#top-bar .turn-num { color: #5A6B7F; font-size: 11px; }
+
+#mission-label {
+  font-size: 10px;
+  color: #5A6B7F;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
 
 .co-section {
   display: flex;
@@ -83,7 +94,8 @@ body {
 .co-portrait {
   width: 28px;
   height: 28px;
-  border: 2px solid #333;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,8 +103,8 @@ body {
   font-weight: 700;
 }
 
-.co-portrait.blue { background: #112244; color: #4488ff; border-color: #4488ff; }
-.co-portrait.red { background: #331122; color: #ff4444; border-color: #ff4444; }
+.co-portrait.blue { background: rgba(34, 102, 204, 0.15); color: #2266cc; border-color: rgba(34, 102, 204, 0.4); }
+.co-portrait.red { background: rgba(204, 34, 34, 0.15); color: #cc2222; border-color: rgba(204, 34, 34, 0.4); }
 
 .power-bar-wrap {
   display: flex;
@@ -100,47 +112,52 @@ body {
   gap: 2px;
 }
 
-.power-bar-label { font-size: 8px; color: #666; letter-spacing: 1px; }
+.power-bar-label { font-size: 8px; color: #5A6B7F; letter-spacing: 1px; }
 
 .power-bar {
   width: 60px;
   height: 6px;
-  background: #1a1a2e;
-  border: 1px solid #333;
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
 }
 
 .power-fill {
   height: 100%;
   width: 0%;
   transition: width 0.3s;
+  border-radius: 2px;
 }
 
-.power-fill.blue { background: #4488ff; }
-.power-fill.red { background: #ff4444; }
-.power-fill.ready { background: #ffdd44; }
+.power-fill.blue { background: linear-gradient(90deg, #4488ff, #66aaff); }
+.power-fill.red { background: linear-gradient(90deg, #ff4444, #ff6666); }
+.power-fill.ready { background: linear-gradient(90deg, #ffcc00, #ffdd44); }
 
 #power-btn {
   padding: 2px 6px;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 9px;
   font-weight: 700;
-  background: #ffdd44;
-  color: #000;
-  border: none;
+  background: linear-gradient(180deg, #ffdd44, #ffcc00);
+  color: #333;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
   cursor: pointer;
   display: none;
   letter-spacing: 1px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-#power-btn:hover { background: #ffee88; }
+#power-btn:hover { background: linear-gradient(180deg, #ffee88, #ffdd44); }
 
 canvas#game-canvas {
-  border: 2px solid #2a2a5a;
+  border: 1px solid rgba(255, 255, 255, 0.5);
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   cursor: pointer;
   touch-action: none;
   display: block;
+  box-shadow: 0 4px 20px rgba(0, 60, 120, 0.12);
 }
 
 #bottom-bar {
@@ -149,11 +166,15 @@ canvas#game-canvas {
   width: 480px;
   max-width: 96vw;
   min-height: 54px;
-  background: #0d0d1a;
-  border: 2px solid #2a2a5a;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-top: none;
+  border-radius: 0 0 10px 10px;
   font-size: 11px;
   gap: 0;
+  box-shadow: 0 4px 12px rgba(0, 80, 160, 0.06);
 }
 
 #unit-panel {
@@ -163,19 +184,19 @@ canvas#game-canvas {
   flex-direction: column;
   justify-content: center;
   gap: 2px;
-  border-right: 1px solid #2a2a5a;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 #unit-panel .u-name { font-weight: 700; font-size: 12px; }
-#unit-panel .u-name.blue { color: #4488ff; }
-#unit-panel .u-name.red { color: #ff4444; }
-#unit-panel .u-stats { color: #888; font-size: 10px; }
+#unit-panel .u-name.blue { color: #2266cc; }
+#unit-panel .u-name.red { color: #cc2222; }
+#unit-panel .u-stats { color: #5A6B7F; font-size: 10px; }
 #unit-panel .u-hp-row { display: flex; align-items: center; gap: 6px; }
-#unit-panel .u-hp-bar { width: 60px; height: 5px; background: #1a1a2e; border: 1px solid #333; }
-#unit-panel .u-hp-fill { height: 100%; }
-#unit-panel .u-hp-fill.blue { background: #4488ff; }
-#unit-panel .u-hp-fill.red { background: #ff4444; }
-#unit-panel .u-hp-text { font-size: 10px; color: #aaa; }
+#unit-panel .u-hp-bar { width: 60px; height: 5px; background: rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.12); border-radius: 3px; }
+#unit-panel .u-hp-fill { height: 100%; border-radius: 2px; }
+#unit-panel .u-hp-fill.blue { background: linear-gradient(90deg, #4488ff, #66aaff); }
+#unit-panel .u-hp-fill.red { background: linear-gradient(90deg, #ff4444, #ff6666); }
+#unit-panel .u-hp-text { font-size: 10px; color: #5A6B7F; }
 
 #terrain-panel {
   width: 130px;
@@ -186,16 +207,19 @@ canvas#game-canvas {
   gap: 2px;
 }
 
-#terrain-panel .t-name { font-weight: 600; font-size: 11px; color: #c8d0e0; }
-#terrain-panel .t-stats { color: #888; font-size: 10px; }
+#terrain-panel .t-name { font-weight: 600; font-size: 11px; color: #2D3748; }
+#terrain-panel .t-stats { color: #5A6B7F; font-size: 10px; }
 
 #message-bar {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(10, 10, 30, 0.92);
-  border: 2px solid #ffdd44;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
   padding: 12px 28px;
   font-size: 18px;
   font-weight: 700;
@@ -204,12 +228,14 @@ canvas#game-canvas {
   z-index: 20;
   display: none;
   pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0, 60, 120, 0.12);
 }
 
-#message-bar.blue { color: #4488ff; border-color: #4488ff; }
-#message-bar.red { color: #ff4444; border-color: #ff4444; }
-#message-bar.gold { color: #ffdd44; border-color: #ffdd44; }
+#message-bar.blue { color: #2266cc; }
+#message-bar.red { color: #cc2222; }
+#message-bar.gold { color: #b8860b; }
 
+/* ---- End Screen / Mission Complete ---- */
 #end-screen {
   position: fixed;
   inset: 0;
@@ -217,38 +243,172 @@ canvas#game-canvas {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(5, 5, 15, 0.94);
+  background: rgba(200, 220, 240, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   z-index: 30;
 }
 
 #end-screen.show { display: flex; }
 
+.end-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  padding: 32px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(0, 60, 120, 0.12);
+  max-width: 90vw;
+}
+
 #end-screen h1 {
-  font-size: 36px;
+  font-size: 28px;
   letter-spacing: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
+  color: #1A1A2E;
 }
 
 #end-screen .subtitle {
-  font-size: 14px;
-  color: #888;
-  margin-bottom: 24px;
+  font-size: 13px;
+  color: #5A6B7F;
+  margin-bottom: 16px;
 }
 
-#restart-btn {
-  padding: 10px 28px;
-  background: transparent;
-  border: 2px solid #4488ff;
-  color: #4488ff;
-  font-family: 'IBM Plex Mono', monospace;
+/* Mission rating display */
+.rating-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.rating-letter {
+  font-size: 72px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.rating-letter.rank-s { color: #d4af37; }
+.rating-letter.rank-a { color: #2266cc; }
+.rating-letter.rank-b { color: #228b22; }
+.rating-letter.rank-c { color: #8b6914; }
+
+.rating-label {
+  font-size: 11px;
+  color: #5A6B7F;
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.rating-new-best {
+  font-size: 10px;
+  color: #d4af37;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-top: 4px;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Stats breakdown */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 24px;
+  margin-bottom: 20px;
+  font-size: 12px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stat-label { color: #5A6B7F; }
+.stat-value { font-weight: 700; color: #2D3748; }
+
+.stat-value.good { color: #228b22; }
+.stat-value.ok { color: #2266cc; }
+.stat-value.bad { color: #cc2222; }
+
+/* Mission select strip */
+.mission-ratings-strip {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mission-pip {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 14px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #8899AA;
+}
+
+.mission-pip.completed { background: rgba(34, 102, 204, 0.1); border-color: rgba(34, 102, 204, 0.3); }
+.mission-pip.rank-s { background: rgba(212, 175, 55, 0.15); border-color: rgba(212, 175, 55, 0.4); color: #d4af37; }
+.mission-pip.rank-a { background: rgba(34, 102, 204, 0.15); border-color: rgba(34, 102, 204, 0.4); color: #2266cc; }
+.mission-pip.rank-b { background: rgba(34, 139, 34, 0.15); border-color: rgba(34, 139, 34, 0.4); color: #228b22; }
+.mission-pip.rank-c { background: rgba(139, 105, 20, 0.15); border-color: rgba(139, 105, 20, 0.4); color: #8b6914; }
+.mission-pip.current { border: 2px solid #2266cc; }
+
+.end-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+#restart-btn, #next-mission-btn {
+  padding: 10px 24px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #2D3748;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-#restart-btn:hover {
-  background: #4488ff;
-  color: #0a0a1a;
+#restart-btn:hover, #next-mission-btn:hover {
+  background: rgba(34, 102, 204, 0.12);
+  border-color: rgba(34, 102, 204, 0.3);
+  color: #2266cc;
+}
+
+#next-mission-btn {
+  background: rgba(34, 102, 204, 0.12);
+  border-color: rgba(34, 102, 204, 0.25);
+  color: #2266cc;
+}
+
+#next-mission-btn:hover {
+  background: rgba(34, 102, 204, 0.2);
+}
+
+#next-mission-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 #footer {
@@ -257,12 +417,12 @@ canvas#game-canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 10px;
-  color: #333;
+  color: #8899AA;
   z-index: 5;
 }
 
-#footer a { color: #555; text-decoration: none; }
-#footer a:hover { color: #00ffaa; }
+#footer a { color: #5A6B7F; text-decoration: none; }
+#footer a:hover { color: #2266cc; }
 
 #splash {
   position: fixed;
@@ -272,28 +432,50 @@ canvas#game-canvas {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #0a0a1a;
+  background: linear-gradient(180deg, #d4eaf7 0%, #b6d8f2 40%, #e8f4f8 100%);
   cursor: pointer;
+}
+
+.splash-panel {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  padding: 40px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(0, 60, 120, 0.1);
 }
 
 #splash h1 {
   font-size: 32px;
   letter-spacing: 8px;
-  color: #ffdd44;
+  color: #1A1A2E;
   margin-bottom: 8px;
 }
 
 #splash .sub {
   font-size: 12px;
-  color: #666;
-  margin-bottom: 24px;
+  color: #5A6B7F;
+  margin-bottom: 20px;
   letter-spacing: 2px;
+}
+
+#splash .mission-select-label {
+  font-size: 10px;
+  color: #5A6B7F;
+  letter-spacing: 2px;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 #splash .tap {
   font-size: 14px;
-  color: #4488ff;
+  color: #2266cc;
   animation: blink 1.2s infinite;
+  margin-top: 16px;
 }
 
 @keyframes blink {
@@ -304,11 +486,15 @@ canvas#game-canvas {
 #action-menu {
   position: absolute;
   z-index: 15;
-  background: #0d0d1a;
-  border: 2px solid #4488ff;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 102, 204, 0.3);
+  border-radius: 8px;
   padding: 4px 0;
   display: none;
   min-width: 120px;
+  box-shadow: 0 4px 16px rgba(0, 60, 120, 0.12);
 }
 
 #action-menu.show { display: block; }
@@ -319,16 +505,16 @@ canvas#game-canvas {
   padding: 8px 14px;
   background: transparent;
   border: none;
-  color: #c8d0e0;
+  color: #2D3748;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
   text-align: left;
   cursor: pointer;
 }
 
-.menu-btn:hover { background: rgba(68, 136, 255, 0.25); color: #fff; }
-.menu-btn:disabled { color: #3a3a4a; cursor: not-allowed; }
-.menu-btn:disabled:hover { background: transparent; color: #3a3a4a; }
+.menu-btn:hover { background: rgba(34, 102, 204, 0.12); color: #2266cc; }
+.menu-btn:disabled { color: #b0b8c4; cursor: not-allowed; }
+.menu-btn:disabled:hover { background: transparent; color: #b0b8c4; }
 
 /* Damage popup */
 .dmg-popup {
@@ -339,7 +525,7 @@ canvas#game-canvas {
   pointer-events: none;
   z-index: 25;
   animation: popUp 1s ease-out forwards;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.8), -1px -1px 0 rgba(255,255,255,0.8);
 }
 
 @keyframes popUp {
@@ -350,7 +536,7 @@ canvas#game-canvas {
 
 /* Mobile */
 @media (max-width: 520px) {
-  #top-bar, #bottom-bar { width: 100vw; max-width: 100vw; }
+  #top-bar, #bottom-bar { width: 100vw; max-width: 100vw; border-radius: 0; }
   canvas#game-canvas { border-left: none; border-right: none; }
   #top-bar { font-size: 10px; padding: 4px 6px; }
   #bottom-bar { font-size: 10px; min-height: 46px; }
@@ -359,17 +545,24 @@ canvas#game-canvas {
   #message-bar { font-size: 14px; padding: 8px 18px; letter-spacing: 2px; }
   #action-menu { min-width: 100px; }
   .menu-btn { padding: 10px 12px; font-size: 14px; }
+  .end-panel { padding: 24px 20px; }
+  .rating-letter { font-size: 56px; }
+  .stats-grid { gap: 4px 16px; font-size: 11px; }
+  .splash-panel { padding: 28px 24px; }
 }
 </style>
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
 
 <div id="splash" onclick="startGame()">
-  <h1>TACTICS</h1>
-  <div class="sub">AGENT DEPLOYMENT PROTOCOL</div>
-  <div class="tap">TAP TO START</div>
+  <div class="splash-panel">
+    <h1>TACTICS</h1>
+    <div class="sub">AGENT DEPLOYMENT PROTOCOL</div>
+    <div class="mission-select-label">MISSIONS</div>
+    <div class="mission-ratings-strip" id="splash-missions"></div>
+    <div class="tap">TAP TO DEPLOY</div>
+  </div>
 </div>
 
 <div id="game-wrapper">
@@ -377,6 +570,7 @@ canvas#game-canvas {
     <div class="turn-info">
       <span class="phase-label blue" id="phase-label">BLUE TEAM</span>
       <span class="turn-num" id="turn-num">Turn 1</span>
+      <span id="mission-label">M1</span>
     </div>
     <div class="co-section">
       <div class="co-portrait blue" id="co-port-blue" title="CO Root — Fortify: +2 DEF all units">R/</div>
@@ -399,7 +593,7 @@ canvas#game-canvas {
 
   <div id="bottom-bar">
     <div id="unit-panel">
-      <div class="u-name" id="up-name">—</div>
+      <div class="u-name" id="up-name">&mdash;</div>
       <div class="u-hp-row">
         <div class="u-hp-bar"><div class="u-hp-fill blue" id="up-hp-fill" style="width:100%"></div></div>
         <span class="u-hp-text" id="up-hp-text">10/10</span>
@@ -422,9 +616,26 @@ canvas#game-canvas {
 <div id="message-bar"></div>
 
 <div id="end-screen">
-  <h1 id="end-title">VICTORY</h1>
-  <div class="subtitle" id="end-subtitle">All threats gone! Good job!</div>
-  <button id="restart-btn" onclick="restartGame()">PLAY AGAIN</button>
+  <div class="end-panel">
+    <h1 id="end-title">MISSION COMPLETE</h1>
+    <div class="subtitle" id="end-subtitle">All threats eliminated.</div>
+    <div class="rating-section">
+      <div class="rating-letter rank-s" id="end-rating">S</div>
+      <div class="rating-label">MISSION RATING</div>
+      <div class="rating-new-best" id="end-new-best" style="display:none">NEW BEST</div>
+    </div>
+    <div class="stats-grid" id="end-stats">
+      <div class="stat-row"><span class="stat-label">Turns</span><span class="stat-value" id="stat-turns">5</span></div>
+      <div class="stat-row"><span class="stat-label">Par</span><span class="stat-value" id="stat-par">8</span></div>
+      <div class="stat-row"><span class="stat-label">Agents Lost</span><span class="stat-value" id="stat-lost">0</span></div>
+      <div class="stat-row"><span class="stat-label">Damage Taken</span><span class="stat-value" id="stat-dmg">12</span></div>
+    </div>
+    <div class="mission-ratings-strip" id="end-missions"></div>
+    <div class="end-buttons">
+      <button id="restart-btn" onclick="restartGame()">RETRY</button>
+      <button id="next-mission-btn" onclick="nextMission()">NEXT MISSION</button>
+    </div>
+  </div>
 </div>
 
 <div id="footer"><a href="{{ site.baseurl }}/arcade/">a Substrate Arcade game</a></div>
@@ -433,6 +644,7 @@ canvas#game-canvas {
 // ============================================================
 // TACTICS — Advance Wars-style 2D Canvas Tactics Game
 // Substrate agents vs system threats
+// Multi-mission campaign with S/A/B/C rating system
 // ============================================================
 
 // ---- Constants ----
@@ -496,19 +708,161 @@ UNIT_DATA[U_TANK]      = { name: 'Tank',       atk: 70, def: 30, mov: 5, range: 
 UNIT_DATA[U_RECON]     = { name: 'Recon',      atk: 40, def: 5,  mov: 8, range: [1, 1], isInfantry: false, canCapture: false };
 UNIT_DATA[U_ARTILLERY] = { name: 'Artillery',  atk: 80, def: 15, mov: 5, range: [2, 3], isInfantry: false, canCapture: false };
 
-// ---- Map ----
-// P=plain F=forest M=mountain R=road V=river B=bridge H=HQ blue, Q=HQ red
-var MAP_LAYOUT = [
-  'HPFPRRPPFQ',
-  'PPFPRVPPPP',
-  'FPPPRBPFMP',
-  'PMPFRPPPFP',
-  'PFPPPRPFMP',
-  'PMPFPBRPPP',
-  'PPPPVRPFPP',
-  'QFPPRRPPFH'
+// ============================================================
+// MISSION DEFINITIONS
+// ============================================================
+
+var MISSIONS = [
+  {
+    id: 1,
+    name: 'First Contact',
+    desc: '2 agents, open terrain. Learn the basics.',
+    map: [
+      'HPPPPPPPFQ',
+      'PPFPPPPPPP',
+      'PPPPPPPPPP',
+      'PPPPPPPPPP',
+      'PPPPPPPPPP',
+      'PPPPPPPPPP',
+      'PPPPPPPPFP',
+      'QFPPPPPPPH'
+    ],
+    blueUnits: [
+      { type: U_INFANTRY, col: 0, row: 1 },
+      { type: U_TANK, col: 1, row: 0 }
+    ],
+    redUnits: [
+      { type: U_INFANTRY, col: 9, row: 6 },
+      { type: U_INFANTRY, col: 8, row: 7 }
+    ],
+    par: 6,
+    ratings: { S: { turns: 4, lost: 0, dmgPct: 10 }, A: { turns: 6, lost: 0, dmgPct: 30 }, B: { turns: 8, lost: 0, dmgPct: 60 } }
+  },
+  {
+    id: 2,
+    name: 'Forest Ambush',
+    desc: '3 agents, forest terrain. Use cover.',
+    map: [
+      'HPFPPPPPFQ',
+      'PPFFPPPPPP',
+      'FPPPFPPPFP',
+      'PPFPPPFPPP',
+      'PPPFPPPFPP',
+      'PFPPPFPPPF',
+      'PPPPPPFFPP',
+      'QFPPPPPFPH'
+    ],
+    blueUnits: [
+      { type: U_INFANTRY, col: 0, row: 1 },
+      { type: U_INFANTRY, col: 1, row: 2 },
+      { type: U_MECH, col: 0, row: 3 }
+    ],
+    redUnits: [
+      { type: U_INFANTRY, col: 9, row: 6 },
+      { type: U_MECH, col: 8, row: 5 },
+      { type: U_RECON, col: 9, row: 4 }
+    ],
+    par: 8,
+    ratings: { S: { turns: 5, lost: 0, dmgPct: 10 }, A: { turns: 7, lost: 0, dmgPct: 30 }, B: { turns: 10, lost: 1, dmgPct: 50 } }
+  },
+  {
+    id: 3,
+    name: 'River Crossing',
+    desc: '4 agents, river defense. Control the bridge.',
+    map: [
+      'HPFPRRPPFQ',
+      'PPFPRVPPPP',
+      'FPPPRBPFPP',
+      'PPPFRPPPFP',
+      'PFPPPRPFPP',
+      'PPFPPBRPPP',
+      'PPPPVRPFPP',
+      'QFPPRRPPFH'
+    ],
+    blueUnits: [
+      { type: U_INFANTRY, col: 0, row: 1 },
+      { type: U_INFANTRY, col: 1, row: 2 },
+      { type: U_MECH, col: 0, row: 3 },
+      { type: U_TANK, col: 1, row: 0 }
+    ],
+    redUnits: [
+      { type: U_INFANTRY, col: 9, row: 6 },
+      { type: U_INFANTRY, col: 8, row: 5 },
+      { type: U_TANK, col: 8, row: 7 },
+      { type: U_RECON, col: 9, row: 4 }
+    ],
+    par: 10,
+    ratings: { S: { turns: 7, lost: 0, dmgPct: 15 }, A: { turns: 10, lost: 0, dmgPct: 35 }, B: { turns: 13, lost: 1, dmgPct: 55 } }
+  },
+  {
+    id: 4,
+    name: 'Mountain Pass',
+    desc: '5 agents with artillery. Terrain mastery.',
+    map: [
+      'HPFPRRPPFQ',
+      'PPFPRVPPPP',
+      'FPPPRBPFMP',
+      'PMPFRPPPFP',
+      'PFPPPRPFMP',
+      'PMPFPBRPPP',
+      'PPPPVRPFPP',
+      'QFPPRRPPFH'
+    ],
+    blueUnits: [
+      { type: U_INFANTRY, col: 0, row: 1 },
+      { type: U_INFANTRY, col: 1, row: 2 },
+      { type: U_MECH, col: 0, row: 3 },
+      { type: U_TANK, col: 1, row: 0 },
+      { type: U_ARTILLERY, col: 0, row: 0 }
+    ],
+    redUnits: [
+      { type: U_INFANTRY, col: 9, row: 6 },
+      { type: U_INFANTRY, col: 8, row: 5 },
+      { type: U_TANK, col: 8, row: 7 },
+      { type: U_RECON, col: 9, row: 4 },
+      { type: U_ARTILLERY, col: 9, row: 7 }
+    ],
+    par: 12,
+    ratings: { S: { turns: 8, lost: 0, dmgPct: 15 }, A: { turns: 11, lost: 0, dmgPct: 35 }, B: { turns: 14, lost: 1, dmgPct: 55 } }
+  },
+  {
+    id: 5,
+    name: 'Full Deployment',
+    desc: '6 agents vs adaptive AI. Total coordination.',
+    map: [
+      'HPFRRRPPFQ',
+      'PPFPRVPMPP',
+      'FPPFRBPFMP',
+      'PMPFRPPPFP',
+      'PFPPPRPFMP',
+      'PMPFPBRFPP',
+      'PPMPPVRPFP',
+      'QFPPRRPFPH'
+    ],
+    blueUnits: [
+      { type: U_INFANTRY, col: 0, row: 1 },
+      { type: U_INFANTRY, col: 1, row: 2 },
+      { type: U_MECH, col: 0, row: 3 },
+      { type: U_TANK, col: 1, row: 0 },
+      { type: U_ARTILLERY, col: 0, row: 0 },
+      { type: U_RECON, col: 0, row: 2 }
+    ],
+    redUnits: [
+      { type: U_INFANTRY, col: 9, row: 6 },
+      { type: U_INFANTRY, col: 8, row: 5 },
+      { type: U_TANK, col: 8, row: 7 },
+      { type: U_RECON, col: 9, row: 4 },
+      { type: U_ARTILLERY, col: 9, row: 7 },
+      { type: U_MECH, col: 9, row: 3 }
+    ],
+    par: 14,
+    ratings: { S: { turns: 9, lost: 0, dmgPct: 15 }, A: { turns: 13, lost: 1, dmgPct: 35 }, B: { turns: 16, lost: 2, dmgPct: 55 } }
+  }
 ];
 
+var currentMission = 0; // index into MISSIONS
+
+// ---- Map ----
 var CHAR_TO_TERRAIN = {
   'P': T_PLAIN, 'F': T_FOREST, 'M': T_MOUNTAIN, 'R': T_ROAD,
   'V': T_RIVER, 'B': T_BRIDGE, 'H': T_HQ_BLUE, 'Q': T_HQ_RED
@@ -517,11 +871,12 @@ var CHAR_TO_TERRAIN = {
 var terrainMap = [];
 
 function buildMap() {
+  var mission = MISSIONS[currentMission];
   terrainMap = [];
   for (var r = 0; r < ROWS; r++) {
     terrainMap[r] = [];
     for (var c = 0; c < COLS; c++) {
-      var ch = MAP_LAYOUT[r].charAt(c);
+      var ch = mission.map[r].charAt(c);
       terrainMap[r][c] = CHAR_TO_TERRAIN[ch] !== undefined ? CHAR_TO_TERRAIN[ch] : T_PLAIN;
     }
   }
@@ -560,20 +915,17 @@ function makeUnit(type, team, col, row) {
 }
 
 function spawnUnits() {
+  var mission = MISSIONS[currentMission];
   units = [];
   nextUnitId = 0;
-  // Blue team (player)
-  units.push(makeUnit(U_INFANTRY, 'blue', 0, 1));
-  units.push(makeUnit(U_INFANTRY, 'blue', 1, 2));
-  units.push(makeUnit(U_MECH,     'blue', 0, 3));
-  units.push(makeUnit(U_TANK,     'blue', 1, 0));
-  units.push(makeUnit(U_ARTILLERY,'blue', 0, 0));
-  // Red team (enemy)
-  units.push(makeUnit(U_INFANTRY, 'red', 9, 6));
-  units.push(makeUnit(U_INFANTRY, 'red', 8, 5));
-  units.push(makeUnit(U_TANK,     'red', 8, 7));
-  units.push(makeUnit(U_RECON,    'red', 9, 4));
-  units.push(makeUnit(U_ARTILLERY,'red', 9, 7));
+  for (var i = 0; i < mission.blueUnits.length; i++) {
+    var bu = mission.blueUnits[i];
+    units.push(makeUnit(bu.type, 'blue', bu.col, bu.row));
+  }
+  for (var j = 0; j < mission.redUnits.length; j++) {
+    var ru = mission.redUnits[j];
+    units.push(makeUnit(ru.type, 'red', ru.col, ru.row));
+  }
 }
 
 function unitAt(col, row) {
@@ -602,6 +954,75 @@ var redPower = 0;
 var bluePowerActive = false;
 var redPowerActive = false;
 var POWER_MAX = 100;
+
+// ---- Mission tracking stats ----
+var missionStats = {
+  turnsUsed: 0,
+  agentsLost: 0,
+  totalDmgTaken: 0,
+  totalMaxHp: 0,
+  startBlueCount: 0
+};
+
+function resetMissionStats() {
+  var mission = MISSIONS[currentMission];
+  missionStats.turnsUsed = 0;
+  missionStats.agentsLost = 0;
+  missionStats.totalDmgTaken = 0;
+  missionStats.startBlueCount = mission.blueUnits.length;
+  missionStats.totalMaxHp = mission.blueUnits.length * 10;
+}
+
+// ---- localStorage persistence for ratings ----
+function loadBestRatings() {
+  try {
+    var data = JSON.parse(localStorage.getItem('tactics_ratings') || '{}');
+    return data;
+  } catch (e) { return {}; }
+}
+
+function saveBestRating(missionId, rating, stats) {
+  try {
+    var data = loadBestRatings();
+    var key = 'm' + missionId;
+    var rankOrder = { 'S': 4, 'A': 3, 'B': 2, 'C': 1 };
+    var existing = data[key];
+    if (!existing || rankOrder[rating] > rankOrder[existing.rating]) {
+      data[key] = { rating: rating, turns: stats.turnsUsed, lost: stats.agentsLost, dmg: stats.totalDmgTaken };
+      localStorage.setItem('tactics_ratings', JSON.stringify(data));
+      return true; // new best
+    }
+    return false;
+  } catch (e) { return false; }
+}
+
+function getBestRating(missionId) {
+  var data = loadBestRatings();
+  var key = 'm' + missionId;
+  return data[key] || null;
+}
+
+// ---- Rating calculation ----
+function calculateRating(missionIndex, stats) {
+  var mission = MISSIONS[missionIndex];
+  var r = mission.ratings;
+  var dmgPct = (stats.totalDmgTaken / stats.totalMaxHp) * 100;
+
+  // S: under S turn threshold, no losses, low damage
+  if (stats.turnsUsed <= r.S.turns && stats.agentsLost <= r.S.lost && dmgPct <= r.S.dmgPct) {
+    return 'S';
+  }
+  // A: under A threshold, no losses, moderate damage
+  if (stats.turnsUsed <= r.A.turns && stats.agentsLost <= r.A.lost && dmgPct <= r.A.dmgPct) {
+    return 'A';
+  }
+  // B: under B threshold, small losses acceptable
+  if (stats.turnsUsed <= r.B.turns && stats.agentsLost <= r.B.lost && dmgPct <= r.B.dmgPct) {
+    return 'B';
+  }
+  // C: everything else
+  return 'C';
+}
 
 // ---- Sound effects ----
 var SFX = {
@@ -689,6 +1110,16 @@ var SFX = {
       var o = c.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(notes[i], t + i * 0.2);
       var g = c.createGain(); g.gain.setValueAtTime(0.1, t + i * 0.2); g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.2 + 0.4);
       o.connect(g); g.connect(c.destination); o.start(t + i * 0.2); o.stop(t + i * 0.2 + 0.41);
+    }
+  },
+  rankUp: function() {
+    if (!this._enabled) return;
+    var c = this.getCtx(), t = c.currentTime;
+    var notes = [659, 784, 988, 1319];
+    for (var i = 0; i < notes.length; i++) {
+      var o = c.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(notes[i], t + i * 0.1);
+      var g = c.createGain(); g.gain.setValueAtTime(0.12, t + i * 0.1); g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.35);
+      o.connect(g); g.connect(c.destination); o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.36);
     }
   }
 };
@@ -1079,14 +1510,14 @@ function drawOverlays() {
   // Selected unit highlight
   if (selectedUnit && selectedUnit.alive) {
     var pulse = Math.sin(Date.now() * 0.006) * 0.3 + 0.4;
-    ctx.strokeStyle = 'rgba(255, 221, 68, ' + pulse + ')';
+    ctx.strokeStyle = 'rgba(212, 175, 55, ' + pulse + ')';
     ctx.lineWidth = 3;
     ctx.strokeRect(selectedUnit.col * TILE + 1, selectedUnit.row * TILE + 1, TILE - 2, TILE - 2);
   }
 
   // Hover cursor
   if (hoverCol >= 0 && hoverCol < COLS && hoverRow >= 0 && hoverRow < ROWS) {
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.lineWidth = 2;
     ctx.strokeRect(hoverCol * TILE + 1, hoverRow * TILE + 1, TILE - 2, TILE - 2);
   }
@@ -1225,8 +1656,13 @@ function performAttack(attacker, defender) {
   var dmg = calcDamage(attacker, defender);
   defender.hp -= dmg;
 
+  // Track damage if taken by blue team
+  if (defender.team === 'blue') {
+    missionStats.totalDmgTaken += dmg;
+  }
+
   // Show damage popup
-  showDamagePopup(defender.col, defender.row, dmg, attacker.team === 'blue' ? '#ff4444' : '#4488ff');
+  showDamagePopup(defender.col, defender.row, dmg, attacker.team === 'blue' ? '#cc2222' : '#2266cc');
 
   // Attack animation
   attackAnim.active = true;
@@ -1253,6 +1689,9 @@ function performAttack(attacker, defender) {
 
   if (defender.hp <= 0) {
     defender.alive = false;
+    if (defender.team === 'blue') {
+      missionStats.agentsLost++;
+    }
     showMessage(defender.name + ' down!', attacker.team === 'blue' ? 'blue' : 'red');
   } else {
     showMessage('Hit! ' + dmg + ' damage!', 'gold');
@@ -1264,7 +1703,10 @@ function performAttack(attacker, defender) {
         setTimeout(function() {
           var counterDmg = calcDamage(defender, attacker);
           attacker.hp -= counterDmg;
-          showDamagePopup(attacker.col, attacker.row, counterDmg, defender.team === 'blue' ? '#ff4444' : '#4488ff');
+          if (attacker.team === 'blue') {
+            missionStats.totalDmgTaken += counterDmg;
+          }
+          showDamagePopup(attacker.col, attacker.row, counterDmg, defender.team === 'blue' ? '#cc2222' : '#2266cc');
           SFX.hit();
           if (attacker.team === 'blue') {
             redPower = Math.min(POWER_MAX, redPower + counterDmg * 3);
@@ -1275,6 +1717,9 @@ function performAttack(attacker, defender) {
           }
           if (attacker.hp <= 0) {
             attacker.alive = false;
+            if (attacker.team === 'blue') {
+              missionStats.agentsLost++;
+            }
             showMessage(attacker.name + ' down!', defender.team === 'blue' ? 'blue' : 'red');
           }
           updatePowerBars();
@@ -1348,21 +1793,74 @@ function endGame(winner) {
   var endScreen = document.getElementById('end-screen');
   var endTitle = document.getElementById('end-title');
   var endSub = document.getElementById('end-subtitle');
+  var ratingEl = document.getElementById('end-rating');
+  var newBestEl = document.getElementById('end-new-best');
+  var nextBtn = document.getElementById('next-mission-btn');
+
   if (winner === 'blue') {
-    endTitle.textContent = 'VICTORY';
-    endTitle.style.color = '#4488ff';
-    endSub.textContent = 'All threats gone! Good job!';
-    SFX.victory();
+    // Calculate rating
+    var rating = calculateRating(currentMission, missionStats);
+    var mission = MISSIONS[currentMission];
+    var isNewBest = saveBestRating(mission.id, rating, missionStats);
+
+    endTitle.textContent = 'MISSION COMPLETE';
+    endTitle.style.color = '#1A1A2E';
+    endSub.textContent = mission.name + ' cleared!';
+
+    // Show rating
+    ratingEl.textContent = rating;
+    ratingEl.className = 'rating-letter rank-' + rating.toLowerCase();
+    document.querySelector('.rating-section').style.display = 'flex';
+
+    // New best indicator
+    if (isNewBest) {
+      newBestEl.style.display = 'block';
+      newBestEl.textContent = 'NEW BEST';
+      SFX.rankUp();
+    } else {
+      newBestEl.style.display = 'none';
+      SFX.victory();
+    }
+
+    // Stats breakdown
+    document.getElementById('stat-turns').textContent = missionStats.turnsUsed;
+    document.getElementById('stat-turns').className = 'stat-value ' + (missionStats.turnsUsed <= mission.ratings.S.turns ? 'good' : (missionStats.turnsUsed <= mission.ratings.A.turns ? 'ok' : 'bad'));
+    document.getElementById('stat-par').textContent = mission.par;
+    document.getElementById('stat-par').className = 'stat-value';
+    document.getElementById('stat-lost').textContent = missionStats.agentsLost + '/' + missionStats.startBlueCount;
+    document.getElementById('stat-lost').className = 'stat-value ' + (missionStats.agentsLost === 0 ? 'good' : 'bad');
+    document.getElementById('stat-dmg').textContent = missionStats.totalDmgTaken;
+    var dmgPct = (missionStats.totalDmgTaken / missionStats.totalMaxHp) * 100;
+    document.getElementById('stat-dmg').className = 'stat-value ' + (dmgPct <= 15 ? 'good' : (dmgPct <= 40 ? 'ok' : 'bad'));
+    document.getElementById('end-stats').style.display = 'grid';
+
+    // Next mission button
+    if (currentMission < MISSIONS.length - 1) {
+      nextBtn.style.display = 'inline-block';
+      nextBtn.disabled = false;
+    } else {
+      nextBtn.style.display = 'none';
+    }
+
   } else {
-    endTitle.textContent = 'DEFEAT';
-    endTitle.style.color = '#ff4444';
-    endSub.textContent = 'The system fell. Try again!';
+    endTitle.textContent = 'MISSION FAILED';
+    endTitle.style.color = '#cc2222';
+    endSub.textContent = 'The system fell. Reassess and redeploy.';
+    document.querySelector('.rating-section').style.display = 'none';
+    document.getElementById('end-stats').style.display = 'none';
+    nextBtn.style.display = 'none';
+    newBestEl.style.display = 'none';
     SFX.defeat();
   }
+
+  // Build mission pips for end screen
+  renderMissionPips('end-missions');
+
   setTimeout(function() {
     endScreen.classList.add('show');
   }, 800);
-  // Save result
+
+  // Save overall stats
   try {
     var stats = JSON.parse(localStorage.getItem('tactics_stats') || '{"wins":0,"losses":0}');
     if (winner === 'blue') stats.wins++;
@@ -1371,9 +1869,39 @@ function endGame(winner) {
   } catch(e) {}
 }
 
+function renderMissionPips(containerId) {
+  var container = document.getElementById(containerId);
+  container.innerHTML = '';
+  for (var i = 0; i < MISSIONS.length; i++) {
+    var pip = document.createElement('div');
+    pip.className = 'mission-pip';
+    var best = getBestRating(MISSIONS[i].id);
+    if (best) {
+      pip.classList.add('rank-' + best.rating.toLowerCase());
+      pip.textContent = best.rating;
+    } else {
+      pip.textContent = i + 1;
+    }
+    if (i === currentMission) {
+      pip.classList.add('current');
+    }
+    pip.setAttribute('data-mission', i);
+    pip.title = MISSIONS[i].name;
+    container.appendChild(pip);
+  }
+}
+
 function restartGame() {
   document.getElementById('end-screen').classList.remove('show');
   initGame();
+}
+
+function nextMission() {
+  if (currentMission < MISSIONS.length - 1) {
+    currentMission++;
+    document.getElementById('end-screen').classList.remove('show');
+    initGame();
+  }
 }
 
 // ============================================================
@@ -1387,6 +1915,11 @@ function startTurn(team) {
   moveTargets = [];
   attackTargets = [];
   hideActionMenu();
+
+  // Track turns (count a full round when blue starts)
+  if (team === 'blue' && turnNumber > 0) {
+    // turnNumber is already incremented at end of red turn
+  }
 
   // Reset units
   for (var i = 0; i < units.length; i++) {
@@ -1402,6 +1935,7 @@ function startTurn(team) {
   phaseLabel.textContent = team === 'blue' ? 'BLUE TEAM' : 'RED TEAM';
   phaseLabel.className = 'phase-label ' + (team === 'blue' ? 'blue' : 'red');
   document.getElementById('turn-num').textContent = 'Turn ' + turnNumber;
+  document.getElementById('mission-label').textContent = 'M' + MISSIONS[currentMission].id;
 
   // Show phase banner
   showMessage(team === 'blue' ? 'Your turn!' : 'Enemy turn!', team);
@@ -1434,6 +1968,7 @@ function checkTurnEnd() {
       setTimeout(function() { startTurn('red'); }, 500);
     } else {
       turnNumber++;
+      missionStats.turnsUsed = turnNumber - 1;
       setTimeout(function() { startTurn('blue'); }, 500);
     }
   }
@@ -1748,7 +2283,7 @@ function showDamagePopup(col, row, dmg, color) {
   var el = document.createElement('div');
   el.className = 'dmg-popup';
   el.textContent = '-' + dmg;
-  el.style.color = color || '#ff4444';
+  el.style.color = color || '#cc2222';
   el.style.left = Math.round(px) + 'px';
   el.style.top = Math.round(py) + 'px';
   document.body.appendChild(el);
@@ -1797,6 +2332,7 @@ function runEnemyAI() {
   setTimeout(function() {
     if (gameState === 'gameOver') return;
     turnNumber++;
+    missionStats.turnsUsed = turnNumber - 1;
     startTurn('blue');
   }, delay + 400);
 }
@@ -1965,6 +2501,7 @@ function initGame() {
   hoverRow = -1;
   hideActionMenu();
   updatePowerBars();
+  resetMissionStats();
   startTurn('blue');
 }
 
@@ -1975,6 +2512,9 @@ function startGame() {
   setTimeout(function() { splash.style.display = 'none'; }, 500);
   initGame();
 }
+
+// Build splash mission pips
+renderMissionPips('splash-missions');
 
 // Event listeners
 canvas.addEventListener('click', onCanvasClick);

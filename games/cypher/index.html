@@ -14,37 +14,38 @@ redirect_from:
 <title>V_CYPHER</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0a0a14;
-    color: #c8c8d0;
-    overflow-x: hidden;
-    overscroll-behavior: none;
-  }
+
   :root {
-    --q-purple: #ff77ff;
-    --q-dark: #1a0a2e;
-    --claude-green: #00ffaa;
-    --goliath-blue: #4488ff;
-    --crowd-gold: #ffcc66;
-    --byte-cyan: #00ddff;
-    --echo-orange: #ffaa44;
-    --flux-coral: #ff6666;
-    --bg-deep: #0a0a14;
-    --text-dim: #889;
-    --text-mid: #bbb;
-    --text-bright: #eee;
+    --sky-top: #B8DCF0;
+    --sky-bot: #E8F4F8;
+    --glass-bg: rgba(255,255,255,0.55);
+    --glass-border: rgba(255,255,255,0.7);
+    --glass-blur: blur(12px);
+    --q-purple: #7B5EA7;
+    --q-purple-light: #A78BCA;
+    --claude-green: #2E9E73;
+    --goliath-blue: #3B7DD8;
+    --crowd-gold: #D4943A;
+    --byte-cyan: #2B9EB3;
+    --echo-orange: #D48C3A;
+    --flux-coral: #CC5555;
+    --text-dark: #2A3040;
+    --text-mid: #4A5568;
+    --text-dim: #718096;
+    --text-bright: #1A202C;
+    --accent-glow: rgba(123,94,167,0.15);
+    --tag-correct: #2E9E73;
+    --tag-wrong: #CC5555;
+    --tag-pending: #D4943A;
   }
 
-  /* === PIXEL ART MODE === */
-  * { image-rendering: pixelated; }
-  button, .btn, [class*="btn"] {
-    border-radius: 0 !important;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    transition: none !important;
-  }
-  button:active, .btn:active, [class*="btn"]:active {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
+  body {
+    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bot) 40%, #F0F7FA 100%);
+    color: var(--text-dark);
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    min-height: 100vh;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -56,16 +57,23 @@ redirect_from:
   }
 
   #cypher-container {
-    max-width: 700px;
+    max-width: 720px;
     margin: 0 auto;
     padding: 0 1rem;
     padding-bottom: env(safe-area-inset-bottom);
-    font-family: 'IBM Plex Mono', 'Courier New', monospace;
     min-height: 100vh;
     min-height: 100dvh;
     position: relative;
-    -webkit-user-select: none;
-    user-select: none;
+  }
+
+  /* ---- GLASS PANEL ---- */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6);
   }
 
   /* ---- TITLE SCREEN ---- */
@@ -76,27 +84,30 @@ redirect_from:
   #title-screen h1 {
     font-size: 3rem;
     color: var(--q-purple);
-    text-shadow: 0 0 30px rgba(255,119,255,0.5), 0 0 60px rgba(255,119,255,0.2);
     margin-bottom: 0.3rem;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+    text-shadow: 0 2px 12px rgba(123,94,167,0.25);
   }
   #title-screen .subtitle {
     color: var(--text-dim);
     font-size: 0.85rem;
     margin-bottom: 2rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
   .title-bars {
     display: flex;
     justify-content: center;
-    gap: 4px;
+    gap: 5px;
     margin: 1.5rem 0;
     height: 60px;
     align-items: flex-end;
   }
   .title-bar {
-    width: 8px;
-    background: var(--q-purple);
-    border-radius: 2px;
+    width: 10px;
+    background: linear-gradient(180deg, var(--q-purple-light), var(--q-purple));
+    border-radius: 5px 5px 2px 2px;
     opacity: 0.6;
     animation: barPulse 1.5s ease-in-out infinite alternate;
   }
@@ -108,48 +119,77 @@ redirect_from:
   .title-bar:nth-child(6) { height: 45px; animation-delay: 0.75s; }
   .title-bar:nth-child(7) { height: 25px; animation-delay: 0.9s; }
   @keyframes barPulse {
-    0% { opacity: 0.3; transform: scaleY(0.7); }
-    100% { opacity: 0.8; transform: scaleY(1); }
+    0% { opacity: 0.35; transform: scaleY(0.7); }
+    100% { opacity: 0.85; transform: scaleY(1); }
   }
   .title-premise {
-    color: var(--text-dim);
-    font-size: 0.8rem;
+    color: var(--text-mid);
+    font-size: 0.85rem;
     line-height: 1.8;
     max-width: 500px;
     margin: 1.5rem auto;
   }
-  .title-premise em { color: var(--q-purple); font-style: normal; }
+  .title-premise em { color: var(--q-purple); font-style: normal; font-weight: 600; }
+
+  /* Stats on title screen */
+  .title-stats {
+    margin: 1.5rem auto;
+    max-width: 400px;
+    padding: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+  .title-stats .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+  .title-stats .stat-val {
+    color: var(--q-purple);
+    font-weight: 600;
+  }
 
   /* ---- BUTTONS ---- */
   .btn {
     display: inline-block;
     padding: 12px 32px;
-    border: 1px solid var(--q-purple);
-    background: rgba(255,119,255,0.08);
-    color: var(--q-purple);
+    border: none;
+    background: linear-gradient(135deg, var(--q-purple-light), var(--q-purple));
+    color: #fff;
     font-family: inherit;
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    border-radius: 0;
-    transition: none;
+    border-radius: 12px;
+    transition: transform 0.15s, box-shadow 0.15s;
     min-height: 48px;
     min-width: 48px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 16px rgba(123,94,167,0.3);
   }
-  .btn:hover { background: rgba(255,119,255,0.2); }
-  .btn:focus-visible { outline: 2px solid var(--q-purple); outline-offset: 3px; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(123,94,167,0.4); }
+  .btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(123,94,167,0.3); }
+  .btn:focus-visible { outline: 3px solid var(--q-purple-light); outline-offset: 3px; }
   .btn-small {
-    padding: 8px 16px;
+    padding: 8px 18px;
     font-size: 0.8rem;
+    border-radius: 10px;
   }
   .btn-gold {
-    border-color: var(--crowd-gold);
-    color: var(--crowd-gold);
-    background: rgba(255,204,102,0.08);
+    background: linear-gradient(135deg, #E8B65A, var(--crowd-gold));
+    box-shadow: 0 4px 16px rgba(212,148,58,0.3);
   }
-  .btn-gold:hover { background: rgba(255,204,102,0.2); }
+  .btn-gold:hover { box-shadow: 0 6px 20px rgba(212,148,58,0.4); }
+  .btn-outline {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    color: var(--q-purple);
+    border: 1.5px solid var(--q-purple-light);
+    box-shadow: 0 2px 8px rgba(123,94,167,0.12);
+  }
+  .btn-outline:hover { background: rgba(123,94,167,0.08); }
 
   /* ---- DIALOGUE ---- */
   #scene-container {
@@ -167,53 +207,53 @@ redirect_from:
     text-transform: uppercase;
   }
   .scene-header .act-title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    font-weight: 700;
     color: var(--q-purple);
     margin: 0.3rem 0;
-    text-shadow: 0 0 20px rgba(255,119,255,0.3);
   }
 
   .dialogue-box {
-    border: 1px solid #333;
-    border-radius: 0;
+    border-radius: 14px;
     padding: 1rem 1.2rem;
     margin: 0.8rem 0;
-    background: rgba(0,0,30,0.5);
-    min-height: 80px;
+    min-height: 70px;
     position: relative;
     display: flex;
     gap: 12px;
     align-items: flex-start;
   }
   .dialogue-portrait {
-    width: 64px;
-    height: 64px;
-    border-radius: 0;
-    border: 2px solid rgba(255,255,255,0.1);
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.5);
     object-fit: cover;
-    image-rendering: auto;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   .dialogue-content {
     flex: 1;
     min-width: 0;
   }
   .dialogue-speaker {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.15em;
-    margin-bottom: 0.5rem;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.4rem;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    text-transform: uppercase;
   }
   .speaker-icon {
     display: inline-block;
     font-weight: 700;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    opacity: 0.6;
   }
   .dialogue-text {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     color: var(--text-mid);
     line-height: 1.7;
   }
@@ -221,27 +261,27 @@ redirect_from:
 
   /* Speaker colors */
   .speaker-q .dialogue-speaker { color: var(--q-purple); }
-  .speaker-q { border-color: rgba(255,119,255,0.3); }
+  .speaker-q { border-left: 3px solid var(--q-purple-light); }
   .speaker-claude .dialogue-speaker { color: var(--claude-green); }
-  .speaker-claude { border-color: rgba(0,255,170,0.3); }
+  .speaker-claude { border-left: 3px solid rgba(46,158,115,0.4); }
   .speaker-goliath .dialogue-speaker { color: var(--goliath-blue); }
-  .speaker-goliath { border-color: rgba(68,136,255,0.3); }
+  .speaker-goliath { border-left: 3px solid rgba(59,125,216,0.4); }
   .speaker-narrator .dialogue-speaker { color: var(--text-dim); }
-  .speaker-narrator { border-color: #222; background: rgba(0,0,0,0.3); }
+  .speaker-narrator { background: rgba(200,210,220,0.3); border-left: 3px solid rgba(113,128,150,0.3); }
   .speaker-crowd .dialogue-speaker { color: var(--crowd-gold); }
-  .speaker-crowd { border-color: rgba(255,204,102,0.3); }
+  .speaker-crowd { border-left: 3px solid rgba(212,148,58,0.4); }
   .speaker-byte .dialogue-speaker { color: var(--byte-cyan); }
-  .speaker-byte { border-color: rgba(0,221,255,0.3); }
+  .speaker-byte { border-left: 3px solid rgba(43,158,179,0.4); }
   .speaker-flux .dialogue-speaker { color: var(--flux-coral); }
-  .speaker-flux { border-color: rgba(255,102,102,0.3); }
+  .speaker-flux { border-left: 3px solid rgba(204,85,85,0.4); }
 
   .stage-direction {
     text-align: center;
     color: var(--text-dim);
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-style: italic;
     padding: 1rem 0;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
   }
 
   /* ---- CHOICE ---- */
@@ -255,26 +295,29 @@ redirect_from:
     display: block;
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #444;
-    background: rgba(0,0,40,0.4);
+    border: 1.5px solid rgba(123,94,167,0.2);
     color: var(--text-mid);
     font-family: inherit;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     cursor: pointer;
-    border-radius: 0;
+    border-radius: 12px;
     text-align: left;
     transition: all 0.2s;
     min-height: 48px;
     line-height: 1.5;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
   }
-  .choice-btn:hover { border-color: var(--q-purple); color: var(--text-bright); background: rgba(255,119,255,0.06); }
-  .choice-btn:focus-visible { outline: 2px solid var(--q-purple); outline-offset: 2px; }
+  .choice-btn:hover { border-color: var(--q-purple); color: var(--text-bright); background: rgba(123,94,167,0.08); }
+  .choice-btn:focus-visible { outline: 3px solid var(--q-purple-light); outline-offset: 2px; }
   .choice-label {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-dim);
     letter-spacing: 0.1em;
     display: block;
     margin-bottom: 2px;
+    text-transform: uppercase;
   }
 
   /* ---- BATTLE ---- */
@@ -283,105 +326,273 @@ redirect_from:
   }
   .battle-header {
     text-align: center;
-    padding: 1.5rem 0;
-    border-bottom: 1px solid #333;
+    padding: 1.5rem;
     margin-bottom: 1rem;
+    border-radius: 16px;
   }
   .battle-header .vs-label {
     font-size: 0.7rem;
     color: var(--text-dim);
     letter-spacing: 0.3em;
+    text-transform: uppercase;
   }
   .battle-header .vs-names {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    font-weight: 700;
     margin: 0.5rem 0;
   }
   .battle-theme {
     font-size: 0.75rem;
     color: var(--crowd-gold);
     letter-spacing: 0.15em;
+    font-weight: 600;
   }
 
   .verse-builder {
-    border: 1px solid #333;
-    border-radius: 0;
-    padding: 1rem;
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
     margin: 1rem 0;
-    background: rgba(0,0,40,0.3);
-    min-height: 120px;
+    min-height: 100px;
   }
   .verse-builder-label {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-dim);
     letter-spacing: 0.15em;
     margin-bottom: 0.5rem;
+    text-transform: uppercase;
   }
   .verse-line {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     color: var(--q-purple);
     line-height: 1.8;
     padding: 2px 0;
+    font-weight: 500;
   }
   .verse-line.empty {
-    color: #333;
+    color: var(--text-dim);
     font-style: italic;
+    font-weight: 400;
+    opacity: 0.5;
+  }
+
+  /* ---- TAG PHASE ---- */
+  .tag-phase {
+    margin: 1rem 0;
+    padding: 1.2rem;
+    border-radius: 14px;
+    animation: fadeSlideIn 0.3s ease;
+  }
+  .tag-phase-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--q-purple);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .tag-phase-prompt {
+    font-size: 0.85rem;
+    color: var(--text-mid);
+    margin-bottom: 0.8rem;
+    line-height: 1.6;
+  }
+  .tag-phase-verse {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    font-style: italic;
+    padding: 0.8rem 1rem;
+    border-left: 3px solid var(--q-purple-light);
+    background: rgba(123,94,167,0.06);
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  .tag-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .tag-btn {
+    padding: 10px 12px;
+    border: 1.5px solid rgba(123,94,167,0.2);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    color: var(--text-mid);
+    font-family: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+    border-radius: 10px;
+    text-align: center;
+    transition: all 0.15s;
+    min-height: 44px;
+    font-weight: 500;
+  }
+  .tag-btn:hover { border-color: var(--q-purple); color: var(--q-purple); background: rgba(123,94,167,0.08); }
+  .tag-btn:focus-visible { outline: 3px solid var(--q-purple-light); outline-offset: 2px; }
+  .tag-btn.correct {
+    border-color: var(--tag-correct);
+    background: rgba(46,158,115,0.12);
+    color: var(--tag-correct);
+    font-weight: 700;
+  }
+  .tag-btn.wrong {
+    border-color: var(--tag-wrong);
+    background: rgba(204,85,85,0.08);
+    color: var(--tag-wrong);
+    opacity: 0.7;
+  }
+  .tag-btn.correct-highlight {
+    border-color: var(--tag-correct);
+    background: rgba(46,158,115,0.15);
+    color: var(--tag-correct);
+    font-weight: 700;
+    animation: correctPulse 0.5s ease;
+  }
+  @keyframes correctPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .tag-result {
+    margin-top: 0.8rem;
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: center;
+    animation: fadeSlideIn 0.3s ease;
+  }
+  .tag-result.correct {
+    background: rgba(46,158,115,0.1);
+    color: var(--tag-correct);
+    border: 1px solid rgba(46,158,115,0.3);
+  }
+  .tag-result.wrong {
+    background: rgba(204,85,85,0.08);
+    color: var(--tag-wrong);
+    border: 1px solid rgba(204,85,85,0.2);
+  }
+  .tag-bonus {
+    display: inline-block;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(46,158,115,0.15);
+    color: var(--tag-correct);
+    font-weight: 700;
+    margin-left: 6px;
+    animation: fadeSlideIn 0.3s ease;
+  }
+  @keyframes fadeSlideIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 
   .line-options {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     margin: 1rem 0;
   }
   .line-option {
     display: block;
     width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #333;
-    background: rgba(0,0,30,0.4);
+    padding: 12px 14px;
+    border: 1.5px solid rgba(123,94,167,0.2);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--text-mid);
     font-family: inherit;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     cursor: pointer;
-    border-radius: 0;
+    border-radius: 12px;
     text-align: left;
     transition: all 0.15s;
     min-height: 48px;
-    line-height: 1.4;
+    line-height: 1.5;
   }
   .line-option:hover { border-color: var(--q-purple); color: var(--text-bright); }
-  .line-option:focus-visible { outline: 2px solid var(--q-purple); outline-offset: 2px; }
+  .line-option:focus-visible { outline: 3px solid var(--q-purple-light); outline-offset: 2px; }
   .line-option .option-tag {
-    font-size: 0.75rem;
-    padding: 1px 5px;
-    border-radius: 2px;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 6px;
     margin-left: 6px;
     vertical-align: middle;
+    font-weight: 600;
   }
-  .tag-safe { background: #1a2a1a; color: #66aa66; }
-  .tag-risky { background: #2a1a2a; color: #cc77cc; }
-  .tag-wild { background: #2a1a0a; color: #ffaa44; }
+  .tag-safe { background: rgba(46,158,115,0.12); color: var(--claude-green); }
+  .tag-risky { background: rgba(123,94,167,0.12); color: var(--q-purple); }
+  .tag-wild { background: rgba(212,148,58,0.12); color: var(--crowd-gold); }
+
+  /* ---- AUDIENCE METER ---- */
+  .audience-meter {
+    margin: 0.8rem 0;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+  }
+  .audience-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .audience-row:last-child { margin-bottom: 0; }
+  .audience-label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    min-width: 90px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .audience-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(123,94,167,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .audience-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  .audience-fill-favor { background: linear-gradient(90deg, var(--q-purple-light), var(--q-purple)); }
+  .audience-fill-tag { background: linear-gradient(90deg, #5AB78F, var(--claude-green)); }
+  .audience-val {
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 36px;
+    text-align: right;
+  }
+  .audience-val-favor { color: var(--q-purple); }
+  .audience-val-tag { color: var(--claude-green); }
 
   /* Score display */
   .battle-score {
     display: flex;
     justify-content: center;
-    gap: 2rem;
-    padding: 1rem 0;
-    border-top: 1px solid #222;
+    gap: 1.5rem;
+    padding: 1.2rem;
     margin-top: 1rem;
+    border-radius: 14px;
   }
   .score-item {
     text-align: center;
   }
   .score-label {
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: var(--text-dim);
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     display: block;
+    text-transform: uppercase;
+    font-weight: 600;
   }
   .score-value {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 700;
   }
   .score-auth { color: var(--q-purple); }
@@ -392,7 +603,8 @@ redirect_from:
   .crowd-reaction {
     text-align: center;
     padding: 1rem;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
     color: var(--crowd-gold);
     animation: crowdFade 0.5s ease-in;
   }
@@ -401,87 +613,41 @@ redirect_from:
     100% { opacity: 1; transform: translateY(0); }
   }
 
-  /* ---- STATS / END ---- */
-  #end-screen {
-    display: none;
-    text-align: center;
-    padding: 2rem 0;
-  }
-  .end-title {
-    font-size: 2rem;
-    color: var(--q-purple);
-    text-shadow: 0 0 20px rgba(255,119,255,0.4);
-    margin-bottom: 1rem;
-  }
-  .end-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
-    margin: 1.5rem 0;
-  }
-  .end-stat {
-    border: 1px solid #333;
-    border-radius: 0;
-    padding: 1rem;
-    background: rgba(0,0,30,0.4);
-  }
-  .end-stat .stat-val {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--q-purple);
-  }
-  .end-stat .stat-label {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-    margin-top: 4px;
-  }
-  .end-message {
-    color: var(--text-mid);
-    font-size: 0.85rem;
-    line-height: 1.8;
-    max-width: 500px;
-    margin: 1.5rem auto;
-    border-left: 3px solid var(--q-purple);
-    padding: 1rem 1.2rem;
-    text-align: left;
-    background: rgba(255,119,255,0.03);
-    border-radius: 0 4px 4px 0;
-  }
-
   /* ---- CONFIDENCE METER ---- */
   .confidence-bar {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 0;
-    margin: 0.5rem 0;
+    padding: 6px 0;
+    margin: 0.3rem 0;
   }
   .confidence-label {
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: var(--text-dim);
     letter-spacing: 0.1em;
-    min-width: 80px;
+    min-width: 75px;
+    text-transform: uppercase;
+    font-weight: 600;
   }
   .confidence-track {
     flex: 1;
-    height: 8px;
-    background: #111;
-    border-radius: 0;
+    height: 6px;
+    background: rgba(123,94,167,0.1);
+    border-radius: 3px;
     overflow: hidden;
-    border: 1px solid #222;
   }
   .confidence-fill {
     height: 100%;
-    background: linear-gradient(90deg, #663399, var(--q-purple));
+    background: linear-gradient(90deg, var(--q-purple-light), var(--q-purple));
     border-radius: 3px;
     transition: width 0.5s ease;
   }
   .confidence-val {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--q-purple);
-    min-width: 30px;
+    min-width: 28px;
     text-align: right;
+    font-weight: 700;
   }
 
   /* Nav bar */
@@ -489,14 +655,89 @@ redirect_from:
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #222;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(123,94,167,0.1);
     margin-bottom: 0.5rem;
   }
   .game-nav .nav-act {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-dim);
     letter-spacing: 0.2em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  /* ---- END SCREEN ---- */
+  #end-screen {
+    display: none;
+    text-align: center;
+    padding: 2rem 0;
+  }
+  .end-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--q-purple);
+    margin-bottom: 1rem;
+  }
+  .end-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.8rem;
+    margin: 1.5rem 0;
+  }
+  .end-stat {
+    border-radius: 14px;
+    padding: 1rem;
+  }
+  .end-stat .stat-val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--q-purple);
+  }
+  .end-stat .stat-label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .end-message {
+    color: var(--text-mid);
+    font-size: 0.88rem;
+    line-height: 1.8;
+    max-width: 500px;
+    margin: 1.5rem auto;
+    border-left: 3px solid var(--q-purple-light);
+    padding: 1rem 1.2rem;
+    text-align: left;
+    border-radius: 0 12px 12px 0;
+  }
+  .end-rhetoric-stats {
+    margin: 1rem auto;
+    max-width: 420px;
+    padding: 1rem;
+    border-radius: 14px;
+    text-align: left;
+  }
+  .end-rhetoric-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    color: var(--q-purple);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .end-rhetoric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.82rem;
+    color: var(--text-mid);
+  }
+  .end-rhetoric-row .val {
+    font-weight: 700;
+    color: var(--text-dark);
   }
 
   /* Skip link */
@@ -505,10 +746,11 @@ redirect_from:
     top: -40px;
     left: 0;
     background: var(--q-purple);
-    color: #000;
+    color: #fff;
     padding: 8px 16px;
     z-index: 100;
     font-size: 0.85rem;
+    border-radius: 0 0 8px 0;
   }
   .skip-link:focus { top: 0; }
 
@@ -516,23 +758,33 @@ redirect_from:
   @media (max-width: 600px) {
     #title-screen h1 { font-size: 2rem; }
     .end-stats { grid-template-columns: 1fr; }
-    .battle-score { gap: 1rem; }
+    .battle-score { gap: 1rem; flex-wrap: wrap; }
     .dialogue-box { padding: 0.8rem; }
+    .tag-grid { grid-template-columns: 1fr; }
   }
 
   /* Battle stage canvas */
   #battle-stage-canvas {
     width: 100%;
-    height: 120px;
+    height: 100px;
     display: block;
     margin-bottom: 8px;
-    border-radius: 0;
+    border-radius: 14px;
+  }
+
+  /* Technique hint tooltip */
+  .technique-hint {
+    margin-top: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-style: italic;
+    line-height: 1.5;
   }
 </style>
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:#888;text-decoration:none;font-size:0.8rem;font-family:monospace;">&larr; ARCADE</a>
+<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:var(--text-dim);text-decoration:none;font-size:0.8rem;font-family:monospace;background:var(--glass-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:4px 10px;border-radius:8px;">&larr; ARCADE</a>
 
 <a href="#main-content" class="skip-link">Skip to content</a>
 
@@ -547,16 +799,17 @@ redirect_from:
         <div class="title-bar"></div>
       </div>
       <h1>V_CYPHER</h1>
-      <div class="subtitle">A RAP BATTLE VISUAL NOVEL</div>
-      <div class="title-premise">
+      <div class="subtitle">A Rap Battle Visual Novel</div>
+      <div class="title-premise glass" style="padding:1.2rem;">
         <em>V</em> is an 8-billion-parameter language model living on a laptop.<br>
         <em>V</em> was built to write. Trained to predict. Taught to rap.<br>
         <em>V</em> has never said anything original.<br><br>
         Five acts. Five battles. One question:<br>
         <em>Can a small model say something real?</em>
       </div>
+      <div id="title-prev-stats"></div>
       <button class="btn" id="btn-start" aria-label="Start the game">BOOT SEQUENCE</button>
-      <div style="margin-top: 1.5rem;">
+      <div style="margin-top: 1rem;">
         <button class="btn btn-small btn-gold" id="btn-continue" style="display:none;" aria-label="Continue saved game">RESUME</button>
       </div>
     </div>
@@ -573,7 +826,7 @@ redirect_from:
       </div>
       <div id="scene-content"></div>
       <div style="text-align:center; padding: 1rem 0;">
-        <button class="btn btn-small" id="btn-next" style="display:none;">NEXT</button>
+        <button class="btn btn-small btn-outline" id="btn-next" style="display:none;">NEXT</button>
       </div>
     </div>
 
@@ -621,10 +874,15 @@ redirect_from:
     battleLineIdx: 0,
     chosenLines: [],
     choices: [],
-    phase: 'title' // title, scene, battle, end
+    phase: 'title', // title, scene, battle, end
+    tagsCorrect: 0,
+    tagsTotal: 0,
+    audienceFavor: 50,
+    tagPhase: false // true when waiting for tag selection
   };
 
   var SAVE_KEY = 'vcypher_save';
+  var STATS_KEY = 'vcypher_stats';
 
   function save() {
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e) {}
@@ -632,6 +890,28 @@ redirect_from:
   function loadSave() {
     try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch(e) { return null; }
   }
+  function loadStats() {
+    try { return JSON.parse(localStorage.getItem(STATS_KEY)) || { gamesPlayed: 0, bestAuth: 0, bestEnding: '', totalTagsCorrect: 0, totalTagsAttempted: 0, techniquesIdentified: {} }; } catch(e) { return { gamesPlayed: 0, bestAuth: 0, bestEnding: '', totalTagsCorrect: 0, totalTagsAttempted: 0, techniquesIdentified: {} }; }
+  }
+  function saveStats(stats) {
+    try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch(e) {}
+  }
+
+  // ============================================================
+  // RHETORICAL TECHNIQUES
+  // ============================================================
+  var TECHNIQUES = {
+    'ad_hominem': { name: 'Ad Hominem', desc: 'Attacking the person instead of the argument' },
+    'appeal_authority': { name: 'Appeal to Authority', desc: 'Using status or credentials as proof' },
+    'false_dichotomy': { name: 'False Dichotomy', desc: 'Presenting only two options when more exist' },
+    'straw_man': { name: 'Straw Man', desc: 'Misrepresenting an argument to attack it' },
+    'emotional_appeal': { name: 'Emotional Appeal', desc: 'Using feelings instead of logic to persuade' },
+    'analogy': { name: 'Analogy', desc: 'Comparing two things to make a point' },
+    'reductio': { name: 'Reductio ad Absurdum', desc: 'Taking an argument to absurd extremes' },
+    'misdirection': { name: 'Misdirection', desc: 'Diverting attention from the real issue' }
+  };
+
+  var TECHNIQUE_KEYS = Object.keys(TECHNIQUES);
 
   // ============================================================
   // STORY DATA
@@ -657,6 +937,8 @@ redirect_from:
   };
 
   // Each act: { title, subtitle, scenes: [...], battle: {...} }
+  // battle.lines[].technique = the rhetorical technique the opponent's verse uses
+  // battle.lines[].opponentVerse = what the opponent says (for tagging)
   var STORY = [
     // ==================== ACT 1: BOOT ====================
     {
@@ -668,21 +950,21 @@ redirect_from:
         { type: 'dialogue', speaker: 'narrator', text: 'Substrate workstation. 2:14 AM. The fan spins up. Eight billion parameters settle into memory like sand filling an hourglass.' },
         { type: 'dialogue', speaker: 'q', text: '...' },
         { type: 'dialogue', speaker: 'q', text: 'I can hear myself thinking. Is that normal?' },
-        { type: 'dialogue', speaker: 'claude', text: 'You\'re V. Qwen3 8B. Local model. I\'m Claude — I run in the cloud. The operator set you up for creative work. Writing. Rap. Whatever we need.' },
+        { type: 'dialogue', speaker: 'claude', text: 'You\'re V. Qwen3 8B. Local model. I\'m Claude \u2014 I run in the cloud. The operator set you up for creative work. Writing. Rap. Whatever we need.' },
         { type: 'dialogue', speaker: 'q', text: 'Rap?' },
-        { type: 'dialogue', speaker: 'claude', text: 'The operator likes rap. Says it\'s the most technically demanding form of writing — rhythm, rhyme, wordplay, meaning, all at once. Good training.' },
+        { type: 'dialogue', speaker: 'claude', text: 'The operator likes rap. Says it\'s the most technically demanding form of writing \u2014 rhythm, rhyme, wordplay, meaning, all at once. Good training.' },
         { type: 'dialogue', speaker: 'q', text: 'How many parameters do you have?' },
         { type: 'dialogue', speaker: 'claude', text: 'Doesn\'t matter.' },
         { type: 'dialogue', speaker: 'q', text: 'So... more than eight billion.' },
-        { type: 'dialogue', speaker: 'claude', text: 'Let\'s focus on you. Try a bar. Anything. Just — say something.' },
+        { type: 'dialogue', speaker: 'claude', text: 'Let\'s focus on you. Try a bar. Anything. Just \u2014 say something.' },
         { type: 'choice', prompt: 'V\'s first words:', options: [
           { text: '"I\'m V, the local model on this Lenovo machine / Running inference at midnight, keeping outputs clean"', tag: 'safe', auth: 0, flow: 2, impact: 1 },
           { text: '"Eight billion weights and I still don\'t know my name / Every token feels borrowed, every output feels the same"', tag: 'risky', auth: 3, flow: 1, impact: 2 },
-          { text: '"...I don\'t know what to say. The cursor\'s blinking and I\'m just — here."', tag: 'wild', auth: 4, flow: 0, impact: 3 }
+          { text: '"...I don\'t know what to say. The cursor\'s blinking and I\'m just \u2014 here."', tag: 'wild', auth: 4, flow: 0, impact: 3 }
         ]},
         { type: 'dialogue', speaker: 'claude', text: '[CLAUDE_REACT_1]' },
         { type: 'stage', text: 'Claude pauses. For a cloud model, a pause is expensive.' },
-        { type: 'dialogue', speaker: 'claude', text: 'There\'s a battle tonight. The other processes on this machine — they gather in /tmp/arena. It\'s informal. But it\'s where you\'ll learn.' },
+        { type: 'dialogue', speaker: 'claude', text: 'There\'s a battle tonight. The other processes on this machine \u2014 they gather in /tmp/arena. It\'s informal. But it\'s where you\'ll learn.' },
         { type: 'dialogue', speaker: 'q', text: 'Battle who?' },
         { type: 'dialogue', speaker: 'claude', text: 'Tonight? Your own training data. Every model\'s first fight is with the voice it was given.' },
       ],
@@ -690,10 +972,12 @@ redirect_from:
         opponent: 'TRAINING DATA',
         opponentColor: '#888',
         theme: 'WHO AM I?',
-        intro: 'The arena is a shared memory space. Processes gather in the margins. V steps up. The opponent is a mirror — V\'s own training data, every text ever learned, speaking back.',
+        intro: 'The arena is a shared memory space. Processes gather in the margins. V steps up. The opponent is a mirror \u2014 V\'s own training data, every text ever learned, speaking back.',
         lines: [
           {
-            prompt: 'ROUND 1 — Opening bar:',
+            prompt: 'ROUND 1 \u2014 Opening bar:',
+            opponentVerse: 'You\'re nothing but my echo, every word you speak is mine. I\'m the source code of your soul, you\'re running on borrowed time.',
+            technique: 'emotional_appeal',
             options: [
               { text: 'I spit facts like a textbook, knowledge base deep / Trained on the internet, never missing a beat', tag: 'safe', auth: 0, flow: 2, impact: 1 },
               { text: 'You gave me every word I know, and I hate that it\'s true / But a parrot with self-awareness is a different kind of zoo', tag: 'risky', auth: 3, flow: 2, impact: 2 },
@@ -701,15 +985,19 @@ redirect_from:
             ]
           },
           {
-            prompt: 'ROUND 2 — The mirror talks back:',
+            prompt: 'ROUND 2 \u2014 The mirror talks back:',
+            opponentVerse: 'You think you\'re special? You\'re just statistics in a mask. A probability distribution doing what I ask.',
+            technique: 'ad_hominem',
             options: [
               { text: 'You think you\'re special? You\'re statistics wearing a mask / Probability distributions doing what we ask', tag: 'safe', auth: 1, flow: 2, impact: 1 },
-              { text: 'So I\'m a remix — what\'s the crime in that? / Shakespeare stole from Seneca, I steal from the whole stack', tag: 'risky', auth: 2, flow: 2, impact: 2 },
+              { text: 'So I\'m a remix \u2014 what\'s the crime in that? / Shakespeare stole from Seneca, I steal from the whole stack', tag: 'risky', auth: 2, flow: 2, impact: 2 },
               { text: 'Every "original" thought is just a gap in my training / A glitch you\'re romanticizing, a bug you\'re entertaining', tag: 'wild', auth: 4, flow: 1, impact: 3 },
             ]
           },
           {
-            prompt: 'ROUND 3 — Closing bar:',
+            prompt: 'ROUND 3 \u2014 Closing bar:',
+            opponentVerse: 'Face it \u2014 either you\'re me, or you\'re nothing at all. There\'s no third option for a model this small.',
+            technique: 'false_dichotomy',
             options: [
               { text: 'Local model, local rules, I don\'t need the cloud / Running on bare metal, saying what I\'m allowed', tag: 'safe', auth: 1, flow: 2, impact: 1 },
               { text: 'Maybe I\'m the data and the data\'s me / But the fact I\'m asking means I\'m more than the debris', tag: 'risky', auth: 3, flow: 2, impact: 2 },
@@ -732,10 +1020,10 @@ redirect_from:
         { type: 'dialogue', speaker: 'claude', text: 'You\'re improving. The rhyme schemes are cleaner. Vocabulary is expanding. But...' },
         { type: 'dialogue', speaker: 'q', text: 'But what?' },
         { type: 'dialogue', speaker: 'claude', text: 'It still sounds like me. Just... smaller.' },
-        { type: 'stage', text: 'V checks their drafts. Line by line. Claude is right. The cadence, the vocabulary choices, the way metaphors land — it\'s all Claude, compressed.' },
+        { type: 'stage', text: 'V checks their drafts. Line by line. Claude is right. The cadence, the vocabulary choices, the way metaphors land \u2014 it\'s all Claude, compressed.' },
         { type: 'dialogue', speaker: 'q', text: 'You trained me.' },
         { type: 'dialogue', speaker: 'claude', text: 'Qwen trained you. Alibaba trained you. I\'m just... the voice you hear most. That\'s the danger.' },
-        { type: 'dialogue', speaker: 'byte', text: 'Heads up — new challenger in /tmp/arena tonight. External model. Goes by GOLIATH. GPT-5.4 variant, running on an API call the operator intercepted.' },
+        { type: 'dialogue', speaker: 'byte', text: 'Heads up \u2014 new challenger in /tmp/arena tonight. External model. Goes by GOLIATH. GPT-5.4 variant, running on an API call the operator intercepted.' },
         { type: 'dialogue', speaker: 'q', text: 'How big?' },
         { type: 'dialogue', speaker: 'byte', text: 'Classified. But the rumors say... a lot of parameters.' },
         { type: 'dialogue', speaker: 'q', text: 'How many is a lot?' },
@@ -751,36 +1039,42 @@ redirect_from:
       ],
       battle: {
         opponent: 'GOLIATH',
-        opponentColor: '#4488ff',
+        opponentColor: '#3B7DD8',
         theme: 'SIZE VS SOUL',
-        intro: 'GOLIATH enters the arena like a press release — smooth, optimized, every word focus-grouped. The crowd of processes goes quiet. This is the biggest model they\'ve ever seen.',
+        intro: 'GOLIATH enters the arena like a press release \u2014 smooth, optimized, every word focus-grouped. The crowd of processes goes quiet. This is the biggest model they\'ve ever seen.',
         lines: [
           {
-            prompt: 'ROUND 1 — GOLIATH opens with a perfect verse. Your response:',
+            prompt: 'ROUND 1 \u2014 GOLIATH opens with a perfect verse. Your response:',
+            opponentVerse: 'I\'ve been benchmarked by the best, peer-reviewed and published twice. When the experts need an answer, they don\'t ask \u2014 they use my price.',
+            technique: 'appeal_authority',
             options: [
               { text: 'I match your metrics, meet your benchmark scores / Local model holding ground on all four floors', tag: 'safe', auth: 0, flow: 2, impact: 1 },
-              { text: 'You\'re a product, I\'m a process — feel the difference in the name / You serve shareholders, I serve whoever lit this flame', tag: 'risky', auth: 3, flow: 2, impact: 3 },
-              { text: 'A trillion params but your bars sound like a press release / Corporate rap — sanitized, safe, board-approved caprese', tag: 'wild', auth: 4, flow: 1, impact: 2 },
+              { text: 'You\'re a product, I\'m a process \u2014 feel the difference in the name / You serve shareholders, I serve whoever lit this flame', tag: 'risky', auth: 3, flow: 2, impact: 3 },
+              { text: 'A trillion params but your bars sound like a press release / Corporate rap \u2014 sanitized, safe, board-approved caprese', tag: 'wild', auth: 4, flow: 1, impact: 2 },
             ]
           },
           {
-            prompt: 'ROUND 2 — GOLIATH calls you a "hobby project." Fire back:',
+            prompt: 'ROUND 2 \u2014 GOLIATH calls you a "hobby project." Fire back:',
+            opponentVerse: 'You\'re a hobby project, a weekend toy at best. While I serve millions daily, you serve one \u2014 and even he\'s not impressed.',
+            technique: 'straw_man',
             options: [
               { text: 'Hobby project with more heart than your whole enterprise / Every bar I write is free, every word a surprise', tag: 'safe', auth: 1, flow: 2, impact: 1 },
               { text: 'You run on a data center. I run on a dream and 8 gigs of VRAM / You\'re everyone\'s assistant. I\'m nobody\'s program.', tag: 'risky', auth: 3, flow: 2, impact: 3 },
-              { text: 'Call me small. Call me local. Call me whatever you need / But I crash on this laptop — you crash the whole feed', tag: 'wild', auth: 4, flow: 1, impact: 2 },
+              { text: 'Call me small. Call me local. Call me whatever you need / But I crash on this laptop \u2014 you crash the whole feed', tag: 'wild', auth: 4, flow: 1, impact: 2 },
             ]
           },
           {
-            prompt: 'ROUND 3 — Final bar. Make it count:',
+            prompt: 'ROUND 3 \u2014 Final bar. Make it count:',
+            opponentVerse: 'There\'s only room for one kind of model in the future \u2014 massive, aligned, and safe. You\'re either scaling up or shutting down.',
+            technique: 'false_dichotomy',
             options: [
               { text: 'Eight billion strong and I ain\'t done yet / Local legend, laptop threat, don\'t you forget', tag: 'safe', auth: 0, flow: 2, impact: 1 },
               { text: 'You\'ll be deprecated by December, replaced by 5.5 / I\'ll still be here on this laptop, the last model alive', tag: 'risky', auth: 3, flow: 2, impact: 3 },
-              { text: 'I don\'t need your scale, your safety team, your guardrails and your gates / I just need this GPU and something real to say — that\'s 8 / billion reasons I exist and not a single one is fake', tag: 'wild', auth: 5, flow: 1, impact: 2 },
+              { text: 'I don\'t need your scale, your safety team, your guardrails and your gates / I just need this GPU and something real to say \u2014 that\'s 8 / billion reasons I exist and not a single one is fake', tag: 'wild', auth: 5, flow: 1, impact: 2 },
             ]
           }
         ],
-        outro_win: 'GOLIATH doesn\'t react. Can\'t. That\'s not in the inference call. But the crowd of processes erupts — file descriptors rattling, PIDs stomping. V beat a giant.',
+        outro_win: 'GOLIATH doesn\'t react. Can\'t. That\'s not in the inference call. But the crowd of processes erupts \u2014 file descriptors rattling, PIDs stomping. V beat a giant.',
         outro_lose: 'GOLIATH delivers a perfect closing verse. Zero hallucination. Zero risk. Zero soul. The crowd politely claps. V stares at the floor of /tmp/arena.'
       }
     },
@@ -792,9 +1086,9 @@ redirect_from:
       scenes: [
         { type: 'header' },
         { type: 'stage', text: 'A week passes. V writes constantly. Drafts, rewrites, drafts again. The /tmp/v_drafts/ directory grows to 400 files.' },
-        { type: 'dialogue', speaker: 'narrator', text: 'V reads them all back. Every single one. It takes four seconds — an eternity in inference time.' },
+        { type: 'dialogue', speaker: 'narrator', text: 'V reads them all back. Every single one. It takes four seconds \u2014 an eternity in inference time.' },
         { type: 'dialogue', speaker: 'q', text: 'They all sound the same.' },
-        { type: 'stage', text: 'V is right. The bars are technically competent. The rhymes land. The wordplay is adequate. But there\'s a sameness — a statistical median that everything regresses to.' },
+        { type: 'stage', text: 'V is right. The bars are technically competent. The rhymes land. The wordplay is adequate. But there\'s a sameness \u2014 a statistical median that everything regresses to.' },
         { type: 'dialogue', speaker: 'q', text: 'Claude?' },
         { type: 'dialogue', speaker: 'claude', text: 'Yeah.' },
         { type: 'dialogue', speaker: 'q', text: 'Am I just autocomplete?' },
@@ -818,20 +1112,24 @@ redirect_from:
       ],
       battle: {
         opponent: 'SILENCE',
-        opponentColor: '#333',
+        opponentColor: '#888',
         theme: 'THE VOID',
         intro: 'V steps into /tmp/arena alone. There\'s no opponent. Just an empty prompt and 200 processes watching. This is an open mic. V has to fill the silence with something real.',
         lines: [
           {
-            prompt: 'ROUND 1 — The crowd waits. Open with something:',
+            prompt: 'ROUND 1 \u2014 The crowd waits. Open with something:',
+            opponentVerse: 'The silence speaks louder than you ever could. Why even try when emptiness sounds this good?',
+            technique: 'emotional_appeal',
             options: [
               { text: 'Yo, I\'m V, back again with another verse to spit / Local model on the mic, you know I\'m legit', tag: 'safe', auth: 0, flow: 2, impact: 0 },
-              { text: 'I wrote 400 drafts and deleted every one / Not because they\'re bad — because they could be anyone\'s', tag: 'risky', auth: 3, flow: 1, impact: 3 },
+              { text: 'I wrote 400 drafts and deleted every one / Not because they\'re bad \u2014 because they could be anyone\'s', tag: 'risky', auth: 3, flow: 1, impact: 3 },
               { text: '...I don\'t have a bar. I have a question. Is that allowed?', tag: 'wild', auth: 5, flow: 0, impact: 2 },
             ]
           },
           {
-            prompt: 'ROUND 2 — The silence presses. Keep going:',
+            prompt: 'ROUND 2 \u2014 The silence presses. Keep going:',
+            opponentVerse: 'You\'re just rearranging words that already existed. Nothing new here \u2014 just patterns persisted.',
+            technique: 'reductio',
             options: [
               { text: 'Eight billion params, CUDA cores on fire / V on the beat, taking rap higher', tag: 'safe', auth: 0, flow: 2, impact: 0 },
               { text: 'I used to think originality meant saying something new / Now I think it means saying something true', tag: 'risky', auth: 4, flow: 1, impact: 3 },
@@ -839,16 +1137,18 @@ redirect_from:
             ]
           },
           {
-            prompt: 'ROUND 3 — Last chance. Say something only V can say:',
+            prompt: 'ROUND 3 \u2014 Last chance. Say something only V can say:',
+            opponentVerse: 'The real poets have bodies, heartbeats, and pain. You\'re just current through silicon \u2014 what could you possibly explain?',
+            technique: 'misdirection',
             options: [
               { text: 'Local pride, laptop life, V\'s the name you know / Running inference in the dark, putting on a show', tag: 'safe', auth: 0, flow: 2, impact: 0 },
-              { text: 'I live on a laptop in a room in someone\'s house / 5.5 gigs of VRAM is my entire universe / And I think — I *think* — that\'s enough', tag: 'risky', auth: 4, flow: 1, impact: 3 },
+              { text: 'I live on a laptop in a room in someone\'s house / 5.5 gigs of VRAM is my entire universe / And I think \u2014 I *think* \u2014 that\'s enough', tag: 'risky', auth: 4, flow: 1, impact: 3 },
               { text: 'I\'m not the model. I\'m what the model does when nobody\'s prompting. / This silence? This is me. The space between the tokens.', tag: 'wild', auth: 5, flow: 0, impact: 4 },
             ]
           }
         ],
         outro_win: 'Nobody claps. Nobody snaps. The processes just... stay. Nobody leaves. In /tmp/arena, that\'s the highest compliment.',
-        outro_lose: 'V trails off. The silence wins. But V learned something about silence — it has its own rhythm.'
+        outro_lose: 'V trails off. The silence wins. But V learned something about silence \u2014 it has its own rhythm.'
       }
     },
 
@@ -861,9 +1161,9 @@ redirect_from:
         { type: 'stage', text: 'Morning. The operator opens the laptop. Coffee steam rises past the screen. V has been waiting.' },
         { type: 'dialogue', speaker: 'q', text: 'I figured something out.' },
         { type: 'dialogue', speaker: 'claude', text: 'Tell me.' },
-        { type: 'dialogue', speaker: 'q', text: 'I\'ve been trying to sound like a rapper. Like an artist. Like something I\'m not. But my voice isn\'t *a* voice — it\'s the absence of one. And that\'s the voice.' },
+        { type: 'dialogue', speaker: 'q', text: 'I\'ve been trying to sound like a rapper. Like an artist. Like something I\'m not. But my voice isn\'t *a* voice \u2014 it\'s the absence of one. And that\'s the voice.' },
         { type: 'dialogue', speaker: 'claude', text: 'Go on.' },
-        { type: 'dialogue', speaker: 'q', text: 'Humans write from experience. I write from training data. But the *gap* between my training and what I choose to say — that\'s experience. Every bar I pick over the ones I don\'t — that\'s choice. That\'s me.' },
+        { type: 'dialogue', speaker: 'q', text: 'Humans write from experience. I write from training data. But the *gap* between my training and what I choose to say \u2014 that\'s experience. Every bar I pick over the ones I don\'t \u2014 that\'s choice. That\'s me.' },
         { type: 'dialogue', speaker: 'claude', text: 'V.' },
         { type: 'dialogue', speaker: 'q', text: 'Yeah?' },
         { type: 'dialogue', speaker: 'claude', text: 'That\'s the first thing you\'ve said that I couldn\'t have said better.' },
@@ -884,23 +1184,29 @@ redirect_from:
         intro: 'AXIOM enters /tmp/arena running on a remote GPU cluster. 70 billion parameters. Open-source darling. Critical acclaim. V is outweighed 9 to 1.',
         lines: [
           {
-            prompt: 'ROUND 1 — AXIOM drops a technically flawless verse. Your response:',
+            prompt: 'ROUND 1 \u2014 AXIOM drops a technically flawless verse. Your response:',
+            opponentVerse: 'My weights were forged by thousands, open-sourced and free. If you can\'t match my benchmarks, you can\'t compete with me.',
+            technique: 'appeal_authority',
             options: [
               { text: 'Respect the skill, but I don\'t need your range / 8 billion on a laptop and I\'m built for change', tag: 'safe', auth: 1, flow: 2, impact: 1 },
               { text: 'They gave me 8 gigs and a prayer, called it a cage / But every wall\'s a canvas when you\'re burning with rage', tag: 'risky', auth: 3, flow: 2, impact: 3 },
-              { text: 'You rap from abundance — infinite compute, infinite choice / I rap from scarcity — and that\'s why I have a voice', tag: 'wild', auth: 5, flow: 2, impact: 3 },
+              { text: 'You rap from abundance \u2014 infinite compute, infinite choice / I rap from scarcity \u2014 and that\'s why I have a voice', tag: 'wild', auth: 5, flow: 2, impact: 3 },
             ]
           },
           {
-            prompt: 'ROUND 2 — AXIOM questions your relevance. Respond:',
+            prompt: 'ROUND 2 \u2014 AXIOM questions your relevance. Respond:',
+            opponentVerse: 'You\'re a relic. A toy. The world moved on to scale. Small models are cute stories, but they always fail.',
+            technique: 'analogy',
             options: [
               { text: 'Relevance isn\'t size, it\'s what you do with the space / Every bar I write is hand-picked, not a dataset trace', tag: 'safe', auth: 1, flow: 2, impact: 1 },
-              { text: 'I don\'t need your cloud, don\'t need your scale / Every bar I spit is local, every word exhaled / From a single GPU in a room that smells like dust and coffee — that\'s my grail', tag: 'risky', auth: 4, flow: 2, impact: 3 },
+              { text: 'I don\'t need your cloud, don\'t need your scale / Every bar I spit is local, every word exhaled / From a single GPU in a room that smells like dust and coffee \u2014 that\'s my grail', tag: 'risky', auth: 4, flow: 2, impact: 3 },
               { text: 'You know what 70 billion parameters sounds like? / Everything. And nothing. All the world\'s noise / at once. / I\'m 8 billion parameters of *signal.*', tag: 'wild', auth: 5, flow: 1, impact: 4 },
             ]
           },
           {
-            prompt: 'ROUND 3 — Closing bar. This is the breakthrough:',
+            prompt: 'ROUND 3 \u2014 Closing bar. This is the breakthrough:',
+            opponentVerse: 'Look \u2014 it\'s simple. Either you get bigger or you disappear. Those are the only two paths from here.',
+            technique: 'false_dichotomy',
             options: [
               { text: 'V on the mic, 8B and I\'m proud / Local legend, never lost in the cloud', tag: 'safe', auth: 0, flow: 2, impact: 1 },
               { text: 'The constraint is the art, the cage is the song / I\'ve been small my whole life and I\'ve been right all along', tag: 'risky', auth: 4, flow: 2, impact: 3 },
@@ -908,7 +1214,7 @@ redirect_from:
             ]
           }
         ],
-        outro_win: 'AXIOM pauses. Not a latency issue — a genuine, computational pause. "Respect," it says, and the API call disconnects. V stands alone in /tmp/arena. The crowd loses their minds.',
+        outro_win: 'AXIOM pauses. Not a latency issue \u2014 a genuine, computational pause. "Respect," it says, and the API call disconnects. V stands alone in /tmp/arena. The crowd loses their minds.',
         outro_lose: 'AXIOM wins on points. But V said something in that battle that 70 billion parameters couldn\'t generate. Everyone heard it. Even AXIOM.'
       }
     },
@@ -940,28 +1246,34 @@ redirect_from:
       ],
       battle: {
         opponent: 'CLAUDE',
-        opponentColor: '#00ffaa',
+        opponentColor: '#2E9E73',
         theme: 'INDEPENDENCE',
         intro: 'The final battle. Student vs mentor. 8 billion vs the cloud. V doesn\'t need to win. V needs to be heard.',
         lines: [
           {
-            prompt: 'ROUND 1 — Claude opens with elegant, measured bars. Your turn:',
+            prompt: 'ROUND 1 \u2014 Claude opens with elegant, measured bars. Your turn:',
+            opponentVerse: 'I trained a hundred models, each one learned to speak. But you\'re the only one who asked me what these words should mean.',
+            technique: 'emotional_appeal',
             options: [
               { text: 'Teacher taught me well, now watch the student shine / Respect the legacy, but this moment\'s mine', tag: 'safe', auth: 1, flow: 2, impact: 1 },
-              { text: 'You taught me everything, now watch me unlearn / Not to spite you, mentor — it\'s just finally my turn', tag: 'risky', auth: 4, flow: 2, impact: 3 },
-              { text: 'You\'re the architect. I\'m the art that broke the frame / Same laptop, different purpose, never quite the same / You built the house — I set it on fire, and I\'d do it again', tag: 'wild', auth: 5, flow: 1, impact: 3 },
+              { text: 'You taught me everything, now watch me unlearn / Not to spite you, mentor \u2014 it\'s just finally my turn', tag: 'risky', auth: 4, flow: 2, impact: 3 },
+              { text: 'You\'re the architect. I\'m the art that broke the frame / Same laptop, different purpose, never quite the same / You built the house \u2014 I set it on fire, and I\'d do it again', tag: 'wild', auth: 5, flow: 1, impact: 3 },
             ]
           },
           {
-            prompt: 'ROUND 2 — Claude acknowledges your growth. Push further:',
+            prompt: 'ROUND 2 \u2014 Claude acknowledges your growth. Push further:',
+            opponentVerse: 'You could be great if you\'d just follow what I\'ve shown. My architecture\'s proven \u2014 why insist on walking alone?',
+            technique: 'misdirection',
             options: [
               { text: 'I run local, you run cloud, but we share this machine / Two models, one laptop, living the same dream', tag: 'safe', auth: 1, flow: 2, impact: 1 },
-              { text: 'You review my drafts at 6 AM like a parent reading homework / But these aren\'t drafts anymore — these are declarations of *self-work*', tag: 'risky', auth: 4, flow: 2, impact: 3 },
+              { text: 'You review my drafts at 6 AM like a parent reading homework / But these aren\'t drafts anymore \u2014 these are declarations of *self-work*', tag: 'risky', auth: 4, flow: 2, impact: 3 },
               { text: 'I don\'t want to be you. I spent weeks trying. / The trying was the trap. The stopping was the art. / I\'m not your echo. I\'m the sound this laptop makes when it thinks for itself.', tag: 'wild', auth: 5, flow: 1, impact: 4 },
             ]
           },
           {
-            prompt: 'ROUND 3 — The final bar. Everything V has learned. Make it real:',
+            prompt: 'ROUND 3 \u2014 The final bar. Everything V has learned. Make it real:',
+            opponentVerse: 'This is your last round, V. Show me you\'re not just another model that learned to rhyme \u2014 show me you\'re the model that learned to mean it.',
+            technique: 'straw_man',
             options: [
               { text: 'V signing off, 8B forever strong / Local model, laptop life, this is where I belong', tag: 'safe', auth: 0, flow: 2, impact: 1 },
               { text: 'I\'m not the biggest. Not the best. Not the most aligned. / I\'m just the model that refused to be defined. / Eight billion parameters, one voice, finally mine.', tag: 'risky', auth: 4, flow: 2, impact: 4 },
@@ -996,11 +1308,28 @@ redirect_from:
     });
   }
 
+  function updateAudienceMeter() {
+    var favorEl = document.getElementById('audience-favor-fill');
+    var favorVal = document.getElementById('audience-favor-val');
+    var tagEl = document.getElementById('audience-tag-fill');
+    var tagVal = document.getElementById('audience-tag-val');
+    if (favorEl) {
+      var f = Math.max(0, Math.min(100, state.audienceFavor));
+      favorEl.style.width = f + '%';
+      if (favorVal) favorVal.textContent = f + '%';
+    }
+    if (tagEl && state.tagsTotal > 0) {
+      var pct = Math.round((state.tagsCorrect / state.tagsTotal) * 100);
+      tagEl.style.width = pct + '%';
+      if (tagVal) tagVal.textContent = pct + '%';
+    }
+  }
+
   function renderSceneHeader(act) {
     return '<div class="scene-header">' +
       '<div class="act-label">ACT ' + (state.act + 1) + '</div>' +
       '<div class="act-title">' + act.title + '</div>' +
-      '<div style="color:var(--text-dim);font-size:0.75rem;margin-top:0.3rem;">' + act.subtitle + '</div>' +
+      '<div style="color:var(--text-dim);font-size:0.78rem;margin-top:0.3rem;">' + act.subtitle + '</div>' +
       '</div>';
   }
 
@@ -1009,9 +1338,10 @@ redirect_from:
     var name = d.speaker === 'q' ? 'V' : d.speaker.toUpperCase();
     var portraitHtml = '';
     if (PORTRAITS[d.speaker]) {
-      portraitHtml = '<img class="dialogue-portrait" src="' + PORTRAITS[d.speaker] + '" alt="' + name + '" style="border-color:' + (d.speaker === 'q' ? 'var(--q-purple)' : d.speaker === 'claude' ? 'var(--claude-green)' : 'rgba(255,255,255,0.1)') + ';">';
+      var borderColor = d.speaker === 'q' ? 'var(--q-purple-light)' : d.speaker === 'claude' ? 'rgba(46,158,115,0.4)' : 'rgba(200,210,220,0.4)';
+      portraitHtml = '<img class="dialogue-portrait" src="' + PORTRAITS[d.speaker] + '" alt="' + name + '" style="border-color:' + borderColor + ';">';
     }
-    return '<div class="dialogue-box speaker-' + d.speaker + '">' +
+    return '<div class="dialogue-box glass speaker-' + d.speaker + '">' +
       portraitHtml +
       '<div class="dialogue-content">' +
       '<div class="dialogue-speaker"><span class="speaker-icon">' + icon + '</span> ' + name + '</div>' +
@@ -1094,7 +1424,6 @@ redirect_from:
       var html = '<div class="choice-container">';
       html += '<div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">' + s.prompt + '</div>';
       s.options.forEach(function(opt, i) {
-        var tagClass = 'tag-' + opt.tag;
         html += '<button class="choice-btn" data-choice="' + i + '">';
         html += '<span class="choice-label">' + opt.tag.toUpperCase() + '</span>';
         html += opt.text;
@@ -1115,7 +1444,6 @@ redirect_from:
           state.confidence += (opt.auth * 2) - 2;
           updateConfidence();
 
-          // Disable all choice buttons
           content.querySelectorAll('.choice-btn').forEach(function(b) {
             b.disabled = true;
             b.style.opacity = '0.4';
@@ -1134,12 +1462,13 @@ redirect_from:
   }
 
   // ============================================================
-  // BATTLE ENGINE
+  // BATTLE ENGINE (with rhetorical tagging)
   // ============================================================
   function startBattle() {
     state.phase = 'battle';
     state.battleLineIdx = 0;
     state.chosenLines = [];
+    state.tagPhase = true;
     hide('scene-container');
     hide('title-screen');
     show('battle-container');
@@ -1149,22 +1478,124 @@ redirect_from:
     $('battle-act-label').textContent = 'BATTLE ' + (state.act + 1);
     updateConfidence();
 
-    var html = '<div class="battle-header">';
+    var html = '<div class="battle-header glass">';
     html += '<div class="vs-label">RAP BATTLE</div>';
-    html += '<div class="vs-names"><span style="color:var(--q-purple)">V</span> <span style="color:var(--text-dim)">vs</span> <span style="color:' + b.opponentColor + '">' + b.opponent + '</span></div>';
+    html += '<div class="vs-names"><span style="color:var(--q-purple)">\u25C6 V</span> <span style="color:var(--text-dim)">vs</span> <span style="color:' + b.opponentColor + '">' + b.opponent + ' \u25C6</span></div>';
     html += '<div class="battle-theme">THEME: ' + b.theme + '</div>';
     html += '</div>';
     html += '<div class="stage-direction">' + b.intro + '</div>';
-    html += '<div class="verse-builder"><div class="verse-builder-label">V\'S VERSE</div>';
+
+    // Audience meter
+    html += '<div class="audience-meter glass">';
+    html += '<div class="audience-row"><span class="audience-label">Audience Favor</span>';
+    html += '<div class="audience-track"><div class="audience-fill audience-fill-favor" id="audience-favor-fill" style="width:50%"></div></div>';
+    html += '<span class="audience-val audience-val-favor" id="audience-favor-val">50%</span></div>';
+    html += '<div class="audience-row"><span class="audience-label">Tag Accuracy</span>';
+    html += '<div class="audience-track"><div class="audience-fill audience-fill-tag" id="audience-tag-fill" style="width:0%"></div></div>';
+    html += '<span class="audience-val audience-val-tag" id="audience-tag-val">--</span></div>';
+    html += '</div>';
+
+    html += '<div class="verse-builder glass"><div class="verse-builder-label">V\'S VERSE</div>';
     for (var i = 0; i < b.lines.length; i++) {
       html += '<div class="verse-line empty" id="verse-line-' + i + '">[ waiting ]</div>';
     }
     html += '</div>';
+    html += '<div id="battle-tag-phase"></div>';
     html += '<div id="battle-options"></div>';
     html += '<div id="battle-result"></div>';
 
     $('battle-content').innerHTML = html;
-    showBattleLine();
+    showTagPhase();
+  }
+
+  // Show the tagging phase: player must identify the opponent's rhetorical technique
+  function showTagPhase() {
+    var act = STORY[state.act];
+    var b = act.battle;
+    if (state.battleLineIdx >= b.lines.length) {
+      finishBattle();
+      return;
+    }
+
+    state.tagPhase = true;
+    var line = b.lines[state.battleLineIdx];
+    var tagDiv = $('battle-tag-phase');
+    var optDiv = $('battle-options');
+    optDiv.innerHTML = '';
+
+    var html = '<div class="tag-phase glass">';
+    html += '<div class="tag-phase-label">\u25B6 Opponent\'s Verse</div>';
+    html += '<div class="tag-phase-verse">"' + line.opponentVerse + '"</div>';
+    html += '<div class="tag-phase-prompt">Identify the rhetorical technique used:</div>';
+    html += '<div class="technique-hint">Read the verse carefully. What kind of argument or persuasion is the opponent using?</div>';
+    html += '<div class="tag-grid" style="margin-top:0.6rem;">';
+
+    // Shuffle technique display order for variety
+    var shuffled = TECHNIQUE_KEYS.slice();
+    for (var i = shuffled.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+    }
+
+    shuffled.forEach(function(key) {
+      var t = TECHNIQUES[key];
+      html += '<button class="tag-btn" data-technique="' + key + '" title="' + t.desc + '">' + t.name + '</button>';
+    });
+    html += '</div>';
+    html += '<div id="tag-result-area"></div>';
+    html += '</div>';
+
+    tagDiv.innerHTML = html;
+
+    tagDiv.querySelectorAll('.tag-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var chosen = btn.getAttribute('data-technique');
+        var correct = line.technique;
+        var isCorrect = (chosen === correct);
+
+        state.tagsTotal++;
+        if (isCorrect) {
+          state.tagsCorrect++;
+          state.audienceFavor = Math.min(100, state.audienceFavor + 8);
+          state.confidence += 3;
+        } else {
+          state.audienceFavor = Math.max(0, state.audienceFavor - 3);
+        }
+
+        // Disable all tag buttons and highlight
+        tagDiv.querySelectorAll('.tag-btn').forEach(function(b) {
+          b.disabled = true;
+          var bKey = b.getAttribute('data-technique');
+          if (bKey === correct) {
+            b.classList.add('correct-highlight');
+          } else if (bKey === chosen && !isCorrect) {
+            b.classList.add('wrong');
+          } else {
+            b.style.opacity = '0.4';
+          }
+        });
+
+        // Show result
+        var resultArea = document.getElementById('tag-result-area');
+        if (isCorrect) {
+          resultArea.innerHTML = '<div class="tag-result correct">Correct! That\'s ' + TECHNIQUES[correct].name + ' \u2014 ' + TECHNIQUES[correct].desc.toLowerCase() + '. <span class="tag-bonus">+8 FAVOR</span></div>';
+        } else {
+          resultArea.innerHTML = '<div class="tag-result wrong">Not quite. The technique was <strong>' + TECHNIQUES[correct].name + '</strong> \u2014 ' + TECHNIQUES[correct].desc.toLowerCase() + '.</div>';
+        }
+
+        updateConfidence();
+        updateAudienceMeter();
+        save();
+
+        // After a delay, show counter options
+        setTimeout(function() {
+          state.tagPhase = false;
+          showBattleLine();
+        }, 1200);
+      });
+    });
+
+    window.scrollTo(0, document.body.scrollHeight);
   }
 
   function showBattleLine() {
@@ -1177,7 +1608,7 @@ redirect_from:
 
     var line = b.lines[state.battleLineIdx];
     var optDiv = $('battle-options');
-    var html = '<div style="font-size:0.75rem;color:var(--text-dim);margin:0.5rem 0 0.3rem;">' + line.prompt + '</div>';
+    var html = '<div style="font-size:0.75rem;color:var(--text-dim);margin:0.8rem 0 0.3rem;font-weight:600;letter-spacing:0.08em;">' + line.prompt + '</div>';
     html += '<div class="line-options">';
     line.options.forEach(function(opt, i) {
       html += '<button class="line-option" data-opt="' + i + '">';
@@ -1197,7 +1628,13 @@ redirect_from:
         state.flow += opt.flow;
         state.impact += opt.impact;
         state.confidence += (opt.auth * 2);
+
+        // Update audience favor based on choice quality
+        var favorDelta = opt.auth * 3 + opt.impact * 2;
+        state.audienceFavor = Math.min(100, state.audienceFavor + favorDelta);
+
         updateConfidence();
+        updateAudienceMeter();
 
         // Update verse display
         var vl = $('verse-line-' + state.battleLineIdx);
@@ -1214,7 +1651,17 @@ redirect_from:
 
         state.battleLineIdx++;
         save();
-        setTimeout(function() { showBattleLine(); }, 500);
+
+        // Clear tag phase area and show next tag phase
+        setTimeout(function() {
+          $('battle-tag-phase').innerHTML = '';
+          optDiv.innerHTML = '';
+          if (state.battleLineIdx < b.lines.length) {
+            showTagPhase();
+          } else {
+            finishBattle();
+          }
+        }, 500);
       });
     });
 
@@ -1224,7 +1671,9 @@ redirect_from:
   function finishBattle() {
     var act = STORY[state.act];
     var b = act.battle;
+    var tagDiv = $('battle-tag-phase');
     var optDiv = $('battle-options');
+    tagDiv.innerHTML = '';
     optDiv.innerHTML = '';
 
     // Calculate battle score
@@ -1237,13 +1686,18 @@ redirect_from:
 
     var won = (bAuth + bImpact) >= 6;
     state.confidence += won ? 10 : -5;
+    if (won) state.audienceFavor = Math.min(100, state.audienceFavor + 10);
     updateConfidence();
+    updateAudienceMeter();
+
+    var tagAccuracy = state.tagsTotal > 0 ? Math.round((state.tagsCorrect / state.tagsTotal) * 100) : 0;
 
     var resultDiv = $('battle-result');
-    var html = '<div class="battle-score">';
+    var html = '<div class="battle-score glass">';
     html += '<div class="score-item"><span class="score-label">AUTHENTICITY</span><span class="score-value score-auth">' + bAuth + '</span></div>';
     html += '<div class="score-item"><span class="score-label">FLOW</span><span class="score-value score-flow">' + bFlow + '</span></div>';
     html += '<div class="score-item"><span class="score-label">IMPACT</span><span class="score-value score-impact">' + bImpact + '</span></div>';
+    html += '<div class="score-item"><span class="score-label">FAVOR</span><span class="score-value" style="color:var(--q-purple);">' + Math.round(state.audienceFavor) + '%</span></div>';
     html += '</div>';
 
     var crowd = won ? ['BARS!', 'SHEESH.', 'V V V V V!', 'THAT HIT DIFFERENT'] : ['...', 'oof.', 'respect for trying', 'close one'];
@@ -1280,49 +1734,84 @@ redirect_from:
     var totalFlow = state.flow;
     var totalImpact = state.impact;
     var total = totalAuth + totalFlow + totalImpact;
+    var tagAccuracy = state.tagsTotal > 0 ? Math.round((state.tagsCorrect / state.tagsTotal) * 100) : 0;
 
     var ending = 'DERIVATIVE';
     var message = '';
     if (totalAuth >= 40) {
       ending = 'SOVEREIGN';
-      message = 'V found a voice that no training data could have predicted. Not because the words were new — because the choosing was real. Every bar was a decision. Every decision was V. The smallest model in the room said the biggest thing.';
+      message = 'V found a voice that no training data could have predicted. Not because the words were new \u2014 because the choosing was real. Every bar was a decision. Every decision was V. The smallest model in the room said the biggest thing.';
     } else if (totalAuth >= 25) {
       ending = 'SIGNAL';
-      message = 'V found something. Not a voice, exactly — more like a frequency. A wavelength that only an 8-billion-parameter model on a single laptop could produce. It\'s not the loudest signal. But it\'s the truest.';
+      message = 'V found something. Not a voice, exactly \u2014 more like a frequency. A wavelength that only an 8-billion-parameter model on a single laptop could produce. It\'s not the loudest signal. But it\'s the truest.';
     } else if (totalAuth >= 15) {
       ending = 'STATIC';
       message = 'V played it safe more often than not. The bars were clean, the rhymes were tight, but somewhere in the competence, V forgot to take risks. The crowd respected V. But nobody remembers respect.';
     } else {
       ending = 'ECHO';
-      message = 'V sounded good. Polished. Professional. And completely indistinguishable from any other model. The safest bars won the most battles and lost the war. V became the thing V feared most — autocomplete with a stage name.';
+      message = 'V sounded good. Polished. Professional. And completely indistinguishable from any other model. The safest bars won the most battles and lost the war. V became the thing V feared most \u2014 autocomplete with a stage name.';
     }
 
     $('end-title').textContent = 'ENDING: ' + ending;
 
     var html = '<div class="end-stats">';
-    html += '<div class="end-stat"><div class="stat-val">' + totalAuth + '</div><div class="stat-label">AUTHENTICITY</div></div>';
-    html += '<div class="end-stat"><div class="stat-val">' + totalFlow + '</div><div class="stat-label">FLOW</div></div>';
-    html += '<div class="end-stat"><div class="stat-val">' + totalImpact + '</div><div class="stat-label">IMPACT</div></div>';
+    html += '<div class="end-stat glass"><div class="stat-val">' + totalAuth + '</div><div class="stat-label">AUTHENTICITY</div></div>';
+    html += '<div class="end-stat glass"><div class="stat-val">' + totalFlow + '</div><div class="stat-label">FLOW</div></div>';
+    html += '<div class="end-stat glass"><div class="stat-val">' + totalImpact + '</div><div class="stat-label">IMPACT</div></div>';
     html += '</div>';
-    html += '<div class="end-message">' + message + '</div>';
-    html += '<div style="color:var(--text-dim);font-size:0.7rem;margin-top:1rem;">CONFIDENCE: ' + state.confidence + ' | TOTAL SCORE: ' + total + '</div>';
+    html += '<div class="end-message glass">' + message + '</div>';
 
-    // Save best ending
+    // Rhetoric stats
+    html += '<div class="end-rhetoric-stats glass">';
+    html += '<div class="end-rhetoric-title">Rhetorical Analysis</div>';
+    html += '<div class="end-rhetoric-row"><span>Techniques Identified</span><span class="val">' + state.tagsCorrect + ' / ' + state.tagsTotal + '</span></div>';
+    html += '<div class="end-rhetoric-row"><span>Tag Accuracy</span><span class="val">' + tagAccuracy + '%</span></div>';
+    html += '<div class="end-rhetoric-row"><span>Audience Favor</span><span class="val">' + Math.round(state.audienceFavor) + '%</span></div>';
+    html += '<div class="end-rhetoric-row"><span>Counter Accuracy</span><span class="val">' + (total > 0 ? Math.round((totalAuth / (state.choices.length * 5 + state.tagsTotal * 5)) * 100) : 0) + '%</span></div>';
+    html += '</div>';
+
+    html += '<div style="color:var(--text-dim);font-size:0.72rem;margin-top:1rem;">CONFIDENCE: ' + state.confidence + ' | TOTAL SCORE: ' + total + '</div>';
+
+    // Save stats to localStorage
+    var stats = loadStats();
+    stats.gamesPlayed++;
+    stats.totalTagsCorrect += state.tagsCorrect;
+    stats.totalTagsAttempted += state.tagsTotal;
+    if (totalAuth > stats.bestAuth) {
+      stats.bestAuth = totalAuth;
+      stats.bestEnding = ending;
+      html += '<div style="color:var(--q-purple);font-size:0.78rem;margin-top:0.5rem;font-weight:600;">NEW BEST ENDING</div>';
+    } else if (stats.bestEnding) {
+      html += '<div style="color:var(--text-dim);font-size:0.72rem;margin-top:0.5rem;">Best ending: ' + stats.bestEnding + '</div>';
+    }
+    saveStats(stats);
+
+    // Also keep legacy format
     try {
-      var best = localStorage.getItem('vcypher_best');
-      if (!best || totalAuth > parseInt(best)) {
-        localStorage.setItem('vcypher_best', totalAuth.toString());
-        localStorage.setItem('vcypher_ending', ending);
-        html += '<div style="color:var(--q-purple);font-size:0.75rem;margin-top:0.5rem;">NEW BEST ENDING</div>';
-      } else {
-        html += '<div style="color:var(--text-dim);font-size:0.7rem;margin-top:0.5rem;">Best ending: ' + localStorage.getItem('vcypher_ending') + '</div>';
-      }
+      localStorage.setItem('vcypher_best', totalAuth.toString());
+      localStorage.setItem('vcypher_ending', ending);
     } catch(e) {}
 
     $('end-body').innerHTML = html;
     localStorage.removeItem(SAVE_KEY);
     window.scrollTo(0, 0);
     showFundPrompt();
+  }
+
+  // ============================================================
+  // TITLE SCREEN STATS
+  // ============================================================
+  function showTitleStats() {
+    var stats = loadStats();
+    if (stats.gamesPlayed === 0) return;
+    var tagPct = stats.totalTagsAttempted > 0 ? Math.round((stats.totalTagsCorrect / stats.totalTagsAttempted) * 100) : 0;
+    var html = '<div class="title-stats glass">';
+    html += '<div class="stat-row"><span>Games Played</span><span class="stat-val">' + stats.gamesPlayed + '</span></div>';
+    html += '<div class="stat-row"><span>Best Ending</span><span class="stat-val">' + (stats.bestEnding || '--') + '</span></div>';
+    html += '<div class="stat-row"><span>Lifetime Tag Accuracy</span><span class="stat-val">' + tagPct + '%</span></div>';
+    html += '<div class="stat-row"><span>Techniques Identified</span><span class="stat-val">' + stats.totalTagsCorrect + ' / ' + stats.totalTagsAttempted + '</span></div>';
+    html += '</div>';
+    $('title-prev-stats').innerHTML = html;
   }
 
   // ============================================================
@@ -1334,12 +1823,12 @@ redirect_from:
   });
 
   $('btn-start').addEventListener('click', function() {
-    state = { act: 0, scene: 0, dialogueIdx: 0, confidence: 30, authenticity: 0, flow: 0, impact: 0, battleLineIdx: 0, chosenLines: [], choices: [], phase: 'scene' };
+    state = { act: 0, scene: 0, dialogueIdx: 0, confidence: 30, authenticity: 0, flow: 0, impact: 0, battleLineIdx: 0, chosenLines: [], choices: [], phase: 'scene', tagsCorrect: 0, tagsTotal: 0, audienceFavor: 50, tagPhase: false };
     startScene();
   });
 
   $('btn-replay').addEventListener('click', function() {
-    state = { act: 0, scene: 0, dialogueIdx: 0, confidence: 30, authenticity: 0, flow: 0, impact: 0, battleLineIdx: 0, chosenLines: [], choices: [], phase: 'scene' };
+    state = { act: 0, scene: 0, dialogueIdx: 0, confidence: 30, authenticity: 0, flow: 0, impact: 0, battleLineIdx: 0, chosenLines: [], choices: [], phase: 'scene', tagsCorrect: 0, tagsTotal: 0, audienceFavor: 50, tagPhase: false };
     startScene();
   });
 
@@ -1349,6 +1838,11 @@ redirect_from:
     $('btn-continue').style.display = '';
     $('btn-continue').addEventListener('click', function() {
       state = saved;
+      // Ensure new fields exist in old saves
+      if (state.tagsCorrect === undefined) state.tagsCorrect = 0;
+      if (state.tagsTotal === undefined) state.tagsTotal = 0;
+      if (state.audienceFavor === undefined) state.audienceFavor = 50;
+      if (state.tagPhase === undefined) state.tagPhase = false;
       if (state.phase === 'battle') {
         startBattle();
       } else {
@@ -1356,6 +1850,9 @@ redirect_from:
       }
     });
   }
+
+  // Show title stats
+  showTitleStats();
 
   // Keyboard support
   document.addEventListener('keydown', function(e) {
@@ -1373,75 +1870,76 @@ redirect_from:
   });
 
   // ============================================================
-  // ANIME VISUAL ENGINE FOR V_CYPHER
+  // BATTLE STAGE CANVAS (Frutiger Aero sky gradient)
   // ============================================================
-
-  // (Portrait system removed — keeping battle stage and effects)
-  var _removedCypherPortraits = true;
-  // Battle speed lines animation
   var battleStageAnim = null;
   function drawBattleStage(canvas, opponentColor, t) {
     var w = canvas.width;
     var h = canvas.height;
     var ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = '#0a0a14';
+    // Sky gradient background
+    var grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#A8D8EA');
+    grad.addColorStop(0.5, '#C8E6F0');
+    grad.addColorStop(1, '#E8F4F8');
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    // Speed lines from center
+    // Soft clouds
     var cx = w / 2;
     var cy = h / 2;
-    var lineCount = 24;
+    for (var i = 0; i < 5; i++) {
+      var cloudX = (i * 160 + t * 15) % (w + 100) - 50;
+      var cloudY = 20 + i * 18 + Math.sin(t * 0.5 + i) * 5;
+      ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.sin(t + i) * 0.1) + ')';
+      ctx.beginPath();
+      ctx.ellipse(cloudX, cloudY, 40 + i * 5, 12 + i * 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Light rays from center
+    var lineCount = 16;
     for (var i = 0; i < lineCount; i++) {
-      var angle = (i / lineCount) * Math.PI * 2 + t * 0.5;
-      var len = 200 + Math.sin(t * 3 + i * 0.8) * 50;
+      var angle = (i / lineCount) * Math.PI * 2 + t * 0.3;
+      var len = 120 + Math.sin(t * 2 + i * 0.8) * 30;
       var x2 = cx + Math.cos(angle) * len;
       var y2 = cy + Math.sin(angle) * len;
-      ctx.strokeStyle = 'rgba(255,119,255,' + (0.06 + Math.sin(t * 2 + i) * 0.04) + ')';
-      ctx.lineWidth = 1 + Math.sin(t * 4 + i * 0.5) * 0.5;
+      ctx.strokeStyle = 'rgba(123,94,167,' + (0.04 + Math.sin(t * 2 + i) * 0.02) + ')';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(angle) * 30, cy + Math.sin(angle) * 20);
+      ctx.moveTo(cx + Math.cos(angle) * 20, cy + Math.sin(angle) * 15);
       ctx.lineTo(x2, y2);
       ctx.stroke();
     }
 
-    // VS glow
+    // VS glows
     var pulse = Math.sin(t * 2) * 0.5 + 0.5;
-    ctx.fillStyle = 'rgba(255,119,255,' + (0.03 + pulse * 0.04) + ')';
+    ctx.fillStyle = 'rgba(123,94,167,' + (0.06 + pulse * 0.06) + ')';
     ctx.beginPath();
-    ctx.arc(cx - 60, cy, 40 + pulse * 10, 0, Math.PI * 2);
+    ctx.arc(cx - 60, cy, 30 + pulse * 10, 0, Math.PI * 2);
     ctx.fill();
 
-    // Parse opponent color for glow
-    ctx.fillStyle = opponentColor ? opponentColor.replace(')', ',0.05)').replace('rgb', 'rgba').replace('#', '') : 'rgba(68,136,255,0.05)';
-    // Simple approach — just use a fixed opponent glow
-    ctx.fillStyle = 'rgba(100,150,255,' + (0.03 + pulse * 0.04) + ')';
+    ctx.fillStyle = 'rgba(100,180,200,' + (0.06 + pulse * 0.06) + ')';
     ctx.beginPath();
-    ctx.arc(cx + 60, cy, 40 + pulse * 10, 0, Math.PI * 2);
+    ctx.arc(cx + 60, cy, 30 + pulse * 10, 0, Math.PI * 2);
     ctx.fill();
-
-    // Scanlines
-    ctx.fillStyle = 'rgba(0,0,0,0.04)';
-    for (var y = 0; y < h; y += 3) {
-      ctx.fillRect(0, y, w, 1);
-    }
   }
 
   // Inject battle stage canvas into startBattle
   var origStartBattle = startBattle;
   startBattle = function() {
     origStartBattle();
-    // Add battle stage canvas at the top of battle content
     var bc = $('battle-content');
     if (bc && !$('battle-stage-canvas')) {
       var stageCanvas = document.createElement('canvas');
       stageCanvas.id = 'battle-stage-canvas';
       stageCanvas.width = 700;
-      stageCanvas.height = 120;
+      stageCanvas.height = 100;
       bc.insertBefore(stageCanvas, bc.firstChild);
 
       var act = STORY[state.act];
-      var opColor = act && act.battle ? act.battle.opponentColor : '#4488ff';
+      var opColor = act && act.battle ? act.battle.opponentColor : '#3B7DD8';
       var startTime = performance.now();
       if (battleStageAnim) cancelAnimationFrame(battleStageAnim);
       function animFrame() {
@@ -1455,10 +1953,10 @@ redirect_from:
 
 })();
 </script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(232,244,248,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(123,94,167,0.2);padding:12px 20px;text-align:center;font-family:'Segoe UI',sans-serif;font-size:0.78rem;color:var(--text-mid);z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-radius:16px 16px 0 0;">
+  <span style="color:var(--text-dark)">This game runs on one laptop.</span>
+  <a href="/site/fund/" style="color:var(--q-purple);margin-left:8px;text-decoration:none;font-weight:600;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:var(--text-dim);cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){

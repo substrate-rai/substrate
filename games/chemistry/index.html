@@ -19,17 +19,7 @@ redirect_from:
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
-  /* === PIXEL ART MODE === */
-  button, .btn, [class*="btn"] {
-    border-radius: 0 !important;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    transition: none !important;
-  }
-  button:active, .btn:active, [class*="btn"]:active {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
-  }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -39,22 +29,21 @@ redirect_from:
     }
   }
 
-  a:focus-visible, button:focus-visible { outline: 2px solid #88cc44; outline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
 
   body {
-    font-family: 'IBM Plex Mono', monospace;
-    background: #0a1a0a;
-    color: #e0e0d0;
+    font-family: 'Inter', 'IBM Plex Mono', sans-serif;
+    background: linear-gradient(180deg, #b8dff5 0%, #dceefb 35%, #e8f4f8 60%, #f0f7e8 100%);
+    color: #2D3748;
     overflow: hidden;
     position: fixed;
     width: 100%;
     height: 100%;
     cursor: crosshair;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    image-rendering: pixelated;
   }
 
-  canvas { display: block; touch-action: none; image-rendering: pixelated; }
+  canvas { display: block; touch-action: none; }
 
   #game-canvas {
     position: fixed;
@@ -73,24 +62,31 @@ redirect_from:
     pointer-events: all;
   }
 
-  /* === PIXEL ART UI === */
+  /* === FRUTIGER AERO GLASS PANELS === */
+  .glass {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(16px) saturate(1.3);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 60, 120, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
   #legend {
-    top: 12px; left: 12px;
-    background: rgba(10, 20, 10, 0.92);
-    border: 3px solid #2a3a1a;
-    border-radius: 0;
-    padding: 10px 14px;
+    top: 48px; left: 12px;
+    padding: 12px 14px;
     font-size: 0.75rem;
     line-height: 1.8;
-    box-shadow: 4px 4px 0 #000;
   }
 
   #legend h3 {
-    color: #88cc44;
-    font-size: 0.7rem;
+    color: #0078D4;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
     letter-spacing: 2px;
     margin-bottom: 6px;
-    text-shadow: 2px 2px 0 #1a2a0a;
+    text-transform: uppercase;
+    font-weight: 600;
   }
 
   #legend .item {
@@ -99,136 +95,131 @@ redirect_from:
     gap: 8px;
     cursor: pointer;
     pointer-events: all;
-    padding: 6px 8px;
-    border-radius: 0;
-    transition: none;
-    min-height: 44px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    transition: background 0.15s, border-color 0.15s;
+    min-height: 36px;
     -webkit-tap-highlight-color: transparent;
-    border: 2px solid transparent;
+    border: 1.5px solid transparent;
+    color: #2D3748;
+    font-size: 0.72rem;
   }
 
   #legend .item:hover {
-    background: rgba(255,255,255,0.08);
-    border-color: #334422;
+    background: rgba(0, 120, 212, 0.06);
+    border-color: rgba(0, 120, 212, 0.15);
   }
 
   #legend .item.selected {
-    background: rgba(100, 180, 50, 0.15);
-    border: 2px solid #88cc44;
-    box-shadow: 2px 2px 0 #1a2a0a;
+    background: rgba(0, 120, 212, 0.1);
+    border: 1.5px solid rgba(0, 120, 212, 0.35);
+    box-shadow: 0 1px 4px rgba(0, 120, 212, 0.1);
+  }
+
+  #legend .item.locked {
+    opacity: 0.35;
+    pointer-events: none;
+    cursor: default;
   }
 
   #legend .swatch {
-    width: 16px; height: 16px;
+    width: 14px; height: 14px;
     flex-shrink: 0;
-    image-rendering: pixelated;
+    border-radius: 4px;
     position: relative;
   }
 
   /* Element-specific swatch visuals */
   .swatch-wood {
-    background: #8B6914 !important;
-    border-radius: 0 !important;
-    border: 2px solid #6a4f0e !important;
-    box-shadow: inset 2px 2px 0 #b8922a;
+    background: linear-gradient(135deg, #b8922a, #8B6914) !important;
+    border: 1.5px solid #6a4f0e !important;
   }
   .swatch-stone {
-    background: linear-gradient(135deg, #777, #999, #666) !important;
-    border-radius: 0 !important;
-    border: 2px solid #555 !important;
-    box-shadow: inset 2px 2px 0 #aaa;
+    background: linear-gradient(135deg, #999, #777) !important;
+    border: 1.5px solid #666 !important;
   }
   .swatch-fire {
-    background: #ff4400 !important;
-    border-radius: 0 !important;
-    box-shadow: 0 0 6px #ff4400, inset 1px 1px 0 #ff8800 !important;
+    background: linear-gradient(135deg, #ff8800, #ff4400) !important;
     border: none !important;
+    box-shadow: 0 0 6px rgba(255, 68, 0, 0.3) !important;
   }
   .swatch-water {
-    background: #2288ff !important;
-    border-radius: 0 !important;
-    transform: rotate(45deg);
+    background: linear-gradient(135deg, #66bbff, #2288ff) !important;
     border: none !important;
-    box-shadow: 0 0 4px #2288ff88 !important;
+    box-shadow: 0 0 4px rgba(34, 136, 255, 0.3) !important;
   }
   .swatch-ice {
-    background: #88ccee !important;
-    border-radius: 0 !important;
-    border: 2px solid #66aacc !important;
-    transform: rotate(45deg);
-    width: 12px !important; height: 12px !important;
-    margin: 2px;
+    background: linear-gradient(135deg, #aaddff, #88CCEE) !important;
+    border: 1.5px solid #88bbdd !important;
   }
   .swatch-mud {
-    background: #553322 !important;
-    border-radius: 0 !important;
-    border: 2px solid #331a0a !important;
-    box-shadow: inset 0 4px 0 #775533 !important;
+    background: linear-gradient(135deg, #775533, #553322) !important;
+    border: 1.5px solid #442211 !important;
   }
   .swatch-seed {
-    background: #44aa22 !important;
+    background: linear-gradient(135deg, #66cc44, #44aa22) !important;
     border-radius: 50% !important;
-    border: 2px solid #228800 !important;
-    box-shadow: 0 0 4px #44ff2266 !important;
+    border: 1.5px solid #228800 !important;
   }
   .swatch-vine {
     background: #22aa44 !important;
-    border-radius: 0 !important;
-    border: 1px dashed rgba(34, 170, 68, 0.5) !important;
-    height: 6px !important;
-    margin-top: 5px;
+    height: 5px !important;
+    margin-top: 4px;
+    border-radius: 2px !important;
+    border: none !important;
   }
   .swatch-wind {
-    background: rgba(200, 220, 255, 0.4) !important;
-    border-radius: 0 !important;
-    border: 2px dashed rgba(200, 220, 255, 0.6) !important;
+    background: rgba(170, 200, 240, 0.5) !important;
+    border: 1.5px dashed rgba(100, 140, 200, 0.5) !important;
   }
 
   #legend .key {
-    color: #666;
+    color: #8899AA;
     width: 14px;
     text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
   }
 
   #wind-status {
-    top: 12px; right: 12px;
-    background: rgba(10, 20, 10, 0.92);
-    border: 3px solid #2a3a1a;
-    border-radius: 0;
+    top: 48px; right: 12px;
     padding: 10px 16px;
     font-size: 0.7rem;
     text-align: right;
-    box-shadow: 4px 4px 0 #000;
   }
 
   #wind-status .label {
-    color: #888;
-    font-size: 0.75rem;
+    color: #5A6B7F;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
 
   #wind-status .value {
-    font-size: 1rem;
-    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
     margin-top: 2px;
   }
 
-  #wind-status .value.on { color: #88ccdd; text-shadow: 2px 2px 0 #1a3322; }
-  #wind-status .value.off { color: #555; }
+  #wind-status .value.on { color: #0078D4; }
+  #wind-status .value.off { color: #8899AA; }
 
   #controls-bar {
     bottom: 0; left: 0; right: 0;
-    background: rgba(10, 20, 10, 0.95);
-    border-top: 3px solid #2a3a1a;
-    padding: 10px 20px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 8px 20px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
     display: flex;
     justify-content: center;
     gap: 24px;
-    font-size: 0.75rem;
-    color: #666;
-    box-shadow: 0 -4px 0 #000;
+    font-size: 0.7rem;
+    color: #5A6B7F;
+    box-shadow: 0 -2px 12px rgba(0, 60, 120, 0.06);
   }
 
   #controls-bar span {
@@ -238,77 +229,76 @@ redirect_from:
   }
 
   #controls-bar kbd {
-    background: #1a2a1a;
-    border: 2px solid #334422;
-    border-radius: 0;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
     padding: 1px 5px;
-    color: #aaa;
+    color: #2D3748;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    box-shadow: 2px 2px 0 #000;
+    font-size: 0.7rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   }
 
   #footer {
     bottom: 40px; left: 0; right: 0;
     text-align: center;
-    font-size: 0.75rem;
-    color: #444;
+    font-size: 0.7rem;
+    color: #8899AA;
     letter-spacing: 1px;
   }
 
   #footer a {
-    color: #88cc4466;
+    color: rgba(0, 120, 212, 0.5);
     text-decoration: none;
   }
 
-  #footer a:hover { color: #88cc44; }
+  #footer a:hover { color: #0078D4; }
 
   #toast {
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(10, 20, 10, 0.95);
-    border: 3px solid #88cc44;
-    border-radius: 0;
-    padding: 16px 28px;
-    font-size: 0.85rem;
-    color: #88cc44;
-    text-shadow: 2px 2px 0 #1a2a0a;
-    letter-spacing: 2px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    padding: 14px 28px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #0078D4;
+    letter-spacing: 1px;
     opacity: 0;
     pointer-events: none;
-    box-shadow: 4px 4px 0 #000;
+    box-shadow: 0 4px 24px rgba(0, 60, 120, 0.12);
   }
 
   #toast.visible {
     opacity: 1;
-    animation: toast-pop 0.3s steps(4);
+    animation: toast-pop 0.3s ease-out;
   }
 
   @keyframes toast-pop {
-    0% { transform: translate(-50%, -50%) scale(0.5); }
-    50% { transform: translate(-50%, -50%) scale(1.15); }
-    100% { transform: translate(-50%, -50%) scale(1); }
+    0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
+    60% { transform: translate(-50%, -50%) scale(1.04); }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
   }
 
   #description {
-    top: 50px; right: 12px;
-    background: rgba(10, 20, 10, 0.92);
-    border: 3px solid #2a3a1a;
-    border-radius: 0;
-    padding: 8px 14px;
-    font-family: 'IBM Plex Mono', monospace;
+    top: 110px; right: 12px;
+    padding: 10px 14px;
     font-size: 0.7rem;
-    color: #aaa;
+    color: #5A6B7F;
     max-width: 200px;
-    line-height: 1.4;
-    box-shadow: 4px 4px 0 #000;
+    line-height: 1.5;
   }
 
   #description .name {
     font-weight: 700;
-    color: #ddd;
-    margin-bottom: 2px;
-    text-shadow: 1px 1px 0 #000;
+    color: #1A1A2E;
+    margin-bottom: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
   }
 
   /* Reaction flash overlay */
@@ -321,8 +311,250 @@ redirect_from:
   }
 
   @keyframes reaction-burst {
-    0% { opacity: 0.6; }
+    0% { opacity: 0.35; }
     100% { opacity: 0; }
+  }
+
+  /* === DISCOVERY JOURNAL === */
+  #journal-btn {
+    position: fixed;
+    top: 48px;
+    right: 220px;
+    z-index: 30;
+    padding: 8px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #0078D4;
+    cursor: pointer;
+    pointer-events: all;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  #journal-btn:hover {
+    background: rgba(0, 120, 212, 0.1);
+  }
+  #journal-btn .count {
+    color: #5A6B7F;
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  #journal-panel {
+    display: none;
+    position: fixed;
+    top: 86px;
+    right: 12px;
+    z-index: 30;
+    padding: 16px;
+    width: 260px;
+    max-height: 70vh;
+    overflow-y: auto;
+    pointer-events: all;
+  }
+
+  #journal-panel .journal-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #1A1A2E;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  #journal-panel .journal-subtitle {
+    font-size: 0.65rem;
+    color: #5A6B7F;
+    margin-bottom: 12px;
+  }
+
+  .journal-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 0.7rem;
+  }
+
+  .journal-entry .j-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 10px;
+    margin-top: 1px;
+  }
+
+  .journal-entry.discovered .j-icon {
+    background: rgba(0, 180, 100, 0.15);
+    color: #00b464;
+  }
+
+  .journal-entry.undiscovered .j-icon {
+    background: rgba(0, 0, 0, 0.05);
+    color: #aab;
+  }
+
+  .journal-entry .j-info { flex: 1; }
+
+  .journal-entry .j-name {
+    font-weight: 600;
+    color: #2D3748;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+  }
+
+  .journal-entry.undiscovered .j-name {
+    color: #aab;
+  }
+
+  .journal-entry .j-hint {
+    font-size: 0.62rem;
+    color: #8899AA;
+    margin-top: 1px;
+    font-style: italic;
+  }
+
+  .journal-entry .j-result {
+    font-size: 0.62rem;
+    color: #0078D4;
+    margin-top: 1px;
+  }
+
+  /* === HYPOTHESIS PROMPT === */
+  #hypothesis-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 50;
+    background: rgba(184, 223, 245, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+  }
+
+  #hypothesis-overlay.visible {
+    display: flex;
+  }
+
+  #hypothesis-box {
+    width: 340px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  #hypothesis-box .h-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1A1A2E;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  #hypothesis-box .h-elements {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 14px 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2D3748;
+  }
+
+  #hypothesis-box .h-elements .h-plus {
+    color: #8899AA;
+    font-size: 1.1rem;
+  }
+
+  #hypothesis-box .h-question {
+    font-size: 0.78rem;
+    color: #5A6B7F;
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+
+  #hypothesis-box .h-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  #hypothesis-box .h-option {
+    background: rgba(0, 120, 212, 0.06);
+    border: 1px solid rgba(0, 120, 212, 0.15);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.72rem;
+    color: #2D3748;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    font-family: 'Inter', sans-serif;
+    text-align: left;
+  }
+
+  #hypothesis-box .h-option:hover {
+    background: rgba(0, 120, 212, 0.12);
+    border-color: rgba(0, 120, 212, 0.3);
+  }
+
+  #hypothesis-box .h-skip {
+    margin-top: 10px;
+    background: none;
+    border: none;
+    color: #8899AA;
+    font-size: 0.65rem;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  #hypothesis-box .h-skip:hover {
+    color: #5A6B7F;
+  }
+
+  /* Progress bar */
+  #progress-bar {
+    position: fixed;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    width: 200px;
+    pointer-events: none;
+    text-align: center;
+  }
+
+  #progress-bar .p-track {
+    height: 4px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  #progress-bar .p-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0078D4, #00b464);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  #progress-bar .p-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: #8899AA;
+    letter-spacing: 0.5px;
   }
 
   /* Mobile controls */
@@ -341,55 +573,56 @@ redirect_from:
     left: 20px;
     width: 120px;
     height: 120px;
-    border-radius: 0;
-    background: rgba(255,255,255,0.06);
-    border: 3px solid rgba(100,180,50,0.2);
-    box-shadow: 3px 3px 0 #000;
+    border-radius: 60px;
+    background: rgba(255,255,255,0.15);
+    border: 1.5px solid rgba(0, 120, 212, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   #joystick-knob {
     position: absolute;
     width: 44px; height: 44px;
-    border-radius: 0;
-    background: rgba(100,180,50,0.3);
-    border: 3px solid rgba(100,180,50,0.5);
+    border-radius: 22px;
+    background: rgba(0, 120, 212, 0.2);
+    border: 1.5px solid rgba(0, 120, 212, 0.35);
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     transition: none;
-    box-shadow: 2px 2px 0 #000;
   }
 
   .mobile-btn {
     position: absolute;
     width: 56px; height: 56px;
-    border-radius: 0;
-    background: rgba(255,255,255,0.1);
-    border: 3px solid rgba(100,180,50,0.3);
-    color: #88cc44;
+    border-radius: 28px;
+    background: rgba(255,255,255,0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(0, 120, 212, 0.2);
+    color: #0078D4;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
-    box-shadow: 3px 3px 0 #000;
+    box-shadow: 0 2px 8px rgba(0, 60, 120, 0.08);
+    transition: background 0.12s;
   }
   .mobile-btn:active, .mobile-btn.active {
-    background: rgba(100,180,50,0.25);
-    border-color: #88cc44;
-    box-shadow: 1px 1px 0 #000;
-    transform: translate(2px, 2px);
+    background: rgba(0, 120, 212, 0.15);
+    border-color: rgba(0, 120, 212, 0.4);
   }
 
-  #btn-jump { bottom: 20px; right: 20px; width: 68px; height: 68px; font-size: 20px; }
+  #btn-jump { bottom: 20px; right: 20px; width: 68px; height: 68px; border-radius: 34px; font-size: 18px; }
   #btn-wind { bottom: 96px; right: 20px; }
   #btn-reset { bottom: 20px; right: 96px; }
   #btn-delete { bottom: 96px; right: 96px; }
 
-  /* === MOBILE LAYOUT — Minecraft-style hotbar === */
+  /* === MOBILE LAYOUT === */
   @media (max-width: 768px) {
     #legend {
       top: auto;
@@ -398,7 +631,7 @@ redirect_from:
       right: 0;
       max-height: none;
       border: none;
-      border-top: 3px solid #2a3a1a;
+      border-top: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 0;
       padding: 6px 8px;
       padding-bottom: calc(6px + env(safe-area-inset-bottom));
@@ -407,7 +640,7 @@ redirect_from:
       gap: 0;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 -4px 0 #000;
+      box-shadow: 0 -2px 12px rgba(0, 60, 120, 0.06);
       z-index: 15;
     }
     #legend h3 { display: none; }
@@ -422,38 +655,50 @@ redirect_from:
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid #1a2a1a;
-      background: rgba(10, 20, 10, 0.7);
+      border: 1.5px solid rgba(0, 0, 0, 0.06);
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
     }
     #legend .item.selected {
-      border-color: #88cc44;
-      background: rgba(100, 180, 50, 0.2);
-      box-shadow: 0 0 8px rgba(136, 204, 68, 0.3);
+      border-color: rgba(0, 120, 212, 0.4);
+      background: rgba(0, 120, 212, 0.1);
+      box-shadow: 0 0 8px rgba(0, 120, 212, 0.15);
     }
     #legend .swatch {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
     }
     #legend .key { display: none; }
 
     #wind-status {
-      top: 8px;
+      top: 44px;
       right: 8px;
       padding: 6px 10px;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
     }
-    #wind-status .value { font-size: 0.8rem; }
+    #wind-status .value { font-size: 0.75rem; }
 
     #toast {
       top: 40%;
       padding: 12px 20px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       z-index: 25;
     }
 
     #footer { display: none; }
     #controls-bar { display: none !important; }
     #description { display: none; }
+
+    #journal-btn {
+      top: 44px;
+      right: 70px;
+      padding: 6px 10px;
+      font-size: 0.62rem;
+    }
+    #journal-panel { top: 76px; width: 220px; }
+    #progress-bar { display: none; }
+
+    #hypothesis-box { width: 290px; padding: 18px; }
   }
 
   @media (hover: none) and (pointer: coarse) {
@@ -461,7 +706,6 @@ redirect_from:
     #controls-bar { display: none !important; }
     #description { display: none; }
 
-    /* Move mobile buttons above the compact hotbar */
     #btn-jump { bottom: calc(72px + env(safe-area-inset-bottom)); }
     #btn-wind { bottom: calc(148px + env(safe-area-inset-bottom)); }
     #btn-reset { bottom: calc(72px + env(safe-area-inset-bottom)); }
@@ -472,10 +716,7 @@ redirect_from:
 <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#88cc44;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
-
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:linear-gradient(180deg, #0a1a0a 0%, #0f1f0a 40%, #1a2a10 100%);opacity:0.8;pointer-events:none;"></div>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#0078D4;color:#fff;padding:8px 16px;z-index:1000;font-size:14px;border-radius:0 0 8px 0;">Skip to game</a>
 
 <main id="game" role="main">
 <canvas id="game-canvas"></canvas>
@@ -484,7 +725,7 @@ redirect_from:
 <div id="reaction-flash"></div>
 
 <!-- UI Overlays -->
-<div id="legend" class="ui-overlay">
+<div id="legend" class="ui-overlay glass">
   <h3>ELEMENTS</h3>
   <div class="item selected" data-type="wood" onclick="selectMaterial(0)">
     <span class="swatch swatch-wood"></span>
@@ -498,53 +739,83 @@ redirect_from:
     <span class="swatch swatch-fire"></span>
     <span class="key">3</span> fire
   </div>
-  <div class="item" data-type="water" onclick="selectMaterial(3)">
+  <div class="item locked" data-type="water" onclick="selectMaterial(3)">
     <span class="swatch swatch-water"></span>
     <span class="key">4</span> water
   </div>
-  <div class="item" data-type="ice" onclick="selectMaterial(4)">
+  <div class="item locked" data-type="ice" onclick="selectMaterial(4)">
     <span class="swatch swatch-ice"></span>
     <span class="key">5</span> ice
   </div>
-  <div class="item" data-type="oil" onclick="selectMaterial(5)">
+  <div class="item locked" data-type="oil" onclick="selectMaterial(5)">
     <span class="swatch swatch-mud"></span>
     <span class="key">6</span> mud
   </div>
-  <div class="item" data-type="gunpowder" onclick="selectMaterial(6)">
+  <div class="item locked" data-type="gunpowder" onclick="selectMaterial(6)">
     <span class="swatch swatch-seed"></span>
     <span class="key">7</span> seed
   </div>
-  <div class="item" data-type="grass" onclick="selectMaterial(7)">
+  <div class="item locked" data-type="grass" onclick="selectMaterial(7)">
     <span class="swatch swatch-vine"></span>
     <span class="key">8</span> vine
   </div>
-  <div class="item" data-type="wind_source" onclick="selectMaterial(8)">
+  <div class="item locked" data-type="wind_source" onclick="selectMaterial(8)">
     <span class="swatch swatch-wind"></span>
     <span class="key">9</span> wind
   </div>
 </div>
 
-<div id="wind-status" class="ui-overlay">
+<div id="wind-status" class="ui-overlay glass">
   <div class="label">wind</div>
   <div class="value off" id="wind-value">CALM</div>
 </div>
 
-<div id="description" class="ui-overlay">
-  <div class="name">Nature</div>
-  <div>Welcome! Mix natural elements and watch ecosystems emerge!</div>
+<div id="description" class="ui-overlay glass">
+  <div class="name">Welcome</div>
+  <div>Place elements and observe what happens when they meet. What do you think will happen?</div>
 </div>
 
 <div id="toast" class="ui-overlay">ALL CLEAN!</div>
-<div id="journal-btn" onclick="toggleJournal()" style="position:absolute;top:10px;right:10px;z-index:30;background:rgba(10,10,15,0.8);border:1px solid rgba(0,224,154,0.3);color:#00e09a;font-family:inherit;font-size:12px;padding:4px 10px;border-radius:4px;cursor:pointer;pointer-events:all">JOURNAL <span id="journal-count">0/11</span></div>
-<div id="journal-panel" style="display:none;position:absolute;top:40px;right:10px;z-index:30;background:rgba(10,10,15,0.9);border:1px solid rgba(0,224,154,0.2);border-radius:6px;padding:12px;width:220px;font-size:11px;pointer-events:all">
-  <div style="color:#ffd700;font-weight:700;margin-bottom:8px;letter-spacing:1px">DISCOVERY JOURNAL</div>
+
+<!-- Discovery Journal Button -->
+<div id="journal-btn" class="glass" onclick="toggleJournal()">JOURNAL <span class="count" id="journal-count">0/11</span></div>
+
+<!-- Discovery Journal Panel -->
+<div id="journal-panel" class="glass">
+  <div class="journal-title">Discovery Journal</div>
+  <div class="journal-subtitle">Observe, hypothesize, combine, record</div>
   <div id="journal-list"></div>
 </div>
-<div id="mastery-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center;flex-direction:column">
-  <div style="font-size:28px;color:#ffd700;letter-spacing:3px;margin-bottom:12px;text-shadow:0 0 20px rgba(255,215,0,0.3)">MASTER ALCHEMIST</div>
-  <div style="font-size:14px;color:#c8d0e0;margin-bottom:8px">All reactions discovered.</div>
-  <div style="font-size:12px;color:#888;max-width:400px;text-align:center;line-height:1.6;margin-bottom:20px">You have witnessed every interaction in the natural world. Fire, water, ice, wind, and earth have revealed all their secrets to you.</div>
-  <button onclick="document.getElementById('mastery-screen').style.display='none'" style="background:linear-gradient(180deg,#2a2418,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:13px;padding:8px 20px;border-radius:4px;cursor:pointer;pointer-events:all">CONTINUE EXPLORING</button>
+
+<!-- Hypothesis Prompt Overlay -->
+<div id="hypothesis-overlay">
+  <div id="hypothesis-box" class="glass">
+    <div class="h-title">What will happen?</div>
+    <div class="h-elements">
+      <span id="h-elem-a">---</span>
+      <span class="h-plus">+</span>
+      <span id="h-elem-b">---</span>
+    </div>
+    <div class="h-question">Before these elements interact, form a hypothesis:</div>
+    <div class="h-options" id="h-options"></div>
+    <button class="h-skip" onclick="skipHypothesis()">just let it happen</button>
+  </div>
+</div>
+
+<!-- Mastery Screen -->
+<div id="mastery-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(184,223,245,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:200;align-items:center;justify-content:center;flex-direction:column">
+  <div class="glass" style="padding:40px;text-align:center;max-width:420px;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:1.2rem;font-weight:700;color:#1A1A2E;letter-spacing:2px;margin-bottom:8px;">MASTER ALCHEMIST</div>
+    <div style="font-size:0.85rem;color:#0078D4;margin-bottom:8px;font-weight:500;">All reactions discovered.</div>
+    <div style="font-size:0.75rem;color:#5A6B7F;line-height:1.6;margin-bottom:20px;">You have witnessed every interaction in the natural world. Fire, water, ice, wind, and earth have revealed all their secrets to you.</div>
+    <button onclick="document.getElementById('mastery-screen').style.display='none'" style="background:rgba(0,120,212,0.1);border:1px solid rgba(0,120,212,0.3);color:#0078D4;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;font-weight:600;padding:10px 24px;border-radius:8px;cursor:pointer;pointer-events:all;transition:background 0.15s;">CONTINUE EXPLORING</button>
+  </div>
+</div>
+
+<!-- Progress Bar -->
+<div id="progress-bar" class="ui-overlay">
+  <div class="p-track"><div class="p-fill" id="progress-fill"></div></div>
+  <div class="p-label"><span id="progress-label">0 / 11 discoveries</span></div>
 </div>
 
 <div id="footer" class="ui-overlay">
@@ -560,7 +831,7 @@ redirect_from:
   <span><kbd>R</kbd> reset world</span>
 </div>
 
-<div id="hotbar-label" style="display:none;position:fixed;bottom:calc(56px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:16;background:rgba(10,20,10,0.9);border:2px solid #88cc44;padding:3px 10px;font-size:11px;color:#88cc44;letter-spacing:1px;font-family:'IBM Plex Mono',monospace;pointer-events:none;white-space:nowrap;box-shadow:2px 2px 0 #000">WOOD</div>
+<div id="hotbar-label" style="display:none;position:fixed;bottom:calc(56px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:16;background:rgba(255,255,255,0.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(0,120,212,0.2);padding:3px 12px;font-size:11px;color:#0078D4;letter-spacing:1px;font-family:'IBM Plex Mono',monospace;pointer-events:none;white-space:nowrap;border-radius:6px;">WOOD</div>
 <div id="mobile-controls">
   <div id="joystick-zone">
     <div id="joystick-knob"></div>
@@ -894,7 +1165,7 @@ const canvas = document.getElementById('game-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0x0a1a0a);
+renderer.setClearColor(0xdceefb);
 
 const scene = new THREE.Scene();
 
@@ -910,7 +1181,7 @@ camera.position.set(0, 0, 500);
 camera.lookAt(0, 0, 0);
 
 // Ambient light
-scene.add(new THREE.AmbientLight(0x334433, 0.6));
+scene.add(new THREE.AmbientLight(0xddeeff, 1.0));
 
 // --- WORLD BOUNDS ---
 const WORLD_W = frustumSize * aspect;
@@ -979,7 +1250,7 @@ function spawnSmokeParticles(x, y, count) {
       y,
       (Math.random() - 0.5) * 30,
       -(Math.random() * 40 + 20),
-      0x666666,
+      0x778899,
       0.6 + Math.random() * 0.8,
       3 + Math.random() * 5
     ));
@@ -1069,7 +1340,7 @@ class WindStreak {
   constructor() {
     this.reset();
     const geo = new THREE.PlaneGeometry(20 + Math.random() * 30, 2);
-    const mat = new THREE.MeshBasicMaterial({ color: 0xAABBDD, transparent: true, opacity: 0 });
+    const mat = new THREE.MeshBasicMaterial({ color: 0x6699cc, transparent: true, opacity: 0 });
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.position.set(this.x, this.y, 3);
     scene.add(this.mesh);
@@ -1088,7 +1359,7 @@ class WindStreak {
     this.x += this.speed * dt;
     this.life += dt;
     this.mesh.position.set(this.x, this.y, 3);
-    const fade = Math.sin(this.life * 3) * 0.15;
+    const fade = Math.sin(this.life * 3) * 0.25;
     this.mesh.material.opacity = Math.max(0, fade);
     if (this.x > WORLD_W / 2 + 50) this.reset();
   }
@@ -1139,7 +1410,7 @@ class GameObject {
     // Pixel shadow underneath
     if (type !== 'player' && type !== 'grass') {
       const shadowGeo = new THREE.PlaneGeometry(this.w + 2, this.h + 2);
-      const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 });
+      const shadowMat = new THREE.MeshBasicMaterial({ color: 0x3366aa, transparent: true, opacity: 0.12 });
       this.shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
       this.shadowMesh.position.set(x + 3, y - 3, 0.3);
       scene.add(this.shadowMesh);
@@ -1325,20 +1596,163 @@ let selectedMaterial = 0;
 let keys = {};
 let mouseWorld = { x: 0, y: 0 };
 let discoveredReactions = new Set();
+let hypothesisLog = {}; // reactionId -> { guess: string, correct: bool }
+let hypothesisPending = null; // { reactionId, elemA, elemB, resolve }
+let hypothesisShownFor = new Set(); // don't re-prompt for same reaction
+
 const ALL_REACTIONS = ['fire_spread','water_extinguish','water_wet','ice_freeze','spontaneous_combustion','ice_melt','drying','updraft','wind_fan','wind_spread','seed_explosion'];
 
-function discoverReaction(id){
-  if(discoveredReactions.has(id))return;
+// Reaction metadata for journal & hypothesis system
+const REACTION_META = {
+  fire_spread:            { name: 'Fire Spread',            elements: ['fire','wood'],    desc: 'Fire catches on flammable materials nearby', hint: 'What happens when flame meets wood?', options: ['It catches fire', 'Nothing happens', 'It melts'] },
+  water_extinguish:       { name: 'Extinguish',             elements: ['water','fire'],   desc: 'Water puts out burning objects', hint: 'Can water defeat fire?', options: ['Fire goes out', 'Water evaporates', 'They cancel out'] },
+  water_wet:              { name: 'Moisture',               elements: ['water','wood'],   desc: 'Water makes objects wet and fire-resistant', hint: 'What does water do to dry things?', options: ['Makes it wet', 'Dissolves it', 'No effect'] },
+  ice_freeze:             { name: 'Freeze',                 elements: ['ice','water'],    desc: 'Ice freezes water into solid crystals', hint: 'Ice touching water...', options: ['Water freezes', 'Ice melts', 'They mix together'] },
+  spontaneous_combustion: { name: 'Spontaneous Combustion', elements: ['fire','mud'],     desc: 'Extreme heat can ignite flammable objects without contact', hint: 'What if something gets really hot?', options: ['It catches fire on its own', 'It stays warm', 'It cools down'] },
+  ice_melt:               { name: 'Melt',                   elements: ['fire','ice'],     desc: 'Warmth causes ice to melt into water', hint: 'Heat near ice...', options: ['Ice melts to water', 'Fire goes out', 'Ice gets stronger'] },
+  drying:                 { name: 'Evaporation',            elements: ['fire','water'],   desc: 'Heat dries out wet objects over time', hint: 'Heat on a wet surface...', options: ['It dries out', 'It stays wet', 'Steam explosion'] },
+  updraft:                { name: 'Updraft',                elements: ['fire','vine'],    desc: 'Hot air rises, lifting light objects above flames', hint: 'Light things above fire...', options: ['They float upward', 'They fall faster', 'They catch fire'] },
+  wind_fan:               { name: 'Fan the Flames',         elements: ['wind','fire'],    desc: 'Wind makes fire burn faster and more intensely', hint: 'Wind blowing on fire...', options: ['Burns faster', 'Fire goes out', 'Wind catches fire'] },
+  wind_spread:            { name: 'Wind Spread',            elements: ['wind','fire'],    desc: 'Wind carries heat forward, spreading fire further', hint: 'Wind pushing heat...', options: ['Heat spreads farther', 'Heat disappears', 'No effect'] },
+  seed_explosion:         { name: 'Seed Burst',             elements: ['fire','seed'],    desc: 'Seeds explode with life energy when ignited!', hint: 'A seed catching fire...', options: ['It explodes!', 'It grows a plant', 'It just burns'] }
+};
+
+// Element unlock system: start with 3 (wood, stone, fire), unlock rest via discoveries
+const UNLOCK_MAP = {
+  // discovery -> elements unlocked
+  fire_spread: ['water'],           // discover fire spread -> unlock water (to extinguish!)
+  water_extinguish: ['ice'],        // discover extinguish -> unlock ice
+  ice_freeze: ['oil'],              // discover freeze -> unlock mud
+  spontaneous_combustion: ['gunpowder'], // discover combustion -> unlock seed
+  water_wet: ['grass'],             // discover wetting -> unlock vine
+  updraft: ['wind_source'],         // discover updraft -> unlock wind
+};
+let unlockedElements = new Set(['wood', 'metal', 'fire']); // start with 3
+
+function isElementUnlocked(type) {
+  return unlockedElements.has(type);
+}
+
+function unlockElement(type) {
+  if (unlockedElements.has(type)) return;
+  unlockedElements.add(type);
+  updateElementLocks();
+  try { localStorage.setItem('synthesis_unlocked', JSON.stringify([...unlockedElements])); } catch(e) {}
+  const capNames = { wood:'WOOD', metal:'STONE', fire:'FIRE', water:'WATER', ice:'ICE', oil:'MUD', gunpowder:'SEED', grass:'VINE', wind_source:'WIND' };
+  showToast('NEW ELEMENT: ' + (capNames[type] || type.toUpperCase()));
+}
+
+function updateElementLocks() {
+  const items = document.querySelectorAll('#legend .item');
+  items.forEach((el, i) => {
+    const type = SPAWN_TYPES[i];
+    if (isElementUnlocked(type)) {
+      el.classList.remove('locked');
+    } else {
+      el.classList.add('locked');
+      if (el.classList.contains('selected')) {
+        // Deselect locked element, select first unlocked
+        el.classList.remove('selected');
+        selectMaterial(0);
+      }
+    }
+  });
+}
+
+function loadUnlocked() {
+  try {
+    var u = localStorage.getItem('synthesis_unlocked');
+    if (u) unlockedElements = new Set(JSON.parse(u));
+  } catch(e) {}
+}
+
+function discoverReaction(id) {
+  if (discoveredReactions.has(id)) return;
   discoveredReactions.add(id);
-  try{localStorage.setItem('synthesis_discoveries',JSON.stringify([...discoveredReactions]))}catch(e){}
-  showToast('Discovery '+discoveredReactions.size+'/'+ALL_REACTIONS.length+': '+id.replace(/_/g,' ').toUpperCase());
+  try { localStorage.setItem('synthesis_discoveries', JSON.stringify([...discoveredReactions])); } catch(e) {}
+
+  // Check for element unlocks
+  if (UNLOCK_MAP[id]) {
+    UNLOCK_MAP[id].forEach(function(elemType) {
+      setTimeout(function() { unlockElement(elemType); }, 600);
+    });
+  }
+
+  showToast('Discovery ' + discoveredReactions.size + '/' + ALL_REACTIONS.length + ': ' + (REACTION_META[id] ? REACTION_META[id].name : id.replace(/_/g, ' ').toUpperCase()));
   updateJournal();
-  if(discoveredReactions.size>=ALL_REACTIONS.length){
-    setTimeout(showMasteryScreen,1500);
+  updateProgressBar();
+
+  if (discoveredReactions.size >= ALL_REACTIONS.length) {
+    setTimeout(showMasteryScreen, 1500);
   }
 }
-function loadDiscoveries(){
-  try{var d=localStorage.getItem('synthesis_discoveries');if(d)discoveredReactions=new Set(JSON.parse(d))}catch(e){}
+
+function loadDiscoveries() {
+  try {
+    var d = localStorage.getItem('synthesis_discoveries');
+    if (d) discoveredReactions = new Set(JSON.parse(d));
+    var h = localStorage.getItem('synthesis_hypotheses');
+    if (h) hypothesisLog = JSON.parse(h);
+    var hs = localStorage.getItem('synthesis_hyp_shown');
+    if (hs) hypothesisShownFor = new Set(JSON.parse(hs));
+  } catch(e) {}
+}
+
+// --- HYPOTHESIS SYSTEM ---
+function maybeShowHypothesis(reactionId, elemA, elemB) {
+  // Only show hypothesis for undiscovered reactions, and only once per reaction
+  if (discoveredReactions.has(reactionId)) return false;
+  if (hypothesisShownFor.has(reactionId)) return false;
+  if (!REACTION_META[reactionId]) return false;
+  hypothesisShownFor.add(reactionId);
+  try { localStorage.setItem('synthesis_hyp_shown', JSON.stringify([...hypothesisShownFor])); } catch(e) {}
+  showHypothesisPrompt(reactionId, elemA, elemB);
+  return true;
+}
+
+function showHypothesisPrompt(reactionId, elemA, elemB) {
+  const meta = REACTION_META[reactionId];
+  if (!meta) return;
+  const overlay = document.getElementById('hypothesis-overlay');
+  const capNames = { wood:'Wood', metal:'Stone', fire:'Fire', water:'Water', ice:'Ice', oil:'Mud', gunpowder:'Seed', grass:'Vine', wind_source:'Wind' };
+  document.getElementById('h-elem-a').textContent = capNames[elemA] || elemA;
+  document.getElementById('h-elem-b').textContent = capNames[elemB] || elemB;
+  const optionsEl = document.getElementById('h-options');
+  optionsEl.innerHTML = '';
+  meta.options.forEach(function(opt, i) {
+    var btn = document.createElement('button');
+    btn.className = 'h-option';
+    btn.textContent = opt;
+    btn.onclick = function() { submitHypothesis(reactionId, opt, i === 0); };
+    optionsEl.appendChild(btn);
+  });
+  overlay.classList.add('visible');
+  hypothesisPending = reactionId;
+}
+
+function submitHypothesis(reactionId, guess, correct) {
+  hypothesisLog[reactionId] = { guess: guess, correct: correct };
+  try { localStorage.setItem('synthesis_hypotheses', JSON.stringify(hypothesisLog)); } catch(e) {}
+  closeHypothesis();
+}
+
+function skipHypothesis() {
+  closeHypothesis();
+}
+
+function closeHypothesis() {
+  var overlay = document.getElementById('hypothesis-overlay');
+  overlay.classList.remove('visible');
+  hypothesisPending = null;
+}
+
+function updateProgressBar() {
+  var fill = document.getElementById('progress-fill');
+  var label = document.getElementById('progress-label');
+  if (!fill || !label) return;
+  var pct = (discoveredReactions.size / ALL_REACTIONS.length) * 100;
+  fill.style.width = pct + '%';
+  label.textContent = discoveredReactions.size + ' / ' + ALL_REACTIONS.length + ' discoveries';
 }
 
 // --- GROUND ---
@@ -1347,31 +1761,39 @@ function createGround() {
   const gw = WORLD_W + 200;
   const gh = 40;
   const geo = new THREE.PlaneGeometry(gw, gh);
-  const mat = new THREE.MeshBasicMaterial({ color: 0x1a2a1a });
+  const mat = new THREE.MeshBasicMaterial({ color: 0x7ab87a });
   groundMesh = new THREE.Mesh(geo, mat);
   groundMesh.position.set(0, GROUND_Y - gh / 2, 0);
   scene.add(groundMesh);
 
-  // Ground line (thick pixel border)
-  const lineGeo = new THREE.PlaneGeometry(gw, 3);
-  const lineMat = new THREE.MeshBasicMaterial({ color: 0x446644 });
+  // Ground surface line
+  const lineGeo = new THREE.PlaneGeometry(gw, 2);
+  const lineMat = new THREE.MeshBasicMaterial({ color: 0x5a9a5a });
   const line = new THREE.Mesh(lineGeo, lineMat);
   line.position.set(0, GROUND_Y, 0.5);
   scene.add(line);
+
+  // Subsoil layer
+  const subGeo = new THREE.PlaneGeometry(gw, 60);
+  const subMat = new THREE.MeshBasicMaterial({ color: 0x6a9a6a });
+  const sub = new THREE.Mesh(subGeo, subMat);
+  sub.position.set(0, GROUND_Y - gh - 30, -0.1);
+  scene.add(sub);
 }
 
-// --- BACKGROUND GRID ---
+// --- BACKGROUND ---
 function createBackground() {
-  const gridMat = new THREE.MeshBasicMaterial({ color: 0x112211, transparent: true, opacity: 0.3 });
+  // Soft grid for depth
+  const gridMat = new THREE.MeshBasicMaterial({ color: 0xc8dde8, transparent: true, opacity: 0.25 });
   const spacing = 50;
   for (let x = -WORLD_W / 2; x <= WORLD_W / 2; x += spacing) {
-    const geo = new THREE.PlaneGeometry(1, WORLD_H);
+    const geo = new THREE.PlaneGeometry(0.5, WORLD_H);
     const m = new THREE.Mesh(geo, gridMat);
     m.position.set(x, 0, -1);
     scene.add(m);
   }
   for (let y = -WORLD_H / 2; y <= WORLD_H / 2; y += spacing) {
-    const geo = new THREE.PlaneGeometry(WORLD_W, 1);
+    const geo = new THREE.PlaneGeometry(WORLD_W, 0.5);
     const m = new THREE.Mesh(geo, gridMat);
     m.position.set(0, y, -1);
     scene.add(m);
@@ -1387,7 +1809,7 @@ function initScene() {
     if (child.geometry) child.geometry.dispose();
     if (child.material) child.material.dispose();
   }
-  scene.add(new THREE.AmbientLight(0x334433, 0.6));
+  scene.add(new THREE.AmbientLight(0xddeeff, 1.0));
 
   objects = [];
   particles.forEach(p => p.destroy());
@@ -1632,6 +2054,7 @@ function updateChemistry(dt) {
       // === Things touching each other ===
       if (touching) {
         if (a.isBurning && b.isFlammable && !b.isBurning && !b.isWet) {
+          maybeShowHypothesis('fire_spread', a.type, b.type);
           b.isBurning = true;
           b.temperature = 300;
           discoverReaction('fire_spread');
@@ -1641,6 +2064,7 @@ function updateChemistry(dt) {
           flashReaction(0xFF4400);
         }
         if (b.isBurning && a.isFlammable && !a.isBurning && !a.isWet) {
+          maybeShowHypothesis('fire_spread', b.type, a.type);
           a.isBurning = true;
           a.temperature = 300;
           discoverReaction('fire_spread');
@@ -1652,6 +2076,7 @@ function updateChemistry(dt) {
 
         // === Water puts out fire! ===
         if (a.isWater && b.isBurning) {
+          maybeShowHypothesis('water_extinguish', a.type, b.type);
           b.isBurning = false;
           b.isWet = true;
           b.temperature = 20;
@@ -1665,6 +2090,7 @@ function updateChemistry(dt) {
           flashReaction(0x2288FF);
         }
         if (b.isWater && a.isBurning) {
+          maybeShowHypothesis('water_extinguish', b.type, a.type);
           a.isBurning = false;
           a.isWet = true;
           a.temperature = 20;
@@ -1679,11 +2105,12 @@ function updateChemistry(dt) {
         }
 
         // === Water makes things wet ===
-        if (a.isWater && !b.isWater) { b.isWet = true; discoverReaction('water_wet'); }
-        if (b.isWater && !a.isWater) { a.isWet = true; discoverReaction('water_wet'); }
+        if (a.isWater && !b.isWater) { maybeShowHypothesis('water_wet', a.type, b.type); b.isWet = true; discoverReaction('water_wet'); }
+        if (b.isWater && !a.isWater) { maybeShowHypothesis('water_wet', b.type, a.type); a.isWet = true; discoverReaction('water_wet'); }
 
         // === Ice freezes water! ===
         if (a.isFrozen && b.isWater) {
+          maybeShowHypothesis('ice_freeze', a.type, b.type);
           b.isWater = false;
           b.isFrozen = true;
           b.temperature = -20;
@@ -1696,6 +2123,7 @@ function updateChemistry(dt) {
           flashReaction(0x88CCEE);
         }
         if (b.isFrozen && a.isWater) {
+          maybeShowHypothesis('ice_freeze', b.type, a.type);
           a.isWater = false;
           a.isFrozen = true;
           a.temperature = -20;
@@ -1730,6 +2158,7 @@ function updateChemistry(dt) {
 
     // === Gets hot enough to catch fire on its own ===
     if (a.isFlammable && !a.isBurning && !a.isWet && a.temperature > 200) {
+      maybeShowHypothesis('spontaneous_combustion', 'fire', a.type);
       a.isBurning = true;
       discoverReaction('spontaneous_combustion');
       showToast('Too hot! Spontaneous combustion!');
@@ -1739,6 +2168,7 @@ function updateChemistry(dt) {
 
     // === Ice melts when warm ===
     if (a.isFrozen && a.temperature > 10) {
+      maybeShowHypothesis('ice_melt', 'fire', a.type);
       a.isFrozen = false;
       a.isWater = true;
       a.isWet = true;
@@ -1754,6 +2184,7 @@ function updateChemistry(dt) {
 
     // === Dries out when hot ===
     if (a.isWet && !a.isWater && a.temperature > 50) {
+      maybeShowHypothesis('drying', 'fire', a.type);
       a.isWet = false;
       discoverReaction('drying');
     }
@@ -1767,6 +2198,7 @@ function updateChemistry(dt) {
         if (Math.abs(dx) < 40 && dy > 0 && dy < 120) {
           const liftFactor = (1 - dy / 120) / Math.max(1, other.weight);
           other.vy += UPDRAFT_FORCE * liftFactor * dt;
+          maybeShowHypothesis('updraft', a.type, other.type);
           discoverReaction('updraft');
         }
       }
@@ -1783,6 +2215,7 @@ function updateChemistry(dt) {
       // Wind makes fire burn faster
       if (obj.isBurning) {
         obj.durability -= obj.burnRate * 0.5 * dt;
+        maybeShowHypothesis('wind_fan', 'wind_source', obj.type);
         discoverReaction('wind_fan');
       }
 
@@ -1794,6 +2227,7 @@ function updateChemistry(dt) {
           const dy = Math.abs(other.y - obj.y);
           if (dx > 0 && dx < FIRE_SPREAD_RADIUS * 2 && dy < 50) {
             other.temperature += HEAT_TRANSFER_RATE * 0.8 * dt;
+            maybeShowHypothesis('wind_spread', 'wind_source', obj.type);
             discoverReaction('wind_spread');
           }
         }
@@ -1810,6 +2244,7 @@ function updateChemistry(dt) {
     const force = big ? BIG_EXPLOSION_FORCE : EXPLOSION_FORCE;
 
     spawnExplosion(obj.x, obj.y, radius, force);
+    maybeShowHypothesis('seed_explosion', 'fire', obj.type);
     discoverReaction('seed_explosion');
     showToast('BOOM! The seed burst!');
 
@@ -1923,7 +2358,7 @@ document.addEventListener('keydown', (e) => {
     showToast('ALL CLEAN!');
   }
 
-  // Number keys for material selection
+  // Number keys for material selection (selectMaterial checks locks)
   const num = parseInt(e.key);
   if (num >= 1 && num <= 9) {
     selectMaterial(num - 1);
@@ -1947,7 +2382,7 @@ canvas.addEventListener('mousemove', (e) => {
 canvas.addEventListener('click', (e) => {
   e.preventDefault();
   const type = SPAWN_TYPES[selectedMaterial];
-  if (!type) return;
+  if (!type || !isElementUnlocked(type)) return;
   const newObj = new GameObject(type, mouseWorld.x, mouseWorld.y, type === 'fire' || type === 'wind_source');
   objects.push(newObj);
 });
@@ -1974,12 +2409,13 @@ canvas.addEventListener('contextmenu', (e) => {
 
 // --- UI FUNCTIONS ---
 function selectMaterial(index) {
+  const type = SPAWN_TYPES[index];
+  if (!isElementUnlocked(type)) return; // can't select locked elements
   selectedMaterial = index;
   document.querySelectorAll('#legend .item').forEach((el, i) => {
     el.classList.toggle('selected', i === index);
   });
   // Update description
-  const type = SPAWN_TYPES[index];
   const descriptions = {
     wood: 'A sturdy log. Burns when it gets hot. Stack them to build shelters!',
     metal: 'A heavy stone. Conducts heat but won\'t burn. Foundation of the earth.',
@@ -2030,27 +2466,67 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('visible'), 1200);
 }
 
-function updateJournal(){
-  var countEl=document.getElementById('journal-count');
-  if(countEl)countEl.textContent=discoveredReactions.size+'/'+ALL_REACTIONS.length;
-  var list=document.getElementById('journal-list');
-  if(!list)return;
-  list.innerHTML='';
-  ALL_REACTIONS.forEach(function(r){
-    var div=document.createElement('div');
-    div.style.cssText='color:'+(discoveredReactions.has(r)?'#00e09a':'#333')+';margin:3px 0';
-    div.textContent=(discoveredReactions.has(r)?'● ':'○ ')+r.replace(/_/g,' ');
+function updateJournal() {
+  var countEl = document.getElementById('journal-count');
+  if (countEl) countEl.textContent = discoveredReactions.size + '/' + ALL_REACTIONS.length;
+  var list = document.getElementById('journal-list');
+  if (!list) return;
+  list.innerHTML = '';
+  ALL_REACTIONS.forEach(function(r) {
+    var meta = REACTION_META[r] || {};
+    var found = discoveredReactions.has(r);
+    var hyp = hypothesisLog[r];
+    var div = document.createElement('div');
+    div.className = 'journal-entry ' + (found ? 'discovered' : 'undiscovered');
+
+    var icon = document.createElement('div');
+    icon.className = 'j-icon';
+    icon.textContent = found ? '\u2714' : '?';
+    div.appendChild(icon);
+
+    var info = document.createElement('div');
+    info.className = 'j-info';
+
+    var name = document.createElement('div');
+    name.className = 'j-name';
+    name.textContent = found ? (meta.name || r.replace(/_/g, ' ')) : '???';
+    info.appendChild(name);
+
+    if (found && meta.desc) {
+      var result = document.createElement('div');
+      result.className = 'j-result';
+      result.textContent = meta.desc;
+      info.appendChild(result);
+    }
+
+    if (found && hyp) {
+      var guess = document.createElement('div');
+      guess.className = 'j-hint';
+      guess.textContent = 'You predicted: "' + hyp.guess + '" ' + (hyp.correct ? '\u2714' : '\u2718');
+      info.appendChild(guess);
+    }
+
+    if (!found && meta.hint) {
+      var hint = document.createElement('div');
+      hint.className = 'j-hint';
+      hint.textContent = meta.hint;
+      info.appendChild(hint);
+    }
+
+    div.appendChild(info);
     list.appendChild(div);
   });
 }
-function toggleJournal(){
-  var p=document.getElementById('journal-panel');
-  p.style.display=p.style.display==='none'?'block':'none';
+
+function toggleJournal() {
+  var p = document.getElementById('journal-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
   updateJournal();
 }
-function showMasteryScreen(){
-  var el=document.getElementById('mastery-screen');
-  el.style.display='flex';
+
+function showMasteryScreen() {
+  var el = document.getElementById('mastery-screen');
+  el.style.display = 'flex';
 }
 
 // --- RESIZE ---
@@ -2183,7 +2659,7 @@ canvas.addEventListener('touchstart', (e) => {
     }
   } else {
     const type = SPAWN_TYPES[selectedMaterial];
-    if (type) {
+    if (type && isElementUnlocked(type)) {
       const newObj = new GameObject(type, w.x, w.y, type === 'fire' || type === 'wind_source');
       objects.push(newObj);
     }
@@ -2207,17 +2683,18 @@ updatePlayer = function(dt) {
 };
 
 // --- INIT ---
-initScene();
 loadDiscoveries();
+loadUnlocked();
+initScene();
 updateJournal();
+updateProgressBar();
+updateElementLocks();
 selectMaterial(0);
 requestAnimationFrame(gameLoop);
 
 // === ANIME EFFECTS ===
 (function() {
   if (typeof AnimeEffects === 'undefined') return;
-
-  AnimeEffects.addScanlines(0.03);
 
   // Watch for toast messages (reactions) and add anime impact
   var toast = document.getElementById('toast');
@@ -2226,12 +2703,11 @@ requestAnimationFrame(gameLoop);
       if (toast.classList.contains('visible')) {
         var text = toast.textContent.toLowerCase();
         if (text.indexOf('boom') >= 0 || text.indexOf('burst') >= 0) {
-          AnimeEffects.impactFrame('#ff4422');
-          AnimeEffects.screenFlash('#44aa22', 200);
+          AnimeEffects.screenFlash('#ff884422', 200);
         } else if (text.indexOf('frozen') >= 0 || text.indexOf('brrr') >= 0) {
-          AnimeEffects.screenFlash('#88ccee', 200);
-        } else if (text.indexOf('melted') >= 0 || text.indexOf('water wins') >= 0) {
-          AnimeEffects.screenFlash('#88bbff', 150);
+          AnimeEffects.screenFlash('#88ccee44', 200);
+        } else if (text.indexOf('new element') >= 0) {
+          AnimeEffects.screenFlash('#0078D422', 300);
         }
       }
     });
@@ -2241,10 +2717,10 @@ requestAnimationFrame(gameLoop);
 
 setTimeout(function(){ showFundPrompt(); }, 120000);
 </script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:3px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.3s steps(4);padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -3px 0 #000;">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,0.5);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:#5A6B7F;z-index:9999;transform:translateY(100%);transition:transform 0.3s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(0,60,120,0.06);">
+  <span style="color:#2D3748">This game runs on one laptop.</span>
+  <a href="/site/fund/" style="color:#0078D4;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#8899AA;cursor:pointer;margin-left:12px;font-size:0.85rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){

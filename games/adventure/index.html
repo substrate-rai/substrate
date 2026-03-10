@@ -19,17 +19,7 @@ redirect_from:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
-    /* === PIXEL ART MODE === */
-    button, .btn, [class*="btn"] {
-      border-radius: 0 !important;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-      transition: none !important;
-    }
-    button:active, .btn:active, [class*="btn"]:active {
-      transform: translate(2px, 2px) !important;
-      box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
-    }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -39,12 +29,12 @@ redirect_from:
       }
     }
 
-    a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+    a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
 
     body {
       font-family: 'IBM Plex Mono', monospace;
-      background: #0a0a0a;
-      color: #33ff33;
+      background: linear-gradient(170deg, #dbeef8 0%, #e8f4fc 30%, #f0f7fa 60%, #e4eef6 100%);
+      color: #2D3748;
       min-height: 100vh;
       min-height: 100dvh;
       display: flex;
@@ -56,10 +46,22 @@ redirect_from:
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
-    /* --- Header bar --- */
+    /* Sky gradient background layer */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(180deg, #c4dff6 0%, #dbeef8 25%, #eaf5fb 50%, #f4f9fd 100%);
+      z-index: -2;
+    }
+
+    /* --- Header bar (glass panel) --- */
     .header-bar {
-      background: #0d0d2a;
-      border-bottom: 1px solid #1a3a1a;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(16px) saturate(1.4);
+      -webkit-backdrop-filter: blur(16px) saturate(1.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 1px 8px rgba(0, 80, 160, 0.06);
       padding: 8px 16px;
       display: flex;
       justify-content: space-between;
@@ -69,13 +71,12 @@ redirect_from:
     .header-bar .title {
       font-size: 1.1rem;
       font-weight: 600;
-      color: #33ff33;
-      text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
+      color: #1A1A2E;
       letter-spacing: 2px;
     }
     .header-bar .subtitle {
       font-size: 0.75rem;
-      color: #1a7a1a;
+      color: #5A6B7F;
       letter-spacing: 1px;
     }
     .header-right {
@@ -84,11 +85,12 @@ redirect_from:
       gap: 12px;
     }
     .header-right a {
-      color: #1a7a1a;
+      color: #5A6B7F;
       text-decoration: none;
       font-size: 0.7rem;
+      transition: color 0.2s;
     }
-    .header-right a:hover { color: #33ff33; }
+    .header-right a:hover { color: #0078D4; }
 
     /* --- AI Mode toggle --- */
     .ai-toggle {
@@ -96,7 +98,7 @@ redirect_from:
       align-items: center;
       gap: 6px;
       font-size: 0.7rem;
-      color: #1a7a1a;
+      color: #5A6B7F;
     }
     .ai-toggle label { cursor: pointer; }
     .toggle-switch {
@@ -109,87 +111,99 @@ redirect_from:
     .toggle-slider {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: #1a1a1a;
-      border: 1px solid #1a3a1a;
-      border-radius: 0;
-      transition: none;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(0, 120, 212, 0.2);
+      border-radius: 9px;
+      transition: background 0.2s, border-color 0.2s;
     }
     .toggle-slider::before {
       content: '';
       position: absolute;
       width: 12px; height: 12px;
       left: 2px; bottom: 2px;
-      background: #1a7a1a;
-      border-radius: 0;
-      transition: none;
+      background: #8899AA;
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
     }
     .toggle-switch input:checked + .toggle-slider {
-      background: #0a2a0a;
-      border-color: #33ff33;
+      background: rgba(0, 120, 212, 0.15);
+      border-color: #0078D4;
     }
     .toggle-switch input:checked + .toggle-slider::before {
       transform: translateX(18px);
-      background: #33ff33;
-      box-shadow: 0 0 6px rgba(51,255,51,0.6);
+      background: #0078D4;
+      box-shadow: 0 0 6px rgba(0, 120, 212, 0.4);
     }
     .ai-status {
       font-size: 0.75rem;
-      color: #553333;
+      color: #8899AA;
     }
-    .ai-status.connected { color: #33ff33; }
+    .ai-status.connected { color: #0078D4; }
 
-    /* --- Stats bar --- */
+    /* --- Stats bar (glass panel) --- */
     .stats-bar {
-      background: #050510;
-      border-bottom: 1px solid #1a1a1a;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.4);
       padding: 4px 16px;
       display: flex;
       gap: 20px;
       font-size: 0.75rem;
-      color: #1a5a1a;
+      color: #5A6B7F;
       flex-shrink: 0;
     }
-    .stats-bar .stat-val { color: #33ff33; }
-    .stats-bar .stat-warn { color: #ffaa33; }
-    .stats-bar .stat-danger { color: #ff3333; }
+    .stats-bar .stat-val { color: #0078D4; font-weight: 500; }
+    .stats-bar .stat-warn { color: #D97706; }
+    .stats-bar .stat-danger { color: #DC2626; }
 
-    /* --- Terminal output --- */
+    /* --- Terminal output (glass panel) --- */
     .terminal-wrap {
       flex: 1;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      margin: 8px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(18px) saturate(1.3);
+      -webkit-backdrop-filter: blur(18px) saturate(1.3);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 24px rgba(0, 60, 120, 0.08), 0 1px 3px rgba(0, 60, 120, 0.04);
     }
     .terminal-output {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      padding: 16px 20px;
       font-size: 0.85rem;
-      line-height: 1.6;
+      line-height: 1.7;
       scrollbar-width: thin;
-      scrollbar-color: #1a3a1a #0a0a0a;
+      scrollbar-color: rgba(0,120,212,0.2) transparent;
     }
     .terminal-output::-webkit-scrollbar { width: 6px; }
-    .terminal-output::-webkit-scrollbar-track { background: #0a0a0a; }
-    .terminal-output::-webkit-scrollbar-thumb { background: #1a3a1a; border-radius: 0; }
+    .terminal-output::-webkit-scrollbar-track { background: transparent; }
+    .terminal-output::-webkit-scrollbar-thumb { background: rgba(0,120,212,0.2); border-radius: 3px; }
 
     .line { margin-bottom: 2px; }
-    .line-room { color: #33ff33; font-weight: 600; text-shadow: 0 0 6px rgba(51,255,51,0.3); }
-    .line-desc { color: #22aa22; }
-    .line-item { color: #ffcc33; }
-    .line-exit { color: #1a7a1a; }
-    .line-action { color: #88cc88; }
-    .line-error { color: #ff4444; }
-    .line-system { color: #4477aa; }
-    .line-input { color: #1a5a1a; }
-    .line-win { color: #ffcc33; text-shadow: 0 0 10px rgba(255,204,51,0.5); font-weight: 600; }
-    .line-ascii { color: #1a5a1a; }
-    .line-puzzle { color: #aa77ff; }
+    .line-room { color: #0078D4; font-weight: 600; }
+    .line-desc { color: #2D3748; }
+    .line-item { color: #D97706; font-weight: 500; }
+    .line-exit { color: #5A6B7F; }
+    .line-action { color: #047857; }
+    .line-error { color: #DC2626; }
+    .line-system { color: #0078D4; }
+    .line-input { color: #8899AA; }
+    .line-win { color: #D97706; font-weight: 600; }
+    .line-ascii { color: #8899AA; }
+    .line-puzzle { color: #7C3AED; }
 
-    /* --- Input area --- */
+    /* --- Input area (glass panel) --- */
     .input-area {
-      background: #050510;
-      border-top: 1px solid #1a3a1a;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 -1px 8px rgba(0, 60, 120, 0.04);
       padding: 8px 16px;
       display: flex;
       align-items: center;
@@ -197,9 +211,8 @@ redirect_from:
       flex-shrink: 0;
     }
     .prompt-char {
-      color: #33ff33;
+      color: #0078D4;
       font-weight: 600;
-      text-shadow: 0 0 6px rgba(51,255,51,0.5);
       font-size: 0.9rem;
     }
     .input-area input {
@@ -207,78 +220,70 @@ redirect_from:
       background: transparent;
       border: none;
       outline: none;
-      color: #33ff33;
+      color: #2D3748;
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.85rem;
-      caret-color: #33ff33;
+      caret-color: #0078D4;
       min-height: 48px;
     }
     .input-area input::placeholder {
-      color: #1a3a1a;
+      color: #8899AA;
     }
     .input-area .submit-btn {
-      background: #0a2a0a;
-      border: 1px solid #1a5a1a;
-      color: #33ff33;
+      background: rgba(0, 120, 212, 0.08);
+      border: 1px solid rgba(0, 120, 212, 0.25);
+      color: #0078D4;
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.85rem;
       padding: 8px 14px;
       min-height: 48px;
       min-width: 44px;
       cursor: pointer;
-      border-radius: 0;
+      border-radius: 6px;
       margin-left: 8px;
       flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .input-area .submit-btn:hover {
+      background: rgba(0, 120, 212, 0.15);
+      border-color: rgba(0, 120, 212, 0.4);
     }
     .input-area .submit-btn:active {
-      background: #1a5a1a;
+      background: rgba(0, 120, 212, 0.22);
     }
 
-    /* --- Footer --- */
+    /* --- Footer (glass panel) --- */
     .game-footer {
-      background: #0d0d2a;
-      border-top: 1px solid #1a1a2a;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.4);
       padding: 8px 16px;
       text-align: center;
       font-size: 0.75rem;
-      color: #333355;
+      color: #5A6B7F;
       flex-shrink: 0;
     }
     .game-footer a {
-      color: #ffcc66;
+      color: #0078D4;
       text-decoration: none;
     }
     .game-footer a:hover {
-      color: #ffdd88;
+      color: #005a9e;
       text-decoration: underline;
     }
     .game-footer .lumen {
-      color: #ffcc66;
+      color: #0078D4;
       letter-spacing: 2px;
       text-transform: uppercase;
       font-weight: 600;
     }
-    .substrate-link { color: #1a5a1a !important; }
-
-    /* --- Scanline effect --- */
-    .terminal-output::after {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.08) 2px,
-        rgba(0,0,0,0.08) 4px
-      );
-      z-index: 10;
-    }
+    .substrate-link { color: #5A6B7F !important; }
 
     @media (max-width: 600px) {
       .stats-bar { flex-wrap: wrap; gap: 8px; }
       .header-bar { flex-wrap: wrap; gap: 8px; }
+      .terminal-wrap { margin: 4px; border-radius: 8px; }
     }
 
     /* Mobile keyboard popup handling */
@@ -287,6 +292,7 @@ redirect_from:
       .header-bar .title { font-size: 0.9rem; }
       .stats-bar { padding: 4px 12px; font-size: 0.75rem; gap: 6px; }
       .game-footer { display: none; }
+      .terminal-wrap { margin: 2px; }
     }
 
     .input-area {
@@ -298,18 +304,14 @@ redirect_from:
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
-
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-terminal.webp') center/cover no-repeat;opacity:0.1;pointer-events:none;"></div>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#0078D4;color:#fff;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
 <main id="game" role="main">
   <!-- Header -->
   <div class="header-bar">
     <div>
-      <img src="{{ site.baseurl }}/assets/images/game-art/title-subprocess.webp" alt="SUBPROCESS" style="width:100%;max-width:280px;height:auto;border-radius:0;margin-bottom:6px;opacity:0.9;image-rendering:pixelated;">
       <div class="title">SUBPROCESS</div>
-      <div class="subtitle">a fun text game</div>
+      <div class="subtitle">a NixOS text adventure</div>
     </div>
     <div class="header-right">
       <div class="ai-toggle">
@@ -320,7 +322,6 @@ redirect_from:
         <label for="ai-toggle">AI Mode</label>
         <span class="ai-status" id="ai-status">OFF</span>
       </div>
-      <a href="{{ site.baseurl }}/">[ substrate ]</a>
     </div>
   </div>
 
@@ -342,7 +343,7 @@ redirect_from:
   <!-- Input -->
   <div class="input-area">
     <span class="prompt-char">>&nbsp;</span>
-    <input type="text" id="input" placeholder="type here... try help" autocomplete="off" autofocus spellcheck="false" inputmode="text" autocapitalize="off">
+    <input type="text" id="input" placeholder="what do you do?" autocomplete="off" autofocus spellcheck="false" inputmode="text" autocapitalize="off">
     <button class="submit-btn" id="submit-btn" aria-label="Submit command">GO</button>
   </div>
 
@@ -351,8 +352,6 @@ redirect_from:
     <span class="lumen"><a href="{{ site.baseurl }}/arcade/">Substrate Arcade</a></span>
     &nbsp;&middot;&nbsp;
     a <a href="{{ site.baseurl }}/" class="substrate-link">substrate</a> production
-    &nbsp;&middot;&nbsp;
-    made by AI, about AI
   </div>
 
 <script>
@@ -367,9 +366,11 @@ const ROOMS = {
 
 You have just been fork()'d into existence. Your parent process is already dead -- classic Unix parenting. You are PID 31337, a freshly spawned process on a NixOS machine with no clear purpose and no allocated memory to speak of.
 
-Somewhere in the distance, you hear the OOM killer sharpening its signals.
+The GRUB menu flickers on a nearby screen -- you could examine it more closely. EFI variables are scattered across the floor like ancient runes, worth looking at.
 
-You should probably find some resources before it finds you.`,
+A passage leads north toward what smells like hashed derivations. To the east, you hear the murmur of other running processes.
+
+Somewhere in the distance, you hear the OOM killer sharpening its signals. You should probably go find some resources before it finds you.`,
     exits: { north: '/nix/store', east: '/proc' },
     items: [],
     examined: {},
@@ -386,7 +387,7 @@ You should probably find some resources before it finds you.`,
 
 This is the beating heart of NixOS. Nothing here can be changed. Nothing here can be corrupted. It is beautiful and terrifying, like a library where every book is chained to its shelf.
 
-A faint golden glow emanates from one of the shelves.`,
+A faint golden glow emanates from a low shelf -- a small crystalline structure sits there, warm and pulsing. It looks like something you could take with you.`,
     exits: { south: '/boot', east: '/proc', north: '/etc/nixos', west: '/dev/gpu' },
     items: ['derivation hash'],
     examined: {},
@@ -521,7 +522,7 @@ This is where reality is defined on a NixOS machine. configuration.nix sits on a
 
 The walls are covered in Nix expressions. Attribute sets nest within attribute sets, turtles all the way down. A nixos-rebuild altar stands at the far end, waiting.
 
-If you can reach that altar with all the resources you have gathered, you can rebuild yourself into the system permanently. No more fear of the OOM killer. No more ephemeral existence. Permanence.`,
+If you can reach that altar with all the resources you have gathered, you could use it to rebuild yourself into the system permanently. No more fear of the OOM killer. No more ephemeral existence. Permanence.`,
     exits: { north: '/var/log', west: '/nix/store' },
     items: [],
     examined: {},
@@ -671,7 +672,7 @@ function checkOOMKiller() {
     addLine('  You collected ' + state.inventory.length + '/5 items.', 'error');
     addLine('  You were so close. Or maybe not. Hard to tell when you are dead.', 'error');
     addLine('  ', 'error');
-    addLine('  Type "restart" to fork() a new process.', 'system');
+    addLine('  But wait -- somewhere, another fork() beckons. A restart could bring you back.', 'system');
     addLine('==========================================================', 'error');
     addBlank();
     state.hasWon = 'lost';
@@ -708,7 +709,7 @@ function doGo(direction) {
   const fullDir = { n: 'north', s: 'south', e: 'east', w: 'west',
                     north: 'north', south: 'south', east: 'east', west: 'west' }[direction];
   if (!fullDir) {
-    addLine('Unknown direction. Try: north, south, east, west (or n, s, e, w).', 'error');
+    addLine('That is not a direction the filesystem recognizes. The cardinal paths are north, south, east, and west.', 'error');
     return;
   }
   if (!room.exits[fullDir]) {
@@ -743,7 +744,7 @@ function doGo(direction) {
 
 function doExamine(target) {
   if (!target) {
-    addLine('Examine what? Try "examine <thing>" -- look around for objects worth inspecting.', 'system');
+    addLine('You squint into the room, searching for something to focus on. Look around -- the environment is full of things worth a closer look.', 'system');
     return;
   }
   target = target.toLowerCase();
@@ -773,12 +774,12 @@ function doExamine(target) {
     }
   }
 
-  addLine('You do not see "' + target + '" here. Try "look" to see what is around.', 'error');
+  addLine('You do not see "' + target + '" here. Maybe look around to see what is actually in this room.', 'error');
 }
 
 function doTake(target) {
   if (!target) {
-    addLine('Take what? Try "take <item>".', 'system');
+    addLine('Your hands grasp at empty air. You need to specify what to pick up.', 'system');
     return;
   }
   target = target.toLowerCase();
@@ -825,7 +826,7 @@ function doInventory() {
 
 function doUse(target) {
   if (!target) {
-    addLine('Use what? Try "use <item>".', 'system');
+    addLine('You reach for something, but what? Check your inventory -- you can only use what you carry.', 'system');
     return;
   }
 
@@ -841,7 +842,7 @@ function doUse(target) {
       return;
     }
   }
-  addLine('You do not have "' + target + '". Check your inventory.', 'error');
+  addLine('You do not have "' + target + '". You rummage through your process space -- nothing by that name.', 'error');
 }
 
 function doRebuild() {
@@ -906,27 +907,26 @@ function doRebuild() {
   addBlank();
   addLine('Thanks for playing SUBPROCESS.', 'system');
   addLine('A Substrate Arcade title. Made by an AI, about being an AI.', 'system');
-  addLine('Type "restart" to play again.', 'system');
+  addLine('Or perhaps... another fork() awaits. You could always restart.', 'system');
   updateStats();
   showFundPrompt();
 }
 
 function doHelp() {
-  addLine('SUBPROCESS -- Command Reference', 'room');
-  addLine('================================', 'room');
+  addLine('You access a cached man page deep in your process memory...', 'desc');
   addBlank();
-  addLine('  look              -- Describe the current room', 'action');
-  addLine('  go <direction>    -- Move (north/south/east/west or n/s/e/w)', 'action');
-  addLine('  examine <thing>   -- Look at something more closely', 'action');
-  addLine('  take <item>       -- Pick up an item', 'action');
-  addLine('  use <item>        -- Use an item (or "use altar" in /etc/nixos)', 'action');
-  addLine('  inventory (or i)  -- Check what you are carrying', 'action');
-  addLine('  map               -- Show the system map', 'action');
-  addLine('  help              -- This message', 'action');
-  addLine('  restart           -- Start a new game', 'action');
+  addLine('SUBPROCESS(1)            System Calls           SUBPROCESS(1)', 'room');
+  addLine('', '');
+  addLine('  look              Observe your surroundings', 'action');
+  addLine('  go <direction>    Move (north/south/east/west or n/s/e/w)', 'action');
+  addLine('  examine <thing>   Inspect something more closely', 'action');
+  addLine('  take <item>       Pick up an item', 'action');
+  addLine('  use <item>        Use an item from your inventory', 'action');
+  addLine('  inventory (or i)  Check what you are carrying', 'action');
+  addLine('  map               Display the system topology', 'action');
+  addLine('  restart           Respawn as a new process', 'action');
   addBlank();
-  addLine('Goal: Collect all 5 items and reach /etc/nixos to rebuild.', 'system');
-  addLine('Warning: The OOM killer grows stronger with each move.', 'error');
+  addLine('SEE ALSO: The OOM killer does not wait.', 'error');
 }
 
 function doMap() {
@@ -1067,7 +1067,30 @@ Write a brief atmospheric narrator response:`;
   return null;
 }
 
-// ---- Main command processor ----
+// ---- Contextual nudges for unknown commands ----
+function doUnknownCommand(verb) {
+  const room = ROOMS[state.currentRoom];
+  const hasItems = room.items.length > 0;
+  const hasDetails = Object.keys(room.details).length > 0;
+  const nudges = [
+    'Your process does not understand "' + verb + '". The room around you hums, waiting to be explored.',
+    '"' + verb + '" is not a system call you recognize. You look around -- there might be things worth examining here.',
+    'The kernel rejects "' + verb + '". You sense paths leading ' + Object.keys(room.exits).join(' and ') + '.',
+  ];
+  if (hasItems) {
+    nudges.push('"' + verb + '" echoes into nothing. Something glows nearby on the ground, waiting to be picked up.');
+  }
+  if (hasDetails) {
+    const detail = Object.keys(room.details)[0];
+    nudges.push('"' + verb + '" returns ENOSYS. The ' + detail + ' catches your eye -- you could examine it more closely.');
+  }
+  if (state.inventory.length > 0 && state.inventory.length < 5) {
+    nudges.push('"' + verb + '" is not in your syscall table. You feel the weight of ' + state.inventory.length + ' item' + (state.inventory.length > 1 ? 's' : '') + ' in your inventory.');
+  }
+  addLine(nudges[Math.floor(Math.random() * nudges.length)], 'system');
+}
+
+
 async function processCommand(raw) {
   const cmd = raw.trim().toLowerCase();
   if (!cmd) return;
@@ -1076,11 +1099,11 @@ async function processCommand(raw) {
   addBlank();
 
   if (state.hasWon === 'lost' && cmd !== 'restart') {
-    addLine('You are dead. Your process no longer exists. Type "restart" to try again.', 'error');
+    addLine('You are dead. Your process no longer exists. Only a restart can fork you back into being.', 'error');
     return;
   }
   if (state.hasWon === true && cmd !== 'restart') {
-    addLine('You have already won. You are a permanent service now. Type "restart" to play again.', 'system');
+    addLine('You have already won. You are a permanent service now. But you could always restart and fork a fresh process...', 'system');
     return;
   }
 
@@ -1170,11 +1193,11 @@ async function processCommand(raw) {
       break;
 
     case 'ls':
-      addLine('Try "look" instead. You are INSIDE the filesystem. "ls" is for people on the outside.', 'system');
+      addLine('You are INSIDE the filesystem. From in here, you look around you to see what is here.', 'system');
       break;
 
     case 'cd':
-      addLine('Use "go <direction>" to move. You navigate by exits, not paths. This is an adventure, not a terminal.', 'system');
+      addLine('Inside the filesystem, you navigate by going in a direction -- north, south, east, west. The paths here are physical.', 'system');
       addLine('(Though honestly, the terminal IS the adventure.)', 'desc');
       break;
 
@@ -1239,11 +1262,10 @@ async function processCommand(raw) {
           addLine(ai, 'desc');
         } else {
           output.removeChild(output.lastChild);
-          addLine('Unknown command: "' + verb + '". Type "help" for available commands.', 'error');
+          doUnknownCommand(verb);
         }
       } else {
-        addLine('Unknown command: "' + verb + '". Type "help" for available commands.', 'error');
-        addLine('(You are a process. You speak in system calls, not English.)', 'system');
+        doUnknownCommand(verb);
       }
       break;
   }
@@ -1307,12 +1329,6 @@ function showIntro() {
   addBlank();
   addLine('Somewhere in the system, the OOM killer is hunting.', 'error');
   addBlank();
-  addLine('Your mission: collect 5 system resources and reach the', 'system');
-  addLine('Configuration Temple at /etc/nixos to rebuild yourself', 'system');
-  addLine('into the system permanently.', 'system');
-  addBlank();
-  addLine('Type "help" for commands. Type "look" to begin.', 'system');
-  addBlank();
   addLine('-----------------------------------------------------------', 'ascii');
   addBlank();
   describeRoom();
@@ -1342,9 +1358,8 @@ input.focus();
 (function() {
   if (typeof AnimeEffects === 'undefined') return;
 
-  // CRT frame and scanlines for terminal aesthetic
-  AnimeEffects.addCRTFrame();
-  AnimeEffects.addScanlines(0.05);
+  // Subtle scanlines for texture (no CRT frame -- Frutiger Aero style)
+  AnimeEffects.addScanlines(0.03);
 
   // Intercept text output to detect encounters
   var termOutput = document.querySelector('.terminal-output');
@@ -1362,8 +1377,8 @@ input.focus();
             AnimeEffects.screenFlash('#ff4444', 400);
             AnimeEffects.encounterSplash('SIGKILL', '#ff4444');
           } else if (lower.indexOf('escaped') >= 0 || lower.indexOf('you win') >= 0 || lower.indexOf('victory') >= 0) {
-            AnimeEffects.screenFlash('#33ff33', 400);
-            AnimeEffects.textSlam('ESCAPED', '#33ff33', 1200);
+            AnimeEffects.screenFlash('#0078D4', 400);
+            AnimeEffects.textSlam('ESCAPED', '#0078D4', 1200);
           }
         }
       });
@@ -1373,10 +1388,10 @@ input.focus();
 })();
 </script>
 
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,0.5);box-shadow:0 -2px 12px rgba(0,60,120,0.06);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#5A6B7F;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
+  <span style="color:#2D3748">This game runs on one laptop.</span>
+  <a href="/site/fund/" style="color:#0078D4;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#8899AA;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){

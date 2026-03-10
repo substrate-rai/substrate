@@ -17,139 +17,196 @@ redirect_from:
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;overflow:hidden;position:fixed;width:100%;height:100%;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+body{background:linear-gradient(135deg,#e3f0fb 0%,#d4e8f7 30%,#c8e0f0 60%,#daeaf5 100%);color:#2D3748;font-family:'IBM Plex Mono',monospace;overflow:hidden;position:fixed;width:100%;height:100%;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 #game-canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
 
 /* Selection box */
-#select-box{position:absolute;border:1px solid #00e09a;background:rgba(0,224,154,0.08);pointer-events:none;display:none;z-index:10}
+#select-box{position:absolute;border:1px solid #0078D4;background:rgba(0,120,212,0.1);pointer-events:none;display:none;z-index:10}
 
+/* Glass panel mixin look */
 /* HUD - Top bar */
-#hud{position:absolute;top:0;left:0;right:0;height:36px;background:linear-gradient(180deg,rgba(20,16,10,0.95),rgba(30,24,16,0.9));border-bottom:2px solid #5a4a2a;display:flex;align-items:center;padding:0 12px;z-index:20;gap:20px;font-size:13px}
-.res{display:flex;align-items:center;gap:5px}
-.res-icon{width:16px;height:16px;border-radius:2px}
-.res-gold{background:linear-gradient(135deg,#ffd700,#b8860b)}
-.res-lumber{background:linear-gradient(135deg,#8B4513,#654321)}
-.res-food{background:linear-gradient(135deg,#f4a460,#d2691e)}
-.res-val{font-weight:700;min-width:40px}
+#hud{position:absolute;top:0;left:0;right:0;height:38px;background:linear-gradient(180deg,rgba(255,255,255,0.82),rgba(230,242,255,0.72));backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border-bottom:1px solid rgba(255,255,255,0.5);box-shadow:0 1px 8px rgba(0,80,160,0.08);display:flex;align-items:center;padding:0 14px;z-index:20;gap:20px;font-size:13px}
+.res{display:flex;align-items:center;gap:6px}
+.res-icon{width:16px;height:16px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.15)}
+.res-gold{background:linear-gradient(135deg,#ffd700,#e6ac00)}
+.res-lumber{background:linear-gradient(135deg,#8B6914,#6B4226)}
+.res-food{background:linear-gradient(135deg,#e8a050,#c87030)}
+.res-val{font-weight:700;min-width:40px;color:#1a2a3a}
 #hud-right{margin-left:auto;display:flex;gap:12px;align-items:center}
 
 /* Bottom panel */
-#bottom-panel{position:absolute;bottom:0;left:0;right:0;height:160px;background:linear-gradient(0deg,rgba(20,16,10,0.97),rgba(30,24,16,0.93));border-top:2px solid #5a4a2a;display:flex;z-index:20}
+#bottom-panel{position:absolute;bottom:0;left:0;right:0;height:160px;background:linear-gradient(0deg,rgba(255,255,255,0.85),rgba(235,245,255,0.75));backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border-top:1px solid rgba(255,255,255,0.5);box-shadow:0 -2px 12px rgba(0,80,160,0.06);display:flex;z-index:20}
 
 /* Minimap */
-#minimap-frame{width:160px;height:160px;border-right:2px solid #5a4a2a;position:relative;flex-shrink:0}
-#minimap-canvas{width:100%;height:100%;display:block;cursor:crosshair}
+#minimap-frame{width:160px;height:160px;border-right:1px solid rgba(255,255,255,0.4);position:relative;flex-shrink:0}
+#minimap-canvas{width:100%;height:100%;display:block;cursor:crosshair;border-radius:0 0 0 4px}
 
 /* Selection info */
 #sel-info{flex:1;padding:8px 12px;display:flex;align-items:center;gap:12px;min-width:0}
-#sel-portrait{width:64px;height:64px;border:2px solid #5a4a2a;border-radius:4px;background:#1a1610;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#sel-portrait{width:64px;height:64px;border:1px solid rgba(0,120,212,0.25);border-radius:8px;background:rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
 #sel-portrait canvas{width:100%;height:100%}
 #sel-details{flex:1;min-width:0}
-#sel-name{font-weight:700;font-size:14px;color:#ffd700;margin-bottom:4px}
-#sel-hp-bar{width:100%;height:8px;background:#1a1610;border:1px solid #5a4a2a;border-radius:2px;margin-bottom:4px}
-#sel-hp-fill{height:100%;background:#00cc44;border-radius:1px;transition:width 0.3s}
-#sel-status{font-size:11px;color:#8a8a6a}
+#sel-name{font-weight:700;font-size:14px;color:#0078D4;margin-bottom:4px}
+#sel-hp-bar{width:100%;height:8px;background:rgba(0,0,0,0.06);border:1px solid rgba(0,120,212,0.15);border-radius:4px;margin-bottom:4px;overflow:hidden}
+#sel-hp-fill{height:100%;background:linear-gradient(90deg,#00b050,#00cc44);border-radius:3px;transition:width 0.3s}
+#sel-status{font-size:11px;color:#5A6B7F}
 #sel-multi{display:none;flex-wrap:wrap;gap:4px}
-.sel-multi-icon{width:28px;height:28px;border:1px solid #5a4a2a;border-radius:2px;background:#1a1610;cursor:pointer}
-.sel-multi-icon.active{border-color:#ffd700}
+.sel-multi-icon{width:28px;height:28px;border:1px solid rgba(0,120,212,0.2);border-radius:4px;background:rgba(255,255,255,0.4);cursor:pointer}
+.sel-multi-icon.active{border-color:#0078D4}
 
 /* Command panel */
-#cmd-panel{width:180px;border-left:2px solid #5a4a2a;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3px;padding:6px;flex-shrink:0}
-.cmd-btn{background:linear-gradient(180deg,#2a2418,#1a1610);border:1px solid #5a4a2a;border-radius:3px;color:#c8c0a0;font-size:10px;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px;transition:all 0.15s}
-.cmd-btn:hover:not(:disabled){background:linear-gradient(180deg,#3a3428,#2a2418);border-color:#ffd700}
-.cmd-btn:disabled{opacity:0.3;cursor:not-allowed}
-.cmd-btn .cmd-key{font-size:9px;color:#8a8a6a}
-.cmd-btn .cmd-label{font-size:9px;text-align:center;line-height:1.1}
+#cmd-panel{width:180px;border-left:1px solid rgba(255,255,255,0.4);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3px;padding:6px;flex-shrink:0}
+.cmd-btn{background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(240,248,255,0.4));border:1px solid rgba(0,120,212,0.2);border-radius:6px;color:#2D3748;font-size:10px;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px;transition:all 0.15s;backdrop-filter:blur(4px)}
+.cmd-btn:hover:not(:disabled){background:linear-gradient(180deg,rgba(255,255,255,0.8),rgba(220,240,255,0.6));border-color:#0078D4;box-shadow:0 2px 8px rgba(0,120,212,0.12)}
+.cmd-btn:disabled{opacity:0.35;cursor:not-allowed}
+.cmd-btn .cmd-key{font-size:9px;color:#5A6B7F}
+.cmd-btn .cmd-label{font-size:9px;text-align:center;line-height:1.1;color:#1a2a3a}
 .cmd-btn .cmd-cost{font-size:8px;color:#b8860b}
 
 /* Idle worker alert */
-#idle-alert{background:rgba(255,170,0,0.15);border:1px solid #ffa500;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:11px;color:#ffa500;display:none;animation:idle-blink 1s infinite}
+#idle-alert{background:rgba(255,170,0,0.12);border:1px solid rgba(255,165,0,0.4);border-radius:6px;padding:2px 8px;cursor:pointer;font-size:11px;color:#cc7700;display:none;animation:idle-blink 1s infinite;backdrop-filter:blur(4px)}
 @keyframes idle-blink{0%,100%{opacity:1}50%{opacity:0.4}}
 /* Upkeep indicator */
-.upkeep-warn{color:#ff8844!important}
+.upkeep-warn{color:#dd6622!important}
 
 /* Build ghost tooltip */
-#build-tooltip{position:absolute;background:rgba(20,16,10,0.95);border:1px solid #5a4a2a;border-radius:4px;padding:8px;font-size:11px;pointer-events:none;display:none;z-index:30;max-width:200px}
-#build-tooltip .tt-name{font-weight:700;color:#ffd700;margin-bottom:4px}
+#build-tooltip{position:absolute;background:rgba(255,255,255,0.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(0,120,212,0.2);border-radius:8px;padding:8px 12px;font-size:11px;pointer-events:none;display:none;z-index:30;max-width:200px;box-shadow:0 4px 16px rgba(0,60,120,0.1)}
+#build-tooltip .tt-name{font-weight:700;color:#0078D4;margin-bottom:4px}
 #build-tooltip .tt-cost{color:#b8860b}
-#build-tooltip .tt-req{color:#aa4444;font-size:10px;margin-top:2px}
+#build-tooltip .tt-req{color:#cc3333;font-size:10px;margin-top:2px}
 
-/* Title screen */
-#title-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a,#1a1020,#0a1a0a);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100}
-#title-screen h1{font-size:48px;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.3);letter-spacing:4px;margin-bottom:8px}
-#title-screen .subtitle{font-size:14px;color:#8a8a6a;margin-bottom:40px}
-#title-screen button{background:linear-gradient(180deg,#3a3020,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:16px;padding:12px 40px;border-radius:4px;cursor:pointer;letter-spacing:2px;transition:all 0.2s}
-#title-screen button:hover{background:linear-gradient(180deg,#5a4a30,#3a3020);box-shadow:0 0 20px rgba(255,215,0,0.2)}
-.title-controls{font-size:11px;color:#6a6a5a;margin-top:30px;text-align:center;line-height:1.8}
+/* Title screen — Frutiger Aero */
+#title-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#daeef8 0%,#c0dff0 30%,#a8d4e8 60%,#e0f0fa 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100}
+#title-screen h1{font-size:48px;color:#0060A8;text-shadow:0 2px 20px rgba(0,96,168,0.15);letter-spacing:4px;margin-bottom:8px}
+#title-screen .subtitle{font-size:14px;color:#5A6B7F;margin-bottom:40px}
+#title-screen button{background:linear-gradient(180deg,rgba(255,255,255,0.7),rgba(220,240,255,0.5));border:1px solid rgba(0,120,212,0.3);color:#0078D4;font-family:inherit;font-size:16px;padding:12px 40px;border-radius:8px;cursor:pointer;letter-spacing:2px;transition:all 0.2s;backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,80,160,0.08)}
+#title-screen button:hover{background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(200,230,255,0.7));box-shadow:0 4px 20px rgba(0,120,212,0.15);transform:translateY(-1px)}
+.title-controls{font-size:11px;color:#5A6B7F;margin-top:30px;text-align:center;line-height:1.8;background:rgba(255,255,255,0.4);backdrop-filter:blur(8px);border-radius:8px;padding:12px 20px;border:1px solid rgba(255,255,255,0.5)}
 
 /* Arcade link */
-#arcade-link{position:absolute;top:42px;left:8px;z-index:25;color:#00e09a;text-decoration:none;font-size:12px;background:rgba(10,10,15,0.8);padding:3px 8px;border-radius:3px;border:1px solid rgba(0,224,154,0.2)}
-#arcade-link:hover{background:rgba(0,224,154,0.1)}
+#arcade-link{position:absolute;top:42px;left:8px;z-index:25;color:#0078D4;text-decoration:none;font-size:12px;background:rgba(255,255,255,0.6);backdrop-filter:blur(8px);padding:3px 8px;border-radius:6px;border:1px solid rgba(0,120,212,0.15);box-shadow:0 1px 4px rgba(0,60,120,0.06)}
+#arcade-link:hover{background:rgba(255,255,255,0.8);border-color:rgba(0,120,212,0.3)}
 
 /* Notifications */
 #notifications{position:absolute;top:44px;right:12px;z-index:25;display:flex;flex-direction:column;gap:4px;pointer-events:none}
-.notif{background:rgba(20,16,10,0.9);border:1px solid #5a4a2a;border-radius:3px;padding:4px 10px;font-size:11px;color:#ffd700;animation:notif-fade 3s forwards;white-space:nowrap}
+.notif{background:rgba(255,255,255,0.85);backdrop-filter:blur(10px);border:1px solid rgba(0,120,212,0.15);border-radius:6px;padding:5px 12px;font-size:11px;color:#0078D4;animation:notif-fade 3s forwards;white-space:nowrap;box-shadow:0 2px 8px rgba(0,60,120,0.08)}
 @keyframes notif-fade{0%{opacity:0;transform:translateX(20px)}10%{opacity:1;transform:translateX(0)}80%{opacity:1}100%{opacity:0}}
 
 /* Mission Select */
-#campaign-list{display:flex;flex-direction:column;gap:8px;width:380px;max-height:50vh;overflow-y:auto;margin-bottom:20px;padding:4px}
-.mission-card{background:linear-gradient(180deg,#2a2418,#1a1610);border:2px solid #5a4a2a;border-radius:6px;padding:12px 16px;cursor:pointer;text-align:left;transition:all 0.2s;position:relative}
-.mission-card:hover:not(.mission-locked){border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,0.15);transform:translateY(-1px)}
+#campaign-list{display:flex;flex-direction:column;gap:8px;width:400px;max-height:50vh;overflow-y:auto;margin-bottom:20px;padding:4px}
+.mission-card{background:linear-gradient(180deg,rgba(255,255,255,0.65),rgba(235,248,255,0.45));backdrop-filter:blur(12px);border:1px solid rgba(0,120,212,0.15);border-radius:10px;padding:12px 16px;cursor:pointer;text-align:left;transition:all 0.2s;position:relative;box-shadow:0 2px 8px rgba(0,60,120,0.05)}
+.mission-card:hover:not(.mission-locked){border-color:rgba(0,120,212,0.4);box-shadow:0 4px 16px rgba(0,120,212,0.1);transform:translateY(-1px)}
 .mission-card.mission-locked{opacity:0.4;cursor:not-allowed}
-.mission-card .mc-num{font-size:11px;color:#8a8a6a}
-.mission-card .mc-title{font-size:15px;font-weight:700;color:#ffd700;margin:2px 0}
-.mission-card .mc-brief{font-size:11px;color:#8a8a6a;line-height:1.3}
-.mission-card .mc-stars{position:absolute;top:12px;right:16px;font-size:16px;letter-spacing:2px}
-.mission-card .mc-lock{position:absolute;top:12px;right:16px;font-size:12px;color:#5a4a2a}
-#sandbox-btn{background:none;border:1px solid #5a4a2a;color:#8a8a6a;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;margin-bottom:10px}
-#sandbox-btn:hover{border-color:#00e09a;color:#00e09a}
+.mission-card .mc-num{font-size:11px;color:#5A6B7F}
+.mission-card .mc-title{font-size:15px;font-weight:700;color:#0060A8;margin:2px 0}
+.mission-card .mc-brief{font-size:11px;color:#5A6B7F;line-height:1.3}
+.mission-card .mc-stars{position:absolute;top:12px;right:16px;font-size:16px;letter-spacing:2px;color:#e6a800}
+.mission-card .mc-lock{position:absolute;top:12px;right:16px;font-size:12px;color:#8899AA}
+#sandbox-btn{background:rgba(255,255,255,0.4);backdrop-filter:blur(8px);border:1px solid rgba(0,120,212,0.2);color:#5A6B7F;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:8px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;margin-bottom:10px}
+#sandbox-btn:hover{border-color:#0078D4;color:#0078D4;background:rgba(255,255,255,0.6)}
 
-/* Briefing Overlay */
-#briefing-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(10,8,5,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110;padding:40px}
-#briefing-overlay .bo-title{font-size:28px;font-weight:700;color:#ffd700;letter-spacing:3px;margin-bottom:16px;text-shadow:0 0 20px rgba(255,215,0,0.3)}
-#briefing-overlay .bo-text{font-size:14px;color:#c8c0a0;max-width:500px;text-align:center;line-height:1.6;margin-bottom:24px;min-height:60px}
+/* Briefing Overlay — Aero glass */
+#briefing-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(200,225,245,0.95),rgba(180,215,240,0.92));backdrop-filter:blur(20px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110;padding:40px}
+#briefing-overlay .bo-title{font-size:28px;font-weight:700;color:#004080;letter-spacing:3px;margin-bottom:16px;text-shadow:0 1px 10px rgba(0,64,128,0.1)}
+#briefing-overlay .bo-text{font-size:14px;color:#3a5068;max-width:500px;text-align:center;line-height:1.6;margin-bottom:24px;min-height:60px}
 #briefing-overlay .bo-objectives{margin-bottom:30px;text-align:left}
-#briefing-overlay .bo-obj{font-size:13px;color:#8a8a6a;margin:4px 0;padding-left:20px;position:relative}
-#briefing-overlay .bo-obj::before{content:'[ ]';position:absolute;left:0;color:#5a4a2a;font-size:11px}
-#briefing-overlay button{background:linear-gradient(180deg,#3a3020,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:14px;padding:10px 32px;border-radius:4px;cursor:pointer;letter-spacing:2px;transition:all 0.2s}
-#briefing-overlay button:hover{background:linear-gradient(180deg,#5a4a30,#3a3020);box-shadow:0 0 20px rgba(255,215,0,0.2)}
+#briefing-overlay .bo-obj{font-size:13px;color:#5A6B7F;margin:4px 0;padding-left:20px;position:relative}
+#briefing-overlay .bo-obj::before{content:'[ ]';position:absolute;left:0;color:#8899AA;font-size:11px}
+#briefing-overlay button{background:linear-gradient(180deg,rgba(255,255,255,0.7),rgba(220,240,255,0.5));border:1px solid rgba(0,120,212,0.3);color:#0078D4;font-family:inherit;font-size:14px;padding:10px 32px;border-radius:8px;cursor:pointer;letter-spacing:2px;transition:all 0.2s;backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(0,80,160,0.08)}
+#briefing-overlay button:hover{background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(200,230,255,0.7));box-shadow:0 4px 20px rgba(0,120,212,0.15)}
 
 /* Objective HUD */
-#objective-hud{position:absolute;top:42px;left:50%;transform:translateX(-50%);z-index:22;background:rgba(20,16,10,0.85);border:1px solid #5a4a2a;border-radius:4px;padding:8px 14px;display:none;min-width:220px;text-align:center}
-#obj-title{font-size:11px;color:#ffd700;font-weight:700;letter-spacing:1px;margin-bottom:4px}
-#obj-timer{font-size:20px;color:#c8c0a0;font-weight:700;margin-bottom:6px}
-#obj-timer.timer-urgent{color:#ff4444;animation:timer-pulse 1s infinite}
+#objective-hud{position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:22;background:rgba(255,255,255,0.75);backdrop-filter:blur(12px);border:1px solid rgba(0,120,212,0.15);border-radius:10px;padding:8px 14px;display:none;min-width:220px;text-align:center;box-shadow:0 2px 12px rgba(0,60,120,0.08)}
+#obj-title{font-size:11px;color:#0060A8;font-weight:700;letter-spacing:1px;margin-bottom:4px}
+#obj-timer{font-size:20px;color:#1a2a3a;font-weight:700;margin-bottom:6px}
+#obj-timer.timer-urgent{color:#cc2222;animation:timer-pulse 1s infinite}
 @keyframes timer-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 #obj-list{text-align:left}
-.obj-item{font-size:11px;color:#8a8a6a;margin:2px 0;transition:color 0.3s}
-.obj-item.obj-done{color:#00cc44;text-decoration:line-through}
-.obj-item::before{content:'○ ';color:#5a4a2a}
-.obj-item.obj-done::before{content:'● ';color:#00cc44}
-#obj-par{font-size:10px;color:#5a4a2a;margin-top:4px}
-#obj-par .star-active{color:#ffd700}
+.obj-item{font-size:11px;color:#5A6B7F;margin:2px 0;transition:color 0.3s}
+.obj-item.obj-done{color:#00884a;text-decoration:line-through}
+.obj-item::before{content:'○ ';color:#8899AA}
+.obj-item.obj-done::before{content:'● ';color:#00884a}
+#obj-par{font-size:10px;color:#8899AA;margin-top:4px}
+#obj-par .star-active{color:#e6a800}
 
 /* Event Bar */
-#event-bar{position:absolute;top:0;left:0;right:0;background:rgba(40,20,0,0.95);border-bottom:2px solid #b8860b;color:#ffa500;font-size:13px;padding:10px 20px;text-align:center;z-index:120;transform:translateY(-100%);transition:transform 0.3s;font-weight:600}
+#event-bar{position:absolute;top:0;left:0;right:0;background:linear-gradient(180deg,rgba(255,240,210,0.95),rgba(255,230,180,0.9));backdrop-filter:blur(12px);border-bottom:1px solid rgba(200,150,50,0.3);color:#885500;font-size:13px;padding:10px 20px;text-align:center;z-index:120;transform:translateY(-100%);transition:transform 0.3s;font-weight:600;box-shadow:0 2px 8px rgba(150,100,0,0.08)}
 #event-bar.show{transform:translateY(0)}
 
-/* Victory Screen */
-#victory-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(10,8,5,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110}
-#victory-screen h2{font-size:32px;color:#ffd700;letter-spacing:4px;margin-bottom:8px;text-shadow:0 0 30px rgba(255,215,0,0.4)}
-#victory-screen .vs-mission{font-size:16px;color:#c8c0a0;margin-bottom:20px}
-#victory-screen .vs-rating{font-size:36px;letter-spacing:4px;margin-bottom:16px}
-#victory-screen .vs-stats{font-size:12px;color:#8a8a6a;line-height:1.8;margin-bottom:24px;text-align:center}
+/* Victory Screen — Aero glass */
+#victory-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(210,240,225,0.94),rgba(190,230,210,0.92));backdrop-filter:blur(20px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110}
+#victory-screen h2{font-size:32px;color:#006830;letter-spacing:4px;margin-bottom:8px;text-shadow:0 2px 15px rgba(0,104,48,0.15)}
+#victory-screen .vs-mission{font-size:16px;color:#3a5a48;margin-bottom:20px}
+#victory-screen .vs-rating{font-size:36px;letter-spacing:4px;margin-bottom:16px;color:#e6a800}
+#victory-screen .vs-stats{font-size:12px;color:#5A6B7F;line-height:1.8;margin-bottom:24px;text-align:center}
 #victory-screen .vs-btns{display:flex;gap:12px}
-#victory-screen button{background:linear-gradient(180deg,#3a3020,#1a1610);border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s}
-#victory-screen button:hover{background:linear-gradient(180deg,#5a4a30,#3a3020);box-shadow:0 0 15px rgba(255,215,0,0.2)}
+#victory-screen button{background:linear-gradient(180deg,rgba(255,255,255,0.7),rgba(220,245,230,0.5));border:1px solid rgba(0,120,80,0.25);color:#006830;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:8px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;backdrop-filter:blur(8px)}
+#victory-screen button:hover{background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(200,240,220,0.7));box-shadow:0 4px 16px rgba(0,104,48,0.12)}
 
-/* Defeat Screen */
-#defeat-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(20,5,5,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110}
-#defeat-screen h2{font-size:32px;color:#cc3333;letter-spacing:4px;margin-bottom:12px;text-shadow:0 0 20px rgba(204,51,51,0.3)}
-#defeat-screen .ds-reason{font-size:14px;color:#c8a0a0;max-width:400px;text-align:center;line-height:1.5;margin-bottom:12px}
-#defeat-screen .ds-progress{font-size:12px;color:#8a6a6a;margin-bottom:24px;text-align:center;line-height:1.8}
+/* Defeat Screen — Aero glass, warm */
+#defeat-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(245,215,215,0.94),rgba(240,200,200,0.92));backdrop-filter:blur(20px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110}
+#defeat-screen h2{font-size:32px;color:#aa2222;letter-spacing:4px;margin-bottom:12px;text-shadow:0 2px 12px rgba(170,34,34,0.12)}
+#defeat-screen .ds-reason{font-size:14px;color:#6a3a3a;max-width:400px;text-align:center;line-height:1.5;margin-bottom:12px}
+#defeat-screen .ds-progress{font-size:12px;color:#7a5a5a;margin-bottom:24px;text-align:center;line-height:1.8}
 #defeat-screen .ds-btns{display:flex;gap:12px}
-#defeat-screen button{background:linear-gradient(180deg,#3a2020,#1a1010);border:2px solid #cc3333;color:#cc3333;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s}
-#defeat-screen button:hover{background:linear-gradient(180deg,#5a3030,#3a2020);box-shadow:0 0 15px rgba(204,51,51,0.2)}
+#defeat-screen button{background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,230,230,0.4));border:1px solid rgba(170,34,34,0.25);color:#aa2222;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:8px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;backdrop-filter:blur(8px)}
+#defeat-screen button:hover{background:linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,220,220,0.6));box-shadow:0 4px 16px rgba(170,34,34,0.1)}
+
+/* ============================================================
+   DECISION JOURNAL — Post-game replay overlay
+   ============================================================ */
+#journal-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(220,235,250,0.96),rgba(200,225,245,0.94));backdrop-filter:blur(24px);display:none;flex-direction:column;align-items:center;z-index:115;overflow-y:auto;padding:40px 20px}
+#journal-overlay h2{font-size:26px;color:#004080;letter-spacing:3px;margin-bottom:4px}
+#journal-overlay .journal-subtitle{font-size:12px;color:#5A6B7F;margin-bottom:24px}
+.journal-grid{display:flex;gap:20px;width:100%;max-width:900px;align-items:flex-start}
+.journal-timeline{flex:1;min-width:0}
+.journal-sidebar{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:12px}
+/* Timeline track */
+.jt-track{position:relative;padding-left:28px;border-left:2px solid rgba(0,120,212,0.15);margin-left:8px}
+.jt-entry{position:relative;margin-bottom:10px;padding:8px 12px;background:rgba(255,255,255,0.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.5);border-radius:8px;font-size:11px;line-height:1.5;transition:all 0.2s;box-shadow:0 1px 6px rgba(0,60,120,0.05)}
+.jt-entry:hover{background:rgba(255,255,255,0.8);box-shadow:0 3px 12px rgba(0,60,120,0.08)}
+.jt-entry::before{content:'';position:absolute;left:-34px;top:12px;width:10px;height:10px;border-radius:50%;border:2px solid #0078D4;background:#fff}
+.jt-entry.jt-build::before{background:#0078D4}
+.jt-entry.jt-expand::before{background:#00884a}
+.jt-entry.jt-recruit::before{background:#e6a800}
+.jt-entry.jt-event::before{background:#cc5500}
+.jt-entry.jt-idle::before{background:#aa3333}
+.jt-time{font-weight:700;color:#004080;margin-right:8px}
+.jt-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;text-transform:uppercase;margin-right:6px}
+.jt-tag-build{background:rgba(0,120,212,0.1);color:#0060A8}
+.jt-tag-expand{background:rgba(0,136,74,0.1);color:#006830}
+.jt-tag-recruit{background:rgba(230,168,0,0.1);color:#996600}
+.jt-tag-event{background:rgba(204,85,0,0.1);color:#aa4400}
+.jt-tag-idle{background:rgba(170,51,51,0.1);color:#882222}
+.jt-detail{color:#5A6B7F}
+.jt-analysis{color:#aa4400;font-style:italic;margin-top:4px;font-size:10px;display:block}
+/* Sidebar panels */
+.journal-panel{background:rgba(255,255,255,0.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:14px;box-shadow:0 2px 10px rgba(0,60,120,0.06)}
+.journal-panel h3{font-size:12px;color:#004080;letter-spacing:1px;margin-bottom:8px;font-weight:700}
+.jp-stat{display:flex;justify-content:space-between;font-size:11px;margin:3px 0;color:#3a5068}
+.jp-stat-val{font-weight:700;color:#1a2a3a}
+.jp-bar-outer{height:6px;background:rgba(0,0,0,0.06);border-radius:3px;margin:4px 0;overflow:hidden}
+.jp-bar-inner{height:100%;border-radius:3px;transition:width 0.5s}
+.jp-verdict{font-size:11px;line-height:1.5;color:#3a5068;margin-top:6px}
+.jp-verdict strong{color:#004080}
+/* Efficiency badge */
+.jp-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
+.jp-badge-gold{background:rgba(230,168,0,0.12);color:#996600}
+.jp-badge-silver{background:rgba(140,140,160,0.12);color:#555}
+.jp-badge-bronze{background:rgba(180,110,50,0.12);color:#885522}
+.jp-badge-iron{background:rgba(100,100,100,0.1);color:#666}
+/* History sparkline area */
+.jp-history{margin-top:8px}
+.jp-history canvas{width:100%;height:50px;border-radius:4px;background:rgba(0,0,0,0.03)}
+/* Buttons */
+.journal-btns{display:flex;gap:10px;margin-top:20px}
+.journal-btns button{background:linear-gradient(180deg,rgba(255,255,255,0.7),rgba(220,240,255,0.5));border:1px solid rgba(0,120,212,0.25);color:#0078D4;font-family:inherit;font-size:12px;padding:8px 20px;border-radius:8px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;backdrop-filter:blur(8px)}
+.journal-btns button:hover{background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(200,230,255,0.7));box-shadow:0 3px 12px rgba(0,120,212,0.1)}
+
+/* In-game journal indicator (bottom-right) */
+#journal-indicator{position:absolute;bottom:168px;right:8px;z-index:22;background:rgba(255,255,255,0.6);backdrop-filter:blur(8px);border:1px solid rgba(0,120,212,0.15);border-radius:8px;padding:4px 10px;font-size:10px;color:#5A6B7F;cursor:pointer;transition:all 0.2s;box-shadow:0 1px 4px rgba(0,60,120,0.05)}
+#journal-indicator:hover{background:rgba(255,255,255,0.85);color:#0078D4}
+#journal-indicator .ji-count{font-weight:700;color:#0078D4;margin-left:4px}
 </style>
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
@@ -190,6 +247,7 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
   <div class="vs-rating"></div>
   <div class="vs-stats"></div>
   <div class="vs-btns">
+    <button onclick="openJournalFromResult()">DECISION JOURNAL</button>
     <button onclick="nextMission()">NEXT MISSION</button>
     <button onclick="replayMission()">REPLAY</button>
     <button onclick="showCampaign()">CAMPAIGN</button>
@@ -201,6 +259,7 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
   <div class="ds-reason"></div>
   <div class="ds-progress"></div>
   <div class="ds-btns">
+    <button onclick="openJournalFromResult()">DECISION JOURNAL</button>
     <button onclick="replayMission()">RETRY</button>
     <button onclick="showCampaign()">CAMPAIGN</button>
   </div>
@@ -210,6 +269,39 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
 <div id="select-box"></div>
 
 <a id="arcade-link" href="/arcade/">&larr; ARCADE</a>
+
+<div id="journal-indicator" onclick="toggleJournalPreview()" style="display:none">
+  DECISIONS<span class="ji-count">0</span>
+</div>
+
+<div id="journal-overlay">
+  <h2>DECISION JOURNAL</h2>
+  <div class="journal-subtitle">Strategic replay — every choice, analyzed</div>
+  <div class="journal-grid">
+    <div class="journal-timeline">
+      <div class="jt-track" id="jt-track"></div>
+    </div>
+    <div class="journal-sidebar">
+      <div class="journal-panel" id="jp-efficiency">
+        <h3>EFFICIENCY REPORT</h3>
+        <div id="jp-efficiency-body"></div>
+      </div>
+      <div class="journal-panel" id="jp-analysis">
+        <h3>STRATEGIC ANALYSIS</h3>
+        <div id="jp-analysis-body"></div>
+      </div>
+      <div class="journal-panel" id="jp-career">
+        <h3>CAREER TREND</h3>
+        <div id="jp-career-body"></div>
+      </div>
+    </div>
+  </div>
+  <div class="journal-btns">
+    <button onclick="nextMission()">NEXT MISSION</button>
+    <button onclick="replayMission()">REPLAY</button>
+    <button onclick="showCampaign()">CAMPAIGN</button>
+  </div>
+</div>
 
 <div id="hud" style="display:none">
   <div class="res"><div class="res-icon res-gold"></div><span class="res-val" id="gold-val">500</span></div>
@@ -1074,6 +1166,10 @@ function resetGame(){
   missionElapsed=0;missionCompleted=false;missionFailed=false;
   missionFiredEvents.clear();
   missionStats={workersTrainedTotal:0,buildingsBuilt:0,goldGathered:0,lumberGathered:0,workersLost:0,idleWorkerSeconds:0};
+  // Reset decision journal
+  decisionJournal=[];journalResourceSnapshots=[];journalNextSnapshot=0;
+  journalIdleStretchStart=null;journalIdleWarnings.clear();
+  updateJournalIndicator();
 }
 
 function initGame(mission){
@@ -1418,6 +1514,11 @@ function placeBuild(e){
   entities.push(b);
   playSfx('hammer');
   notify('Building '+info.name+'...');
+  // Decision journal: log build
+  const jCat=buildMode==='townhall'?'expand':'build';
+  logDecision(jCat,'Built '+info.name,
+    info.name+' placed (cost: '+info.cost.gold+'g '+info.cost.lumber+'l)',
+    {building:buildMode});
   // Auto-assign nearest idle worker
   let bestW=null,bestD=Infinity;
   for(const e of entities){
@@ -1445,6 +1546,7 @@ function trainWorker(){
   const w=new Worker(wx,wz);
   entities.push(w);missionStats.workersTrainedTotal++;
   playSfx('ack');notify('Worker trained');
+  logDecision('recruit','Trained worker','Worker #'+missionStats.workersTrainedTotal+' ('+foodUsed+'/'+foodCap+' supply)');
 }
 
 // ============================================================
@@ -1806,6 +1908,7 @@ function fireMissionEvent(event){
   }
   showEventMessage(event.message);
   playSfx('event_alert');
+  logDecision('event',event.type.replace(/_/g,' '),event.message);
 }
 
 function updateMission(dt){
@@ -1896,16 +1999,16 @@ function calculateRating(){
 
 function saveMissionProgress(){
   try{
-    sessionStorage.setItem('dominion_unlocked',JSON.stringify(unlockedMissions));
-    sessionStorage.setItem('dominion_ratings',JSON.stringify(missionRatings));
+    localStorage.setItem('dominion_unlocked',JSON.stringify(unlockedMissions));
+    localStorage.setItem('dominion_ratings',JSON.stringify(missionRatings));
   }catch(e){}
 }
 
 function loadMissionProgress(){
   try{
-    const u=sessionStorage.getItem('dominion_unlocked');
+    const u=localStorage.getItem('dominion_unlocked');
     if(u)unlockedMissions=JSON.parse(u);
-    const r=sessionStorage.getItem('dominion_ratings');
+    const r=localStorage.getItem('dominion_ratings');
     if(r)missionRatings=JSON.parse(r);
   }catch(e){}
 }
@@ -2045,6 +2148,353 @@ function showDefeatScreen(reason){
 }
 
 // ============================================================
+// DECISION JOURNAL
+// ============================================================
+let decisionJournal=[];
+let journalResourceSnapshots=[];// periodic resource snapshots for analysis
+let journalSnapshotInterval=15;// every 15 seconds
+let journalNextSnapshot=0;
+let journalIdleStretchStart=null;// tracks when idle workers appeared
+let journalIdleWarnings=new Set();// avoid duplicate idle warnings
+
+function logDecision(category,action,detail,extra){
+  if(!gameStarted)return;
+  decisionJournal.push({
+    time:missionElapsed||gameTick*0.016,
+    category, // 'build','expand','recruit','event','idle'
+    action,
+    detail,
+    gold:Math.floor(gold),
+    lumber:Math.floor(lumber),
+    foodUsed,foodCap,
+    workerCount:entities.filter(e=>e instanceof Worker&&e.alive).length,
+    buildingCount:entities.filter(e=>e.type==='building'&&e.built).length,
+    ...(extra||{})
+  });
+  updateJournalIndicator();
+}
+
+function snapshotResources(){
+  journalResourceSnapshots.push({
+    time:missionElapsed||gameTick*0.016,
+    gold:Math.floor(gold),
+    lumber:Math.floor(lumber),
+    foodUsed,foodCap,
+    workers:entities.filter(e=>e instanceof Worker&&e.alive).length,
+    buildings:entities.filter(e=>e.type==='building'&&e.built).length,
+    idleWorkers:entities.filter(e=>e instanceof Worker&&e.alive&&e.state==='idle').length,
+  });
+}
+
+function updateJournalIndicator(){
+  const el=document.getElementById('journal-indicator');
+  if(!el)return;
+  if(gameStarted){el.style.display='block'}
+  el.querySelector('.ji-count').textContent=decisionJournal.length;
+}
+
+window.toggleJournalPreview=function(){
+  // During game, just flash the count. Journal review only after game ends.
+  if(!missionCompleted&&!missionFailed){
+    notify('Journal available after mission ends');return;
+  }
+  showDecisionJournal();
+};
+
+function showDecisionJournal(){
+  const overlay=document.getElementById('journal-overlay');
+  overlay.style.display='flex';
+  renderJournalTimeline();
+  renderJournalEfficiency();
+  renderJournalAnalysis();
+  renderJournalCareer();
+  // Store this game's efficiency for career tracking
+  saveGameEfficiency();
+}
+
+function renderJournalTimeline(){
+  const track=document.getElementById('jt-track');
+  track.innerHTML='';
+  if(decisionJournal.length===0){
+    track.innerHTML='<div style="color:#5A6B7F;font-size:12px;padding:12px">No decisions recorded.</div>';
+    return;
+  }
+  for(const entry of decisionJournal){
+    const div=document.createElement('div');
+    const catClass={build:'jt-build',expand:'jt-expand',recruit:'jt-recruit',event:'jt-event',idle:'jt-idle'}[entry.category]||'';
+    const tagClass={build:'jt-tag-build',expand:'jt-tag-expand',recruit:'jt-tag-recruit',event:'jt-tag-event',idle:'jt-tag-idle'}[entry.category]||'';
+    div.className='jt-entry '+catClass;
+    let html=`<span class="jt-time">${formatTime(entry.time)}</span>`;
+    html+=`<span class="jt-tag ${tagClass}">${entry.category}</span>`;
+    html+=`<span class="jt-detail">${entry.action}</span>`;
+    // Add contextual analysis annotation
+    const analysis=analyzeDecision(entry);
+    if(analysis)html+=`<span class="jt-analysis">${analysis}</span>`;
+    div.innerHTML=html;
+    track.appendChild(div);
+  }
+}
+
+function analyzeDecision(entry){
+  // Contextual micro-analysis for each decision
+  if(entry.category==='build'){
+    if(entry.detail.includes('Farm')){
+      // Was food actually needed?
+      if(entry.foodUsed<entry.foodCap-2){
+        return 'Food supply was not yet tight — this farm may have been premature.';
+      }
+      if(entry.foodUsed>=entry.foodCap){
+        return 'Supply-blocked at build time — good reactive decision.';
+      }
+    }
+    if(entry.detail.includes('Tower')&&entry.workerCount<6){
+      return 'Defense built with few workers — economy may suffer.';
+    }
+    if(entry.detail.includes('Barracks')&&entry.buildingCount<=1){
+      return 'Early military investment — strong if mission requires it.';
+    }
+  }
+  if(entry.category==='recruit'){
+    if(entry.gold<150){
+      return 'Training with low gold reserves — risky but aggressive.';
+    }
+    if(entry.foodUsed>=entry.foodCap){
+      return 'Supply-capped recruitment — needed farms first.';
+    }
+    // Check for worker saturation
+    const mineCount=goldMines.filter(m=>m.hp>0).length;
+    if(entry.workerCount>mineCount*4+4){
+      return 'High worker count relative to resource nodes — possible over-investment in economy.';
+    }
+  }
+  if(entry.category==='expand'){
+    if(entry.gold<200){
+      return 'Expansion with thin reserves — bold strategic bet.';
+    }
+  }
+  if(entry.category==='idle'){
+    return 'Idle workers represent wasted gathering potential.';
+  }
+  return '';
+}
+
+function renderJournalEfficiency(){
+  const body=document.getElementById('jp-efficiency-body');
+  const totalTime=missionElapsed||1;
+  const gatherRate=missionStats.goldGathered/totalTime;
+  const lumberRate=missionStats.lumberGathered/totalTime;
+  const idleRatio=missionStats.idleWorkerSeconds/(missionStats.workersTrainedTotal*totalTime);
+  const buildRate=missionStats.buildingsBuilt/totalTime*60;// per minute
+
+  // Resource efficiency ratio: actual gathering vs. theoretical maximum
+  const maxWorkerSeconds=missionStats.workersTrainedTotal*totalTime;
+  const activeWorkerSeconds=maxWorkerSeconds-missionStats.idleWorkerSeconds;
+  const efficiency=maxWorkerSeconds>0?Math.round((activeWorkerSeconds/maxWorkerSeconds)*100):0;
+
+  // Determine badge
+  let badgeClass,badgeText;
+  if(efficiency>=90){badgeClass='jp-badge-gold';badgeText='GOLD'}
+  else if(efficiency>=75){badgeClass='jp-badge-silver';badgeText='SILVER'}
+  else if(efficiency>=60){badgeClass='jp-badge-bronze';badgeText='BRONZE'}
+  else{badgeClass='jp-badge-iron';badgeText='IRON'}
+
+  body.innerHTML=`
+    <div style="text-align:center;margin-bottom:8px"><span class="jp-badge ${badgeClass}">${badgeText} EFFICIENCY</span></div>
+    <div class="jp-stat"><span>Worker Utilization</span><span class="jp-stat-val">${efficiency}%</span></div>
+    <div class="jp-bar-outer"><div class="jp-bar-inner" style="width:${efficiency}%;background:linear-gradient(90deg,${efficiency>70?'#00884a':'#cc5500'},${efficiency>70?'#00b060':'#e68000'})"></div></div>
+    <div class="jp-stat"><span>Gold/min</span><span class="jp-stat-val">${(gatherRate*60).toFixed(1)}</span></div>
+    <div class="jp-stat"><span>Lumber/min</span><span class="jp-stat-val">${(lumberRate*60).toFixed(1)}</span></div>
+    <div class="jp-stat"><span>Builds/min</span><span class="jp-stat-val">${buildRate.toFixed(1)}</span></div>
+    <div class="jp-stat"><span>Workers Lost</span><span class="jp-stat-val">${missionStats.workersLost}</span></div>
+    <div class="jp-stat"><span>Idle Time</span><span class="jp-stat-val">${formatTime(missionStats.idleWorkerSeconds)}</span></div>
+    <div class="jp-stat"><span>Total Decisions</span><span class="jp-stat-val">${decisionJournal.length}</span></div>
+  `;
+}
+
+function renderJournalAnalysis(){
+  const body=document.getElementById('jp-analysis-body');
+  const totalTime=missionElapsed||1;
+  const verdicts=[];
+
+  // 1. Check for over-investment patterns
+  const buildDecisions=decisionJournal.filter(d=>d.category==='build');
+  const recruitDecisions=decisionJournal.filter(d=>d.category==='recruit');
+  const farmBuilds=buildDecisions.filter(d=>d.detail.includes('Farm'));
+  const defenseBuilds=buildDecisions.filter(d=>d.detail.includes('Tower'));
+
+  // Economy vs Defense balance
+  if(defenseBuilds.length>0&&farmBuilds.length<2){
+    verdicts.push('<strong>Under-invested in economy.</strong> Towers before farms can stall growth.');
+  }
+  if(farmBuilds.length>4&&defenseBuilds.length===0){
+    verdicts.push('<strong>Pure economy play.</strong> No defenses built — works in sandbox, risky in campaign.');
+  }
+
+  // 2. Idle worker analysis
+  const idleEntries=decisionJournal.filter(d=>d.category==='idle');
+  if(idleEntries.length>3){
+    verdicts.push(`<strong>Frequent idle workers</strong> (${idleEntries.length} alerts). Assign tasks immediately after training.`);
+  }else if(idleEntries.length===0&&recruitDecisions.length>2){
+    verdicts.push('<strong>Excellent worker management.</strong> Minimal idle time detected.');
+  }
+
+  // 3. Expansion timing
+  const expandDecisions=decisionJournal.filter(d=>d.category==='expand');
+  if(expandDecisions.length>0){
+    const firstExpand=expandDecisions[0].time;
+    if(firstExpand<120)verdicts.push('<strong>Early expansion</strong> — aggressive opening. High reward if resources support it.');
+    else if(firstExpand>360)verdicts.push('<strong>Late expansion</strong> — consider expanding sooner to secure additional resource nodes.');
+  }else if(totalTime>300){
+    verdicts.push('<strong>No expansion attempted.</strong> Second base secures long-term income.');
+  }
+
+  // 4. Decision tempo
+  if(decisionJournal.length>0){
+    const decPerMin=decisionJournal.length/(totalTime/60);
+    if(decPerMin>4)verdicts.push(`<strong>High tempo</strong> (${decPerMin.toFixed(1)} decisions/min) — rapid decision-making is a strategic advantage.`);
+    else if(decPerMin<1.5)verdicts.push(`<strong>Low tempo</strong> (${decPerMin.toFixed(1)} decisions/min) — try to queue actions more frequently.`);
+  }
+
+  // 5. Resource at game end
+  if(gold>500&&missionCompleted){
+    verdicts.push('<strong>Unspent gold</strong> — you finished with '+Math.floor(gold)+' gold. Invest surplus into expansion or workers.');
+  }
+  if(lumber>400&&missionCompleted){
+    verdicts.push('<strong>Unspent lumber</strong> — '+Math.floor(lumber)+' remaining. Could have built more structures.');
+  }
+
+  if(verdicts.length===0)verdicts.push('No significant strategic patterns detected. Play longer for deeper analysis.');
+
+  body.innerHTML='<div class="jp-verdict">'+verdicts.join('</div><div class="jp-verdict" style="margin-top:6px">')+'</div>';
+}
+
+function renderJournalCareer(){
+  const body=document.getElementById('jp-career-body');
+  let history=[];
+  try{
+    const raw=localStorage.getItem('dominion_career');
+    if(raw)history=JSON.parse(raw);
+  }catch(e){}
+
+  if(history.length<2){
+    body.innerHTML='<div class="jp-verdict">Play more games to see career trends. Efficiency is tracked across sessions.</div>';
+    return;
+  }
+
+  // Draw sparkline
+  const canvas=document.createElement('canvas');
+  canvas.width=230;canvas.height=50;
+  canvas.style.width='100%';canvas.style.height='50px';
+  canvas.style.borderRadius='4px';canvas.style.background='rgba(0,0,0,0.03)';
+  const ctx=canvas.getContext('2d');
+
+  const vals=history.map(h=>h.efficiency);
+  const maxVal=Math.max(...vals,100);
+  const minVal=Math.min(...vals,0);
+  const range=maxVal-minVal||1;
+  const stepX=canvas.width/(vals.length-1||1);
+
+  // Fill area
+  ctx.beginPath();
+  ctx.moveTo(0,canvas.height);
+  vals.forEach((v,i)=>{
+    ctx.lineTo(i*stepX,canvas.height-(v-minVal)/range*40-5);
+  });
+  ctx.lineTo((vals.length-1)*stepX,canvas.height);
+  ctx.closePath();
+  ctx.fillStyle='rgba(0,120,212,0.08)';
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  vals.forEach((v,i)=>{
+    const x=i*stepX,y=canvas.height-(v-minVal)/range*40-5;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle='#0078D4';ctx.lineWidth=2;ctx.stroke();
+
+  // Dots
+  vals.forEach((v,i)=>{
+    const x=i*stepX,y=canvas.height-(v-minVal)/range*40-5;
+    ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle=i===vals.length-1?'#0078D4':'rgba(0,120,212,0.4)';
+    ctx.fill();
+  });
+
+  const latest=history[history.length-1];
+  const prev=history.length>1?history[history.length-2]:null;
+  let trend='';
+  if(prev){
+    const diff=latest.efficiency-prev.efficiency;
+    if(diff>5)trend='Improving (+'+diff+'%)';
+    else if(diff<-5)trend='Declining ('+diff+'%)';
+    else trend='Steady';
+  }
+
+  body.innerHTML=`
+    <div class="jp-stat"><span>Games Played</span><span class="jp-stat-val">${history.length}</span></div>
+    <div class="jp-stat"><span>Latest Efficiency</span><span class="jp-stat-val">${latest.efficiency}%</span></div>
+    <div class="jp-stat"><span>Trend</span><span class="jp-stat-val">${trend}</span></div>
+    <div class="jp-history"></div>
+  `;
+  body.querySelector('.jp-history').appendChild(canvas);
+}
+
+function saveGameEfficiency(){
+  const totalTime=missionElapsed||1;
+  const maxWorkerSeconds=missionStats.workersTrainedTotal*totalTime;
+  const activeWorkerSeconds=maxWorkerSeconds-missionStats.idleWorkerSeconds;
+  const efficiency=maxWorkerSeconds>0?Math.round((activeWorkerSeconds/maxWorkerSeconds)*100):0;
+
+  try{
+    let history=[];
+    const raw=localStorage.getItem('dominion_career');
+    if(raw)history=JSON.parse(raw);
+    history.push({
+      date:new Date().toISOString(),
+      mission:currentMission?currentMission.id:'sandbox',
+      efficiency,
+      time:Math.round(totalTime),
+      decisions:decisionJournal.length,
+      won:missionCompleted,
+      goldRate:Math.round(missionStats.goldGathered/totalTime*60),
+      lumberRate:Math.round(missionStats.lumberGathered/totalTime*60),
+    });
+    // Keep last 50
+    if(history.length>50)history=history.slice(-50);
+    localStorage.setItem('dominion_career',JSON.stringify(history));
+  }catch(e){}
+}
+
+function updateJournalTracking(dt){
+  if(!gameStarted)return;
+  const elapsed=missionElapsed||gameTick*0.016;
+
+  // Periodic resource snapshots
+  if(elapsed>=journalNextSnapshot){
+    journalNextSnapshot=elapsed+journalSnapshotInterval;
+    snapshotResources();
+  }
+
+  // Track idle worker stretches
+  const idleCount=entities.filter(e=>e instanceof Worker&&e.alive&&e.state==='idle').length;
+  const totalWorkers=entities.filter(e=>e instanceof Worker&&e.alive).length;
+  if(idleCount>0&&totalWorkers>0){
+    if(!journalIdleStretchStart)journalIdleStretchStart=elapsed;
+    const idleDuration=elapsed-journalIdleStretchStart;
+    // Log if idle workers persist for 15+ seconds
+    const idleKey=Math.floor(journalIdleStretchStart/30);
+    if(idleDuration>=15&&!journalIdleWarnings.has(idleKey)){
+      journalIdleWarnings.add(idleKey);
+      logDecision('idle',`${idleCount} worker${idleCount>1?'s':''} idle for ${Math.round(idleDuration)}s`,
+        `${idleCount}/${totalWorkers} workers sitting idle`);
+    }
+  }else{
+    journalIdleStretchStart=null;
+  }
+}
+
+// ============================================================
 // GAME LOOP
 // ============================================================
 const clock=new THREE.Clock();
@@ -2059,6 +2509,8 @@ function gameLoop(){
   handleKeys();
   // Update mission
   if(currentMission)updateMission(dt);
+  // Update decision journal tracking
+  updateJournalTracking(dt);
   // Update entities
   for(const e of entities){
     if(e instanceof Worker)e.update(dt);
@@ -2117,16 +2569,20 @@ function hideAllScreens(){
   document.getElementById('victory-screen').style.display='none';
   document.getElementById('defeat-screen').style.display='none';
   document.getElementById('objective-hud').style.display='none';
+  document.getElementById('journal-overlay').style.display='none';
+  document.getElementById('journal-indicator').style.display='none';
 }
 
 function showGameUI(){
   document.getElementById('hud').style.display='flex';
   document.getElementById('bottom-panel').style.display='flex';
+  document.getElementById('journal-indicator').style.display='block';
 }
 
 function hideGameUI(){
   document.getElementById('hud').style.display='none';
   document.getElementById('bottom-panel').style.display='none';
+  document.getElementById('journal-indicator').style.display='none';
 }
 
 window.startSandbox=function(){
@@ -2171,6 +2627,12 @@ window.showCampaign=function(){
   currentMission=null;
   document.getElementById('title-screen').style.display='flex';
   renderCampaignList();
+};
+
+window.openJournalFromResult=function(){
+  document.getElementById('victory-screen').style.display='none';
+  document.getElementById('defeat-screen').style.display='none';
+  showDecisionJournal();
 };
 
 // Load progress and render campaign on page load

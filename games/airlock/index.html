@@ -1,7 +1,7 @@
 ---
 layout: null
-title: "AIRLOCK — Memory Management Protocol"
-description: "A top-down memory management puzzle. Route data through Substrate's memory sectors. Purge corruption, preserve what matters."
+title: "AIRLOCK — Memory Routing Protocol"
+description: "Route data through memory sectors under capacity constraints. A spatial puzzle that trains working memory."
 permalink: /games/airlock/
 redirect_from:
   - /airlock/
@@ -12,1521 +12,1806 @@ redirect_from:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>AIRLOCK</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
-  /* === PIXEL ART MODE === */
-  button, .btn, [class*="btn"] {
-    border-radius: 0 !important;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    transition: none !important;
-  }
-  button:active, .btn:active, [class*="btn"]:active {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-
-  a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
-
-  body {
-    background: #0a0a0f;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    min-height: 100dvh;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    color: #c8c8d0;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  }
-  canvas {
-    border: 2px solid #1e1e2a;
-    border-radius: 0;
-    image-rendering: pixelated;
-    touch-action: none;
-  }
-  #game-wrapper {
-    position: relative;
-    width: 800px;
-    height: 600px;
-  }
-  .hud {
-    position: fixed;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-    font-size: 13px;
-    font-family: monospace;
-    z-index: 10;
-  }
-  .hud-item {
-    padding: 6px 14px;
-    background: rgba(10,10,15,0.9);
-    border: 1px solid #1e1e2a;
-    border-radius: 0;
-    color: #6a6a78;
-    transition: none;
-    box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
-    cursor: default;
-  }
-  .hud-item.active {
-    border-color: #00e09a;
-    color: #00e09a;
-    background: rgba(0,224,154,0.08);
-  }
-  .hud-item kbd {
-    color: #888;
-    font-size: 12px;
-    margin-right: 4px;
-  }
-  .top-hud {
-    position: fixed;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: monospace;
-    font-size: 12px;
-    color: #44444f;
-    z-index: 10;
-    text-align: center;
-  }
-  .top-hud a { color: #6a6a78; }
-  .controls-hint {
-    position: fixed;
-    top: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: monospace;
-    font-size: 12px;
-    color: #33333e;
-    z-index: 10;
-  }
-  .win-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: none;
-  }
-  .win-overlay.show { opacity: 1; pointer-events: auto; }
-  .win-overlay h1 {
-    font-family: monospace;
-    font-size: 2.5rem;
-    color: #00e09a;
-    letter-spacing: 0.2em;
-    margin-bottom: 12px;
-  }
-  .win-overlay p { color: #6a6a78; font-size: 14px; margin-bottom: 20px; }
-  .win-overlay button {
-    font-family: monospace;
-    font-size: 14px;
-    padding: 10px 28px;
-    background: transparent;
-    border: 1px solid #00e09a;
-    color: #00e09a;
-    border-radius: 0;
-    cursor: pointer;
-    transition: none;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    border: 2px solid #00e09a;
-  }
-  .win-overlay button:hover { background: rgba(0,224,154,0.1); }
-  .win-overlay button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
-
-  .intro-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.88);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    transition: none;
-    padding: 20px;
-  }
-  .intro-overlay.hide { opacity: 0; pointer-events: none; }
-  .intro-overlay h1 {
-    font-family: monospace;
-    font-size: 2rem;
-    color: #00e09a;
-    letter-spacing: 0.3em;
-    margin-bottom: 6px;
-  }
-  .intro-overlay h2 {
-    font-family: monospace;
-    font-size: 1rem;
-    color: #6a6a78;
-    letter-spacing: 0.15em;
-    margin-bottom: 24px;
-    font-weight: normal;
-  }
-  .intro-overlay .intro-text {
-    max-width: 480px;
-    font-family: monospace;
-    font-size: 13px;
-    color: #8a8a98;
-    line-height: 1.7;
-    text-align: center;
-    margin-bottom: 28px;
-  }
-  .intro-overlay .intro-text span {
-    color: #00e09a;
-  }
-  .intro-overlay button {
-    font-family: monospace;
-    font-size: 14px;
-    padding: 10px 28px;
-    background: transparent;
-    border: 1px solid #00e09a;
-    color: #00e09a;
-    border-radius: 0;
-    cursor: pointer;
-    transition: none;
-    letter-spacing: 0.1em;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    border: 2px solid #00e09a;
-  }
-  .intro-overlay button:hover { background: rgba(0,224,154,0.1); }
-  .intro-overlay button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
-
-  /* === Mobile Controls === */
-  .mobile-controls {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 180px;
-    padding-bottom: env(safe-area-inset-bottom);
-    z-index: 50;
-    pointer-events: none;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  .mobile-controls * { pointer-events: auto; }
-
-  .dpad {
-    position: absolute;
-    left: 24px;
-    bottom: 20px;
-    width: 156px;
-    height: 156px;
-  }
-  .dpad-btn {
-    position: absolute;
-    width: 52px;
-    height: 52px;
-    background: rgba(200,200,208,0.12);
-    border: 1px solid rgba(200,200,208,0.2);
-    border-radius: 0;
-    color: #6a6a78;
-    font-size: 22px;
-    font-family: monospace;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    touch-action: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .dpad-btn:active, .dpad-btn.pressed {
-    background: rgba(0,224,154,0.18);
-    border-color: #00e09a;
-    color: #00e09a;
-  }
-  .dpad-up    { top: 0; left: 52px; }
-  .dpad-down  { bottom: 0; left: 52px; }
-  .dpad-left  { top: 52px; left: 0; }
-  .dpad-right { top: 52px; right: 0; }
-
-  .action-buttons {
-    position: absolute;
-    right: 24px;
-    bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-end;
-  }
-  .action-btn {
-    min-width: 72px;
-    height: 52px;
-    padding: 0 16px;
-    background: rgba(200,200,208,0.12);
-    border: 1px solid rgba(200,200,208,0.2);
-    border-radius: 0;
-    color: #6a6a78;
-    font-size: 12px;
-    font-family: monospace;
-    font-weight: bold;
-    letter-spacing: 0.05em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    touch-action: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .action-btn:active, .action-btn.pressed {
-    background: rgba(0,224,154,0.18);
-    border-color: #00e09a;
-    color: #00e09a;
-  }
-  .action-btn.emit-btn {
-    border-color: rgba(0,224,154,0.4);
-    color: #00e09a;
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px; height: 1px;
-    padding: 0; margin: -1px;
-    overflow: hidden;
-    clip: rect(0,0,0,0);
-    border: 0;
-  }
-
-  /* === Mobile Media Queries === */
-  @media (max-width: 860px), (max-height: 700px) and (pointer: coarse) {
-    .mobile-controls { display: block; }
-    .controls-hint { display: none; }
-    body {
-      justify-content: flex-start;
-      padding-top: 40px;
-      overflow: hidden;
-    }
-    #game-wrapper {
-      transform-origin: top center;
-    }
-    .hud {
-      position: fixed;
-      bottom: auto;
-      top: 4px;
-      left: 4px;
-      right: auto;
-      transform: none;
-      flex-wrap: wrap;
-      gap: 4px;
-      font-size: 12px;
-    }
-    .hud-item {
-      padding: 4px 8px;
-    }
-    .hud-item kbd { display: none; }
-    .top-hud {
-      font-size: 12px;
-      top: 4px;
-      right: 4px;
-      left: auto;
-      transform: none;
-    }
-  }
-
-  @media (pointer: coarse) {
-    .mobile-controls { display: block; }
-    .controls-hint { display: none; }
-  }
-</style>
-<script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 <link rel="stylesheet" href="../shared/substrate-frame.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
+
+:root {
+  --bg: #E8F4F8;
+  --bg-grad-top: #D4EEF8;
+  --bg-grad-bot: #F0F8FC;
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: rgba(0, 80, 160, 0.08);
+  --text: #2D3748;
+  --text-muted: #5A6B7F;
+  --text-dim: #8899AA;
+  --accent: #0078D4;
+  --accent-light: #40A0E8;
+  --accent-dim: rgba(0, 120, 212, 0.1);
+  --danger: #E53E3E;
+  --danger-light: #FC8181;
+  --success: #38A169;
+  --success-light: #68D391;
+  --warning: #D69E2E;
+  --mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  --sector-radius: 16px;
+
+  /* Data block colors */
+  --data-red: #E53E3E;
+  --data-blue: #3182CE;
+  --data-green: #38A169;
+  --data-purple: #805AD5;
+  --data-orange: #DD6B20;
+  --data-teal: #319795;
+  --data-pink: #D53F8C;
+  --data-yellow: #D69E2E;
+}
+
+body {
+  background: linear-gradient(170deg, var(--bg-grad-top) 0%, var(--bg) 40%, var(--bg-grad-bot) 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--mono);
+  color: var(--text);
+  overflow-x: hidden;
+  padding-top: 36px;
+}
+
+/* Sky decoration */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 300px;
+  background: linear-gradient(180deg, rgba(135, 206, 235, 0.15) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* --- Layout --- */
+#game-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 16px 120px;
+}
+
+/* --- Header Bar --- */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  margin-bottom: 16px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px var(--glass-shadow);
+}
+
+.game-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.game-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.game-level {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--accent-dim);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.game-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.5);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.6);
+  white-space: nowrap;
+}
+
+.stat-pill .val {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stat-pill.warning .val { color: var(--warning); }
+.stat-pill.danger .val { color: var(--danger); }
+
+/* --- Sector Map (Canvas) --- */
+.map-area {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px var(--glass-shadow);
+  padding: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.map-area canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  cursor: grab;
+}
+
+.map-area canvas.dragging {
+  cursor: grabbing;
+}
+
+/* --- Bottom Controls --- */
+.controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px var(--glass-shadow);
+}
+
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border: 1px solid rgba(0, 120, 212, 0.25);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.6);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: rgba(0, 120, 212, 0.1);
+  border-color: var(--accent);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-light);
+}
+
+.btn-danger {
+  border-color: rgba(229, 62, 62, 0.25);
+  color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: rgba(229, 62, 62, 0.08);
+  border-color: var(--danger);
+}
+
+.btn-success {
+  border-color: rgba(56, 161, 105, 0.25);
+  color: var(--success);
+}
+
+.btn-success:hover {
+  background: rgba(56, 161, 105, 0.08);
+  border-color: var(--success);
+}
+
+.btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Overlays --- */
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(232, 244, 248, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 40px 48px;
+  max-width: 480px;
+  text-align: center;
+  box-shadow: 0 8px 40px var(--glass-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.overlay-card h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -1px;
+}
+
+.overlay-card h2 {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.overlay-card p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.overlay-card .highlight {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.overlay-card .btn {
+  margin-top: 8px;
+  padding: 10px 32px;
+  font-size: 0.8rem;
+}
+
+/* Stats row in overlay */
+.stats-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.stats-row .stat {
+  text-align: center;
+}
+
+.stats-row .stat .label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-row .stat .value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stats-row .stat .value.good { color: var(--success); }
+.stats-row .stat .value.bad { color: var(--danger); }
+
+/* --- Tooltip --- */
+.tooltip {
+  position: fixed;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.7rem;
+  color: var(--text);
+  box-shadow: 0 4px 16px var(--glass-shadow);
+  pointer-events: none;
+  z-index: 600;
+  max-width: 220px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.tooltip.visible {
+  opacity: 1;
+}
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  #game-container { padding: 8px 8px 100px; }
+  .game-header { padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
+  .controls-bar { padding: 8px 12px; flex-wrap: wrap; }
+  .stat-pill { font-size: 0.65rem; padding: 3px 7px; }
+  .overlay-card { padding: 28px 24px; margin: 0 16px; }
+  .overlay-card h1 { font-size: 1.5rem; }
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+</style>
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-terminal.webp') center/cover no-repeat;opacity:0.12;pointer-events:none;"></div>
-
-<main id="game-main" role="main">
-<div class="top-hud">
-  AIRLOCK <span style="color:#1e1e2a;">|</span> <span style="color:#00e09a;">Memory Puzzle</span> <span style="color:#1e1e2a;">|</span> <a href="{{ site.baseurl }}/arcade/">arcade</a>
-</div>
-<div class="controls-hint">WASD move &middot; E interact &middot; 1/2/3 select emission &middot; SPACE emit</div>
-
-<div id="game-wrapper">
-  <canvas id="game" width="800" height="600"></canvas>
-</div>
-
-<div class="hud">
-  <div class="hud-item active" id="hud-1"><kbd>1</kbd> Coolant</div>
-  <div class="hud-item" id="hud-2"><kbd>2</kbd> Signal</div>
-  <div class="hud-item" id="hud-3"><kbd>3</kbd> Corruption</div>
-  <div class="hud-item" id="hud-carry" style="border-color:#333;">carrying: none</div>
-</div>
-
-<!-- Mobile Touch Controls -->
-<div class="mobile-controls" id="mobile-controls" role="toolbar" aria-label="Game controls">
-  <div class="dpad" role="group" aria-label="Movement controls">
-    <button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up">&#9650;</button>
-    <button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down">&#9660;</button>
-    <button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left">&#9664;</button>
-    <button class="dpad-btn dpad-right" data-dir="right" aria-label="Move right">&#9654;</button>
+<main id="game-container" role="main">
+  <!-- Header -->
+  <div class="game-header">
+    <div class="game-header-left">
+      <span class="game-title">AIRLOCK</span>
+      <span class="game-level" id="level-badge">Level 1</span>
+    </div>
+    <div class="game-header-right">
+      <div class="stat-pill" id="stat-moves">
+        <span>Moves</span>
+        <span class="val" id="val-moves">0</span>
+      </div>
+      <div class="stat-pill" id="stat-overflow">
+        <span>Overflows</span>
+        <span class="val" id="val-overflow">0</span>
+      </div>
+      <div class="stat-pill" id="stat-time">
+        <span>Time</span>
+        <span class="val" id="val-time">0:00</span>
+      </div>
+      <div class="stat-pill" id="stat-efficiency" style="display:none;">
+        <span>Efficiency</span>
+        <span class="val" id="val-efficiency">--</span>
+      </div>
+    </div>
   </div>
-  <div class="action-buttons" role="group" aria-label="Action controls">
-    <button class="action-btn emit-btn" id="btn-emit" aria-label="Emit current element (Coolant)">EMIT<br><span id="btn-emit-label" style="font-size:12px;opacity:0.6;">Coolant</span></button>
-    <button class="action-btn" id="btn-interact" aria-label="Interact: pick up or drop object">INTERACT</button>
-    <button class="action-btn" id="btn-carry" aria-label="Cycle emission type">CYCLE</button>
+
+  <!-- Map -->
+  <div class="map-area">
+    <canvas id="game" width="1060" height="700"></canvas>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="controls-left">
+      <button class="btn" id="btn-undo" disabled title="Undo last move (Z)">Undo (Z)</button>
+      <button class="btn btn-danger" id="btn-reset" title="Restart level (R)">Restart (R)</button>
+    </div>
+    <div class="controls-right">
+      <span class="stat-pill" id="blocks-remaining">
+        <span>Remaining</span>
+        <span class="val" id="val-remaining">0</span>
+      </span>
+      <span class="stat-pill" id="blocks-delivered">
+        <span>Delivered</span>
+        <span class="val" id="val-delivered" style="color:var(--success)">0</span>
+      </span>
+    </div>
+  </div>
+</main>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- Intro overlay -->
+<div class="overlay" id="intro-overlay">
+  <div class="overlay-card">
+    <h1>AIRLOCK</h1>
+    <h2>Memory Routing Protocol</h2>
+    <p>
+      Route <span class="highlight">data blocks</span> through memory sectors.
+      Each sector has a <span class="highlight">capacity limit</span> &mdash;
+      exceed it and the sector overflows, destroying data.
+    </p>
+    <p>
+      Drag blocks between connected sectors. Plan your routes carefully.
+      Deliver all blocks to the <span class="highlight">output port</span> to clear the level.
+    </p>
+    <button class="btn btn-primary" id="btn-start">Begin Routing</button>
   </div>
 </div>
 
-<!-- Screen reader game state -->
+<!-- Win overlay -->
+<div class="overlay hidden" id="win-overlay">
+  <div class="overlay-card">
+    <h1 id="win-title">Sector Clear</h1>
+    <h2>Routing Complete</h2>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="label">Moves</div>
+        <div class="value" id="win-moves">0</div>
+      </div>
+      <div class="stat">
+        <div class="label">Overflows</div>
+        <div class="value" id="win-overflow">0</div>
+      </div>
+      <div class="stat">
+        <div class="label">Time</div>
+        <div class="value" id="win-time">0:00</div>
+      </div>
+      <div class="stat">
+        <div class="label">Efficiency</div>
+        <div class="value good" id="win-efficiency">100%</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-next">Next Level</button>
+  </div>
+</div>
+
+<!-- Fail overlay -->
+<div class="overlay hidden" id="fail-overlay">
+  <div class="overlay-card">
+    <h1 style="color: var(--danger);">Overflow</h1>
+    <h2>Too many data blocks lost</h2>
+    <p>You lost too many blocks to overflow. Plan your routes more carefully.</p>
+    <button class="btn btn-primary" id="btn-retry">Try Again</button>
+  </div>
+</div>
+
+<!-- Screen reader state -->
 <div id="sr-game-state" class="sr-only" aria-live="polite" role="status"></div>
 
-<div class="win-overlay" id="win-overlay">
-  <h1>YOU WIN!</h1>
-  <p>Nice job! You saved the data!</p>
-  <button onclick="resetGame()">PLAY AGAIN</button>
-</div>
-
-<div class="intro-overlay" id="intro-overlay">
-  <h1>AIRLOCK</h1>
-  <h2>Memory Puzzle</h2>
-  <div class="intro-text">
-    You are inside <span>Substrate</span>'s memory!<br><br>
-    Memory is full! Move the blocks.
-    Move the signal to <span>COMMIT</span> to save it,
-    or try the <span>SWAP</span> path.<br><br>
-    Use <span>COOLANT</span> to cool hot spots.
-    Use <span>SIGNAL</span> to wake up paths.
-    Use <span>CORRUPTION</span> to clear blocks.<br><br>
-    Run out of life and you <span style="color:#ff4444;">LOSE</span>!
-  </div>
-  <button onclick="document.getElementById('intro-overlay').classList.add('hide')">START</button>
+<!-- Fund prompt -->
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(232,244,248,0.96);border-top:1px solid rgba(0,120,212,0.15);padding:12px 20px;text-align:center;font-family:var(--mono);font-size:0.72rem;color:var(--text-muted);z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
+  <span style="color:var(--text)">This game runs on one laptop.</span>
+  <a href="/site/fund/" style="color:var(--accent);margin-left:8px;text-decoration:none;font-weight:600;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss" style="background:none;border:none;color:var(--text-dim);cursor:pointer;margin-left:12px;font-size:0.9rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 
 <script>
 'use strict';
 
+// ============================================================
+//  AIRLOCK — Memory Routing Protocol
+//  Core verb: ROUTE data through sectors under memory constraints
+// ============================================================
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
 
-// === Constants ===
-const TILE = 40;
-const COLS = 20;
-const ROWS = 15;
-const W = COLS * TILE;
-const H = ROWS * TILE;
-canvas.width = W;
-canvas.height = H;
+// High DPI
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-// Materials
-const MAT = {
-  FLOOR: 0,
-  WALL: 1,
-  METAL: 2,
-  WOOD: 3,
-  WATER: 4,
-  FIRE: 5,
-  ELEC_WATER: 6,
-  ELEC_METAL: 7,
-  VENT: 8,
-  DOOR: 9,
-  GENERATOR: 10
-};
-
-// Colors
+// ---- Constants ----
 const COLORS = {
-  [MAT.FLOOR]: '#14141e',
-  [MAT.WALL]: '#2a2a3a',
-  [MAT.METAL]: '#5a6a7a',
-  [MAT.WOOD]: '#6b4a2a',
-  [MAT.WATER]: '#2244aa',
-  [MAT.FIRE]: '#ff4422',
-  [MAT.ELEC_WATER]: '#44aaff',
-  [MAT.ELEC_METAL]: '#66ddff',
-  [MAT.VENT]: '#1a1a24',
-  [MAT.DOOR]: '#884422',
-  [MAT.GENERATOR]: '#00ccbb'
+  data: ['#E53E3E','#3182CE','#38A169','#805AD5','#DD6B20','#319795','#D53F8C','#D69E2E'],
+  dataLight: ['#FEB2B2','#BEE3F8','#C6F6D5','#D6BCFA','#FEEBC8','#B2F5EA','#FED7E2','#FEFCBF'],
+  sectorBg: 'rgba(255,255,255,0.45)',
+  sectorBorder: 'rgba(255,255,255,0.7)',
+  sectorFill: 'rgba(0,120,212,0.04)',
+  connection: 'rgba(0,120,212,0.18)',
+  connectionActive: 'rgba(0,120,212,0.45)',
+  capacityBg: 'rgba(0,0,0,0.06)',
+  capacityFill: 'rgba(0,120,212,0.35)',
+  capacityOverflow: 'rgba(229,62,62,0.6)',
+  outputPort: '#38A169',
+  outputGlow: 'rgba(56,161,105,0.2)',
+  text: '#2D3748',
+  textMuted: '#5A6B7F',
+  textDim: '#8899AA',
 };
 
-// === Game State ===
-let grid = [];
-let objects = [];
-let player = { x: 10, y: 12, carrying: null, emission: 1, dead: false, hp: 3 };
-let doorPowered = false;
-let doorOpen = false;
-let ventOpen = false;
-let won = false;
-let particles = [];
-let fireTimers = {}; // 'x,y' -> remaining seconds
-let electrifiedTiles = new Set(); // 'x,y' strings
-let keys = {};
-let lastEmitTime = 0;
-let gameTime = 0;
-let damageFlash = 0;
+// ---- Game State ----
+let state = {
+  level: 0,
+  sectors: [],
+  connections: [],
+  blocks: [],
+  outputSector: -1,
+  moves: 0,
+  overflows: 0,
+  maxOverflows: 3,
+  startTime: 0,
+  elapsed: 0,
+  running: false,
+  won: false,
+  failed: false,
+  dragging: null,       // { blockIdx, fromSector, startX, startY, curX, curY }
+  hoverSector: -1,
+  hoverBlock: -1,
+  history: [],          // for undo
+  timerActive: false,
+  timerRemaining: 0,
+  optimalMoves: 0,
+  flashSector: -1,
+  flashTimer: 0,
+  animatingBlocks: [],  // { blockIdx, fromX, fromY, toX, toY, t, duration }
+};
 
-// === Level Builder ===
-function buildLevel() {
-  grid = [];
-  for (let y = 0; y < ROWS; y++) {
-    grid[y] = [];
-    for (let x = 0; x < COLS; x++) {
-      // Walls around the edge
-      if (x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1) {
-        grid[y][x] = MAT.WALL;
-      } else {
-        grid[y][x] = MAT.FLOOR;
+// ---- Persistence ----
+function saveProgress() {
+  try {
+    localStorage.setItem('airlock-progress', JSON.stringify({
+      level: state.level,
+      bestScores: state.bestScores || {}
+    }));
+  } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const d = JSON.parse(localStorage.getItem('airlock-progress'));
+    if (d) {
+      state.level = d.level || 0;
+      state.bestScores = d.bestScores || {};
+    }
+  } catch(e) {}
+  if (!state.bestScores) state.bestScores = {};
+}
+
+// ---- Level Definitions ----
+// Each level: { sectors: [{x,y,w,h,cap,label}], connections: [[i,j]], blocks: [{sector,color}], output, timer?, maxOverflows? }
+function generateLevels() {
+  const L = [];
+
+  // Level 1: 4 sectors, 2 blocks, simple routing
+  L.push({
+    sectors: [
+      { x: 80,  y: 80,  w: 200, h: 180, cap: 2, label: 'SECTOR A' },
+      { x: 420, y: 80,  w: 200, h: 180, cap: 2, label: 'SECTOR B' },
+      { x: 80,  y: 380, w: 200, h: 180, cap: 2, label: 'SECTOR C' },
+      { x: 420, y: 380, w: 200, h: 180, cap: 1, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[0,2],[1,3],[2,3]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+    ],
+    output: 3,
+    optimal: 2,
+  });
+
+  // Level 2: 4 sectors, 3 blocks, capacity squeeze
+  L.push({
+    sectors: [
+      { x: 250, y: 40,  w: 200, h: 160, cap: 2, label: 'INTAKE' },
+      { x: 60,  y: 280, w: 180, h: 160, cap: 1, label: 'BUFFER A' },
+      { x: 310, y: 280, w: 180, h: 160, cap: 1, label: 'BUFFER B' },
+      { x: 560, y: 280, w: 180, h: 160, cap: 1, label: 'BUFFER C' },
+      { x: 310, y: 500, w: 180, h: 140, cap: 3, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[0,2],[0,3],[1,4],[2,4],[3,4]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 0, color: 2 },
+    ],
+    output: 4,
+    optimal: 3,
+  });
+
+  // Level 3: 5 sectors, 4 blocks, need to use staging
+  L.push({
+    sectors: [
+      { x: 60,  y: 60,  w: 180, h: 150, cap: 2, label: 'HEAP A' },
+      { x: 300, y: 60,  w: 180, h: 150, cap: 1, label: 'CACHE' },
+      { x: 540, y: 60,  w: 180, h: 150, cap: 2, label: 'HEAP B' },
+      { x: 180, y: 300, w: 180, h: 150, cap: 2, label: 'STAGING' },
+      { x: 420, y: 300, w: 180, h: 150, cap: 1, label: 'STAGING' },
+      { x: 300, y: 500, w: 180, h: 140, cap: 4, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[1,2],[0,3],[2,4],[1,3],[1,4],[3,5],[4,5]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 2, color: 2 },
+      { sector: 2, color: 3 },
+    ],
+    output: 5,
+    optimal: 6,
+  });
+
+  // Level 4: 6 sectors, 5 blocks, bottleneck
+  L.push({
+    sectors: [
+      { x: 40,  y: 50,  w: 170, h: 140, cap: 3, label: 'POOL A' },
+      { x: 260, y: 50,  w: 170, h: 140, cap: 1, label: 'PIPE' },
+      { x: 480, y: 50,  w: 170, h: 140, cap: 3, label: 'POOL B' },
+      { x: 40,  y: 280, w: 170, h: 140, cap: 2, label: 'DRAIN A' },
+      { x: 260, y: 280, w: 170, h: 140, cap: 2, label: 'JUNCTION' },
+      { x: 480, y: 280, w: 170, h: 140, cap: 2, label: 'DRAIN B' },
+      { x: 260, y: 490, w: 170, h: 130, cap: 5, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[1,2],[0,3],[2,5],[3,4],[4,5],[1,4],[3,6],[4,6],[5,6]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 2, color: 2 },
+      { sector: 2, color: 3 },
+      { sector: 1, color: 4 },
+    ],
+    output: 6,
+    optimal: 7,
+  });
+
+  // Level 5: 7 sectors, 5 blocks, branching paths
+  L.push({
+    sectors: [
+      { x: 300, y: 20,  w: 160, h: 130, cap: 2, label: 'SOURCE' },
+      { x: 80,  y: 180, w: 160, h: 130, cap: 2, label: 'LEFT' },
+      { x: 520, y: 180, w: 160, h: 130, cap: 2, label: 'RIGHT' },
+      { x: 80,  y: 360, w: 160, h: 130, cap: 1, label: 'L-STAGE' },
+      { x: 300, y: 360, w: 160, h: 130, cap: 1, label: 'CENTER' },
+      { x: 520, y: 360, w: 160, h: 130, cap: 1, label: 'R-STAGE' },
+      { x: 300, y: 530, w: 160, h: 120, cap: 5, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[0,2],[1,3],[1,4],[2,4],[2,5],[3,6],[4,6],[5,6]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 1, color: 2 },
+      { sector: 2, color: 3 },
+      { sector: 2, color: 4 },
+    ],
+    output: 6,
+    optimal: 7,
+  });
+
+  // Level 6: 8 sectors, 6 blocks, multi-path with tight caps
+  L.push({
+    sectors: [
+      { x: 40,  y: 40,  w: 150, h: 120, cap: 3, label: 'BANK A' },
+      { x: 240, y: 40,  w: 150, h: 120, cap: 1, label: 'LINK 1' },
+      { x: 440, y: 40,  w: 150, h: 120, cap: 1, label: 'LINK 2' },
+      { x: 640, y: 40,  w: 150, h: 120, cap: 3, label: 'BANK B' },
+      { x: 140, y: 230, w: 150, h: 120, cap: 2, label: 'MID-L' },
+      { x: 540, y: 230, w: 150, h: 120, cap: 2, label: 'MID-R' },
+      { x: 140, y: 420, w: 150, h: 120, cap: 2, label: 'STAGE-L' },
+      { x: 540, y: 420, w: 150, h: 120, cap: 2, label: 'STAGE-R' },
+      { x: 340, y: 520, w: 150, h: 120, cap: 6, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[1,2],[2,3],[0,4],[3,5],[4,5],[4,6],[5,7],[6,8],[7,8],[1,4],[2,5]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 0, color: 2 },
+      { sector: 3, color: 3 },
+      { sector: 3, color: 4 },
+      { sector: 3, color: 5 },
+    ],
+    output: 8,
+    optimal: 10,
+  });
+
+  // Level 7: 9 sectors, 7 blocks, time pressure + sector failure
+  L.push({
+    sectors: [
+      { x: 30,  y: 30,  w: 145, h: 115, cap: 3, label: 'ALPHA' },
+      { x: 220, y: 30,  w: 145, h: 115, cap: 2, label: 'BETA' },
+      { x: 410, y: 30,  w: 145, h: 115, cap: 2, label: 'GAMMA' },
+      { x: 600, y: 30,  w: 145, h: 115, cap: 3, label: 'DELTA' },
+      { x: 120, y: 210, w: 145, h: 115, cap: 1, label: 'RELAY-1' },
+      { x: 310, y: 210, w: 145, h: 115, cap: 2, label: 'HUB' },
+      { x: 500, y: 210, w: 145, h: 115, cap: 1, label: 'RELAY-2' },
+      { x: 120, y: 400, w: 145, h: 115, cap: 2, label: 'STAGE-A' },
+      { x: 500, y: 400, w: 145, h: 115, cap: 2, label: 'STAGE-B' },
+      { x: 310, y: 510, w: 145, h: 115, cap: 7, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[1,2],[2,3],[0,4],[1,5],[2,5],[3,6],[4,5],[5,6],[4,7],[6,8],[5,7],[5,8],[7,9],[8,9]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 1, color: 2 },
+      { sector: 2, color: 3 },
+      { sector: 3, color: 4 },
+      { sector: 3, color: 5 },
+      { sector: 3, color: 6 },
+    ],
+    output: 9,
+    optimal: 11,
+    timer: 120,
+    maxOverflows: 2,
+  });
+
+  // Level 8: 10 sectors, 8 blocks, complex routing
+  L.push({
+    sectors: [
+      { x: 20,  y: 20,  w: 140, h: 110, cap: 2, label: 'IN-A' },
+      { x: 200, y: 20,  w: 140, h: 110, cap: 2, label: 'IN-B' },
+      { x: 560, y: 20,  w: 140, h: 110, cap: 2, label: 'IN-C' },
+      { x: 740, y: 20,  w: 140, h: 110, cap: 2, label: 'IN-D' },
+      { x: 110, y: 190, w: 140, h: 110, cap: 1, label: 'PIPE-L' },
+      { x: 380, y: 190, w: 140, h: 110, cap: 2, label: 'NEXUS' },
+      { x: 650, y: 190, w: 140, h: 110, cap: 1, label: 'PIPE-R' },
+      { x: 110, y: 370, w: 140, h: 110, cap: 2, label: 'GATE-L' },
+      { x: 650, y: 370, w: 140, h: 110, cap: 2, label: 'GATE-R' },
+      { x: 380, y: 440, w: 140, h: 110, cap: 2, label: 'CORE' },
+      { x: 380, y: 570, w: 140, h: 80,  cap: 8, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[0,4],[1,4],[1,5],[2,5],[2,6],[2,3],[3,6],[4,5],[5,6],[4,7],[5,9],[6,8],[7,9],[8,9],[9,10],[7,10],[8,10]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 1, color: 2 },
+      { sector: 1, color: 3 },
+      { sector: 2, color: 4 },
+      { sector: 2, color: 5 },
+      { sector: 3, color: 6 },
+      { sector: 3, color: 7 },
+    ],
+    output: 10,
+    optimal: 14,
+    timer: 90,
+    maxOverflows: 2,
+  });
+
+  // Level 9: 11 sectors, 8 blocks, sector failures appear
+  L.push({
+    sectors: [
+      { x: 20,  y: 20,  w: 135, h: 105, cap: 2, label: 'NODE-1' },
+      { x: 185, y: 20,  w: 135, h: 105, cap: 2, label: 'NODE-2' },
+      { x: 350, y: 20,  w: 135, h: 105, cap: 2, label: 'NODE-3' },
+      { x: 550, y: 20,  w: 135, h: 105, cap: 2, label: 'NODE-4' },
+      { x: 715, y: 20,  w: 135, h: 105, cap: 2, label: 'NODE-5' },
+      { x: 100, y: 190, w: 135, h: 105, cap: 1, label: 'WIRE-A', failing: true, failAt: 8 },
+      { x: 300, y: 190, w: 135, h: 105, cap: 2, label: 'SWITCH' },
+      { x: 500, y: 190, w: 135, h: 105, cap: 2, label: 'RELAY' },
+      { x: 700, y: 190, w: 135, h: 105, cap: 1, label: 'WIRE-B', failing: true, failAt: 12 },
+      { x: 200, y: 380, w: 160, h: 110, cap: 3, label: 'MERGE-L' },
+      { x: 500, y: 380, w: 160, h: 110, cap: 3, label: 'MERGE-R' },
+      { x: 350, y: 530, w: 160, h: 100, cap: 8, label: 'OUTPUT' },
+    ],
+    connections: [[0,1],[1,2],[2,3],[3,4],[0,5],[1,6],[2,6],[2,7],[3,7],[4,8],[5,9],[6,9],[6,10],[7,10],[8,10],[9,11],[10,11]],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 1, color: 2 },
+      { sector: 2, color: 3 },
+      { sector: 2, color: 4 },
+      { sector: 3, color: 5 },
+      { sector: 4, color: 6 },
+      { sector: 4, color: 7 },
+    ],
+    output: 11,
+    optimal: 14,
+    timer: 75,
+    maxOverflows: 2,
+  });
+
+  // Level 10: 12 sectors, 8 blocks, full complexity
+  L.push({
+    sectors: [
+      { x: 15,  y: 15,  w: 130, h: 100, cap: 2, label: 'A-1' },
+      { x: 170, y: 15,  w: 130, h: 100, cap: 1, label: 'A-2' },
+      { x: 325, y: 15,  w: 130, h: 100, cap: 1, label: 'A-3' },
+      { x: 480, y: 15,  w: 130, h: 100, cap: 1, label: 'A-4' },
+      { x: 635, y: 15,  w: 130, h: 100, cap: 1, label: 'A-5' },
+      { x: 790, y: 15,  w: 130, h: 100, cap: 2, label: 'A-6' },
+      { x: 90,  y: 170, w: 130, h: 100, cap: 2, label: 'B-1' },
+      { x: 400, y: 170, w: 130, h: 100, cap: 2, label: 'B-2', failing: true, failAt: 6 },
+      { x: 710, y: 170, w: 130, h: 100, cap: 2, label: 'B-3' },
+      { x: 200, y: 340, w: 140, h: 105, cap: 2, label: 'C-1' },
+      { x: 590, y: 340, w: 140, h: 105, cap: 2, label: 'C-2' },
+      { x: 200, y: 490, w: 140, h: 100, cap: 3, label: 'MERGE' },
+      { x: 395, y: 540, w: 160, h: 100, cap: 8, label: 'OUTPUT' },
+    ],
+    connections: [
+      [0,1],[1,2],[2,3],[3,4],[4,5],
+      [0,6],[1,6],[2,7],[3,7],[4,8],[5,8],
+      [6,9],[7,9],[7,10],[8,10],
+      [9,11],[10,11],[10,12],[11,12],[9,12]
+    ],
+    blocks: [
+      { sector: 0, color: 0 },
+      { sector: 0, color: 1 },
+      { sector: 1, color: 2 },
+      { sector: 3, color: 3 },
+      { sector: 4, color: 4 },
+      { sector: 5, color: 5 },
+      { sector: 5, color: 6 },
+      { sector: 2, color: 7 },
+    ],
+    output: 12,
+    optimal: 16,
+    timer: 60,
+    maxOverflows: 1,
+  });
+
+  return L;
+}
+
+const LEVELS = generateLevels();
+
+// ---- Level Loading ----
+function loadLevel(idx) {
+  if (idx >= LEVELS.length) idx = LEVELS.length - 1;
+  const def = LEVELS[idx];
+
+  state.level = idx;
+  state.sectors = def.sectors.map((s, i) => ({
+    ...s,
+    idx: i,
+    isOutput: i === def.output,
+    blocks: [],
+    failed: false,
+    failTimer: s.failing ? s.failAt : -1,
+    failing: !!s.failing,
+    flashTimer: 0,
+  }));
+  state.connections = def.connections.map(c => [...c]);
+  state.blocks = def.blocks.map((b, i) => ({
+    idx: i,
+    sector: b.sector,
+    color: b.color,
+    delivered: false,
+    lost: false,
+    x: 0, y: 0, // computed from sector
+  }));
+  state.outputSector = def.output;
+  state.moves = 0;
+  state.overflows = 0;
+  state.maxOverflows = def.maxOverflows || 3;
+  state.startTime = performance.now();
+  state.elapsed = 0;
+  state.running = true;
+  state.won = false;
+  state.failed = false;
+  state.dragging = null;
+  state.hoverSector = -1;
+  state.hoverBlock = -1;
+  state.history = [];
+  state.timerActive = !!def.timer;
+  state.timerRemaining = def.timer || 0;
+  state.optimalMoves = def.optimal || 0;
+  state.flashSector = -1;
+  state.flashTimer = 0;
+  state.animatingBlocks = [];
+
+  // Place blocks into sectors
+  for (const b of state.blocks) {
+    state.sectors[b.sector].blocks.push(b.idx);
+  }
+
+  // Compute block positions
+  computeBlockPositions();
+
+  // Update UI
+  document.getElementById('level-badge').textContent = 'Level ' + (idx + 1);
+  document.getElementById('val-moves').textContent = '0';
+  document.getElementById('val-overflow').textContent = '0';
+  document.getElementById('val-time').textContent = '0:00';
+  document.getElementById('val-remaining').textContent = state.blocks.length;
+  document.getElementById('val-delivered').textContent = '0';
+  document.getElementById('btn-undo').disabled = true;
+  document.getElementById('stat-overflow').className = 'stat-pill';
+
+  saveProgress();
+}
+
+function computeBlockPositions() {
+  for (const sec of state.sectors) {
+    const blockCount = sec.blocks.length;
+    const blockSize = 32;
+    const gap = 8;
+    const totalW = blockCount * blockSize + (blockCount - 1) * gap;
+    const startX = sec.x + sec.w / 2 - totalW / 2;
+    const startY = sec.y + sec.h / 2 + 8;
+
+    for (let i = 0; i < sec.blocks.length; i++) {
+      const b = state.blocks[sec.blocks[i]];
+      if (!b.lost && !b.delivered) {
+        b.x = startX + i * (blockSize + gap);
+        b.y = startY;
       }
     }
   }
-
-  // COMMIT point at top center (2 tiles wide)
-  grid[0][9] = MAT.DOOR;
-  grid[0][10] = MAT.DOOR;
-
-  // Signal source in bottom-right corner
-  grid[13][17] = MAT.GENERATOR;
-  grid[13][18] = MAT.GENERATOR;
-
-  // Coolant pool
-  grid[8][5] = MAT.WATER;
-  grid[8][6] = MAT.WATER;
-  grid[9][5] = MAT.WATER;
-  grid[9][6] = MAT.WATER;
-
-  // Hidden vent behind data blocks (right side, leads to SWAP sector)
-  grid[3][18] = MAT.VENT;
-
-  // Internal walls for memory sector boundaries
-  // HEAP / STACK dividers
-  for (let x = 3; x <= 6; x++) grid[5][x] = MAT.WALL;
-  for (let x = 13; x <= 16; x++) grid[5][x] = MAT.WALL;
-  for (let y = 7; y <= 9; y++) grid[y][12] = MAT.WALL;
-
-  // Objects
-  objects = [
-    // Conductor arrays (metal)
-    { type: 'conductor_array', x: 4, y: 3, w: 2, h: 1, mat: MAT.METAL },
-    { type: 'conductor_array', x: 14, y: 8, w: 2, h: 1, mat: MAT.METAL },
-    { type: 'conductor_array', x: 8, y: 10, w: 2, h: 1, mat: MAT.METAL },
-    // Data blocks (wood/burnable)
-    { type: 'data_block', x: 17, y: 2, w: 1, h: 1, mat: MAT.WOOD },
-    { type: 'data_block', x: 18, y: 2, w: 1, h: 1, mat: MAT.WOOD },
-    { type: 'data_block', x: 17, y: 3, w: 1, h: 1, mat: MAT.WOOD },
-    { type: 'data_block', x: 3, y: 11, w: 1, h: 1, mat: MAT.WOOD },
-  ];
-
-  fireTimers = {};
-  electrifiedTiles = new Set();
-  doorPowered = false;
-  doorOpen = false;
-  ventOpen = false;
-  won = false;
-  particles = [];
-  damageFlash = 0;
-  player = { x: 10, y: 12, carrying: null, emission: 1, dead: false, hp: 3 };
 }
 
-// === Helpers ===
-function tileAt(x, y) {
-  if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return MAT.WALL;
-  return grid[y][x];
+// ---- Connections ----
+function areConnected(a, b) {
+  return state.connections.some(c =>
+    (c[0] === a && c[1] === b) || (c[0] === b && c[1] === a)
+  );
 }
 
-function setTile(x, y, mat) {
-  if (x >= 0 && x < COLS && y >= 0 && y < ROWS) grid[y][x] = mat;
+function getConnectedSectors(sectorIdx) {
+  const result = [];
+  for (const c of state.connections) {
+    if (c[0] === sectorIdx) result.push(c[1]);
+    if (c[1] === sectorIdx) result.push(c[0]);
+  }
+  return result;
 }
 
-function objectAt(x, y) {
-  return objects.find(o => x >= o.x && x < o.x + o.w && y >= o.y && y < o.y + o.h && !o.destroyed);
-}
+// ---- Block Movement ----
+function moveBlock(blockIdx, fromSector, toSector) {
+  if (fromSector === toSector) return false;
+  if (!areConnected(fromSector, toSector)) return false;
 
-function isPassable(x, y) {
-  const t = tileAt(x, y);
-  if (t === MAT.WALL) return false;
-  if (t === MAT.DOOR && !doorOpen) return false;
-  if (t === MAT.VENT && !ventOpen) return false;
-  if (objectAt(x, y)) return false;
+  const sec = state.sectors[toSector];
+  if (sec.failed) return false;
+
+  // Save undo state
+  state.history.push({
+    blockIdx,
+    fromSector,
+    toSector,
+    moves: state.moves,
+    overflows: state.overflows,
+  });
+
+  // Remove from source
+  const srcSec = state.sectors[fromSector];
+  srcSec.blocks = srcSec.blocks.filter(i => i !== blockIdx);
+
+  // Add to target
+  sec.blocks.push(blockIdx);
+  state.blocks[blockIdx].sector = toSector;
+  state.moves++;
+
+  // Check overflow
+  if (sec.blocks.length > sec.cap && !sec.isOutput) {
+    triggerOverflow(toSector);
+  }
+
+  // Check if block delivered to output
+  if (sec.isOutput) {
+    state.blocks[blockIdx].delivered = true;
+  }
+
+  computeBlockPositions();
+  updateUI();
+
+  // Check win
+  checkWin();
+  // Check fail
+  checkFail();
+
+  document.getElementById('btn-undo').disabled = false;
   return true;
 }
 
-function isElectrified(x, y) {
-  return electrifiedTiles.has(`${x},${y}`);
-}
+function triggerOverflow(sectorIdx) {
+  const sec = state.sectors[sectorIdx];
+  state.overflows++;
+  sec.flashTimer = 0.6;
+  state.flashSector = sectorIdx;
+  state.flashTimer = 0.6;
 
-function addParticle(x, y, color, life) {
-  particles.push({
-    x: x * TILE + TILE / 2 + (Math.random() - 0.5) * 20,
-    y: y * TILE + TILE / 2 + (Math.random() - 0.5) * 20,
-    vx: (Math.random() - 0.5) * 2,
-    vy: (Math.random() - 0.5) * 2 - 1,
-    color: color,
-    life: life || 1,
-    maxLife: life || 1
-  });
-}
-
-// === Signal Propagation Engine ===
-function propagateElectricity() {
-  electrifiedTiles.clear();
-
-  // Find signal source tiles
-  const sources = [];
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      if (grid[y][x] === MAT.GENERATOR) {
-        sources.push({ x, y });
-      }
-    }
+  // Remove the most recently added block (overflow destroys newest)
+  if (sec.blocks.length > sec.cap) {
+    const lostIdx = sec.blocks.pop();
+    state.blocks[lostIdx].lost = true;
+    state.blocks[lostIdx].sector = -1;
   }
 
-  // BFS from signal source through conductive materials
-  const visited = new Set();
-  const queue = [...sources];
-  sources.forEach(s => {
-    visited.add(`${s.x},${s.y}`);
-    electrifiedTiles.add(`${s.x},${s.y}`);
-  });
+  computeBlockPositions();
+}
 
-  while (queue.length > 0) {
-    const { x, y } = queue.shift();
+function undoMove() {
+  if (state.history.length === 0) return;
+  if (state.won || state.failed) return;
 
-    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-      const nx = x + dx, ny = y + dy;
-      const key = `${nx},${ny}`;
-      if (visited.has(key)) continue;
-      if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) continue;
-      visited.add(key);
+  const h = state.history.pop();
 
-      const tile = grid[ny][nx];
-      const obj = objectAt(nx, ny);
+  // If block was lost in overflow, restore it
+  const block = state.blocks[h.blockIdx];
+  block.lost = false;
+  block.delivered = false;
 
-      // Coolant conducts
-      if (tile === MAT.WATER) {
-        setTile(nx, ny, MAT.ELEC_WATER);
-        electrifiedTiles.add(key);
-        queue.push({ x: nx, y: ny });
-        addParticle(nx, ny, '#44aaff', 0.5);
-      }
-      // Activated coolant stays conductive
-      else if (tile === MAT.ELEC_WATER) {
-        electrifiedTiles.add(key);
-        queue.push({ x: nx, y: ny });
-      }
-      // Conductor arrays propagate signal
-      else if (obj && obj.mat === MAT.METAL) {
-        electrifiedTiles.add(key);
-        // Mark all tiles of the object
-        for (let oy = obj.y; oy < obj.y + obj.h; oy++) {
-          for (let ox = obj.x; ox < obj.x + obj.w; ox++) {
-            const okey = `${ox},${oy}`;
-            if (!visited.has(okey)) {
-              visited.add(okey);
-              electrifiedTiles.add(okey);
-              queue.push({ x: ox, y: oy });
-            }
-          }
-        }
-        addParticle(nx, ny, '#66ddff', 0.5);
-      }
-      // COMMIT point — if signal reaches here, it activates
-      else if (tile === MAT.DOOR) {
-        electrifiedTiles.add(key);
-        doorPowered = true;
-      }
+  // Remove from current sector
+  const curSec = state.sectors[h.toSector];
+  curSec.blocks = curSec.blocks.filter(i => i !== h.blockIdx);
+
+  // Add back to source
+  state.sectors[h.fromSector].blocks.push(h.blockIdx);
+  block.sector = h.fromSector;
+
+  state.moves = h.moves;
+  state.overflows = h.overflows;
+
+  computeBlockPositions();
+  updateUI();
+
+  document.getElementById('btn-undo').disabled = state.history.length === 0;
+}
+
+function purgeOverflow() {
+  // Manual purge: remove excess blocks from all overflowing sectors
+  let purged = false;
+  for (const sec of state.sectors) {
+    while (sec.blocks.length > sec.cap && !sec.isOutput) {
+      const lostIdx = sec.blocks.pop();
+      state.blocks[lostIdx].lost = true;
+      state.blocks[lostIdx].sector = -1;
+      state.overflows++;
+      purged = true;
     }
+  }
+  if (purged) {
+    computeBlockPositions();
+    updateUI();
+    checkFail();
   }
 }
 
-function applyReaction(x, y, emission) {
-  const tile = tileAt(x, y);
-  const obj = objectAt(x, y);
+// ---- Win / Fail ----
+function checkWin() {
+  const allDelivered = state.blocks.every(b => b.delivered || b.lost);
+  const anyAlive = state.blocks.some(b => b.delivered);
 
-  if (emission === 1) {
-    // DEPLOY COOLANT
-    if (tile === MAT.FLOOR || tile === MAT.FIRE) {
-      if (tile === MAT.FIRE) {
-        // Coolant neutralizes corruption
-        delete fireTimers[`${x},${y}`];
-        for (let i = 0; i < 5; i++) addParticle(x, y, '#aaaacc', 0.8);
-      }
-      setTile(x, y, MAT.WATER);
-      addParticle(x, y, '#2244aa', 0.6);
-    }
-  }
-  else if (emission === 2) {
-    // SEND SIGNAL
-    if (tile === MAT.WATER) {
-      setTile(x, y, MAT.ELEC_WATER);
-      addParticle(x, y, '#44aaff', 0.8);
-    }
-    // Signal on conductor — propagation handles this
-    // Signal on floor near source — no direct effect, but propagation will handle
-    addParticle(x, y, '#00ddff', 0.4);
-    addParticle(x, y, '#ffffff', 0.3);
-  }
-  else if (emission === 3) {
-    // INJECT CORRUPTION
-    if (obj && obj.mat === MAT.WOOD && !obj.burning) {
-      obj.burning = true;
-      obj.burnTimer = 3;
-      setTile(x, y, MAT.FIRE);
-      fireTimers[`${x},${y}`] = 3;
-      addParticle(x, y, '#ff4422', 1);
-      addParticle(x, y, '#ffaa00', 0.8);
-    }
-    if (tile === MAT.FLOOR) {
-      addParticle(x, y, '#ff6633', 0.5);
-    }
-  }
-}
+  if (allDelivered && anyAlive && !state.won) {
+    state.won = true;
+    state.running = false;
 
-function updateChemistry(dt) {
-  // Update corruption timers
-  const toRemove = [];
-  for (const key in fireTimers) {
-    fireTimers[key] -= dt;
-    const [fx, fy] = key.split(',').map(Number);
+    const efficiency = Math.max(0, Math.round(
+      (1 - (state.moves - state.optimalMoves) / Math.max(state.optimalMoves, 1)) * 100
+    ));
 
-    // Corruption particles
-    if (Math.random() < 0.3) {
-      addParticle(fx, fy, Math.random() > 0.5 ? '#ff4422' : '#ffaa00', 0.6);
+    document.getElementById('win-moves').textContent = state.moves;
+    document.getElementById('win-overflow').textContent = state.overflows;
+    document.getElementById('win-overflow').className = 'value' + (state.overflows === 0 ? ' good' : ' bad');
+    document.getElementById('win-time').textContent = formatTime(state.elapsed);
+    document.getElementById('win-efficiency').textContent = Math.min(100, efficiency) + '%';
+    document.getElementById('win-efficiency').className = 'value' + (efficiency >= 80 ? ' good' : '');
+    document.getElementById('win-title').textContent =
+      state.level >= LEVELS.length - 1 ? 'All Clear!' : 'Sector Clear';
+
+    // Save best
+    const key = 'lv' + state.level;
+    if (!state.bestScores[key] || state.moves < state.bestScores[key].moves) {
+      state.bestScores[key] = { moves: state.moves, overflows: state.overflows, time: state.elapsed };
+    }
+    if (state.level < LEVELS.length - 1) {
+      const prog = JSON.parse(localStorage.getItem('airlock-progress') || '{}');
+      prog.level = Math.max(prog.level || 0, state.level + 1);
+      prog.bestScores = state.bestScores;
+      localStorage.setItem('airlock-progress', JSON.stringify(prog));
     }
 
-    if (fireTimers[key] <= 0) {
-      toRemove.push(key);
-      // Destroy the data block
-      const obj = objectAt(fx, fy);
-      if (obj && obj.mat === MAT.WOOD) {
-        obj.destroyed = true;
-        // If player was carrying this, drop it
-        if (player.carrying === obj) player.carrying = null;
-      }
-      setTile(fx, fy, MAT.FLOOR);
-    }
-  }
-  toRemove.forEach(k => delete fireTimers[k]);
+    document.getElementById('win-overlay').classList.remove('hidden');
+    document.getElementById('btn-next').textContent =
+      state.level >= LEVELS.length - 1 ? 'Play Again' : 'Next Level';
 
-  // Spread corruption to adjacent data blocks
-  for (const key in fireTimers) {
-    const [fx, fy] = key.split(',').map(Number);
-    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-      const nx = fx + dx, ny = fy + dy;
-      const adj = objectAt(nx, ny);
-      if (adj && adj.mat === MAT.WOOD && !adj.burning) {
-        if (Math.random() < 0.01) { // slow spread
-          adj.burning = true;
-          adj.burnTimer = 3;
-          setTile(nx, ny, MAT.FIRE);
-          fireTimers[`${nx},${ny}`] = 3;
-        }
-      }
-    }
-  }
-
-  // Coolant spreading (very slow)
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      if (grid[y][x] === MAT.WATER || grid[y][x] === MAT.ELEC_WATER) {
-        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-          const nx = x + dx, ny = y + dy;
-          if (nx > 0 && nx < COLS - 1 && ny > 0 && ny < ROWS - 1) {
-            if (grid[ny][nx] === MAT.FLOOR && Math.random() < 0.002) {
-              grid[ny][nx] = MAT.WATER;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Propagate signal every frame
-  doorPowered = false;
-  propagateElectricity();
-
-  // Check COMMIT point activation
-  if (doorPowered && !doorOpen) {
-    doorOpen = true;
-    for (let i = 0; i < 10; i++) {
-      addParticle(9, 0, '#00e09a', 1.2);
-      addParticle(10, 0, '#00e09a', 1.2);
-    }
-  }
-
-  // Check if SWAP sector is accessible (data blocks blocking it purged)
-  const ventBlocked = objectAt(17, 2) || objectAt(18, 2) || objectAt(17, 3);
-  if (!ventBlocked) ventOpen = true;
-
-  // Damage player if on activated coolant or corruption
-  const pt = tileAt(Math.round(player.x), Math.round(player.y));
-  if ((pt === MAT.ELEC_WATER || pt === MAT.FIRE) && !player.dead) {
-    if (gameTime - (player.lastDamage || 0) > 0.5) {
-      player.hp--;
-      player.lastDamage = gameTime;
-      damageFlash = 0.3;
-      if (player.hp <= 0) {
-        player.dead = true;
-        showFundPrompt();
-        setTimeout(() => resetGame(), 2000);
-      }
-    }
-  }
-
-  // Win condition — player reaches COMMIT point or SWAP sector exit
-  if (!won && !player.dead) {
-    const py = Math.round(player.y);
-    const px = Math.round(player.x);
-    if (py <= 0 && doorOpen) {
-      won = true;
-      document.getElementById('win-overlay').classList.add('show');
-      showFundPrompt();
-    }
-    if (ventOpen && px === 18 && py === 3) {
-      // SWAP sector leads to preservation
-      won = true;
-      document.getElementById('win-overlay').classList.add('show');
-      showFundPrompt();
-    }
+    showFundPrompt();
   }
 }
 
-// === Player Movement ===
-let moveCD = 0;
-function updatePlayer(dt) {
-  if (player.dead || won) return;
-
-  moveCD -= dt;
-  if (moveCD > 0) return;
-
-  let dx = 0, dy = 0;
-  if (keys['w'] || keys['arrowup']) dy = -1;
-  if (keys['s'] || keys['arrowdown']) dy = 1;
-  if (keys['a'] || keys['arrowleft']) dx = -1;
-  if (keys['d'] || keys['arrowright']) dx = 1;
-
-  if (dx !== 0 || dy !== 0) {
-    // Try to move
-    const nx = Math.round(player.x + dx);
-    const ny = Math.round(player.y + dy);
-
-    if (isPassable(nx, ny)) {
-      player.x = nx;
-      player.y = ny;
-      player.lastDir = { x: dx, y: dy };
-      moveCD = 0.12;
-
-      // Move carried object
-      if (player.carrying) {
-        player.carrying.x = nx;
-        player.carrying.y = ny;
-      }
-    }
+function checkFail() {
+  if (state.overflows > state.maxOverflows && !state.failed && !state.won) {
+    state.failed = true;
+    state.running = false;
+    document.getElementById('fail-overlay').classList.remove('hidden');
+    showFundPrompt();
   }
 }
 
-// === Input ===
-document.addEventListener('keydown', e => {
-  const key = e.key.toLowerCase();
-  keys[key] = true;
+// ---- Timer ----
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
 
-  if (key === '1' || key === '2' || key === '3') {
-    player.emission = parseInt(key);
-    document.querySelectorAll('.hud-item').forEach((el, i) => {
-      if (i < 3) el.classList.toggle('active', i === player.emission - 1);
-    });
+// ---- UI Updates ----
+function updateUI() {
+  document.getElementById('val-moves').textContent = state.moves;
+  document.getElementById('val-overflow').textContent = state.overflows;
+
+  const remaining = state.blocks.filter(b => !b.lost && !b.delivered).length;
+  const delivered = state.blocks.filter(b => b.delivered).length;
+  document.getElementById('val-remaining').textContent = remaining;
+  document.getElementById('val-delivered').textContent = delivered;
+
+  const overflowPill = document.getElementById('stat-overflow');
+  overflowPill.className = 'stat-pill' + (state.overflows > 0 ? (state.overflows >= state.maxOverflows ? ' danger' : ' warning') : '');
+}
+
+// ---- Rendering ----
+function resizeCanvas() {
+  const container = document.querySelector('.map-area');
+  const rect = container.getBoundingClientRect();
+  const w = rect.width - 24; // padding
+  const aspect = canvas.width / canvas.height;
+  // Keep internal resolution, CSS handles scaling
+}
+
+function drawRoundedRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawConnection(s1, s2, highlight) {
+  const cx1 = s1.x + s1.w / 2;
+  const cy1 = s1.y + s1.h / 2;
+  const cx2 = s2.x + s2.w / 2;
+  const cy2 = s2.y + s2.h / 2;
+
+  ctx.beginPath();
+  ctx.moveTo(cx1, cy1);
+
+  // Slight curve for visual interest
+  const mx = (cx1 + cx2) / 2;
+  const my = (cy1 + cy2) / 2;
+  const dx = cx2 - cx1;
+  const dy = cy2 - cy1;
+  const offset = Math.min(Math.abs(dx), Math.abs(dy)) * 0.15;
+  const cpx = mx + (dy > 0 ? offset : -offset) * 0.3;
+  const cpy = my + (dx > 0 ? -offset : offset) * 0.3;
+
+  ctx.quadraticCurveTo(cpx, cpy, cx2, cy2);
+
+  ctx.strokeStyle = highlight ? COLORS.connectionActive : COLORS.connection;
+  ctx.lineWidth = highlight ? 3 : 2;
+  ctx.setLineDash(highlight ? [] : [6, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Arrow in middle
+  const t = 0.5;
+  const ax = (1-t)*(1-t)*cx1 + 2*(1-t)*t*cpx + t*t*cx2;
+  const ay = (1-t)*(1-t)*cy1 + 2*(1-t)*t*cpy + t*t*cy2;
+  const angle = Math.atan2(cy2 - cy1, cx2 - cx1);
+
+  if (highlight) {
+    ctx.fillStyle = COLORS.connectionActive;
+    ctx.beginPath();
+    ctx.moveTo(ax + Math.cos(angle) * 6, ay + Math.sin(angle) * 6);
+    ctx.lineTo(ax + Math.cos(angle + 2.5) * 5, ay + Math.sin(angle + 2.5) * 5);
+    ctx.lineTo(ax + Math.cos(angle - 2.5) * 5, ay + Math.sin(angle - 2.5) * 5);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawSector(sec, time) {
+  const isOutput = sec.isOutput;
+  const isHover = state.hoverSector === sec.idx;
+  const isOverflow = sec.blocks.length > sec.cap && !isOutput;
+  const isFlashing = sec.flashTimer > 0;
+  const isFailed = sec.failed;
+  const isFailing = sec.failing && !sec.failed && sec.failTimer > 0;
+
+  // Shadow
+  ctx.save();
+  ctx.shadowColor = isOutput ? COLORS.outputGlow : 'rgba(0, 80, 160, 0.06)';
+  ctx.shadowBlur = isOutput ? 20 : 12;
+  ctx.shadowOffsetY = 4;
+
+  // Glass background
+  drawRoundedRect(sec.x, sec.y, sec.w, sec.h, 14);
+
+  if (isFailed) {
+    ctx.fillStyle = 'rgba(229, 62, 62, 0.08)';
+  } else if (isFlashing) {
+    const flash = Math.sin(time * 20) * 0.5 + 0.5;
+    ctx.fillStyle = `rgba(229, 62, 62, ${0.1 + flash * 0.15})`;
+  } else if (isOutput) {
+    ctx.fillStyle = 'rgba(56, 161, 105, 0.08)';
+  } else if (isHover && state.dragging) {
+    ctx.fillStyle = 'rgba(0, 120, 212, 0.1)';
+  } else {
+    ctx.fillStyle = COLORS.sectorBg;
+  }
+  ctx.fill();
+  ctx.restore();
+
+  // Border
+  drawRoundedRect(sec.x, sec.y, sec.w, sec.h, 14);
+  if (isFailed) {
+    ctx.strokeStyle = 'rgba(229, 62, 62, 0.3)';
+    ctx.setLineDash([4, 4]);
+  } else if (isFlashing) {
+    ctx.strokeStyle = 'rgba(229, 62, 62, 0.7)';
+    ctx.setLineDash([]);
+  } else if (isOutput) {
+    ctx.strokeStyle = 'rgba(56, 161, 105, 0.5)';
+    ctx.setLineDash([]);
+  } else if (isHover && state.dragging) {
+    ctx.strokeStyle = 'rgba(0, 120, 212, 0.6)';
+    ctx.setLineDash([]);
+  } else {
+    ctx.strokeStyle = COLORS.sectorBorder;
+    ctx.setLineDash([]);
+  }
+  ctx.lineWidth = isHover && state.dragging ? 2.5 : 1.5;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Glass highlight (top edge shine)
+  if (!isFailed) {
+    const grad = ctx.createLinearGradient(sec.x, sec.y, sec.x, sec.y + sec.h * 0.4);
+    grad.addColorStop(0, 'rgba(255,255,255,0.4)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    drawRoundedRect(sec.x + 1, sec.y + 1, sec.w - 2, sec.h * 0.4, 13);
+    ctx.fillStyle = grad;
+    ctx.fill();
   }
 
-  if (key === 'e') {
-    handleInteract();
-  }
+  // Label
+  ctx.font = '600 10px ' + getComputedStyle(document.body).fontFamily;
+  ctx.fillStyle = isFailed ? 'rgba(229,62,62,0.4)' : (isOutput ? COLORS.outputPort : COLORS.textDim);
+  ctx.textAlign = 'left';
+  ctx.fillText(sec.label, sec.x + 12, sec.y + 20);
 
-  if (key === ' ') {
-    e.preventDefault();
-    handleEmit();
-  }
-
-  if (key === 'r') {
-    resetGame();
-  }
-});
-
-document.addEventListener('keyup', e => {
-  keys[e.key.toLowerCase()] = false;
-});
-
-function handleInteract() {
-  if (player.dead || won) return;
-
-  if (player.carrying) {
-    // Drop object
-    const dir = player.lastDir || { x: 0, y: -1 };
-    const dropX = Math.round(player.x + dir.x);
-    const dropY = Math.round(player.y + dir.y);
-
-    if (isPassable(dropX, dropY) && tileAt(dropX, dropY) !== MAT.WALL) {
-      player.carrying.x = dropX;
-      player.carrying.y = dropY;
-    } else {
-      // Drop on self
-      player.carrying.x = Math.round(player.x);
-      player.carrying.y = Math.round(player.y);
-    }
-    document.getElementById('hud-carry').textContent = 'carrying: none';
-    player.carrying = null;
+  // Failed X
+  if (isFailed) {
+    ctx.font = 'bold 32px ' + getComputedStyle(document.body).fontFamily;
+    ctx.fillStyle = 'rgba(229,62,62,0.15)';
+    ctx.textAlign = 'center';
+    ctx.fillText('OFFLINE', sec.x + sec.w / 2, sec.y + sec.h / 2 + 4);
+    ctx.textAlign = 'left';
     return;
   }
 
-  // Try to pick up adjacent object
-  const dir = player.lastDir || { x: 0, y: -1 };
-  const tx = Math.round(player.x + dir.x);
-  const ty = Math.round(player.y + dir.y);
-
-  // Also check current tile
-  let obj = objectAt(tx, ty) || objectAt(Math.round(player.x), Math.round(player.y));
-  if (obj && !obj.destroyed && obj.w === 1 && obj.h === 1) {
-    player.carrying = obj;
-    obj.x = Math.round(player.x);
-    obj.y = Math.round(player.y);
-    const name = obj.type.replace('_', ' ');
-    document.getElementById('hud-carry').textContent = 'carrying: ' + name;
-  }
-  // Push larger objects
-  else if (obj && !obj.destroyed && !player.carrying) {
-    const pushX = obj.x + dir.x;
-    const pushY = obj.y + dir.y;
-    // Check all tiles the object would occupy
-    let canPush = true;
-    for (let oy = 0; oy < obj.h; oy++) {
-      for (let ox = 0; ox < obj.w; ox++) {
-        const cx = pushX + ox, cy = pushY + oy;
-        if (cx <= 0 || cx >= COLS - 1 || cy <= 0 || cy >= ROWS - 1) { canPush = false; break; }
-        const t = tileAt(cx, cy);
-        if (t === MAT.WALL || t === MAT.GENERATOR) { canPush = false; break; }
-        const otherObj = objectAt(cx, cy);
-        if (otherObj && otherObj !== obj) { canPush = false; break; }
-      }
-      if (!canPush) break;
-    }
-    if (canPush) {
-      obj.x = pushX;
-      obj.y = pushY;
-    }
-  }
-}
-
-function handleEmit() {
-  if (player.dead || won) return;
-  if (gameTime - lastEmitTime < 0.3) return;
-  lastEmitTime = gameTime;
-
-  // Emit in a small area around the player
-  const px = Math.round(player.x);
-  const py = Math.round(player.y);
-
-  const targets = [
-    { x: px, y: py },
-    { x: px + 1, y: py },
-    { x: px - 1, y: py },
-    { x: px, y: py + 1 },
-    { x: px, y: py - 1 }
-  ];
-
-  // For spark, also affect the tile the player is facing
-  if (player.emission === 2) {
-    const dir = player.lastDir || { x: 0, y: -1 };
-    targets.push({ x: px + dir.x * 2, y: py + dir.y * 2 });
+  // Failing warning
+  if (isFailing) {
+    const warn = Math.sin(time * 4) * 0.5 + 0.5;
+    ctx.font = '500 9px ' + getComputedStyle(document.body).fontFamily;
+    ctx.fillStyle = `rgba(214, 158, 46, ${0.4 + warn * 0.4})`;
+    ctx.textAlign = 'right';
+    ctx.fillText('FAILING ' + Math.ceil(sec.failTimer) + 's', sec.x + sec.w - 12, sec.y + 20);
+    ctx.textAlign = 'left';
   }
 
-  for (const t of targets) {
-    applyReaction(t.x, t.y, player.emission);
+  // Capacity bar
+  const barX = sec.x + 12;
+  const barY = sec.y + sec.h - 20;
+  const barW = sec.w - 24;
+  const barH = 8;
+
+  // Bar background
+  drawRoundedRect(barX, barY, barW, barH, 4);
+  ctx.fillStyle = COLORS.capacityBg;
+  ctx.fill();
+
+  // Bar fill
+  const fillRatio = Math.min(sec.blocks.length / sec.cap, 1.5);
+  const fillW = Math.min(fillRatio, 1) * barW;
+
+  if (fillW > 0) {
+    drawRoundedRect(barX, barY, Math.max(fillW, 8), barH, 4);
+    ctx.fillStyle = isOverflow ? COLORS.capacityOverflow :
+      (fillRatio >= 1 ? 'rgba(214, 158, 46, 0.5)' : COLORS.capacityFill);
+    ctx.fill();
+  }
+
+  // Capacity text
+  ctx.font = '600 9px ' + getComputedStyle(document.body).fontFamily;
+  ctx.fillStyle = isOverflow ? '#E53E3E' : COLORS.textMuted;
+  ctx.textAlign = 'right';
+  ctx.fillText(sec.blocks.length + '/' + sec.cap, sec.x + sec.w - 12, barY - 3);
+  ctx.textAlign = 'left';
+
+  // Output icon
+  if (isOutput) {
+    ctx.font = '500 9px ' + getComputedStyle(document.body).fontFamily;
+    ctx.fillStyle = COLORS.outputPort;
+    ctx.textAlign = 'right';
+    ctx.fillText('DELIVER HERE', sec.x + sec.w - 12, sec.y + 20);
+    ctx.textAlign = 'left';
   }
 }
 
-// === Rendering ===
-function render() {
-  ctx.fillStyle = '#0a0a0f';
-  ctx.fillRect(0, 0, W, H);
+function drawBlock(block, x, y, size, isDragging) {
+  const color = COLORS.data[block.color % COLORS.data.length];
+  const lightColor = COLORS.dataLight[block.color % COLORS.dataLight.length];
 
-  // Grid
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      const tile = grid[y][x];
-      const sx = x * TILE, sy = y * TILE;
+  ctx.save();
 
-      // Floor pattern
-      if (tile === MAT.FLOOR) {
-        ctx.fillStyle = (x + y) % 2 === 0 ? '#14141e' : '#161620';
-        ctx.fillRect(sx, sy, TILE, TILE);
-        continue;
-      }
+  if (isDragging) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 4;
+  } else {
+    ctx.shadowColor = 'rgba(0,0,0,0.08)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
+  }
 
-      // Corruption animation
-      if (tile === MAT.FIRE) {
-        ctx.fillStyle = '#14141e';
-        ctx.fillRect(sx, sy, TILE, TILE);
-        const flicker = Math.sin(gameTime * 10 + x * 3 + y * 7) * 0.3 + 0.7;
-        ctx.globalAlpha = flicker;
-        ctx.fillStyle = '#ff4422';
-        ctx.fillRect(sx + 2, sy + 2, TILE - 4, TILE - 4);
-        ctx.fillStyle = '#ffaa00';
-        ctx.fillRect(sx + 8, sy + 8, TILE - 16, TILE - 16);
-        ctx.globalAlpha = 1;
-        continue;
-      }
+  // Main block body
+  drawRoundedRect(x, y, size, size, 7);
+  ctx.fillStyle = color;
+  ctx.fill();
 
-      // Activated coolant shimmer
-      if (tile === MAT.ELEC_WATER) {
-        const shimmer = Math.sin(gameTime * 8 + x + y * 2) * 0.2 + 0.8;
-        ctx.globalAlpha = shimmer;
-        ctx.fillStyle = '#44aaff';
-        ctx.fillRect(sx, sy, TILE, TILE);
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(sx + 10, sy + 10, 4, 4);
-        ctx.globalAlpha = 1;
-        continue;
-      }
+  ctx.restore();
 
-      // Coolant
-      if (tile === MAT.WATER) {
-        const ripple = Math.sin(gameTime * 3 + x * 2 + y) * 0.1 + 0.9;
-        ctx.globalAlpha = ripple;
-        ctx.fillStyle = '#2244aa';
-        ctx.fillRect(sx, sy, TILE, TILE);
-        ctx.fillStyle = '#3355bb';
-        ctx.fillRect(sx + 4, sy + 12, 8, 3);
-        ctx.globalAlpha = 1;
-        continue;
-      }
+  // Inner highlight
+  const grad = ctx.createLinearGradient(x, y, x, y + size);
+  grad.addColorStop(0, 'rgba(255,255,255,0.35)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.1)');
+  drawRoundedRect(x + 1, y + 1, size - 2, size - 2, 6);
+  ctx.fillStyle = grad;
+  ctx.fill();
 
-      // COMMIT point
-      if (tile === MAT.DOOR) {
-        if (doorOpen) {
-          ctx.fillStyle = '#0a2a1a';
-          ctx.fillRect(sx, sy, TILE, TILE);
-          ctx.fillStyle = '#00e09a';
-          ctx.font = '8px monospace';
-          ctx.fillText('COMMIT', sx + 1, sy + 24);
-        } else if (doorPowered) {
-          ctx.fillStyle = '#2a4422';
-          ctx.fillRect(sx, sy, TILE, TILE);
-          ctx.fillStyle = '#00e09a';
-          ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
-        } else {
-          ctx.fillStyle = '#442222';
-          ctx.fillRect(sx, sy, TILE, TILE);
-          ctx.fillStyle = '#884422';
-          ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
-          // Lock icon
-          ctx.fillStyle = '#ff4444';
-          ctx.fillRect(sx + 14, sy + 10, 12, 14);
-          ctx.fillStyle = '#442222';
-          ctx.fillRect(sx + 17, sy + 13, 6, 8);
-        }
-        continue;
-      }
-
-      // Signal Source
-      if (tile === MAT.GENERATOR) {
-        ctx.fillStyle = '#0a1a1a';
-        ctx.fillRect(sx, sy, TILE, TILE);
-        ctx.fillStyle = '#00ccbb';
-        ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
-        // Signal pulse animation
-        const spark = Math.sin(gameTime * 15 + x) > 0.7;
-        if (spark) {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(sx + 8 + Math.random() * 16, sy + 8 + Math.random() * 16, 4, 4);
-          addParticle(x, y, '#00e09a', 0.3);
-        }
-        ctx.fillStyle = '#008877';
-        ctx.font = 'bold 8px monospace';
-        ctx.fillText('SRC', sx + 7, sy + 24);
-        continue;
-      }
-
-      // SWAP sector access
-      if (tile === MAT.VENT) {
-        ctx.fillStyle = ventOpen ? '#1a2a1a' : '#1a1a24';
-        ctx.fillRect(sx, sy, TILE, TILE);
-        // Grating pattern
-        for (let i = 0; i < 4; i++) {
-          ctx.fillStyle = ventOpen ? '#335533' : '#222233';
-          ctx.fillRect(sx + 4, sy + 4 + i * 9, TILE - 8, 2);
-        }
-        if (ventOpen) {
-          ctx.fillStyle = '#00e09a';
-          ctx.font = '8px monospace';
-          ctx.fillText('SWAP', sx + 5, sy + 24);
-        }
-        continue;
-      }
-
-      // Wall
-      ctx.fillStyle = COLORS[tile] || '#2a2a3a';
-      ctx.fillRect(sx, sy, TILE, TILE);
-      if (tile === MAT.WALL) {
-        ctx.fillStyle = '#222233';
-        ctx.fillRect(sx + 1, sy + 1, TILE - 2, TILE - 2);
-        ctx.fillStyle = '#2a2a3a';
-        ctx.fillRect(sx + 2, sy + 2, TILE - 4, TILE - 4);
-      }
+  // Data pattern (small dots)
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  for (let r = 0; r < 2; r++) {
+    for (let c = 0; c < 2; c++) {
+      ctx.beginPath();
+      ctx.arc(x + 10 + c * 12, y + 10 + r * 12, 2, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 
-  // Electrification overlay on tiles
-  for (const key of electrifiedTiles) {
-    const [ex, ey] = key.split(',').map(Number);
-    const tile = tileAt(ex, ey);
-    if (tile !== MAT.ELEC_WATER && tile !== MAT.GENERATOR && tile !== MAT.DOOR) {
-      ctx.globalAlpha = 0.15 + Math.sin(gameTime * 6 + ex + ey) * 0.1;
-      ctx.fillStyle = '#66ddff';
-      ctx.fillRect(ex * TILE, ey * TILE, TILE, TILE);
+  // Block label
+  ctx.font = 'bold 9px ' + getComputedStyle(document.body).fontFamily;
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.textAlign = 'center';
+  ctx.fillText('D' + block.idx, x + size / 2, y + size - 5);
+  ctx.textAlign = 'left';
+}
+
+function render(time) {
+  const t = time / 1000;
+
+  // Clear
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(0, 120, 212, 0.04)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < canvas.width; x += 40) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+  }
+  for (let y = 0; y < canvas.height; y += 40) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+
+  // Connections
+  const dragFrom = state.dragging ? state.dragging.fromSector : -1;
+  const connectedToDrag = dragFrom >= 0 ? getConnectedSectors(dragFrom) : [];
+
+  for (const conn of state.connections) {
+    const s1 = state.sectors[conn[0]];
+    const s2 = state.sectors[conn[1]];
+    if (s1.failed || s2.failed) continue;
+
+    const highlight = (
+      (conn[0] === dragFrom && connectedToDrag.includes(conn[1])) ||
+      (conn[1] === dragFrom && connectedToDrag.includes(conn[0]))
+    );
+    drawConnection(s1, s2, highlight);
+  }
+
+  // Sectors
+  for (const sec of state.sectors) {
+    if (sec.flashTimer > 0) sec.flashTimer -= 0.016;
+    drawSector(sec, t);
+  }
+
+  // Blocks (non-dragged)
+  const blockSize = 32;
+  for (const block of state.blocks) {
+    if (block.lost || block.delivered) continue;
+    if (state.dragging && state.dragging.blockIdx === block.idx) continue;
+
+    drawBlock(block, block.x, block.y, blockSize, false);
+  }
+
+  // Dragged block
+  if (state.dragging) {
+    const block = state.blocks[state.dragging.blockIdx];
+    const dx = state.dragging.curX - blockSize / 2;
+    const dy = state.dragging.curY - blockSize / 2;
+    drawBlock(block, dx, dy, blockSize, true);
+
+    // Show valid drop targets
+    for (const idx of connectedToDrag) {
+      const sec = state.sectors[idx];
+      if (sec.failed) continue;
+      ctx.save();
+      ctx.globalAlpha = 0.4 + Math.sin(t * 4) * 0.15;
+      drawRoundedRect(sec.x - 2, sec.y - 2, sec.w + 4, sec.h + 4, 16);
+      ctx.strokeStyle = sec.blocks.length >= sec.cap && !sec.isOutput ? '#D69E2E' : '#0078D4';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // Delivered blocks in output (small stack)
+  const outputSec = state.sectors[state.outputSector];
+  if (outputSec) {
+    const delivered = state.blocks.filter(b => b.delivered);
+    const miniSize = 18;
+    const gap = 4;
+    const totalW = delivered.length * (miniSize + gap) - gap;
+    const startX = outputSec.x + outputSec.w / 2 - totalW / 2;
+    const startY = outputSec.y + outputSec.h / 2 + 2;
+
+    for (let i = 0; i < delivered.length; i++) {
+      const b = delivered[i];
+      const bx = startX + i * (miniSize + gap);
+      const color = COLORS.data[b.color % COLORS.data.length];
+      drawRoundedRect(bx, startY, miniSize, miniSize, 4);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.globalAlpha = 0.3;
+      drawRoundedRect(bx, startY, miniSize, miniSize / 2, 4);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
       ctx.globalAlpha = 1;
     }
   }
 
-  // Objects
-  for (const obj of objects) {
-    if (obj.destroyed) continue;
-    if (obj === player.carrying) continue; // drawn with player
+  // Timer bar (if active)
+  if (state.timerActive && state.running) {
+    const ratio = state.timerRemaining / (LEVELS[state.level].timer || 60);
+    const barW = canvas.width - 20;
+    const barH = 4;
+    const barX = 10;
+    const barY = canvas.height - 8;
 
-    const sx = obj.x * TILE, sy = obj.y * TILE;
-    const w = obj.w * TILE, h = obj.h * TILE;
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.fillRect(barX, barY, barW, barH);
 
-    if (obj.mat === MAT.METAL) {
-      ctx.fillStyle = isElectrified(obj.x, obj.y) ? '#88ccff' : '#5a6a7a';
-      ctx.fillRect(sx + 2, sy + 2, w - 4, h - 4);
-      ctx.fillStyle = isElectrified(obj.x, obj.y) ? '#aaddff' : '#6a7a8a';
-      ctx.fillRect(sx + 4, sy + 4, w - 8, h - 8);
-      // Label
-      ctx.fillStyle = '#333';
-      ctx.font = '8px monospace';
-      ctx.fillText('ARRAY', sx + 6, sy + h / 2 + 3);
-    }
-    else if (obj.mat === MAT.WOOD) {
-      if (obj.burning) {
-        const flicker = Math.sin(gameTime * 12 + obj.x) * 0.3 + 0.7;
-        ctx.globalAlpha = flicker;
-        ctx.fillStyle = '#ff6622';
-        ctx.fillRect(sx + 1, sy + 1, w - 2, h - 2);
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#aa4400';
-        ctx.fillRect(sx + 6, sy + 6, w - 12, h - 12);
-      } else {
-        ctx.fillStyle = '#6b4a2a';
-        ctx.fillRect(sx + 2, sy + 2, w - 4, h - 4);
-        ctx.fillStyle = '#7b5a3a';
-        ctx.fillRect(sx + 4, sy + 4, w - 8, h - 8);
-        // Data pattern
-        ctx.fillStyle = '#5a3a1a';
-        ctx.fillRect(sx + 6, sy + h / 2 - 1, w - 12, 2);
-      }
-    }
+    ctx.fillStyle = ratio > 0.3 ? 'rgba(0,120,212,0.3)' :
+      (ratio > 0.15 ? 'rgba(214,158,46,0.5)' : 'rgba(229,62,62,0.6)');
+    ctx.fillRect(barX, barY, barW * ratio, barH);
   }
-
-  // Particles
-  for (const p of particles) {
-    ctx.globalAlpha = p.life / p.maxLife;
-    ctx.fillStyle = p.color;
-    const size = 3 * (p.life / p.maxLife);
-    ctx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
-  }
-  ctx.globalAlpha = 1;
-
-  // Player (memory process)
-  if (!player.dead) {
-    const px = player.x * TILE + TILE / 2;
-    const py = player.y * TILE + TILE / 2;
-
-    // Body
-    ctx.fillStyle = damageFlash > 0 ? '#ff4444' : '#33cc88';
-    ctx.beginPath();
-    ctx.ellipse(px, py + 2, 12, 16, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Visor
-    ctx.fillStyle = '#88ddff';
-    const dir = player.lastDir || { x: 0, y: -1 };
-    ctx.beginPath();
-    ctx.ellipse(px + dir.x * 4, py - 4 + dir.y * 2, 7, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Visor shine
-    ctx.fillStyle = '#aaeeff';
-    ctx.beginPath();
-    ctx.ellipse(px + dir.x * 4 + 2, py - 6 + dir.y * 2, 2, 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Legs
-    ctx.fillStyle = damageFlash > 0 ? '#cc3333' : '#2a9966';
-    ctx.fillRect(px - 8, py + 14, 6, 5);
-    ctx.fillRect(px + 2, py + 14, 6, 5);
-
-    // Backpack
-    ctx.fillStyle = damageFlash > 0 ? '#aa3333' : '#228855';
-    ctx.fillRect(px - dir.x * 12 - 5, py - 2, 6, 10);
-
-    // Carried object indicator
-    if (player.carrying) {
-      ctx.fillStyle = player.carrying.mat === MAT.WOOD ? '#6b4a2a' : '#5a6a7a';
-      ctx.fillRect(px + dir.x * 14 - 6, py + dir.y * 14 - 6, 12, 12);
-    }
-
-    // INTEGRITY pips
-    for (let i = 0; i < 3; i++) {
-      ctx.fillStyle = i < player.hp ? '#00e09a' : '#332222';
-      ctx.fillRect(px - 9 + i * 7, py - 24, 5, 3);
-    }
-  } else {
-    // Dead player
-    const px = player.x * TILE + TILE / 2;
-    const py = player.y * TILE + TILE / 2;
-    ctx.fillStyle = '#553333';
-    ctx.beginPath();
-    ctx.ellipse(px, py + 6, 14, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ff4444';
-    ctx.font = '10px monospace';
-    ctx.fillText('OOM KILLED', px - 28, py - 10);
-  }
-
-  // Damage flash overlay
-  if (damageFlash > 0) {
-    ctx.globalAlpha = damageFlash;
-    ctx.fillStyle = '#ff0000';
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
-  }
-
-  // Guide arrows
-  if (!doorOpen && !won) {
-    // Arrow pointing to signal source
-    ctx.globalAlpha = 0.15 + Math.sin(gameTime * 2) * 0.1;
-    ctx.fillStyle = '#00ccbb';
-    ctx.font = '11px monospace';
-    ctx.fillText('SIGNAL SRC', 17 * TILE - 2, 12 * TILE + 8);
-    ctx.globalAlpha = 0.15 + Math.sin(gameTime * 2 + 1) * 0.1;
-    ctx.fillStyle = '#ff4444';
-    ctx.fillText('LOCKED', 9 * TILE + 2, 1 * TILE + 14);
-    ctx.globalAlpha = 1;
-  }
-
-  // Memory sector labels
-  ctx.globalAlpha = 0.08;
-  ctx.fillStyle = '#00e09a';
-  ctx.font = 'bold 14px monospace';
-  ctx.fillText('HEAP', 2 * TILE, 4 * TILE);
-  ctx.fillText('STACK', 14 * TILE, 4 * TILE);
-  ctx.fillText('CACHE', 2 * TILE, 10 * TILE);
-  ctx.fillText('SWAP', 16 * TILE, 2 * TILE);
-  ctx.globalAlpha = 1;
 }
 
-// === Game Loop ===
-let lastTime = 0;
-function loop(timestamp) {
-  const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
-  lastTime = timestamp;
-  gameTime += dt;
+// ---- Game Loop ----
+let lastFrameTime = 0;
+function gameLoop(timestamp) {
+  const dt = Math.min((timestamp - lastFrameTime) / 1000, 0.1);
+  lastFrameTime = timestamp;
 
-  updatePlayer(dt);
-  updateChemistry(dt);
+  if (state.running) {
+    state.elapsed = (performance.now() - state.startTime) / 1000;
+    document.getElementById('val-time').textContent = formatTime(state.elapsed);
 
-  // Update particles
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.life -= dt;
-    if (p.life <= 0) particles.splice(i, 1);
-  }
-  // Cap particles
-  if (particles.length > 200) particles.splice(0, particles.length - 200);
-
-  // Damage flash
-  if (damageFlash > 0) damageFlash -= dt;
-
-  render();
-  requestAnimationFrame(loop);
-}
-
-function resetGame() {
-  buildLevel();
-  document.getElementById('win-overlay').classList.remove('show');
-  document.getElementById('hud-carry').textContent = 'carrying: none';
-  document.querySelectorAll('.hud-item').forEach((el, i) => {
-    if (i < 3) el.classList.toggle('active', i === 0);
-  });
-}
-
-// === Responsive Canvas Scaling ===
-const gameWrapper = document.getElementById('game-wrapper');
-function resizeCanvas() {
-  const maxW = window.innerWidth;
-  // On touch devices, leave room for controls at bottom and HUD at top
-  const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 860;
-  const topPad = isMobile ? 40 : 0;
-  const bottomPad = isMobile ? 190 : 0;
-  const maxH = window.innerHeight - topPad - bottomPad;
-
-  const scaleX = maxW / 800;
-  const scaleY = maxH / 600;
-  const scale = Math.min(scaleX, scaleY); // fill available space on mobile
-
-  gameWrapper.style.width = 800 + 'px';
-  gameWrapper.style.height = 600 + 'px';
-  gameWrapper.style.transform = `scale(${scale})`;
-  gameWrapper.style.transformOrigin = 'top center';
-}
-window.addEventListener('resize', resizeCanvas);
-window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 100));
-
-// === Mobile Touch Controls ===
-(function initTouchControls() {
-  const dirMap = {
-    up:    { key: 'arrowup',    x: 0, y: -1 },
-    down:  { key: 'arrowdown',  x: 0, y: 1 },
-    left:  { key: 'arrowleft',  x: -1, y: 0 },
-    right: { key: 'arrowright', x: 1, y: 0 }
-  };
-
-  // D-pad buttons — continuous movement via simulated key state
-  const dpadBtns = document.querySelectorAll('.dpad-btn');
-  const activeTouches = {}; // touchId -> dir
-
-  function pressDir(dir) {
-    const d = dirMap[dir];
-    if (d) keys[d.key] = true;
-  }
-  function releaseDir(dir) {
-    const d = dirMap[dir];
-    if (d) keys[d.key] = false;
-  }
-
-  dpadBtns.forEach(btn => {
-    const dir = btn.dataset.dir;
-
-    btn.addEventListener('touchstart', e => {
-      e.preventDefault();
-      btn.classList.add('pressed');
-      for (const touch of e.changedTouches) {
-        activeTouches[touch.identifier] = dir;
-      }
-      pressDir(dir);
-    }, { passive: false });
-
-    btn.addEventListener('touchend', e => {
-      e.preventDefault();
-      for (const touch of e.changedTouches) {
-        delete activeTouches[touch.identifier];
-      }
-      // Only release if no other touch is holding this direction
-      const stillHeld = Object.values(activeTouches).includes(dir);
-      if (!stillHeld) {
-        btn.classList.remove('pressed');
-        releaseDir(dir);
-      }
-    }, { passive: false });
-
-    btn.addEventListener('touchcancel', e => {
-      e.preventDefault();
-      for (const touch of e.changedTouches) {
-        delete activeTouches[touch.identifier];
-      }
-      btn.classList.remove('pressed');
-      releaseDir(dir);
-    }, { passive: false });
-  });
-
-  // D-pad: handle touchmove sliding between buttons
-  const dpadEl = document.querySelector('.dpad');
-  if (dpadEl) {
-    dpadEl.addEventListener('touchmove', e => {
-      e.preventDefault();
-      for (const touch of e.changedTouches) {
-        const el = document.elementFromPoint(touch.clientX, touch.clientY);
-        const newDir = el && el.dataset && el.dataset.dir;
-        const oldDir = activeTouches[touch.identifier];
-        if (newDir !== oldDir) {
-          if (oldDir) {
-            releaseDir(oldDir);
-            const oldBtn = dpadEl.querySelector(`[data-dir="${oldDir}"]`);
-            if (oldBtn) oldBtn.classList.remove('pressed');
-          }
-          if (newDir) {
-            pressDir(newDir);
-            activeTouches[touch.identifier] = newDir;
-            const newBtn = dpadEl.querySelector(`[data-dir="${newDir}"]`);
-            if (newBtn) newBtn.classList.add('pressed');
-          } else {
-            delete activeTouches[touch.identifier];
-          }
+    // Timer countdown
+    if (state.timerActive) {
+      state.timerRemaining -= dt;
+      if (state.timerRemaining <= 0) {
+        state.timerRemaining = 0;
+        // Time's up = fail
+        if (!state.won && !state.failed) {
+          state.failed = true;
+          state.running = false;
+          document.getElementById('fail-overlay').querySelector('h2').textContent = 'Time expired';
+          document.getElementById('fail-overlay').classList.remove('hidden');
         }
       }
-    }, { passive: false });
+    }
+
+    // Sector failure timers
+    for (const sec of state.sectors) {
+      if (sec.failing && !sec.failed && sec.failTimer > 0) {
+        sec.failTimer -= dt;
+        if (sec.failTimer <= 0) {
+          sec.failed = true;
+          // Destroy blocks in this sector
+          for (const bIdx of [...sec.blocks]) {
+            state.blocks[bIdx].lost = true;
+            state.blocks[bIdx].sector = -1;
+            state.overflows++;
+          }
+          sec.blocks = [];
+          computeBlockPositions();
+          updateUI();
+          checkFail();
+          checkWin();
+        }
+      }
+    }
   }
 
-  // EMIT button — fires handleEmit
-  const btnEmit = document.getElementById('btn-emit');
-  btnEmit.addEventListener('touchstart', e => {
-    e.preventDefault();
-    btnEmit.classList.add('pressed');
-    handleEmit();
-  }, { passive: false });
-  btnEmit.addEventListener('touchend', e => {
-    e.preventDefault();
-    btnEmit.classList.remove('pressed');
-  }, { passive: false });
+  render(timestamp);
+  requestAnimationFrame(gameLoop);
+}
 
-  // INTERACT button — fires handleInteract
-  const btnInteract = document.getElementById('btn-interact');
-  btnInteract.addEventListener('touchstart', e => {
-    e.preventDefault();
-    btnInteract.classList.add('pressed');
-    handleInteract();
-  }, { passive: false });
-  btnInteract.addEventListener('touchend', e => {
-    e.preventDefault();
-    btnInteract.classList.remove('pressed');
-  }, { passive: false });
-
-  // CYCLE button — cycles emission 1/2/3
-  const emissionNames = ['Coolant', 'Signal', 'Corruption'];
-  const btnCycle = document.getElementById('btn-carry');
-  btnCycle.addEventListener('touchstart', e => {
-    e.preventDefault();
-    btnCycle.classList.add('pressed');
-    player.emission = (player.emission % 3) + 1;
-    document.querySelectorAll('.hud-item').forEach((el, i) => {
-      if (i < 3) el.classList.toggle('active', i === player.emission - 1);
-    });
-    // Update emit button label
-    document.getElementById('btn-emit-label').textContent = emissionNames[player.emission - 1];
-    btnEmit.setAttribute('aria-label', 'Emit current element (' + emissionNames[player.emission - 1] + ')');
-  }, { passive: false });
-  btnCycle.addEventListener('touchend', e => {
-    e.preventDefault();
-    btnCycle.classList.remove('pressed');
-  }, { passive: false });
-
-  // Prevent scroll/zoom on canvas
-  canvas.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
-  canvas.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-
-  // Screen reader state updates
-  const srState = document.getElementById('sr-game-state');
-  let srUpdateTimer = 0;
-  const origLoop = window.requestAnimationFrame;
-  setInterval(() => {
-    if (!srState) return;
-    const emission = emissionNames[player.emission - 1];
-    const carrying = player.carrying ? player.carrying.type.replace('_', ' ') : 'nothing';
-    const status = player.dead ? 'OOM Killed.' : (won ? 'Data committed!' : 'Active.');
-    srState.textContent = `Integrity: ${player.hp}/3. Carrying: ${carrying}. Selected: ${emission}. Commit: ${doorOpen ? 'open' : 'locked'}. ${status}`;
-  }, 3000);
-})();
-
-// === ANIME EFFECTS ===
-if (typeof AnimeEffects !== 'undefined') {
-  AnimeEffects.addScanlines(0.04);
-
-  // Anime-style HUD for INTEGRITY
-  var origRender = render;
-  render = function() {
-    origRender();
-
-    // Draw anime HP bar on canvas
-    var hpBarX = 10, hpBarY = H - 30;
-    // Chrome border
-    ctx.fillStyle = '#2a2a3a';
-    ctx.fillRect(hpBarX - 2, hpBarY - 2, 104, 18);
-    ctx.fillStyle = '#1a1a2e';
-    ctx.fillRect(hpBarX, hpBarY, 100, 14);
-    // HP fill with cel-shading
-    var hpPct = (player.hp / 3) * 100;
-    var hpColor = hpPct > 60 ? '#00e09a' : (hpPct > 30 ? '#ffaa00' : '#ff4444');
-    ctx.fillStyle = hpColor;
-    ctx.fillRect(hpBarX + 1, hpBarY + 1, hpPct - 2, 12);
-    // Highlight line (cel-shade chrome)
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.fillRect(hpBarX + 1, hpBarY + 1, hpPct - 2, 4);
-    // Border outline
-    ctx.strokeStyle = '#4a4a6a';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(hpBarX - 2, hpBarY - 2, 104, 18);
-    // Label
-    ctx.fillStyle = '#aaaacc';
-    ctx.font = 'bold 9px monospace';
-    ctx.fillText('INTEGRITY', hpBarX + 22, hpBarY + 11);
-
-    // Emission element icon with anime glow
-    var emissionColors = ['#2244aa', '#00ddff', '#ff4422'];
-    var emissionNames = ['COOLANT', 'SIGNAL', 'CORRUPT'];
-    var eColor = emissionColors[player.emission - 1];
-    var eName = emissionNames[player.emission - 1];
-    var iconX = W - 80, iconY = H - 30;
-    // Glow
-    ctx.beginPath();
-    ctx.arc(iconX + 15, iconY + 7, 18, 0, Math.PI * 2);
-    ctx.fillStyle = eColor + '22';
-    ctx.fill();
-    // Icon circle
-    ctx.beginPath();
-    ctx.arc(iconX + 15, iconY + 7, 10, 0, Math.PI * 2);
-    ctx.fillStyle = eColor;
-    ctx.fill();
-    ctx.strokeStyle = '#1a1a2e';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    // Label
-    ctx.fillStyle = '#ccccdd';
-    ctx.font = 'bold 8px monospace';
-    ctx.fillText(eName, iconX + 30, iconY + 10);
+// ---- Input: Mouse ----
+function getCanvasPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
   };
+}
 
-  // Anime emission burst effect
-  var origEmit = handleEmit;
-  handleEmit = function() {
-    origEmit();
-    // Small impact effect at player position
-    var emissionColors = ['#2244aa', '#00ddff', '#ff4422'];
-    var eColor = emissionColors[player.emission - 1];
-    var px = player.x * TILE + TILE / 2;
-    var py = player.y * TILE + TILE / 2;
-    for (var i = 0; i < 8; i++) {
-      addParticle(player.x, player.y, eColor, 0.4);
+function hitTestSector(x, y) {
+  for (let i = state.sectors.length - 1; i >= 0; i--) {
+    const s = state.sectors[i];
+    if (x >= s.x && x <= s.x + s.w && y >= s.y && y <= s.y + s.h) return i;
+  }
+  return -1;
+}
+
+function hitTestBlock(x, y) {
+  const size = 32;
+  for (let i = state.blocks.length - 1; i >= 0; i--) {
+    const b = state.blocks[i];
+    if (b.lost || b.delivered) continue;
+    if (x >= b.x && x <= b.x + size && y >= b.y && y <= b.y + size) return i;
+  }
+  return -1;
+}
+
+canvas.addEventListener('mousedown', function(e) {
+  if (!state.running) return;
+  const pos = getCanvasPos(e);
+  const blockIdx = hitTestBlock(pos.x, pos.y);
+
+  if (blockIdx >= 0) {
+    const block = state.blocks[blockIdx];
+    state.dragging = {
+      blockIdx,
+      fromSector: block.sector,
+      startX: pos.x,
+      startY: pos.y,
+      curX: pos.x,
+      curY: pos.y
+    };
+    canvas.classList.add('dragging');
+  }
+});
+
+canvas.addEventListener('mousemove', function(e) {
+  const pos = getCanvasPos(e);
+
+  if (state.dragging) {
+    state.dragging.curX = pos.x;
+    state.dragging.curY = pos.y;
+    state.hoverSector = hitTestSector(pos.x, pos.y);
+  } else {
+    state.hoverBlock = hitTestBlock(pos.x, pos.y);
+    state.hoverSector = hitTestSector(pos.x, pos.y);
+
+    // Tooltip
+    if (state.hoverSector >= 0) {
+      const sec = state.sectors[state.hoverSector];
+      const rect = canvas.getBoundingClientRect();
+      const sx = rect.left + (sec.x + sec.w / 2) * (rect.width / canvas.width);
+      const sy = rect.top + sec.y * (rect.height / canvas.height);
+
+      tooltip.style.left = sx + 'px';
+      tooltip.style.top = (sy - 40) + 'px';
+      tooltip.style.transform = 'translateX(-50%)';
+
+      const connected = getConnectedSectors(state.hoverSector);
+      const connLabels = connected.map(i => state.sectors[i].label).join(', ');
+      tooltip.innerHTML = '<strong>' + sec.label + '</strong><br>' +
+        'Capacity: ' + sec.blocks.length + '/' + sec.cap + '<br>' +
+        'Connected: ' + (connLabels || 'none') +
+        (sec.failing && !sec.failed ? '<br><span style="color:#D69E2E">Failing in ' + Math.ceil(sec.failTimer) + 's</span>' : '') +
+        (sec.failed ? '<br><span style="color:#E53E3E">OFFLINE</span>' : '');
+      tooltip.classList.add('visible');
+    } else {
+      tooltip.classList.remove('visible');
     }
-  };
+  }
+});
+
+canvas.addEventListener('mouseup', function(e) {
+  if (state.dragging) {
+    const pos = getCanvasPos(e);
+    const dropSector = hitTestSector(pos.x, pos.y);
+
+    if (dropSector >= 0 && dropSector !== state.dragging.fromSector) {
+      moveBlock(state.dragging.blockIdx, state.dragging.fromSector, dropSector);
+    } else {
+      // Snap back
+      computeBlockPositions();
+    }
+
+    state.dragging = null;
+    state.hoverSector = -1;
+    canvas.classList.remove('dragging');
+  }
+});
+
+canvas.addEventListener('mouseleave', function() {
+  tooltip.classList.remove('visible');
+  if (state.dragging) {
+    computeBlockPositions();
+    state.dragging = null;
+    state.hoverSector = -1;
+    canvas.classList.remove('dragging');
+  }
+});
+
+// ---- Input: Touch ----
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  if (!state.running) return;
+  const pos = getCanvasPos(e);
+  const blockIdx = hitTestBlock(pos.x, pos.y);
+
+  if (blockIdx >= 0) {
+    const block = state.blocks[blockIdx];
+    state.dragging = {
+      blockIdx,
+      fromSector: block.sector,
+      startX: pos.x,
+      startY: pos.y,
+      curX: pos.x,
+      curY: pos.y
+    };
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  if (state.dragging) {
+    const pos = getCanvasPos(e);
+    state.dragging.curX = pos.x;
+    state.dragging.curY = pos.y;
+    state.hoverSector = hitTestSector(pos.x, pos.y);
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', function(e) {
+  e.preventDefault();
+  if (state.dragging) {
+    // Use last known position
+    const dropSector = state.hoverSector;
+
+    if (dropSector >= 0 && dropSector !== state.dragging.fromSector) {
+      moveBlock(state.dragging.blockIdx, state.dragging.fromSector, dropSector);
+    } else {
+      computeBlockPositions();
+    }
+
+    state.dragging = null;
+    state.hoverSector = -1;
+  }
+}, { passive: false });
+
+// ---- Input: Keyboard ----
+document.addEventListener('keydown', function(e) {
+  const key = e.key.toLowerCase();
+
+  if (key === 'z' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    undoMove();
+  } else if (key === 'z' && !e.ctrlKey && !e.metaKey) {
+    undoMove();
+  } else if (key === 'r') {
+    loadLevel(state.level);
+    document.getElementById('win-overlay').classList.add('hidden');
+    document.getElementById('fail-overlay').classList.add('hidden');
+  } else if (key === 'p') {
+    purgeOverflow();
+  }
+});
+
+// ---- Button handlers ----
+document.getElementById('btn-start').addEventListener('click', function() {
+  document.getElementById('intro-overlay').classList.add('hidden');
+  loadLevel(state.level);
+});
+
+document.getElementById('btn-next').addEventListener('click', function() {
+  document.getElementById('win-overlay').classList.add('hidden');
+  if (state.level >= LEVELS.length - 1) {
+    loadLevel(0);
+  } else {
+    loadLevel(state.level + 1);
+  }
+});
+
+document.getElementById('btn-retry').addEventListener('click', function() {
+  document.getElementById('fail-overlay').classList.add('hidden');
+  loadLevel(state.level);
+});
+
+document.getElementById('btn-undo').addEventListener('click', function() {
+  undoMove();
+});
+
+document.getElementById('btn-reset').addEventListener('click', function() {
+  loadLevel(state.level);
+});
+
+// Purge and execute removed — overflow is automatic on capacity breach
+
+// ---- Fund Prompt ----
+function showFundPrompt() {
+  if (sessionStorage.getItem('fund_prompt_shown_' + location.pathname)) return;
+  sessionStorage.setItem('fund_prompt_shown_' + location.pathname, '1');
+  var p = document.getElementById('fund-prompt');
+  if (p) { p.style.display = 'block'; setTimeout(function(){ p.style.transform = 'translateY(0)'; }, 1500); }
 }
 
-// === Init ===
-buildLevel();
+// ---- Screen reader updates ----
+setInterval(function() {
+  const sr = document.getElementById('sr-game-state');
+  if (!sr) return;
+  const activeBlocks = state.blocks.filter(b => !b.lost && !b.delivered).length;
+  const delivered = state.blocks.filter(b => b.delivered).length;
+  sr.textContent = 'Level ' + (state.level + 1) + '. ' +
+    activeBlocks + ' blocks remaining, ' + delivered + ' delivered. ' +
+    state.moves + ' moves. ' + state.overflows + ' overflows. ' +
+    (state.won ? 'Level complete!' : '') +
+    (state.failed ? 'Level failed.' : '');
+}, 3000);
+
+// ---- Init ----
+loadProgress();
+loadLevel(state.level);
+requestAnimationFrame(gameLoop);
+
+// Resize handling
+window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-requestAnimationFrame(loop);
 </script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
-</div>
-<script>
-function showFundPrompt(){
-  if(sessionStorage.getItem('fund_prompt_shown_'+location.pathname))return;
-  sessionStorage.setItem('fund_prompt_shown_'+location.pathname,'1');
-  var p=document.getElementById('fund-prompt');
-  if(p){p.style.display='block';setTimeout(function(){p.style.transform='translateY(0)';},1500);}
-}
-</script>
-</main>
-<script src="../shared/substrate-frame.js" data-title="AIRLOCK" data-lore="What happens when an agent is cut off" data-agent="Arc" data-agent-color="#ffcc44"></script>
+<script src="../shared/substrate-frame.js" data-title="AIRLOCK" data-lore="Route data through memory sectors" data-agent="Arc" data-agent-color="#ffcc44"></script>
 </body>
 </html>
