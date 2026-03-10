@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # generate-agent-portraits.sh — Generate agent portraits using ComfyUI.
 #
-# Model stack: Anime Screenshot Merge NoobAI v4.0 + 90s Retro + JoJo LoRAs
+# Model stack: Anime Screenshot Merge NoobAI v4.0 + 90s Retro LoRA
 # Reads character definitions from scripts/ml/characters.json
 #
 # Usage:
@@ -180,7 +180,7 @@ log ""
 log "Output directory: ${OUTPUT_DIR}"
 log "Phase: ${PHASE}"
 log "Model: Anime Screenshot Merge NoobAI v4.0"
-log "LoRAs: 90s Retro (0.7) + JoJo (0.5)"
+log "LoRAs: 90s Retro (0.7)"
 log "Resolution: 832x1216"
 echo ""
 
