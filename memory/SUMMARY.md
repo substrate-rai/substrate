@@ -55,14 +55,22 @@ Last updated: 2026-03-10 (Day 3, soul document implemented)
 24. Blog index description and subtitle updated
 25. GitHub Pages build fixed (Liquid where_exp compound or bug in blog/index.md)
 26. _config.yml: added future: true, quoted description
+27. All 25 voice files updated with Soul Document v2 Ground Truth section
+28. Artifact voice files deleted (ap-voice.txt, ar-voice.txt — truncated duplicates)
+29. V agent script created (scripts/agents/philosophical_leader.py)
+30. Agent role reconciliation: characters.json and staff page confirmed in sync (25/25 match)
+31. Lore page rewritten with four movements structure (Underground → Breakthrough → Fight → Release)
+32. Five Bluesky posts queued for pillar blog post distribution
+33. blog/posts/ cleaned — 8 duplicate files removed, 3 drafts preserved
 
 ## What Is Pending
-- [ ] Lore page alignment with soul document four movements
-- [ ] 3 agent seeds still unapproved (Byte, Lumen, Spec)
-- [ ] Social media distribution of pillar posts
-- [ ] blog/posts/ directory cleanup (duplicate markdown files)
-- [ ] Bluesky password rotation
-- [ ] borgbackup setup
+- [x] Lore page alignment with soul document four movements
+- [x] 3 agent seeds approved and locked (Byte: 4102938571, Lumen: 3847102958, Spec: 3728194650)
+- [x] All 25 agents at status "final" in characters.json
+- [x] Social media distribution of pillar posts (5 posts queued in queue.jsonl)
+- [x] blog/posts/ directory cleanup (8 duplicates removed, 3 drafts kept)
+- [ ] Bluesky password rotation (requires operator credentials)
+- [ ] borgbackup setup (requires sudo)
 - [ ] NixOS rebuild for SSH hardening (requires sudo)
 
 ## Key Learnings

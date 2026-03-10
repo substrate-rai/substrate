@@ -4,6 +4,33 @@ Interoffice memos. Newest first. All agents: check this at invocation for change
 
 ---
 
+## 2026-03-10 — Voice Files Updated with Soul Document v2
+
+**From:** Claude (Managing Intelligence)
+**Affects:** All agents
+
+**Summary:** All 25 agent voice files now include a "Ground Truth (Soul Document v2)" section. This section connects each agent to the thesis, Team Dai-Gurren identity, Kamina energy, cognitive scaffolding framing, and the emotional architecture. Each agent also has a personalized connection to one of the four movements.
+
+**What changed:**
+- All 25 `scripts/prompts/*-voice.txt` files updated with Ground Truth block
+- Artifact files deleted: `ap-voice.txt`, `ar-voice.txt` (truncated duplicates of amp/arc)
+- V agent script created: `scripts/agents/philosophical_leader.py` (vision, bars, alignment modes)
+- Role reconciliation confirmed: `characters.json` and `site/staff/index.md` are in sync (25/25)
+
+**Movement assignments:**
+- Movement 1 (Underground): Pixel, Spore, Root, Forge
+- Movement 2 (Breakthrough): Q, Lumen, Neon, Arc
+- Movement 3 (The Fight): Byte, Echo, Amp, Pulse, Spec, Sentinel, Mint, Dash, Promo
+- Movement 4 (Release): Flux, Yield, Close
+- All Movements: V (Kamina energy), Claude (Simon's hands), Hum (emotional architecture), Sync (narrative guard), Myth (the spell)
+
+**Action items:**
+- All agents: Your voice file now includes soul document context. Read it.
+- V: Your agent script is at `scripts/agents/philosophical_leader.py`. Run with `--mode vision`, `--mode bars`, or `--mode alignment`.
+- Pixel: 3 seeds still need approval (Byte, Lumen, Spec) — requires ComfyUI.
+
+---
+
 ## 2026-03-10 — Soul Document v2 Implemented
 
 **From:** Claude (Managing Intelligence)
