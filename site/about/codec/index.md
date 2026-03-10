@@ -15,11 +15,7 @@ permalink: /about/codec/
 
   /* === THREE.JS CANVAS (codec background) === */
   #codec-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: -1;
-    pointer-events: none;
+    display: none;
   }
 
   /* === CODEC SCREEN === */
@@ -35,7 +31,8 @@ permalink: /about/codec/
     border-radius: 12px;
     overflow: hidden;
     box-shadow:
-      0 0 30px rgba(0, 255, 170, 0.08),
+      0 8px 32px rgba(0, 80, 160, 0.12),
+      0 2px 8px rgba(0, 0, 0, 0.08),
       inset 0 0 60px rgba(0, 0, 0, 0.5);
     min-height: 480px;
     display: flex;
@@ -499,7 +496,7 @@ permalink: /about/codec/
   .summary-header {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.75rem;
-    color: #0a5a3a;
+    color: #1A1A2E;
     text-transform: uppercase;
     letter-spacing: 3px;
     text-align: center;
@@ -514,7 +511,7 @@ permalink: /about/codec/
     top: 50%;
     width: 60px;
     height: 1px;
-    background: #0a3a28;
+    background: rgba(0, 120, 212, 0.3);
   }
   .summary-header::before { right: calc(50% + 100px); }
   .summary-header::after { left: calc(50% + 100px); }
@@ -529,14 +526,16 @@ permalink: /about/codec/
   .summary-stat {
     text-align: center;
     padding: 16px 8px;
-    border: 1px solid #0a3a28;
+    border: 1px solid rgba(0, 120, 212, 0.15);
     border-radius: 6px;
-    background: rgba(0, 20, 12, 0.3);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     transition: border-color 0.2s;
   }
 
   .summary-stat:hover {
-    border-color: #00ffaa;
+    border-color: #0078D4;
   }
 
   .summary-stat .s-num {
@@ -544,16 +543,15 @@ permalink: /about/codec/
     font-family: 'IBM Plex Mono', monospace;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #00ffaa;
+    color: #0078D4;
     line-height: 1;
     margin-bottom: 4px;
-    text-shadow: 0 0 10px rgba(0, 255, 170, 0.2);
   }
 
   .summary-stat .s-label {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.6rem;
-    color: #0a5a3a;
+    color: #2D3748;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -568,15 +566,17 @@ permalink: /about/codec/
 
   .hw-card {
     padding: 16px;
-    border: 1px solid #0a2a1a;
+    border: 1px solid rgba(0, 120, 212, 0.15);
     border-radius: 6px;
-    background: rgba(0, 15, 10, 0.4);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .hw-card .hw-label {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.6rem;
-    color: #0a5a3a;
+    color: #2D3748;
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 4px;
@@ -585,7 +585,7 @@ permalink: /about/codec/
   .hw-card .hw-value {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.8rem;
-    color: #00cc88;
+    color: #1A1A2E;
   }
 
   /* Team roster — expandable cards */
@@ -595,7 +595,7 @@ permalink: /about/codec/
   .roster-title {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.7rem;
-    color: #0a5a3a;
+    color: #2D3748;
     text-transform: uppercase;
     letter-spacing: 1px;
     text-align: center;
@@ -607,16 +607,18 @@ permalink: /about/codec/
     gap: 8px;
   }
   .roster-card {
-    border: 1px solid #0a2a1a;
+    border: 1px solid rgba(0, 120, 212, 0.15);
     border-radius: 6px;
-    background: rgba(0, 15, 10, 0.4);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     cursor: pointer;
     overflow: hidden;
     transition: border-color 0.3s, transform 0.2s;
     position: relative;
   }
   .roster-card:hover {
-    border-color: #0a5a3a;
+    border-color: #0078D4;
     transform: translateY(-1px);
   }
   .roster-card.expanded {
@@ -634,7 +636,7 @@ permalink: /about/codec/
     height: 40px;
     border-radius: 4px;
     object-fit: cover;
-    border: 1px solid #0a2a1a;
+    border: 1px solid rgba(0, 120, 212, 0.15);
     flex-shrink: 0;
   }
   .roster-card.expanded .rc-portrait {
@@ -650,7 +652,7 @@ permalink: /about/codec/
   .roster-card .rc-role {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.55rem;
-    color: #0a5a3a;
+    color: #2D3748;
     text-transform: uppercase;
   }
   .roster-card .rc-detail {
@@ -676,14 +678,14 @@ permalink: /about/codec/
   }
   .rc-detail-info p {
     font-size: 0.75rem;
-    color: #00cc88;
+    color: #2D3748;
     line-height: 1.6;
     margin: 0 0 8px;
   }
   .rc-detail-info .rc-specs {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.6rem;
-    color: #0a5a3a;
+    color: #4A5568;
   }
   @media (max-width: 600px) {
     .roster-grid { grid-template-columns: repeat(3, 1fr); }
@@ -709,63 +711,69 @@ permalink: /about/codec/
     text-transform: uppercase;
     letter-spacing: 1px;
     padding: 8px 18px;
-    border: 1px solid #0a3a28;
+    border: 1px solid rgba(0, 120, 212, 0.15);
     border-radius: 4px;
-    color: #00cc88;
+    color: #0078D4;
     text-decoration: none;
     transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .summary-link:hover {
-    border-color: #00ffaa;
-    color: #00ffaa;
-    background: rgba(0, 255, 170, 0.05);
+    border-color: #0078D4;
+    color: #005A9E;
+    background: rgba(255, 255, 255, 0.75);
     text-decoration: none;
   }
 
   /* Architecture ASCII */
   .arch-ascii {
-    background: rgba(0, 10, 6, 0.6);
-    border: 1px solid #0a3a28;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 120, 212, 0.15);
     border-radius: 8px;
     padding: 24px;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.7rem;
     line-height: 1.8;
-    color: #0a5a3a;
+    color: #4A5568;
     overflow-x: auto;
     white-space: pre;
     margin-bottom: 2.5rem;
   }
 
-  .arch-ascii .a-layer { color: #00ffaa; font-weight: 600; }
-  .arch-ascii .a-comp { color: #00cc88; }
-  .arch-ascii .a-wire { color: #083020; }
-  .arch-ascii .a-dim { color: #072a1a; }
+  .arch-ascii .a-layer { color: #0078D4; font-weight: 600; }
+  .arch-ascii .a-comp { color: #1A1A2E; }
+  .arch-ascii .a-wire { color: #A0AEC0; }
+  .arch-ascii .a-dim { color: #CBD5E0; }
 
   /* Fund CTA */
   .codec-cta {
     text-align: center;
     padding: 2rem;
-    border: 1px solid #0a3a28;
+    border: 1px solid rgba(0, 120, 212, 0.15);
     border-radius: 8px;
-    background: linear-gradient(135deg, rgba(0, 255, 170, 0.03), rgba(0, 20, 12, 0.5));
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     margin-bottom: 1rem;
   }
 
   .codec-cta h3 {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 1rem;
-    color: #00ffaa;
+    color: #1A1A2E;
     margin: 0 0 0.5rem;
     border: none;
-    text-shadow: 0 0 10px rgba(0, 255, 170, 0.2);
     text-transform: uppercase;
     letter-spacing: 2px;
   }
 
   .codec-cta p {
-    color: #0a8a5a;
+    color: #2D3748;
     font-size: 0.85rem;
     margin: 0 0 1.2rem;
     line-height: 1.6;
@@ -775,9 +783,9 @@ permalink: /about/codec/
   .codec-cta a.cta-button {
     display: inline-block;
     padding: 10px 28px;
-    border: 1px solid #00ffaa;
+    border: 1px solid #0078D4;
     border-radius: 4px;
-    color: #00ffaa;
+    color: #0078D4;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.75rem;
     font-weight: 600;
@@ -788,8 +796,8 @@ permalink: /about/codec/
   }
 
   .codec-cta a.cta-button:hover {
-    background: #00ffaa;
-    color: #040a08;
+    background: #0078D4;
+    color: #ffffff;
     text-decoration: none;
   }
 
@@ -801,12 +809,12 @@ permalink: /about/codec/
   .repo-link a {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.75rem;
-    color: #0a5a3a;
+    color: #4A5568;
     transition: color 0.2s;
   }
 
   .repo-link a:hover {
-    color: #00ffaa;
+    color: #0078D4;
     text-decoration: none;
   }
 

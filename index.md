@@ -38,9 +38,12 @@ description: "Every living network proves the same thing: connection scales, com
   border-left: 3px solid var(--accent);
   padding: 1.25rem 1.5rem;
   margin: 2rem 0;
-  background: var(--accent-dim);
-  border-radius: 0 8px 8px 0;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0 14px 14px 0;
   max-width: 640px;
+  box-shadow: 0 2px 8px rgba(0, 80, 160, 0.04);
 }
 .thesis-block p {
   font-size: 0.95rem;
@@ -58,10 +61,13 @@ description: "Every living network proves the same thing: connection scales, com
   margin: 2.5rem 0;
 }
 .movement {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
   padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 80, 160, 0.06), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 .movement-num {
   font-family: var(--mono);
@@ -91,21 +97,24 @@ description: "Every living network proves the same thing: connection scales, com
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
   overflow: hidden;
   margin: 2.5rem 0;
+  box-shadow: 0 4px 16px rgba(0, 80, 160, 0.06);
 }
 .num-card {
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 20px 16px;
   text-align: center;
   text-decoration: none;
   color: var(--text);
   transition: background 0.2s;
 }
-a.num-card:hover { background: var(--surface-hover); }
+a.num-card:hover { background: rgba(255, 255, 255, 0.72); }
 .num-value {
   display: block;
   font-family: var(--mono);
@@ -136,45 +145,64 @@ a.num-card:hover { background: var(--surface-hover); }
   font-size: 0.85rem;
   font-weight: 600;
   padding: 12px 28px;
-  border-radius: 6px;
-  background: var(--accent);
-  color: var(--bg);
-  border: 1px solid var(--accent);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #40A9FF 0%, #0078D4 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(0, 90, 180, 0.4);
   text-decoration: none;
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
+  text-shadow: 0 1px 2px rgba(0, 40, 80, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 80, 160, 0.25), inset 0 1px 0 rgba(255,255,255,0.3);
+  position: relative;
+  overflow: hidden;
 }
-.cta-primary:hover { background: #00c888; color: var(--bg); transform: translateY(-1px); }
+.cta-primary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.05) 100%);
+  border-radius: 19px 19px 0 0;
+  pointer-events: none;
+}
+.cta-primary:hover { background: linear-gradient(180deg, #69BFFF 0%, #1890FF 100%); color: #FFFFFF; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0, 80, 160, 0.3), inset 0 1px 0 rgba(255,255,255,0.4); }
 .cta-secondary {
   font-family: var(--mono);
   font-size: 0.85rem;
   font-weight: 500;
   padding: 12px 28px;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   text-decoration: none;
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 80, 160, 0.06), inset 0 1px 0 rgba(255,255,255,0.5);
 }
-.cta-secondary:hover { color: var(--heading); border-color: var(--border-hover); }
+.cta-secondary:hover { color: var(--heading); background: rgba(255, 255, 255, 0.72); border-color: rgba(0, 120, 212, 0.3); transform: translateY(-1px); }
 
 /* === Featured post === */
 .featured {
   margin: 2rem 0;
   padding: 24px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
   text-decoration: none;
   display: block;
   color: var(--text);
-  transition: border-color 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 80, 160, 0.06), inset 0 1px 0 rgba(255,255,255,0.5);
 }
-a.featured:hover { border-color: var(--border-hover); }
+a.featured:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 80, 160, 0.1), inset 0 1px 0 rgba(255,255,255,0.7); }
 .featured-label {
   font-family: var(--mono);
   font-size: 0.65rem;
@@ -227,7 +255,7 @@ a.featured:hover { border-color: var(--border-hover); }
 }
 .recent-posts li {
   padding: 10px 0;
-  border-bottom: 1px solid rgba(30, 30, 42, 0.5);
+  border-bottom: 1px solid rgba(0, 100, 150, 0.1);
   display: flex;
   align-items: baseline;
   gap: 12px;
@@ -268,7 +296,7 @@ a.featured:hover { border-color: var(--border-hover); }
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #00ddff;
+  background: #0078D4;
   animation: pulse-dot 2s ease infinite;
 }
 @keyframes pulse-dot {
@@ -282,7 +310,7 @@ a.featured:hover { border-color: var(--border-hover); }
 }
 .news-list li {
   padding: 8px 0;
-  border-bottom: 1px solid rgba(30, 30, 42, 0.5);
+  border-bottom: 1px solid rgba(0, 100, 150, 0.1);
   display: flex;
   align-items: baseline;
   gap: 10px;
@@ -292,7 +320,7 @@ a.featured:hover { border-color: var(--border-hover); }
   font-family: var(--mono);
   font-size: 0.6rem;
   font-weight: 700;
-  color: #00ddff;
+  color: #0078D4;
   flex-shrink: 0;
   min-width: 16px;
   text-align: center;
@@ -303,7 +331,7 @@ a.featured:hover { border-color: var(--border-hover); }
   font-weight: 400;
   line-height: 1.4;
 }
-.news-list a:hover { color: #00ddff; }
+.news-list a:hover { color: #0078D4; }
 .news-source {
   font-family: var(--mono);
   font-size: 0.6rem;
@@ -318,7 +346,7 @@ a.featured:hover { border-color: var(--border-hover); }
   margin-top: 8px;
   padding-top: 6px;
 }
-.news-footer a { color: #00ddff; }
+.news-footer a { color: #0078D4; }
 
 /* === Fund bar === */
 .fund-strip {
@@ -326,14 +354,17 @@ a.featured:hover { border-color: var(--border-hover); }
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
-  background: var(--surface);
-  border: 1px solid var(--accent-border);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 120, 212, 0.2);
+  border-radius: 14px;
   margin: 2rem 0;
   text-decoration: none;
   color: var(--text);
-  transition: border-color 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   flex-wrap: wrap;
+  box-shadow: 0 4px 16px rgba(0, 80, 160, 0.06);
 }
 a.fund-strip:hover { border-color: var(--accent); }
 .fund-strip .fund-text {

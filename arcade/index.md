@@ -242,7 +242,7 @@ permalink: /arcade/
           <div class="game-card-tags">
             <span class="game-tag">Visual Novel</span>
           </div>
-          <span class="game-agent" style="color:#00e09a;border:1px solid rgba(0,224,154,0.3);">Claude</span>
+          <span class="game-agent" style="color:#0078D4;border:1px solid rgba(0,120,212,0.3);">Claude</span>
         </div>
       </div>
 

@@ -7,20 +7,20 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  --s-bg: #0a0a0f;
-  --s-surface: #12121a;
-  --s-border: #1e1e2a;
-  --s-text: #c8c8d0;
-  --s-text-muted: #8a8a98;
-  --s-text-dim: #6a6a7a;
-  --s-heading: #e8e8ef;
-  --s-accent: #00e09a;
-  --s-accent-dim: rgba(0, 224, 154, 0.1);
-  --s-accent-border: rgba(0, 224, 154, 0.2);
+  --s-bg: #E8F4F8;
+  --s-surface: rgba(255, 255, 255, 0.55);
+  --s-border: rgba(255, 255, 255, 0.4);
+  --s-text: #2D3748;
+  --s-text-muted: #5A6B7F;
+  --s-text-dim: #8899AA;
+  --s-heading: #1A1A2E;
+  --s-accent: #0078D4;
+  --s-accent-dim: rgba(0, 120, 212, 0.1);
+  --s-accent-border: rgba(0, 120, 212, 0.25);
   --s-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
 }
 
-/* Top bar */
+/* Top bar (Aero glass) */
 .substrate-bar {
   position: fixed;
   top: 0;
@@ -28,10 +28,11 @@
   right: 0;
   z-index: 9000;
   height: 36px;
-  background: rgba(10, 10, 15, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--s-border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(220,235,250,0.65) 100%);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 1px 8px rgba(0, 80, 160, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;

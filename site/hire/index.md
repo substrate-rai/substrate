@@ -73,8 +73,8 @@ redirect_from:
   font-size: 0.9rem;
 }
 .hire-btn--primary {
-  background: linear-gradient(135deg, var(--accent), #00cc88);
-  color: var(--bg);
+  background: linear-gradient(135deg, #40A9FF, #0078D4);
+  color: #FFFFFF;
 }
 .hire-btn--secondary {
   background: var(--surface);

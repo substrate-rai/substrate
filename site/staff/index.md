@@ -39,7 +39,7 @@ redirect_from:
     overflow: hidden;
     transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.45s ease;
     will-change: transform, opacity;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 16px rgba(0, 80, 160, 0.08);
   }
   .agent-card.active-card {
     transform: translateX(0);
@@ -128,9 +128,9 @@ redirect_from:
     top: 50%;
     transform: translateY(-50%);
     z-index: 5;
-    background: rgba(0,0,0,0.4);
+    background: rgba(255, 255, 255, 0.55);
     border: none;
-    color: rgba(255,255,255,0.7);
+    color: #2D3748;
     font-size: 1.1rem;
     width: 28px;
     height: 28px;
@@ -142,11 +142,12 @@ redirect_from:
     padding: 0;
     line-height: 1;
     transition: background 0.2s, color 0.2s;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
   .portrait-nav-arrow:hover {
-    background: rgba(0,0,0,0.6);
-    color: var(--text);
+    background: rgba(255, 255, 255, 0.75);
+    color: #1A1A2E;
   }
   .portrait-nav-arrow.pg-prev { left: 8px; }
   .portrait-nav-arrow.pg-next { right: 8px; }
@@ -179,17 +180,17 @@ redirect_from:
     line-height: 1;
   }
   .card-play-btn:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(0, 120, 212, 0.08);
     border-color: var(--text-dim);
   }
   .card-play-btn.playing {
     border-color: currentColor;
-    background: rgba(255,255,255,0.08);
+    background: rgba(0, 120, 212, 0.06);
     animation: theme-pulse 2s ease-in-out infinite;
   }
   @keyframes theme-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
-    50% { box-shadow: 0 0 8px 2px rgba(255,255,255,0.15); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 120, 212, 0.05); }
+    50% { box-shadow: 0 0 8px 2px rgba(0, 120, 212, 0.12); }
   }
   .card-agent-name {
     font-size: 1.4rem;
@@ -259,8 +260,8 @@ redirect_from:
     color: var(--text-dim);
   }
   .btn-prev:hover {
-    background: rgba(255,255,255,0.08);
-    box-shadow: 0 0 16px rgba(255,255,255,0.15);
+    background: rgba(0, 120, 212, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 80, 160, 0.08);
   }
   .btn-expand {
     border-color: var(--link);
@@ -278,8 +279,8 @@ redirect_from:
     color: var(--text-dim);
   }
   .btn-next:hover {
-    background: rgba(255,255,255,0.08);
-    box-shadow: 0 0 16px rgba(255,255,255,0.15);
+    background: rgba(0, 120, 212, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 80, 160, 0.08);
   }
 
   /* --- Dot navigation --- */
@@ -326,7 +327,7 @@ redirect_from:
   .expanded-backdrop {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.5);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.4s ease;
@@ -365,9 +366,9 @@ redirect_from:
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(0,0,0,0.6);
-    color: var(--text);
+    border: 1px solid rgba(0, 120, 212, 0.15);
+    background: rgba(255, 255, 255, 0.55);
+    color: #2D3748;
     font-size: 1.2rem;
     cursor: pointer;
     display: flex;
@@ -377,9 +378,10 @@ redirect_from:
     transition: background 0.2s;
     padding: 0;
     line-height: 1;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
-  .expanded-close:hover { background: rgba(255,255,255,0.15); }
+  .expanded-close:hover { background: rgba(255, 255, 255, 0.75); }
   .expanded-portrait {
     width: 100%;
     height: 300px;
@@ -470,7 +472,9 @@ redirect_from:
     padding: 1.5rem;
     border: 1px dashed var(--border);
     border-radius: 6px;
-    background: rgba(0,0,0,0.2);
+    background: rgba(240, 248, 255, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     font-size: 0.9rem;
     color: var(--text-dim);
     line-height: 1.7;
@@ -495,7 +499,7 @@ redirect_from:
     border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.65rem;
-    background: rgba(255,255,255,0.04);
+    background: rgba(0, 120, 212, 0.06);
   }
 
   /* --- Mobile responsive --- */

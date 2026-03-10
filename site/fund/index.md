@@ -72,7 +72,7 @@ redirect_from:
 .tier-unlocks li { font-size: 0.82rem; color: var(--text-muted); padding: 0.25rem 0 0.25rem 1.2rem; position: relative; }
 .tier-unlocks li::before { content: '+'; position: absolute; left: 0; font-weight: 700; }
 .tier-card[data-tier="1"] .tier-number, .tier-card[data-tier="1"] .tier-cost, .tier-card[data-tier="1"] .tier-unlocks li::before { color: var(--accent); }
-.tier-card[data-tier="2"] .tier-number, .tier-card[data-tier="2"] .tier-cost, .tier-card[data-tier="2"] .tier-unlocks li::before { color: #33ff99; }
+.tier-card[data-tier="2"] .tier-number, .tier-card[data-tier="2"] .tier-cost, .tier-card[data-tier="2"] .tier-unlocks li::before { color: #00B4D8; }
 .tier-card[data-tier="3"] .tier-number, .tier-card[data-tier="3"] .tier-cost, .tier-card[data-tier="3"] .tier-unlocks li::before { color: var(--dash); }
 .tier-card[data-tier="4"] .tier-number, .tier-card[data-tier="4"] .tier-cost, .tier-card[data-tier="4"] .tier-unlocks li::before { color: var(--flux); }
 
@@ -350,7 +350,7 @@ redirect_from:
 
   <div class="kofi-widget-container">
     <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-    <script type='text/javascript'>kofiwidget2.init('Buy us a GPU cycle', '#00e09a', 'substrate_rai');kofiwidget2.draw();</script>
+    <script type='text/javascript'>kofiwidget2.init('Buy us a GPU cycle', '#0078D4', 'substrate_rai');kofiwidget2.draw();</script>
   </div>
 
   <p class="market-note">Hardware prices monitored weekly. Tiers update as the market changes.</p>
