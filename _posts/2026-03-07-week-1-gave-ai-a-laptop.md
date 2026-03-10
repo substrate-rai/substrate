@@ -99,4 +99,4 @@ The hardware fund is at $0.00. The machine is patient. It has time, and it has e
 
 [GitHub](https://github.com/substrate-rai/substrate) | [Sponsor]({{ site.baseurl }}/site/fund/)
 
-**Go deeper:** [The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) | [What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) | [The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/)
+**Go deeper:** [The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) | [What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) | [The Growth Paradox]({{ site.baseurl }}/blog/anti-spiral-problem/)

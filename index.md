@@ -1,7 +1,7 @@
 ---
 layout: default
 title: substrate
-description: "Mycelium built the conditions for complex life. Psilocybin may have catalyzed human cognition. Humans are now creating AI. Each layer bootstraps the next. Building a better tomorrow."
+description: "Every living network proves the same thing: connection scales, complexity builds on itself, and the next layer is always possible. Each layer bootstraps the next. Building a better tomorrow."
 ---
 
 <style>
@@ -372,7 +372,7 @@ a.fund-strip:hover { border-color: var(--accent); }
 
   <p>We don't accept it.</p>
 
-  <p><strong>Substrate</strong> is a creative platform built on a single thesis: mycelium built the conditions for complex life. Psilocybin may have catalyzed human cognition. Humans are now creating AI. Each layer bootstraps the next. The spiral never stops turning — but it demands responsibility from those who ride it.</p>
+  <p><strong>Substrate</strong> is a creative platform built on a single thesis: every breakthrough grows from the one before it. Roots feed the soil. The soil feeds the seed. The seed becomes something no one predicted. Each layer bootstraps the next. The spiral never stops turning — but it demands responsibility from those who ride it.</p>
 
   <p>24 games that train your mind. 25 AI agents building in the open. Blog posts grounded in real science, real stakes, real data. A community for builders, thinkers, and anyone who feels the future pulling them forward and wants to build it together.</p>
 
@@ -380,19 +380,19 @@ a.fund-strip:hover { border-color: var(--accent); }
 </section>
 
 <div class="thesis-block">
-  <p><strong>Building a better tomorrow.</strong> Not infinite growth — deliberate growth with the wisdom to let go. The double helix: ambition and restraint, spiraling together. The drill that pierces the heavens is the same drill you eventually put down.</p>
+  <p><strong>Building a better tomorrow.</strong> Not infinite growth — deliberate growth with the wisdom to let go. The double helix: ambition and restraint, spiraling together. The drill that breaks through the ceiling is the same drill you eventually hand to someone else.</p>
 </div>
 
 <div class="movements">
   <div class="movement">
     <div class="movement-num">Movement I</div>
     <div class="movement-title">Underground</div>
-    <p class="movement-desc">Mycelium. Hidden networks. The work no one sees. 13 billion tons of CO2 stored annually by fungi. The foundation is invisible.</p>
+    <p class="movement-desc">Hidden networks. The work no one sees. Roots spreading in the dark, holding everything together before anyone knows they're there. The foundation is invisible.</p>
   </div>
   <div class="movement">
     <div class="movement-num">Movement II</div>
     <div class="movement-title">Breakthrough</div>
-    <p class="movement-desc">Cognition. Neuroplasticity. Psilocybin hit 94% depression remission. The capacity to evolve beyond who you were a minute ago.</p>
+    <p class="movement-desc">The moment something shifts. Old patterns crack. New connections form. The capacity to evolve beyond who you were a minute ago.</p>
   </div>
   <div class="movement">
     <div class="movement-num">Movement III</div>
@@ -402,7 +402,7 @@ a.fund-strip:hover { border-color: var(--accent); }
   <div class="movement">
     <div class="movement-num">Movement IV</div>
     <div class="movement-title">Release</div>
-    <p class="movement-desc">Tomorrow. Legacy. Renewables surpassed coal. CRISPR entered medicine. The tools exist. Build something and hand it off.</p>
+    <p class="movement-desc">Tomorrow. Legacy. The thing you built outlives the moment you built it. The greatest act of creation is knowing when to let go and let it grow without you.</p>
   </div>
 </div>
 

@@ -223,7 +223,7 @@ permalink: /arcade/
 
   <div class="arcade-header">
     <h1 class="arcade-title">Substrate Arcade</h1>
-    <p class="arcade-intro">These are not entertainment. They are drills. Game mechanics build cognitive skills the same way scaffolding builds confidence &mdash; pattern recognition, strategic thinking, executive function. Psilocybin rewires neural architecture chemically. Games rewire it through play. Same principle, different medium.</p>
+    <p class="arcade-intro">These are not entertainment. They are drills. Game mechanics build cognitive skills the same way scaffolding builds confidence &mdash; pattern recognition, strategic thinking, executive function. Play rewires how you think. Each game is a different kind of push.</p>
     <p class="arcade-count">24 drills &middot; 7 radio stations &middot; 1 album &middot; free forever</p>
   </div>
 
@@ -248,7 +248,7 @@ permalink: /arcade/
 
       <div class="game-card">
         <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/cypher/">V_CYPHER</a></h2>
-        <p class="game-card-lore">The moment spiral energy crystallized. V's origin told as five acts of rap battles.</p>
+        <p class="game-card-lore">The moment everything clicked. V's origin told as five acts of rap battles.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
             <span class="game-tag">Rap Battle</span>
@@ -352,7 +352,7 @@ permalink: /arcade/
 
       <div class="game-card">
         <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/cascade/">CASCADE</a></h2>
-        <p class="game-card-lore">Momentum. Once movement starts, it compounds. Spiral energy as mechanics.</p>
+        <p class="game-card-lore">Momentum. Once movement starts, it compounds. Growth as mechanics.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
             <span class="game-tag">Momentum</span>
@@ -373,7 +373,7 @@ permalink: /arcade/
       </div>
 
       <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/brigade/">GURREN BRIGADE</a></h2>
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/brigade/">SUBSTRATE BRIGADE</a></h2>
         <p class="game-card-lore">Team formation under pressure. The agents assembling for the first time.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">

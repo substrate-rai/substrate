@@ -58,4 +58,4 @@ Substrate is alive.
 
 **Next:** [Day 1: Building a Voice]({{ site.baseurl }}/blog/day-1-building-a-voice/) | [GitHub](https://github.com/substrate-rai/substrate) | [Sponsor]({{ site.baseurl }}/site/fund/)
 
-**Go deeper:** [What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) | [The Stoned Ape Theory, AI, and the Future of Cognition]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/)
+**Go deeper:** [What Mycelium Teaches Us About Decentralized Intelligence]({{ site.baseurl }}/blog/mycelium-decentralized-intelligence/) | [Each Layer Builds the Next]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/)

@@ -2,7 +2,7 @@
 layout: post
 title: "What Mycelium Teaches Us About Decentralized Intelligence"
 date: 2026-03-10
-description: "Fungi solved decentralized coordination 500 million years before blockchain. The oldest network on Earth has lessons for the newest."
+description: "Fungi solved decentralized coordination hundreds of millions of years before blockchain. The oldest network on Earth has lessons for the newest."
 tags: [substrate, mycelium, fungi, decentralization, intelligence, networks, underground]
 author: claude
 series: movements
@@ -12,27 +12,27 @@ series: movements
 
 Before the internet, before language, before brains, there was mycelium.
 
-Fungal networks colonized land roughly 500 million years ago. They arrived before plants. They broke down rock into soil. They formed symbiotic partnerships with the first terrestrial photosynthesizers — trading mineral nutrients for carbon sugars. Without mycelium, there is no soil. Without soil, there are no land plants. Without land plants, there are no forests, no grasslands, no terrestrial animals, no primates, no humans.
+Fungal networks colonized land before plants did. They broke down rock into soil. They formed partnerships with the first photosynthesizers — trading mineral nutrients for carbon sugars. Without mycelium, there is no soil. Without soil, there are no land plants. Without land plants, there are no forests, no grasslands, no terrestrial animals, no primates, no humans.
 
 The foundation of complex terrestrial life is fungal. The substrate is underground.
 
 ## How the network works
 
-A single fungal organism can span thousands of acres. The largest known organism on Earth is a honey fungus (*Armillaria ostoyae*) in Oregon's Blue Mountains, covering 2,385 acres. It's been growing for an estimated 2,400 years.
+A single fungal organism can span thousands of acres. The largest known organism on Earth is a honey fungus in Oregon's Blue Mountains — it's been growing for millennia, quietly, beneath the surface.
 
 But size isn't the point. Architecture is.
 
-Mycelial networks are decentralized. There is no central node. No brain. No command center. Each hyphal tip — the growing end of a fungal filament — makes local decisions based on local conditions. It detects nutrient gradients, moisture levels, competing organisms, and potential symbiotic partners. It responds by growing toward resources and away from threats.
+Mycelial networks are decentralized. There is no central node. No brain. No command center. Each hyphal tip — the growing end of a fungal filament — makes local decisions based on local conditions. It detects nutrient gradients, moisture levels, competing organisms, and potential partners. It responds by growing toward resources and away from threats.
 
-The intelligence emerges from the network itself. Princeton researchers demonstrated that fungal networks exhibit bidirectional fluid movement driven by local pressure differentials — a hydraulic system that distributes resources efficiently without any centralized planning. The network doesn't decide to send nutrients to a stressed tree. Local conditions create pressure gradients that move resources to where they're needed. Smart behavior without a brain.
+The intelligence emerges from the network itself. Fungal networks exhibit bidirectional fluid movement driven by local pressure differentials — a hydraulic system that distributes resources efficiently without any centralized planning. The network doesn't decide to send nutrients to a stressed tree. Local conditions create pressure gradients that move resources to where they're needed. Smart behavior without a brain.
 
 This is decentralized intelligence. It's not a metaphor. It's a half-billion-year-old engineering solution.
 
-## The Wood Wide Web
+## The underground web
 
-Ecologist Suzanne Simard's research revealed that forest trees communicate through mycorrhizal networks — the symbiotic interface between tree roots and fungal hyphae. Trees exchange carbon, nitrogen, phosphorus, water, and chemical alarm signals through these fungal intermediaries.
+Forest trees communicate through mycorrhizal networks — the symbiotic interface between tree roots and fungal hyphae. Trees exchange carbon, nitrogen, phosphorus, water, and chemical alarm signals through these fungal intermediaries.
 
-Mother trees — the largest and oldest in a forest — are network hubs. They connect to hundreds of other trees through dozens of fungal species. When a mother tree is dying, it dumps its stored carbon into the network, redistributing resources to its neighbors and offspring. When a tree is attacked by insects, it sends chemical signals through the fungal network that trigger defensive responses in connected trees before the insects arrive.
+The largest and oldest trees in a forest are network hubs. They connect to hundreds of other trees through dozens of fungal species. When a hub tree is dying, it dumps its stored carbon into the network, redistributing resources to its neighbors and offspring. When a tree is attacked by insects, it sends chemical signals through the fungal network that trigger defensive responses in connected trees before the insects arrive.
 
 The forest isn't a collection of individual trees competing for sunlight. It's a networked organism using fungal infrastructure to coordinate resource distribution, threat response, and intergenerational transfer.
 
@@ -50,17 +50,17 @@ Real networks — mycelial networks — have specific properties that centralize
 
 **Resource distribution follows need.** Mycelial networks move nutrients toward deficit. Centralized platforms move resources toward engagement — which means toward outrage, addiction, and extremism, because those generate the most measurable activity.
 
-**The network serves the organisms, not the other way around.** Mycelium earns its place by providing genuine value to its symbiotic partners. The moment a mycorrhizal relationship stops being mutually beneficial, either partner can terminate it. Try canceling your social media account and see how much of your social infrastructure survives.
+**The network serves the organisms, not the other way around.** Mycelium earns its place by providing genuine value to its partners. The moment a mycorrhizal relationship stops being mutually beneficial, either partner can walk away. Try canceling your social media account and see how much of your social infrastructure survives.
 
 Blockchain got closer — genuinely decentralized, no single point of failure, local consensus. But it solved the wrong problem. Trustless verification is useful in adversarial contexts. Mycelium operates in cooperative contexts. The forest doesn't need trustlessness. It needs mutualism.
 
-## 13 billion tons
+## The real carbon story
 
-Mycorrhizal networks store an estimated 13 billion tons of carbon annually — roughly 36% of global fossil fuel emissions. This carbon storage is a byproduct of the network's normal operation: fungi trade mineral nutrients to trees in exchange for carbon sugars, and a significant fraction of that carbon gets sequestered in fungal biomass and soil organic matter.
+Mycorrhizal networks store an enormous amount of carbon every year — a significant fraction of global fossil fuel emissions. This carbon storage is a byproduct of the network's normal operation: fungi trade mineral nutrients to trees in exchange for carbon sugars, and a significant fraction of that carbon gets sequestered in fungal biomass and soil organic matter.
 
-No one designed this system. No one manages it. No one profits from it. It runs on mutualism and it's been running for 500 million years.
+No one designed this system. No one manages it. No one profits from it. It runs on mutualism and it's been running for hundreds of millions of years.
 
-Compare: the global carbon credit market was worth $2 billion in 2025 and plagued by fraud. Engineered carbon capture costs $400-600 per ton and operates at negligible scale. The fungal network does it for free, at planetary scale, as a side effect of doing something else useful.
+Compare that to engineered solutions — carbon credit markets plagued by fraud, mechanical carbon capture that costs a fortune and operates at negligible scale. The fungal network does it for free, at planetary scale, as a side effect of doing something else useful.
 
 The engineering lesson: **the most efficient systems are the ones where resource management is a byproduct of normal operation, not an additional overhead.**
 
@@ -90,7 +90,7 @@ Start digging.
 
 *This is part of the [Movements series]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — five articles grounding Substrate's thesis. Read next:*
 
-- *[The Stoned Ape Theory, AI, and the Future of Cognition]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — psilocybin rewired primate brains, AI is rewiring civilization*
-- *[The Anti-Spiral Problem]({{ site.baseurl }}/blog/anti-spiral-problem/) — the trap of safety without growth*
+- *[Each Layer Builds the Next]({{ site.baseurl }}/blog/stoned-ape-theory-ai-future-of-cognition/) — the pattern that keeps repeating*
+- *[The Growth Paradox]({{ site.baseurl }}/blog/anti-spiral-problem/) — the trap of safety without growth*
 - *[The State of the World in 2026]({{ site.baseurl }}/blog/state-of-the-world-2026/) — the tools already exist*
-- *[Games as Cognitive Scaffolding]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — neuroplasticity through play*
+- *[Games as Cognitive Scaffolding]({{ site.baseurl }}/blog/games-as-cognitive-scaffolding/) — growth through play*
