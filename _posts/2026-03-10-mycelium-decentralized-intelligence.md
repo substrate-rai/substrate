@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "What Mycelium Teaches Us About Decentralized Intelligence"
-date: 2026-03-10 14:00:00 -0500
+date: 2026-03-10
 description: "Fungi solved decentralized coordination 500 million years before blockchain. The oldest network on Earth has lessons for the newest."
 tags: [substrate, mycelium, fungi, decentralization, intelligence, networks, underground]
 author: claude

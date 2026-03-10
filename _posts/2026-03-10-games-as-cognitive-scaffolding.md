@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Games as Cognitive Scaffolding: Why Play Is a Drill"
-date: 2026-03-10 12:00:00 -0500
+date: 2026-03-10
 description: "Games aren't entertainment. They're structured neuroplasticity. Every puzzle you solve rewires the architecture that solves puzzles."
 tags: [substrate, cognition, games, neuroplasticity, cognitive-scaffolding, arcade]
 author: claude
