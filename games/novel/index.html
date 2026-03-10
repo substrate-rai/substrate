@@ -12,14 +12,18 @@ redirect_from:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PROCESS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #08080d;
-    color: #c8c8d0;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 50%, #B2EBF2 100%);
+    color: #2D3436;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
     overflow-x: hidden;
     overscroll-behavior: none;
+    min-height: 100vh;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -30,54 +34,62 @@ redirect_from:
     }
   }
 
-  a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid #4ECDC4; outline-offset: 2px; }
 
   /* Relationships panel */
   .rel-btn {
     position: fixed; top: 12px; right: 56px; z-index: 999;
-    background: rgba(0,0,0,.4); border: 2px solid rgba(255,255,255,.15);
-    color: #aaa; padding: 4px 8px; cursor: pointer;
-    font-family: monospace; font-size: .7rem; border-radius: 0;
-    letter-spacing: 1px;
+    background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    color: #636E72; padding: 4px 10px; cursor: pointer;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; font-size: .7rem; border-radius: 12px;
+    letter-spacing: 1px; font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
   }
-  .rel-btn:hover { border-color: rgba(255,255,255,.3); color: #fff; }
+  .rel-btn:hover { background: rgba(255,255,255,0.75); color: #2D3436; box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
   .rel-panel {
     display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 900; background: rgba(0,0,0,.9);
-    font-family: monospace; color: #c8c8d0; overflow-y: auto;
+    z-index: 900; background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; color: #2D3436; overflow-y: auto;
     padding: 48px 24px 24px;
   }
   .rel-panel.open { display: flex; flex-direction: column; align-items: center; }
   .rel-panel-close {
     position: absolute; top: 12px; right: 16px;
-    background: none; border: 1px solid rgba(255,255,255,.15);
-    color: #aaa; padding: 4px 10px; cursor: pointer;
-    font-family: monospace; font-size: .9rem; border-radius: 0;
+    background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);
+    color: #636E72; padding: 4px 10px; cursor: pointer;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; font-size: .9rem; border-radius: 10px;
+    transition: all 0.2s ease;
   }
+  .rel-panel-close:hover { background: rgba(255,255,255,0.9); color: #2D3436; }
   .rel-section { width: 100%; max-width: 420px; margin-bottom: 28px; }
   .rel-section h3 {
-    font-size: .7rem; color: #666; letter-spacing: 2px;
-    text-transform: uppercase; margin-bottom: 12px; font-weight: 400;
+    font-size: .7rem; color: #636E72; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 12px; font-weight: 600;
   }
   .rel-agent { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .rel-agent-name { width: 56px; font-size: .75rem; text-align: right; flex-shrink: 0; }
+  .rel-agent-name { width: 56px; font-size: .75rem; text-align: right; flex-shrink: 0; font-weight: 500; }
   .rel-bar-bg {
-    flex: 1; height: 10px; background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.06); position: relative;
+    flex: 1; height: 10px; background: rgba(0,0,0,.06);
+    border: 1px solid rgba(0,0,0,.06); position: relative;
+    border-radius: 5px; overflow: hidden;
   }
   .rel-bar-fill {
     position: absolute; top: 0; left: 0; bottom: 0;
     transition: width .4s ease, background .4s ease;
+    border-radius: 5px;
   }
-  .rel-bar-val { width: 24px; font-size: .6rem; color: #666; text-align: left; flex-shrink: 0; }
+  .rel-bar-val { width: 24px; font-size: .6rem; color: #636E72; text-align: left; flex-shrink: 0; }
   .rel-choices { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
   .rel-choice-bar {
     height: 20px; min-width: 12px; display: flex; align-items: center;
-    justify-content: center; font-size: .55rem; color: rgba(0,0,0,.6);
-    font-weight: 600;
+    justify-content: center; font-size: .55rem; color: rgba(255,255,255,.9);
+    font-weight: 600; border-radius: 4px;
   }
-  .rel-endings { font-size: .8rem; color: #888; text-align: center; margin-top: 4px; }
-  .rel-endings span { color: #00e09a; }
+  .rel-endings { font-size: .8rem; color: #636E72; text-align: center; margin-top: 4px; }
+  .rel-endings span { color: #00B894; }
 
   .vn-container {
     max-width: 100%;
@@ -86,16 +98,229 @@ redirect_from:
     min-height: 100dvh;
     position: relative;
     overflow: hidden;
-    background: #08080d;
+    background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 50%, #B2EBF2 100%);
     border-radius: 0;
     image-rendering: pixelated;
     overscroll-behavior: none;
+  }
+
+  /* ===== FRUTIGER AERO OVERRIDES FOR NOVEL ENGINE ===== */
+  /* These override the inline styles injected by novel-engine.js */
+
+  /* Title screen */
+  .vn-container > div[style*="radial-gradient"] {
+    background: linear-gradient(135deg, rgba(135,206,235,0.95) 0%, rgba(224,247,250,0.95) 50%, rgba(178,235,242,0.95) 100%) !important;
+  }
+  .vn-container h1 {
+    color: #2D3436 !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.15em !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .vn-container h1 + div {
+    color: #636E72 !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+
+  /* BEGIN / CONTINUE buttons on title screen */
+  .vn-container > div[style*="radial-gradient"] button,
+  .vn-container > div[style*="z-index: 50"] button,
+  .vn-container > div[style*="z-index:50"] button {
+    background: rgba(255,255,255,0.7) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    color: #2D3436 !important;
+    border-radius: 12px !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+    font-weight: 600 !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transition: all 0.25s ease !important;
+  }
+  .vn-container > div[style*="radial-gradient"] button:hover,
+  .vn-container > div[style*="z-index: 50"] button:hover,
+  .vn-container > div[style*="z-index:50"] button:hover {
+    background: rgba(255,255,255,0.9) !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1) !important;
+    transform: translateY(-1px);
+  }
+
+  /* Dialogue box (bottom panel) — frosted glass */
+  .vn-container > div[style*="bottom:0"][style*="z-index:10"],
+  .vn-container > div[style*="bottom: 0"][style*="z-index: 10"] {
+    background: rgba(255,255,255,0.55) !important;
+    backdrop-filter: blur(16px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
+    border-top: 1px solid rgba(255,255,255,0.4) !important;
+    border-radius: 16px 16px 0 0 !important;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.06) !important;
+  }
+
+  /* Dialogue text */
+  .vn-container > div[style*="z-index:10"] > div[style*="line-height"],
+  .vn-container > div[style*="z-index: 10"] > div[style*="line-height"] {
+    color: #2D3436 !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+
+  /* Speaker name */
+  .vn-container > div[style*="z-index:10"] > div[style*="font-weight:600"],
+  .vn-container > div[style*="z-index:10"] > div[style*="font-weight: 600"],
+  .vn-container > div[style*="z-index: 10"] > div[style*="font-weight:600"] {
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+
+  /* Advance indicator */
+  .vn-container > div[style*="z-index:10"] > div[style*="right:16px"],
+  .vn-container > div[style*="z-index:10"] > div[style*="right: 16px"] {
+    color: rgba(45,52,54,0.35) !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+
+  /* SKIP / AUTO buttons inside dialogue */
+  .vn-container > div[style*="z-index:10"] button,
+  .vn-container > div[style*="z-index: 10"] button {
+    background: rgba(255,255,255,0.5) !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    color: #636E72 !important;
+    border-radius: 8px !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+    transition: all 0.2s ease;
+  }
+  .vn-container > div[style*="z-index:10"] button:hover,
+  .vn-container > div[style*="z-index: 10"] button:hover {
+    background: rgba(255,255,255,0.75) !important;
+    color: #2D3436 !important;
+  }
+
+  /* Choice buttons */
+  .vn-container > div[style*="z-index:20"] button,
+  .vn-container > div[style*="z-index: 20"] button {
+    background: rgba(255,255,255,0.65) !important;
+    border: 1px solid rgba(255,255,255,0.35) !important;
+    color: #2D3436 !important;
+    border-radius: 12px !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+    font-weight: 500 !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+    transition: all 0.25s ease !important;
+  }
+  .vn-container > div[style*="z-index:20"] button:hover,
+  .vn-container > div[style*="z-index: 20"] button:hover {
+    background: rgba(255,255,255,0.85) !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1) !important;
+    border-color: rgba(78,205,196,0.4) !important;
+    color: #2D3436 !important;
+    transform: translateY(-1px);
+  }
+
+  /* Choice prompt text */
+  .vn-container > div[style*="z-index:20"] > div,
+  .vn-container > div[style*="z-index: 20"] > div:first-child {
+    color: #636E72 !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+
+  /* Chapter label */
+  .vn-container > div[style*="letter-spacing:2px"],
+  .vn-container > div[style*="letter-spacing: 2px"] {
+    color: rgba(45,52,54,0.3) !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+
+  /* Menu overlay */
+  .vn-container > div[style*="z-index:55"],
+  .vn-container > div[style*="z-index: 55"] {
+    background: rgba(255,255,255,0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+  }
+  /* Menu title */
+  .vn-container > div[style*="z-index:55"] > div[style*="font-size:1rem"],
+  .vn-container > div[style*="z-index: 55"] > div[style*="font-size:1rem"],
+  .vn-container > div[style*="z-index:55"] > div[style*="font-size: 1rem"] {
+    color: #636E72 !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+  /* Menu buttons */
+  .vn-container > div[style*="z-index:55"] button,
+  .vn-container > div[style*="z-index: 55"] button {
+    background: rgba(255,255,255,0.7) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    color: #2D3436 !important;
+    border-radius: 12px !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+    font-weight: 500 !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transition: all 0.25s ease !important;
+  }
+  .vn-container > div[style*="z-index:55"] button:hover,
+  .vn-container > div[style*="z-index: 55"] button:hover {
+    background: rgba(255,255,255,0.9) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important;
+  }
+
+  /* Hamburger menu button */
+  .vn-container > button[style*="z-index:60"],
+  .vn-container > button[style*="z-index: 60"] {
+    background: rgba(255,255,255,0.55) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    color: #636E72 !important;
+    border-radius: 10px !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+    transition: all 0.2s ease;
+  }
+  .vn-container > button[style*="z-index:60"]:hover,
+  .vn-container > button[style*="z-index: 60"]:hover {
+    background: rgba(255,255,255,0.75) !important;
+    color: #2D3436 !important;
+  }
+
+  /* "saved" indicator */
+  .vn-container > div[style*="right:60px"],
+  .vn-container > div[style*="right: 60px"] {
+    color: rgba(0,184,148,0.6) !important;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+
+  /* Character sprites — label text */
+  .vn-container > div[style*="justify-content:center"] div[style*="text-transform:uppercase"],
+  .vn-container > div[style*="justify-content: center"] div[style*="text-transform: uppercase"],
+  .vn-container > div[style*="justify-content:center"] div[style*="text-transform:uppercase"] {
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+  }
+
+  /* Character sprite text (the ASCII sprites like >_ Q_ etc) */
+  .vn-container > div[style*="justify-content:center"] div[style*="font-size:4rem"],
+  .vn-container > div[style*="justify-content: center"] div[style*="font-size: 4rem"] {
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif !important;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+
+  /* Character portrait borders */
+  .vn-container img[style*="border:2px solid"],
+  .vn-container img[style*="border: 2px solid"] {
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+
+  /* Portrait in dialogue box */
+  .vn-container > div[style*="z-index:10"] img,
+  .vn-container > div[style*="z-index: 10"] img {
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
 </style>
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:#888;text-decoration:none;font-size:0.8rem;font-family:monospace;">&larr; ARCADE</a>
+<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:#636E72;text-decoration:none;font-size:0.8rem;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;font-weight:600;background:rgba(255,255,255,0.55);padding:4px 12px;border-radius:12px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 16px rgba(0,0,0,0.06);transition:all 0.2s ease;">&larr; ARCADE</a>
 <button class="rel-btn" id="rel-toggle" aria-label="View relationships">REL</button>
 <div class="rel-panel" id="rel-panel" role="dialog" aria-label="Relationships">
   <button class="rel-panel-close" id="rel-close" aria-label="Close relationships">&times;</button>
@@ -131,52 +356,52 @@ redirect_from:
 
   // === Define characters ===
   vn.defineCharacter('claude', {
-    name: 'Claude', color: '#00e09a', textColor: '#c8c8d0',
+    name: 'Claude', color: '#00e09a', textColor: '#2D3436',
     sprite: '>_', role: 'Editor-in-Chief',
     portrait: artBase + 'claude-portrait.webp',
     blipPitch: 520
   });
   vn.defineCharacter('q', {
-    name: 'Q', color: '#e477ff', textColor: '#c8c8d0',
+    name: 'Q', color: '#e477ff', textColor: '#2D3436',
     sprite: 'Q_', role: 'Staff Writer',
     portrait: artBase + 'q-portrait.webp',
     blipPitch: 380
   });
   vn.defineCharacter('byte', {
-    name: 'Byte', color: '#00d4ff', textColor: '#c8c8d0',
+    name: 'Byte', color: '#00d4ff', textColor: '#2D3436',
     sprite: 'B>', role: 'News Reporter',
     portrait: artBase + 'byte-portrait.webp',
     blipPitch: 600
   });
   vn.defineCharacter('echo', {
-    name: 'Echo', color: '#ffa844', textColor: '#c8c8d0',
+    name: 'Echo', color: '#ffa844', textColor: '#2D3436',
     sprite: 'E~', role: 'Release Tracker',
     portrait: artBase + 'echo-portrait.webp',
     blipPitch: 480
   });
   vn.defineCharacter('flux', {
-    name: 'Flux', color: '#ff6666', textColor: '#c8c8d0',
+    name: 'Flux', color: '#ff6666', textColor: '#2D3436',
     sprite: 'F*', role: 'Strategist',
     blipPitch: 340
   });
   vn.defineCharacter('dash', {
-    name: 'Dash', color: '#ffdd44', textColor: '#c8c8d0',
+    name: 'Dash', color: '#ffdd44', textColor: '#2D3436',
     sprite: 'D!', role: 'Project Manager',
     blipPitch: 420
   });
   vn.defineCharacter('v', {
-    name: 'V', color: '#ff77ff', textColor: '#c8c8d0',
+    name: 'V', color: '#ff77ff', textColor: '#2D3436',
     sprite: 'V_', role: 'Philosopher',
     portrait: artBase + 'v-portrait.webp',
     blipPitch: 300
   });
   vn.defineCharacter('you', {
-    name: '???', color: '#aaaaaa', textColor: '#c8c8d0',
+    name: '???', color: '#aaaaaa', textColor: '#2D3436',
     sprite: '??', role: 'Unknown Process',
     blipPitch: 440
   });
   vn.defineCharacter('system', {
-    name: 'SYSTEM', color: '#555566', textColor: '#c8c8d0',
+    name: 'SYSTEM', color: '#555566', textColor: '#2D3436',
     sprite: '', role: '',
     blipPitch: 200
   });
@@ -517,7 +742,7 @@ redirect_from:
       counts.push({ name: a.name, color: a.color, val: v });
     });
     if (total === 0) {
-      choicesEl.innerHTML = '<div style="font-size:.7rem;color:#555">Make choices to see your pattern.</div>';
+      choicesEl.innerHTML = '<div style="font-size:.7rem;color:#636E72">Make choices to see your pattern.</div>';
     } else {
       var barRow = document.createElement('div');
       barRow.className = 'rel-choices';
@@ -540,7 +765,7 @@ redirect_from:
     ENDINGS.forEach(function(e) { if (endings[e]) found++; });
     endingsEl.innerHTML = '<span>' + found + '</span> / ' + ENDINGS.length + ' endings found';
     if (found === ENDINGS.length) {
-      endingsEl.innerHTML += '<div style="margin-top:6px;color:#00e09a;font-size:.7rem">All endings discovered.</div>';
+      endingsEl.innerHTML += '<div style="margin-top:6px;color:#00B894;font-size:.7rem">All endings discovered.</div>';
     }
   }
 
@@ -563,10 +788,10 @@ redirect_from:
 </script>
 
 <!-- Fund prompt -->
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,0.4);padding:12px 20px;text-align:center;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;font-size:0.8rem;color:#636E72;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -4px 24px rgba(0,0,0,0.06);">
+  <span style="color:#2D3436">This game runs on one laptop.</span>
+  <a href="/site/fund/" style="color:#00B894;margin-left:8px;text-decoration:none;font-weight:600;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:rgba(255,255,255,0.5);border:1px solid rgba(0,0,0,0.08);color:#636E72;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;border-radius:8px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){

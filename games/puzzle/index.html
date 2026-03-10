@@ -15,22 +15,10 @@ redirect_from:
 <meta property="og:description" content="Guess the 5-letter AI/tech term in 6 tries. New puzzle every day.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
-  /* === PIXEL ART MODE === */
-  button, .btn, [class*="btn"] {
-    border-radius: 0 !important;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    transition: none !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  button:active, .btn:active, [class*="btn"]:active {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
-  }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -40,12 +28,13 @@ redirect_from:
     }
   }
 
-  a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid #4ECDC4; outline-offset: 2px; }
 
   body {
-    font-family: 'IBM Plex Mono', monospace;
-    background: #0a0a2e;
-    color: #e0e0e0;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 50%, #B2EBF2 100%);
+    background-attachment: fixed;
+    color: #2D3436;
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;
@@ -66,14 +55,14 @@ redirect_from:
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #222255;
+    border-bottom: 1px solid rgba(255,255,255,0.4);
   }
 
   header h1 {
     font-size: 1.4rem;
-    color: #00ffaa;
+    color: #2D3436;
     letter-spacing: 3px;
-    text-shadow: 0 0 10px #00ffaa44;
+    font-weight: 700;
   }
 
   header .nav-links {
@@ -83,14 +72,14 @@ redirect_from:
   }
 
   header .nav-links a {
-    color: #77aaff;
+    color: #0984E3;
     text-decoration: none;
   }
-  header .nav-links a:hover { color: #aaddff; }
+  header .nav-links a:hover { color: #6C5CE7; }
 
   .subtitle {
-    font-size: 0.7rem;
-    color: #666;
+    font-size: 0.75rem;
+    color: #636E72;
     text-align: center;
     margin: 8px 0 4px;
     letter-spacing: 1px;
@@ -98,7 +87,8 @@ redirect_from:
 
   .streak-bar {
     font-size: 0.75rem;
-    color: #ffaa44;
+    color: #E17055;
+    font-weight: 600;
     text-align: center;
     margin-bottom: 12px;
   }
@@ -121,44 +111,50 @@ redirect_from:
   .cell {
     width: 52px;
     height: 52px;
-    border: 2px solid #333366;
+    border: 2px solid rgba(0,0,0,0.12);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.6rem;
     font-weight: 700;
     text-transform: uppercase;
-    color: #fff;
-    transition: none;
-    background: transparent;
+    color: #2D3436;
+    transition: border-color 0.15s ease;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     user-select: none;
     -webkit-user-select: none;
   }
 
   .cell.filled {
-    border-color: #5555aa;
-    animation: pop 0.1s steps(4);
+    border-color: rgba(0,0,0,0.25);
+    animation: pop 0.1s ease;
   }
 
   .cell.correct {
-    background: #00ffaa;
-    border-color: #00ffaa;
-    color: #000;
-    animation: flip 0.5s steps(4);
+    background: #55EFC4;
+    border-color: #00B894;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    animation: flip 0.5s ease;
   }
 
   .cell.present {
-    background: #ff77ff;
-    border-color: #ff77ff;
-    color: #000;
-    animation: flip 0.5s steps(4);
+    background: #FDCB6E;
+    border-color: #F39C12;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    animation: flip 0.5s ease;
   }
 
   .cell.absent {
-    background: #333355;
-    border-color: #333355;
-    color: #888;
-    animation: flip 0.5s steps(4);
+    background: rgba(178,190,195,0.5);
+    border-color: rgba(178,190,195,0.6);
+    color: #636E72;
+    animation: flip 0.5s ease;
   }
 
   /* No animation class for restored cells */
@@ -185,7 +181,7 @@ redirect_from:
   }
 
   .row.shake {
-    animation: shake 0.4s steps(4);
+    animation: shake 0.4s ease;
   }
 
   /* Keyboard */
@@ -208,36 +204,40 @@ redirect_from:
     max-width: 36px;
     height: 48px;
     padding: 0;
-    border: none;
-    border-radius: 0;
-    background: #222255;
-    border: 2px solid #333366;
-    color: #ddd;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.7);
+    color: #2D3436;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
-    transition: none;
+    transition: background 0.15s ease, transform 0.1s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
 
-  .key:hover { background: #333377; }
+  .key:hover { background: rgba(255,255,255,0.9); }
+  .key:active { transform: scale(0.95); }
   .key.wide { flex: 1.6; max-width: 60px; font-size: 0.75rem; }
-  .key.correct { background: #00ffaa; color: #000; }
-  .key.present { background: #ff77ff; color: #000; }
-  .key.absent { background: #1a1a2e; color: #555; }
+  .key.correct { background: #55EFC4; color: #fff; border-color: #00B894; text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+  .key.present { background: #FDCB6E; color: #fff; border-color: #F39C12; text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+  .key.absent { background: rgba(178,190,195,0.4); color: #636E72; border-color: rgba(178,190,195,0.3); }
 
   /* Messages */
   #message {
     text-align: center;
     min-height: 24px;
-    font-size: 0.8rem;
-    color: #ffaa44;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #E17055;
     margin: 6px 0;
     transition: none;
   }
@@ -246,19 +246,24 @@ redirect_from:
   #q-comment {
     max-width: 440px;
     margin: 8px auto;
-    padding: 10px 14px;
-    border-left: 3px solid #ff77ff;
-    background: rgba(255,119,255,0.05);
-    font-size: 0.75rem;
-    color: #ccaacc;
-    border-radius: 0;
+    padding: 12px 16px;
+    border-left: 3px solid #6C5CE7;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-left: 3px solid #6C5CE7;
+    font-size: 0.8rem;
+    color: #636E72;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
     display: none;
     align-items: flex-start;
     gap: 10px;
   }
 
   #q-comment .q-label {
-    color: #ff77ff;
+    color: #6C5CE7;
     font-weight: 700;
     margin-bottom: 4px;
   }
@@ -268,7 +273,9 @@ redirect_from:
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 100;
     align-items: center;
     justify-content: center;
@@ -277,22 +284,24 @@ redirect_from:
   #stats-modal.show { display: flex; }
 
   .stats-content {
-    background: #0d0d2a;
-    border: 1px solid #333366;
-    border-radius: 0;
-    padding: 24px;
-    border: 2px solid #333366;
-    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     max-width: 380px;
     width: 90%;
     text-align: center;
   }
 
   .stats-content h2 {
-    color: #00ffaa;
-    font-size: 1rem;
+    color: #2D3436;
+    font-size: 1.1rem;
     margin-bottom: 16px;
     letter-spacing: 2px;
+    font-weight: 700;
   }
 
   .stats-grid {
@@ -304,68 +313,69 @@ redirect_from:
 
   .stat-box .stat-num {
     font-size: 1.8rem;
-    color: #fff;
+    color: #2D3436;
     font-weight: 700;
   }
 
   .stat-box .stat-label {
     font-size: 0.75rem;
-    color: #888;
+    color: #636E72;
   }
 
   .share-btn {
-    background: #00ffaa;
-    color: #000;
-    border: none;
+    background: rgba(255,255,255,0.7);
+    color: #2D3436;
+    border: 1px solid rgba(255,255,255,0.3);
     padding: 10px 24px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8rem;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.85rem;
     font-weight: 700;
-    border-radius: 0;
+    border-radius: 12px;
     cursor: pointer;
     letter-spacing: 1px;
     margin-top: 8px;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    transition: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transition: background 0.15s ease, transform 0.1s ease;
   }
 
-  .share-btn:hover { background: #33ffbb; }
-  .share-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
+  .share-btn:hover { background: rgba(255,255,255,0.9); }
+  .share-btn:active { transform: scale(0.97); }
 
   .close-btn {
-    background: none;
-    border: 1px solid #333366;
-    color: #888;
+    background: rgba(255,255,255,0.35);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #636E72;
     padding: 6px 16px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    border-radius: 0;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.75rem;
+    border-radius: 12px;
     cursor: pointer;
     margin-top: 8px;
     margin-left: 8px;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transition: background 0.15s ease;
   }
 
-  .close-btn:hover { border-color: #5555aa; color: #aaa; }
+  .close-btn:hover { background: rgba(255,255,255,0.55); color: #2D3436; }
 
   /* Hint area */
   .hint {
     font-size: 0.75rem;
-    color: #444;
+    color: #636E72;
     text-align: center;
     margin-top: 4px;
     padding: 0 16px;
   }
 
   .hint a {
-    color: #5588aa;
+    color: #0984E3;
     text-decoration: none;
   }
 
   /* Timer */
   .next-puzzle {
-    font-size: 0.7rem;
-    color: #666;
+    font-size: 0.75rem;
+    color: #636E72;
     margin-top: 12px;
   }
 
@@ -373,18 +383,20 @@ redirect_from:
   .how-to-play {
     max-width: 440px;
     margin: 12px auto 8px;
-    padding: 12px 16px;
-    background: rgba(0,255,170,0.04);
-    border: 1px solid #222255;
-    border-radius: 0;
-    font-size: 0.75rem;
-    border: 2px solid #222255;
-    color: #aab;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 14px;
+    font-size: 0.8rem;
+    color: #636E72;
     line-height: 1.7;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
   }
   .how-to-play strong {
-    color: #ddd;
-    font-size: 0.8rem;
+    color: #2D3436;
+    font-size: 0.85rem;
     display: block;
     margin-bottom: 6px;
     letter-spacing: 1px;
@@ -403,17 +415,18 @@ redirect_from:
     justify-content: center;
     font-size: 0.9rem;
     font-weight: 700;
-    border-radius: 0;
-    color: #000;
+    border-radius: 6px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
   }
-  .how-to-play .ex-correct { background: #00ffaa; }
-  .how-to-play .ex-present { background: #ff77ff; }
-  .how-to-play .ex-absent { background: #333355; color: #888; }
+  .how-to-play .ex-correct { background: #55EFC4; }
+  .how-to-play .ex-present { background: #FDCB6E; }
+  .how-to-play .ex-absent { background: rgba(178,190,195,0.6); color: #636E72; text-shadow: none; }
 
   /* Color legend */
   .legend {
     font-size: 0.75rem;
-    color: #778;
+    color: #636E72;
     text-align: center;
     margin-top: 8px;
     margin-bottom: 4px;
@@ -426,11 +439,11 @@ redirect_from:
 
   /* Focus styles for keyboard navigation */
   .key:focus-visible {
-    outline: 2px solid #00ffaa;
+    outline: 2px solid #4ECDC4;
     outline-offset: 2px;
   }
   .share-btn:focus-visible, .close-btn:focus-visible {
-    outline: 2px solid #00ffaa;
+    outline: 2px solid #4ECDC4;
     outline-offset: 2px;
   }
 
@@ -439,13 +452,14 @@ redirect_from:
     position: absolute;
     top: -40px;
     left: 0;
-    background: #00ffaa;
-    color: #000;
+    background: #55EFC4;
+    color: #2D3436;
     padding: 8px 16px;
     z-index: 200;
     font-size: 0.8rem;
     text-decoration: none;
     font-weight: 700;
+    border-radius: 0 0 8px 0;
   }
   .skip-link:focus {
     top: 0;
@@ -494,9 +508,9 @@ redirect_from:
 <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
+<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#2D3436;text-decoration:none;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;font-size:13px;font-weight:600;background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:6px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 16px rgba(0,0,0,0.06);">&larr; ARCADE</a>
 
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
+<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#55EFC4;color:#2D3436;padding:8px 16px;z-index:1000;font-size:14px;border-radius:0 0 8px 0;">Skip to game</a>
 
 <main id="game" role="main">
 <header role="banner">
@@ -509,10 +523,10 @@ redirect_from:
 </header>
 
 <div style="max-width:500px;margin:4px auto;padding:18px 0 8px;text-align:center;">
-  <div style="font-size:2.4rem;color:#00ffaa;letter-spacing:8px;text-shadow:0 0 12px #00ffaa44;font-weight:700;">SIGTERM</div>
+  <div style="font-size:2.4rem;color:#2D3436;letter-spacing:8px;font-weight:700;">SIGTERM</div>
 </div>
 
-<div class="subtitle">daily word game by <span style="color:#00ffaa;">substrate</span></div>
+<div class="subtitle">daily word game by <span style="color:#0984E3;font-weight:600;">substrate</span></div>
 <div class="streak-bar" id="streak-bar" aria-live="polite" aria-label="Current streak"></div>
 <div id="message" role="status" aria-live="polite"></div>
 
@@ -521,7 +535,7 @@ redirect_from:
 <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
 
 <div id="q-comment" aria-live="polite">
-  <img src="{{ site.baseurl }}/assets/images/game-art/q-portrait.webp" alt="Q" style="width:48px;height:48px;border-radius:0;object-fit:cover;border:2px solid rgba(255,119,255,0.3);flex-shrink:0;margin-top:2px;image-rendering:pixelated;">
+  <img src="{{ site.baseurl }}/assets/images/game-art/q-portrait.webp" alt="Q" style="width:48px;height:48px;border-radius:12px;object-fit:cover;border:2px solid rgba(108,92,231,0.3);flex-shrink:0;margin-top:2px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
   <div>
     <div class="q-label">V_ says:</div>
     <div id="q-text"></div>
@@ -538,15 +552,15 @@ redirect_from:
     <div class="ex-cell ex-present">C</div>
     <div class="ex-cell ex-absent">K</div>
   </div>
-  <span style="color:#00ffaa;">Green</span> = right spot!
-  <span style="color:#ff77ff;">Purple</span> = wrong spot.
-  <span style="color:#667;">Gray</span> = nope!
+  <span style="color:#00B894;font-weight:600;">Green</span> = right spot!
+  <span style="color:#F39C12;font-weight:600;">Gold</span> = wrong spot.
+  <span style="color:#636E72;font-weight:600;">Gray</span> = nope!
 </div>
 
 <div class="legend">
-  <span style="color:#00ffaa;">&#9632; correct</span>
-  <span style="color:#ff77ff;">&#9632; wrong spot</span>
-  <span style="color:#333355;">&#9632; not in word</span>
+  <span style="color:#00B894;">&#9632; correct</span>
+  <span style="color:#F39C12;">&#9632; wrong spot</span>
+  <span style="color:#B2BEC3;">&#9632; not in word</span>
 </div>
 
 <div id="stats-modal" role="dialog" aria-modal="true" aria-label="Game statistics">
@@ -558,11 +572,11 @@ redirect_from:
       <div class="stat-box"><div class="stat-num" id="s-streak">0</div><div class="stat-label">streak</div></div>
       <div class="stat-box"><div class="stat-num" id="s-max">0</div><div class="stat-label">max streak</div></div>
     </div>
-    <div style="font-size:0.7rem;color:#888;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Guess Distribution</div>
+    <div style="font-size:0.75rem;color:#636E72;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Guess Distribution</div>
     <div id="guess-distribution" style="margin-bottom:16px;"></div>
     <div>
       <button class="share-btn" id="share-btn" onclick="shareResult()">COPY RESULTS</button>
-      <button class="share-btn" id="challenge-btn" onclick="createChallenge()" style="background:#ff77ff;display:none;">CHALLENGE A FRIEND</button>
+      <button class="share-btn" id="challenge-btn" onclick="createChallenge()" style="background:rgba(108,92,231,0.2);border-color:rgba(108,92,231,0.3);display:none;">CHALLENGE A FRIEND</button>
       <button class="close-btn" onclick="closeStats()">CLOSE</button>
     </div>
     <div class="next-puzzle" id="next-puzzle"></div>
@@ -1008,12 +1022,12 @@ function showStats() {
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0;font-size:0.75rem;';
     var label = document.createElement('span');
-    label.style.cssText = 'width:12px;text-align:right;color:#888;';
+    label.style.cssText = 'width:12px;text-align:right;color:#636E72;';
     label.textContent = (i + 1);
     var bar = document.createElement('div');
     var pct = Math.max(8, (stats.guessDistribution[i] / maxGuesses) * 100);
-    var barColor = (i === winRow) ? '#00ffaa' : '#444466';
-    bar.style.cssText = 'background:' + barColor + ';height:16px;border-radius:0;min-width:16px;display:flex;align-items:center;justify-content:flex-end;padding:0 4px;font-size:0.75rem;color:' + (i === winRow ? '#000' : '#ccc') + ';font-weight:700;width:' + pct + '%;';
+    var barColor = (i === winRow) ? '#55EFC4' : 'rgba(178,190,195,0.4)';
+    bar.style.cssText = 'background:' + barColor + ';height:18px;border-radius:6px;min-width:18px;display:flex;align-items:center;justify-content:flex-end;padding:0 6px;font-size:0.75rem;color:' + (i === winRow ? '#2D3436' : '#636E72') + ';font-weight:700;width:' + pct + '%;';
     bar.textContent = stats.guessDistribution[i];
     row.appendChild(label);
     row.appendChild(bar);
@@ -1246,8 +1260,8 @@ function createChallenge() {
         var grid = document.getElementById('grid');
         if (grid) {
           var rect = grid.getBoundingClientRect();
-          AnimeEffects.speedLinesBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, '#00ffaa', 32);
-          AnimeEffects.screenFlash('#00ffaa', 400);
+          AnimeEffects.speedLinesBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, '#55EFC4', 32);
+          AnimeEffects.screenFlash('#55EFC4', 400);
         }
       }
       _origEndGame(won);
@@ -1256,10 +1270,10 @@ function createChallenge() {
 })();
 </script>
 
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-  <span style="color:#c8c8d0">This game runs on one laptop!</span>
-  <a href="/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us grow &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#444;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,0.4);padding:12px 20px;text-align:center;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;font-size:0.8rem;color:#636E72;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,0.06);">
+  <span style="color:#2D3436">This game runs on one laptop!</span>
+  <a href="/site/fund/" style="color:#0984E3;margin-left:8px;text-decoration:none;font-weight:600;">Help us grow &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#B2BEC3;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){

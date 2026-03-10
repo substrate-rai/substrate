@@ -13,14 +13,14 @@ redirect_from:
 <title>TACTICS — Substrate Arcade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: linear-gradient(180deg, #d4eaf7 0%, #b6d8f2 30%, #9ec5e0 60%, #e8f4f8 100%);
-  color: #2D3748;
-  font-family: 'IBM Plex Mono', monospace;
+  background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 50%, #B2EBF2 100%);
+  color: #2D3436;
+  font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   overflow: hidden;
   position: fixed;
   width: 100%;
@@ -29,7 +29,6 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  image-rendering: pixelated;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -50,15 +49,15 @@ body {
   width: 480px;
   max-width: 96vw;
   padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px) saturate(1.3);
-  -webkit-backdrop-filter: blur(12px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-bottom: none;
-  border-radius: 10px 10px 0 0;
+  border-radius: 12px 12px 0 0;
   font-size: 12px;
   gap: 8px;
-  box-shadow: 0 -2px 12px rgba(0, 80, 160, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 #top-bar .turn-info {
@@ -73,14 +72,14 @@ body {
   letter-spacing: 2px;
 }
 
-#top-bar .phase-label.blue { color: #2266cc; }
-#top-bar .phase-label.red { color: #cc2222; }
+#top-bar .phase-label.blue { color: #0984E3; }
+#top-bar .phase-label.red { color: #D63031; }
 
-#top-bar .turn-num { color: #5A6B7F; font-size: 11px; }
+#top-bar .turn-num { color: #636E72; font-size: 11px; }
 
 #mission-label {
   font-size: 10px;
-  color: #5A6B7F;
+  color: #636E72;
   letter-spacing: 1px;
   font-weight: 600;
 }
@@ -103,8 +102,8 @@ body {
   font-weight: 700;
 }
 
-.co-portrait.blue { background: rgba(34, 102, 204, 0.15); color: #2266cc; border-color: rgba(34, 102, 204, 0.4); }
-.co-portrait.red { background: rgba(204, 34, 34, 0.15); color: #cc2222; border-color: rgba(204, 34, 34, 0.4); }
+.co-portrait.blue { background: rgba(9, 132, 227, 0.15); color: #0984E3; border-color: rgba(9, 132, 227, 0.4); }
+.co-portrait.red { background: rgba(214, 48, 49, 0.15); color: #D63031; border-color: rgba(214, 48, 49, 0.4); }
 
 .power-bar-wrap {
   display: flex;
@@ -112,7 +111,7 @@ body {
   gap: 2px;
 }
 
-.power-bar-label { font-size: 8px; color: #5A6B7F; letter-spacing: 1px; }
+.power-bar-label { font-size: 8px; color: #636E72; letter-spacing: 1px; }
 
 .power-bar {
   width: 60px;
@@ -129,35 +128,35 @@ body {
   border-radius: 2px;
 }
 
-.power-fill.blue { background: linear-gradient(90deg, #4488ff, #66aaff); }
-.power-fill.red { background: linear-gradient(90deg, #ff4444, #ff6666); }
-.power-fill.ready { background: linear-gradient(90deg, #ffcc00, #ffdd44); }
+.power-fill.blue { background: linear-gradient(90deg, #74B9FF, #0984E3); }
+.power-fill.red { background: linear-gradient(90deg, #FF7675, #D63031); }
+.power-fill.ready { background: linear-gradient(90deg, #FFEAA7, #FDCB6E); }
 
 #power-btn {
-  padding: 2px 6px;
-  font-family: 'IBM Plex Mono', monospace;
+  padding: 3px 8px;
+  font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   font-size: 9px;
   font-weight: 700;
-  background: linear-gradient(180deg, #ffdd44, #ffcc00);
-  color: #333;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #2D3436;
+  border: 1px solid rgba(253, 203, 110, 0.5);
+  border-radius: 12px;
   cursor: pointer;
   display: none;
   letter-spacing: 1px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
 }
 
-#power-btn:hover { background: linear-gradient(180deg, #ffee88, #ffdd44); }
+#power-btn:hover { background: rgba(253, 203, 110, 0.3); }
 
 canvas#game-canvas {
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
   touch-action: none;
   display: block;
-  box-shadow: 0 4px 20px rgba(0, 60, 120, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
 }
 
 #bottom-bar {
@@ -166,15 +165,15 @@ canvas#game-canvas {
   width: 480px;
   max-width: 96vw;
   min-height: 54px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px) saturate(1.3);
-  -webkit-backdrop-filter: blur(12px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-top: none;
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 12px 12px;
   font-size: 11px;
   gap: 0;
-  box-shadow: 0 4px 12px rgba(0, 80, 160, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 #unit-panel {
@@ -188,15 +187,15 @@ canvas#game-canvas {
 }
 
 #unit-panel .u-name { font-weight: 700; font-size: 12px; }
-#unit-panel .u-name.blue { color: #2266cc; }
-#unit-panel .u-name.red { color: #cc2222; }
-#unit-panel .u-stats { color: #5A6B7F; font-size: 10px; }
+#unit-panel .u-name.blue { color: #0984E3; }
+#unit-panel .u-name.red { color: #D63031; }
+#unit-panel .u-stats { color: #636E72; font-size: 10px; }
 #unit-panel .u-hp-row { display: flex; align-items: center; gap: 6px; }
 #unit-panel .u-hp-bar { width: 60px; height: 5px; background: rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.12); border-radius: 3px; }
 #unit-panel .u-hp-fill { height: 100%; border-radius: 2px; }
-#unit-panel .u-hp-fill.blue { background: linear-gradient(90deg, #4488ff, #66aaff); }
-#unit-panel .u-hp-fill.red { background: linear-gradient(90deg, #ff4444, #ff6666); }
-#unit-panel .u-hp-text { font-size: 10px; color: #5A6B7F; }
+#unit-panel .u-hp-fill.blue { background: linear-gradient(90deg, #74B9FF, #0984E3); }
+#unit-panel .u-hp-fill.red { background: linear-gradient(90deg, #FF7675, #D63031); }
+#unit-panel .u-hp-text { font-size: 10px; color: #636E72; }
 
 #terrain-panel {
   width: 130px;
@@ -207,19 +206,19 @@ canvas#game-canvas {
   gap: 2px;
 }
 
-#terrain-panel .t-name { font-weight: 600; font-size: 11px; color: #2D3748; }
-#terrain-panel .t-stats { color: #5A6B7F; font-size: 10px; }
+#terrain-panel .t-name { font-weight: 600; font-size: 11px; color: #2D3436; }
+#terrain-panel .t-stats { color: #636E72; font-size: 10px; }
 
 #message-bar {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
   padding: 12px 28px;
   font-size: 18px;
   font-weight: 700;
@@ -228,12 +227,12 @@ canvas#game-canvas {
   z-index: 20;
   display: none;
   pointer-events: none;
-  box-shadow: 0 4px 20px rgba(0, 60, 120, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
-#message-bar.blue { color: #2266cc; }
-#message-bar.red { color: #cc2222; }
-#message-bar.gold { color: #b8860b; }
+#message-bar.blue { color: #0984E3; }
+#message-bar.red { color: #D63031; }
+#message-bar.gold { color: #636E72; }
 
 /* ---- End Screen / Mission Complete ---- */
 #end-screen {
@@ -243,7 +242,7 @@ canvas#game-canvas {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(200, 220, 240, 0.92);
+  background: rgba(135, 206, 235, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   z-index: 30;
@@ -252,16 +251,16 @@ canvas#game-canvas {
 #end-screen.show { display: flex; }
 
 .end-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
   padding: 32px 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 8px 32px rgba(0, 60, 120, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   max-width: 90vw;
 }
 
@@ -269,12 +268,12 @@ canvas#game-canvas {
   font-size: 28px;
   letter-spacing: 6px;
   margin-bottom: 4px;
-  color: #1A1A2E;
+  color: #2D3436;
 }
 
 #end-screen .subtitle {
   font-size: 13px;
-  color: #5A6B7F;
+  color: #636E72;
   margin-bottom: 16px;
 }
 
@@ -294,21 +293,21 @@ canvas#game-canvas {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
-.rating-letter.rank-s { color: #d4af37; }
-.rating-letter.rank-a { color: #2266cc; }
-.rating-letter.rank-b { color: #228b22; }
-.rating-letter.rank-c { color: #8b6914; }
+.rating-letter.rank-s { color: #FDCB6E; }
+.rating-letter.rank-a { color: #0984E3; }
+.rating-letter.rank-b { color: #00B894; }
+.rating-letter.rank-c { color: #636E72; }
 
 .rating-label {
   font-size: 11px;
-  color: #5A6B7F;
+  color: #636E72;
   letter-spacing: 2px;
   font-weight: 600;
 }
 
 .rating-new-best {
   font-size: 10px;
-  color: #d4af37;
+  color: #FDCB6E;
   font-weight: 700;
   letter-spacing: 1px;
   margin-top: 4px;
@@ -335,12 +334,12 @@ canvas#game-canvas {
   gap: 16px;
 }
 
-.stat-label { color: #5A6B7F; }
-.stat-value { font-weight: 700; color: #2D3748; }
+.stat-label { color: #636E72; }
+.stat-value { font-weight: 700; color: #2D3436; }
 
-.stat-value.good { color: #228b22; }
-.stat-value.ok { color: #2266cc; }
-.stat-value.bad { color: #cc2222; }
+.stat-value.good { color: #00B894; }
+.stat-value.ok { color: #0984E3; }
+.stat-value.bad { color: #D63031; }
 
 /* Mission select strip */
 .mission-ratings-strip {
@@ -352,23 +351,24 @@ canvas#game-canvas {
 .mission-pip {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   font-weight: 700;
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #8899AA;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #636E72;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
-.mission-pip.completed { background: rgba(34, 102, 204, 0.1); border-color: rgba(34, 102, 204, 0.3); }
-.mission-pip.rank-s { background: rgba(212, 175, 55, 0.15); border-color: rgba(212, 175, 55, 0.4); color: #d4af37; }
-.mission-pip.rank-a { background: rgba(34, 102, 204, 0.15); border-color: rgba(34, 102, 204, 0.4); color: #2266cc; }
-.mission-pip.rank-b { background: rgba(34, 139, 34, 0.15); border-color: rgba(34, 139, 34, 0.4); color: #228b22; }
-.mission-pip.rank-c { background: rgba(139, 105, 20, 0.15); border-color: rgba(139, 105, 20, 0.4); color: #8b6914; }
-.mission-pip.current { border: 2px solid #2266cc; }
+.mission-pip.completed { background: rgba(9, 132, 227, 0.1); border-color: rgba(9, 132, 227, 0.3); }
+.mission-pip.rank-s { background: rgba(253, 203, 110, 0.2); border-color: rgba(253, 203, 110, 0.5); color: #FDCB6E; }
+.mission-pip.rank-a { background: rgba(9, 132, 227, 0.15); border-color: rgba(9, 132, 227, 0.4); color: #0984E3; }
+.mission-pip.rank-b { background: rgba(0, 184, 148, 0.15); border-color: rgba(0, 184, 148, 0.4); color: #00B894; }
+.mission-pip.rank-c { background: rgba(99, 110, 114, 0.15); border-color: rgba(99, 110, 114, 0.4); color: #636E72; }
+.mission-pip.current { border: 2px solid #0984E3; }
 
 .end-buttons {
   display: flex;
@@ -377,33 +377,34 @@ canvas#game-canvas {
 
 #restart-btn, #next-mission-btn {
   padding: 10px 24px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  color: #2D3748;
-  font-family: 'IBM Plex Mono', monospace;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #2D3436;
+  font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  border-radius: 8px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 #restart-btn:hover, #next-mission-btn:hover {
-  background: rgba(34, 102, 204, 0.12);
-  border-color: rgba(34, 102, 204, 0.3);
-  color: #2266cc;
+  background: rgba(9, 132, 227, 0.12);
+  border-color: rgba(9, 132, 227, 0.3);
+  color: #0984E3;
 }
 
 #next-mission-btn {
-  background: rgba(34, 102, 204, 0.12);
-  border-color: rgba(34, 102, 204, 0.25);
-  color: #2266cc;
+  background: rgba(9, 132, 227, 0.12);
+  border-color: rgba(9, 132, 227, 0.25);
+  color: #0984E3;
 }
 
 #next-mission-btn:hover {
-  background: rgba(34, 102, 204, 0.2);
+  background: rgba(9, 132, 227, 0.2);
 }
 
 #next-mission-btn:disabled {
@@ -417,12 +418,12 @@ canvas#game-canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 10px;
-  color: #8899AA;
+  color: #636E72;
   z-index: 5;
 }
 
-#footer a { color: #5A6B7F; text-decoration: none; }
-#footer a:hover { color: #2266cc; }
+#footer a { color: #636E72; text-decoration: none; }
+#footer a:hover { color: #0984E3; }
 
 #splash {
   position: fixed;
@@ -432,40 +433,40 @@ canvas#game-canvas {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #d4eaf7 0%, #b6d8f2 40%, #e8f4f8 100%);
+  background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 50%, #B2EBF2 100%);
   cursor: pointer;
 }
 
 .splash-panel {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
   padding: 40px 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 8px 32px rgba(0, 60, 120, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 #splash h1 {
   font-size: 32px;
   letter-spacing: 8px;
-  color: #1A1A2E;
+  color: #2D3436;
   margin-bottom: 8px;
 }
 
 #splash .sub {
   font-size: 12px;
-  color: #5A6B7F;
+  color: #636E72;
   margin-bottom: 20px;
   letter-spacing: 2px;
 }
 
 #splash .mission-select-label {
   font-size: 10px;
-  color: #5A6B7F;
+  color: #636E72;
   letter-spacing: 2px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -473,7 +474,7 @@ canvas#game-canvas {
 
 #splash .tap {
   font-size: 14px;
-  color: #2266cc;
+  color: #0984E3;
   animation: blink 1.2s infinite;
   margin-top: 16px;
 }
@@ -486,15 +487,15 @@ canvas#game-canvas {
 #action-menu {
   position: absolute;
   z-index: 15;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(34, 102, 204, 0.3);
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
   padding: 4px 0;
   display: none;
   min-width: 120px;
-  box-shadow: 0 4px 16px rgba(0, 60, 120, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 #action-menu.show { display: block; }
@@ -505,21 +506,22 @@ canvas#game-canvas {
   padding: 8px 14px;
   background: transparent;
   border: none;
-  color: #2D3748;
-  font-family: 'IBM Plex Mono', monospace;
+  color: #2D3436;
+  font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
   text-align: left;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
-.menu-btn:hover { background: rgba(34, 102, 204, 0.12); color: #2266cc; }
-.menu-btn:disabled { color: #b0b8c4; cursor: not-allowed; }
-.menu-btn:disabled:hover { background: transparent; color: #b0b8c4; }
+.menu-btn:hover { background: rgba(9, 132, 227, 0.12); color: #0984E3; }
+.menu-btn:disabled { color: #B2BEC3; cursor: not-allowed; }
+.menu-btn:disabled:hover { background: transparent; color: #B2BEC3; }
 
 /* Damage popup */
 .dmg-popup {
   position: absolute;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   font-weight: 700;
   font-size: 16px;
   pointer-events: none;
@@ -1144,100 +1146,100 @@ function drawTerrainTile(cx, x, y, t, col, row) {
   // Base fill
   switch (t) {
     case T_PLAIN:
-      cx.fillStyle = '#5a8c3c';
+      cx.fillStyle = '#A8E6CF';
       cx.fillRect(x, y, TILE, TILE);
       // Grass detail
-      cx.fillStyle = '#4e7a34';
-      cx.fillRect(x + 8, y + 12, 2, 4);
-      cx.fillRect(x + 24, y + 8, 2, 4);
-      cx.fillRect(x + 36, y + 28, 2, 4);
-      cx.fillRect(x + 16, y + 36, 2, 4);
-      cx.fillRect(x + 40, y + 16, 2, 3);
+      cx.fillStyle = '#8DD4B0';
+      cx.fillRect(x + 8, y + 12, 3, 5);
+      cx.fillRect(x + 24, y + 8, 3, 5);
+      cx.fillRect(x + 36, y + 28, 3, 5);
+      cx.fillRect(x + 16, y + 36, 3, 5);
+      cx.fillRect(x + 40, y + 16, 3, 4);
       break;
     case T_FOREST:
-      cx.fillStyle = '#3a6a2c';
+      cx.fillStyle = '#7BC8A4';
       cx.fillRect(x, y, TILE, TILE);
-      // Tree tops
-      cx.fillStyle = '#2d5520';
-      cx.fillRect(x + 8, y + 4, 14, 14);
-      cx.fillRect(x + 26, y + 10, 14, 14);
-      cx.fillRect(x + 14, y + 18, 12, 12);
-      cx.fillStyle = '#245018';
-      cx.fillRect(x + 10, y + 6, 10, 10);
-      cx.fillRect(x + 28, y + 12, 10, 10);
-      cx.fillRect(x + 16, y + 20, 8, 8);
+      // Tree tops (rounded look)
+      cx.fillStyle = '#55B78D';
+      cx.fillRect(x + 8, y + 6, 14, 14);
+      cx.fillRect(x + 26, y + 12, 14, 14);
+      cx.fillRect(x + 14, y + 20, 12, 12);
+      cx.fillStyle = '#4AA97D';
+      cx.fillRect(x + 10, y + 8, 10, 10);
+      cx.fillRect(x + 28, y + 14, 10, 10);
+      cx.fillRect(x + 16, y + 22, 8, 8);
       // Trunks
-      cx.fillStyle = '#5a3a1a';
-      cx.fillRect(x + 14, y + 16, 2, 8);
-      cx.fillRect(x + 32, y + 22, 2, 8);
-      cx.fillRect(x + 19, y + 28, 2, 6);
+      cx.fillStyle = '#A0856C';
+      cx.fillRect(x + 14, y + 18, 3, 8);
+      cx.fillRect(x + 32, y + 24, 3, 8);
+      cx.fillRect(x + 19, y + 30, 3, 6);
       break;
     case T_MOUNTAIN:
-      cx.fillStyle = '#5a8c3c';
+      cx.fillStyle = '#A8E6CF';
       cx.fillRect(x, y, TILE, TILE);
       // Mountain shape
-      cx.fillStyle = '#7a7a8a';
+      cx.fillStyle = '#B0AFBC';
       cx.fillRect(x + 8, y + 20, 32, 24);
       cx.fillRect(x + 12, y + 14, 24, 6);
       cx.fillRect(x + 16, y + 8, 16, 6);
       cx.fillRect(x + 20, y + 4, 8, 4);
       // Snow cap
-      cx.fillStyle = '#dde8ee';
+      cx.fillStyle = '#F0F5F9';
       cx.fillRect(x + 20, y + 4, 8, 4);
       cx.fillRect(x + 22, y + 2, 4, 2);
       // Shadow
-      cx.fillStyle = '#5a5a6a';
+      cx.fillStyle = '#9A99A8';
       cx.fillRect(x + 8, y + 20, 4, 24);
       cx.fillRect(x + 12, y + 14, 4, 6);
       break;
     case T_ROAD:
-      cx.fillStyle = '#b8a878';
+      cx.fillStyle = '#DDD6C8';
       cx.fillRect(x, y, TILE, TILE);
       // Road lines
-      cx.fillStyle = '#a09060';
+      cx.fillStyle = '#C5BBAD';
       cx.fillRect(x + 6, y + 22, 4, 4);
       cx.fillRect(x + 20, y + 22, 8, 4);
       cx.fillRect(x + 38, y + 22, 4, 4);
       break;
     case T_RIVER:
-      cx.fillStyle = '#2266aa';
+      cx.fillStyle = '#74B9FF';
       cx.fillRect(x, y, TILE, TILE);
       // Water ripples
-      cx.fillStyle = '#3388cc';
+      cx.fillStyle = '#A3D5FF';
       cx.fillRect(x + 4, y + 12, 12, 2);
       cx.fillRect(x + 20, y + 24, 14, 2);
       cx.fillRect(x + 10, y + 36, 10, 2);
-      cx.fillStyle = '#4499dd';
+      cx.fillStyle = '#C8E6FF';
       cx.fillRect(x + 8, y + 16, 8, 2);
       cx.fillRect(x + 28, y + 8, 10, 2);
       break;
     case T_BRIDGE:
-      cx.fillStyle = '#2266aa';
+      cx.fillStyle = '#74B9FF';
       cx.fillRect(x, y, TILE, TILE);
       // Bridge planks
-      cx.fillStyle = '#8a6a3a';
+      cx.fillStyle = '#C4A882';
       cx.fillRect(x + 4, y + 8, 40, 32);
-      cx.fillStyle = '#7a5a2a';
+      cx.fillStyle = '#B09570';
       cx.fillRect(x + 4, y + 8, 40, 2);
       cx.fillRect(x + 4, y + 16, 40, 2);
       cx.fillRect(x + 4, y + 24, 40, 2);
       cx.fillRect(x + 4, y + 32, 40, 2);
       cx.fillRect(x + 4, y + 38, 40, 2);
       // Rails
-      cx.fillStyle = '#5a4020';
+      cx.fillStyle = '#9A7E60';
       cx.fillRect(x + 4, y + 8, 2, 32);
       cx.fillRect(x + 42, y + 8, 2, 32);
       break;
     case T_HQ_BLUE:
-      cx.fillStyle = '#3a5a3a';
+      cx.fillStyle = '#A8E6CF';
       cx.fillRect(x, y, TILE, TILE);
       // Building
-      cx.fillStyle = '#223366';
+      cx.fillStyle = 'rgba(9,132,227,0.5)';
       cx.fillRect(x + 8, y + 12, 32, 28);
-      cx.fillStyle = '#1a2a55';
+      cx.fillStyle = 'rgba(9,132,227,0.35)';
       cx.fillRect(x + 10, y + 14, 28, 24);
       // Star
-      cx.fillStyle = '#4488ff';
+      cx.fillStyle = '#74B9FF';
       cx.fillRect(x + 22, y + 16, 4, 4);
       cx.fillRect(x + 18, y + 20, 12, 4);
       cx.fillRect(x + 22, y + 24, 4, 4);
@@ -1246,19 +1248,19 @@ function drawTerrainTile(cx, x, y, t, col, row) {
       cx.fillRect(x + 20, y + 24, 2, 2);
       cx.fillRect(x + 26, y + 24, 2, 2);
       // Door
-      cx.fillStyle = '#4488ff';
+      cx.fillStyle = '#74B9FF';
       cx.fillRect(x + 20, y + 32, 8, 8);
       break;
     case T_HQ_RED:
-      cx.fillStyle = '#5a3a3a';
+      cx.fillStyle = '#FCCDD3';
       cx.fillRect(x, y, TILE, TILE);
       // Building
-      cx.fillStyle = '#662222';
+      cx.fillStyle = 'rgba(214,48,49,0.5)';
       cx.fillRect(x + 8, y + 12, 32, 28);
-      cx.fillStyle = '#551a1a';
+      cx.fillStyle = 'rgba(214,48,49,0.35)';
       cx.fillRect(x + 10, y + 14, 28, 24);
       // Star
-      cx.fillStyle = '#ff4444';
+      cx.fillStyle = '#FF7675';
       cx.fillRect(x + 22, y + 16, 4, 4);
       cx.fillRect(x + 18, y + 20, 12, 4);
       cx.fillRect(x + 22, y + 24, 4, 4);
@@ -1267,12 +1269,12 @@ function drawTerrainTile(cx, x, y, t, col, row) {
       cx.fillRect(x + 20, y + 24, 2, 2);
       cx.fillRect(x + 26, y + 24, 2, 2);
       // Door
-      cx.fillStyle = '#ff4444';
+      cx.fillStyle = '#FF7675';
       cx.fillRect(x + 20, y + 32, 8, 8);
       break;
   }
-  // Grid line
-  cx.fillStyle = 'rgba(0,0,0,0.15)';
+  // Grid line — subtle glass effect
+  cx.fillStyle = 'rgba(255,255,255,0.2)';
   cx.fillRect(x + TILE - 1, y, 1, TILE);
   cx.fillRect(x, y + TILE - 1, TILE, 1);
 }
@@ -1280,11 +1282,11 @@ function drawTerrainTile(cx, x, y, t, col, row) {
 // ---- Draw units as pixel sprites ----
 function drawUnitSprite(cx, x, y, unit, frame) {
   var isBlue = unit.team === 'blue';
-  var bodyColor = isBlue ? '#4488ff' : '#ff4444';
-  var darkColor = isBlue ? '#2266cc' : '#cc2222';
-  var lightColor = isBlue ? '#88bbff' : '#ff8888';
-  var skinColor = '#ffcc88';
-  var hairColor = '#554433';
+  var bodyColor = isBlue ? '#74B9FF' : '#FF7675';
+  var darkColor = isBlue ? '#0984E3' : '#D63031';
+  var lightColor = isBlue ? '#A3D5FF' : '#FFAAAA';
+  var skinColor = '#FFECC7';
+  var hairColor = '#7F6B5A';
   // Center sprite in tile — sprite is 16x16 pixels, scaled 2x = 32x32
   var sx = x + 8;
   var sy = y + 8;
@@ -1293,16 +1295,16 @@ function drawUnitSprite(cx, x, y, unit, frame) {
 
   // Gray out if done
   if (unit.done) {
-    bodyColor = isBlue ? '#334466' : '#663333';
-    darkColor = isBlue ? '#223344' : '#442222';
-    lightColor = isBlue ? '#556688' : '#885555';
-    skinColor = '#aa9966';
+    bodyColor = isBlue ? '#B0BEC5' : '#CFCFCF';
+    darkColor = isBlue ? '#90A4AE' : '#B0B0B0';
+    lightColor = isBlue ? '#CFD8DC' : '#E0E0E0';
+    skinColor = '#D7CFC4';
   }
 
   switch (unit.type) {
     case U_INFANTRY:
       // Boots
-      cx.fillStyle = '#443322';
+      cx.fillStyle = '#8B7355';
       cx.fillRect(sx + 4*s, sy + 14*s + bobY, 3*s, 2*s);
       cx.fillRect(sx + 9*s, sy + 14*s + bobY, 3*s, 2*s);
       // Legs
@@ -1324,18 +1326,18 @@ function drawUnitSprite(cx, x, y, unit, frame) {
       cx.fillRect(sx + 4*s, sy + 2*s + bobY, 8*s, 2*s);
       cx.fillRect(sx + 5*s, sy + 1*s + bobY, 6*s, 1*s);
       // Eyes
-      cx.fillStyle = '#222';
+      cx.fillStyle = '#4A4A4A';
       cx.fillRect(sx + 6*s, sy + 4*s + bobY, s, s);
       cx.fillRect(sx + 9*s, sy + 4*s + bobY, s, s);
       // Gun (small)
-      cx.fillStyle = '#555';
+      cx.fillStyle = '#9EAAB0';
       cx.fillRect(sx + 13*s, sy + 7*s + bobY, 2*s, s);
       cx.fillRect(sx + 14*s, sy + 6*s + bobY, s, s);
       break;
 
     case U_MECH:
       // Boots (heavier)
-      cx.fillStyle = '#443322';
+      cx.fillStyle = '#8B7355';
       cx.fillRect(sx + 3*s, sy + 14*s + bobY, 4*s, 2*s);
       cx.fillRect(sx + 9*s, sy + 14*s + bobY, 4*s, 2*s);
       // Legs
@@ -1358,22 +1360,22 @@ function drawUnitSprite(cx, x, y, unit, frame) {
       // Helmet (visor)
       cx.fillStyle = bodyColor;
       cx.fillRect(sx + 4*s, sy + 1*s + bobY, 8*s, 2*s);
-      cx.fillStyle = '#aaddff';
+      cx.fillStyle = '#C8E6FF';
       cx.fillRect(sx + 6*s, sy + 3*s + bobY, 4*s, s);
       // Rocket launcher
-      cx.fillStyle = '#666';
+      cx.fillStyle = '#A0ADB4';
       cx.fillRect(sx + 13*s, sy + 3*s + bobY, 3*s, 2*s);
       cx.fillRect(sx + 14*s, sy + 5*s + bobY, s, 2*s);
       // Rocket tip
-      cx.fillStyle = '#ff6644';
+      cx.fillStyle = '#FDCB6E';
       cx.fillRect(sx + 15*s, sy + 3*s + bobY, s, s);
       break;
 
     case U_TANK:
       // Treads
-      cx.fillStyle = '#3a3a3a';
+      cx.fillStyle = '#7A8A8A';
       cx.fillRect(sx + 1*s, sy + 11*s + bobY, 14*s, 4*s);
-      cx.fillStyle = '#555';
+      cx.fillStyle = '#9EAAB0';
       cx.fillRect(sx + 2*s, sy + 12*s + bobY, 2*s, 2*s);
       cx.fillRect(sx + 5*s, sy + 12*s + bobY, 2*s, 2*s);
       cx.fillRect(sx + 8*s, sy + 12*s + bobY, 2*s, 2*s);
@@ -1389,18 +1391,18 @@ function drawUnitSprite(cx, x, y, unit, frame) {
       cx.fillStyle = lightColor;
       cx.fillRect(sx + 5*s, sy + 5*s + bobY, 5*s, s);
       // Barrel
-      cx.fillStyle = '#555';
+      cx.fillStyle = '#9EAAB0';
       cx.fillRect(sx + 11*s, sy + 5*s + bobY, 5*s, 2*s);
-      cx.fillStyle = '#444';
+      cx.fillStyle = '#8A959B';
       cx.fillRect(sx + 14*s, sy + 5*s + bobY, 2*s, 2*s);
       break;
 
     case U_RECON:
       // Wheels
-      cx.fillStyle = '#3a3a3a';
+      cx.fillStyle = '#7A8A8A';
       cx.fillRect(sx + 2*s, sy + 12*s + bobY, 3*s, 3*s);
       cx.fillRect(sx + 11*s, sy + 12*s + bobY, 3*s, 3*s);
-      cx.fillStyle = '#555';
+      cx.fillStyle = '#9EAAB0';
       cx.fillRect(sx + 3*s, sy + 13*s + bobY, s, s);
       cx.fillRect(sx + 12*s, sy + 13*s + bobY, s, s);
       // Body
@@ -1409,22 +1411,22 @@ function drawUnitSprite(cx, x, y, unit, frame) {
       cx.fillStyle = darkColor;
       cx.fillRect(sx + 2*s, sy + 10*s + bobY, 12*s, 2*s);
       // Windshield
-      cx.fillStyle = '#aaddff';
+      cx.fillStyle = '#C8E6FF';
       cx.fillRect(sx + 9*s, sy + 7*s + bobY, 3*s, 2*s);
       // Cabin
       cx.fillStyle = lightColor;
       cx.fillRect(sx + 5*s, sy + 4*s + bobY, 6*s, 3*s);
       // Antenna
-      cx.fillStyle = '#888';
+      cx.fillStyle = '#B0BEC5';
       cx.fillRect(sx + 4*s, sy + 2*s + bobY, s, 3*s);
       cx.fillRect(sx + 3*s, sy + 2*s + bobY, 3*s, s);
       break;
 
     case U_ARTILLERY:
       // Treads
-      cx.fillStyle = '#3a3a3a';
+      cx.fillStyle = '#7A8A8A';
       cx.fillRect(sx + 1*s, sy + 12*s + bobY, 14*s, 3*s);
-      cx.fillStyle = '#555';
+      cx.fillStyle = '#9EAAB0';
       cx.fillRect(sx + 2*s, sy + 13*s + bobY, 2*s, s);
       cx.fillRect(sx + 5*s, sy + 13*s + bobY, 2*s, s);
       cx.fillRect(sx + 8*s, sy + 13*s + bobY, 2*s, s);
@@ -1438,11 +1440,11 @@ function drawUnitSprite(cx, x, y, unit, frame) {
       cx.fillStyle = bodyColor;
       cx.fillRect(sx + 3*s, sy + 5*s + bobY, 6*s, 3*s);
       // Big cannon barrel (elevated)
-      cx.fillStyle = '#666';
+      cx.fillStyle = '#A0ADB4';
       cx.fillRect(sx + 8*s, sy + 3*s + bobY, 7*s, 2*s);
       cx.fillRect(sx + 9*s, sy + 5*s + bobY, 2*s, 2*s);
       // Barrel tip
-      cx.fillStyle = '#555';
+      cx.fillStyle = '#9EAAB0';
       cx.fillRect(sx + 14*s, sy + 2*s + bobY, s, 4*s);
       break;
   }
@@ -1455,20 +1457,20 @@ function drawHPBar(cx, x, y, unit) {
   var bx = x + (TILE - bw) / 2;
   var by = y + 4;
   // Background
-  cx.fillStyle = '#111';
+  cx.fillStyle = 'rgba(255,255,255,0.6)';
   cx.fillRect(bx, by, bw, bh);
   // Fill
   var pct = unit.hp / unit.maxHp;
-  var fillColor = pct > 0.5 ? '#44dd44' : (pct > 0.25 ? '#ddaa22' : '#dd3333');
+  var fillColor = pct > 0.5 ? '#00B894' : (pct > 0.25 ? '#FDCB6E' : '#D63031');
   cx.fillStyle = fillColor;
   cx.fillRect(bx, by, Math.ceil(bw * pct), bh);
   // Border
-  cx.strokeStyle = '#333';
+  cx.strokeStyle = 'rgba(0,0,0,0.2)';
   cx.lineWidth = 1;
   cx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
   // HP number
-  cx.fillStyle = '#fff';
-  cx.font = 'bold 8px "IBM Plex Mono", monospace';
+  cx.fillStyle = '#2D3436';
+  cx.font = 'bold 8px "Source Sans 3", "Segoe UI", system-ui, sans-serif';
   cx.textAlign = 'center';
   cx.fillText(String(unit.hp), x + TILE / 2, by + bh + 8);
   cx.textAlign = 'left';
@@ -1662,7 +1664,7 @@ function performAttack(attacker, defender) {
   }
 
   // Show damage popup
-  showDamagePopup(defender.col, defender.row, dmg, attacker.team === 'blue' ? '#cc2222' : '#2266cc');
+  showDamagePopup(defender.col, defender.row, dmg, attacker.team === 'blue' ? '#D63031' : '#0984E3');
 
   // Attack animation
   attackAnim.active = true;
@@ -1706,7 +1708,7 @@ function performAttack(attacker, defender) {
           if (attacker.team === 'blue') {
             missionStats.totalDmgTaken += counterDmg;
           }
-          showDamagePopup(attacker.col, attacker.row, counterDmg, defender.team === 'blue' ? '#cc2222' : '#2266cc');
+          showDamagePopup(attacker.col, attacker.row, counterDmg, defender.team === 'blue' ? '#D63031' : '#0984E3');
           SFX.hit();
           if (attacker.team === 'blue') {
             redPower = Math.min(POWER_MAX, redPower + counterDmg * 3);
@@ -1804,7 +1806,7 @@ function endGame(winner) {
     var isNewBest = saveBestRating(mission.id, rating, missionStats);
 
     endTitle.textContent = 'MISSION COMPLETE';
-    endTitle.style.color = '#1A1A2E';
+    endTitle.style.color = '#2D3436';
     endSub.textContent = mission.name + ' cleared!';
 
     // Show rating
@@ -1844,7 +1846,7 @@ function endGame(winner) {
 
   } else {
     endTitle.textContent = 'MISSION FAILED';
-    endTitle.style.color = '#cc2222';
+    endTitle.style.color = '#D63031';
     endSub.textContent = 'The system fell. Reassess and redeploy.';
     document.querySelector('.rating-section').style.display = 'none';
     document.getElementById('end-stats').style.display = 'none';
@@ -2283,7 +2285,7 @@ function showDamagePopup(col, row, dmg, color) {
   var el = document.createElement('div');
   el.className = 'dmg-popup';
   el.textContent = '-' + dmg;
-  el.style.color = color || '#cc2222';
+  el.style.color = color || '#D63031';
   el.style.left = Math.round(px) + 'px';
   el.style.top = Math.round(py) + 'px';
   document.body.appendChild(el);
