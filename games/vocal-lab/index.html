@@ -1,22 +1,21 @@
 ---
 layout: null
 permalink: /games/vocal-lab/
-title: "Vocal Lab"
+title: "Vocal Lab — Interactive Sound Design Course"
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Substrate Vocal Lab — Formant Speech Synthesizer</title>
-  <meta name="description" content="Interactive vocal synthesis tuning tool. Adjust formant parameters, test presets, export settings for QWEN MATIC.">
+  <title>Vocal Lab — Interactive Sound Design Course</title>
+  <meta name="description" content="Learn sound design from scratch. 8 hands-on lessons teaching waveforms, filters, envelopes, LFOs, and effects through active experimentation with Web Audio.">
   <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/games/vocal-lab/">
-  <meta property="og:title" content="Substrate Vocal Lab">
-  <meta property="og:description" content="Formant speech synthesizer tuning tool. Web Audio API vocal synthesis with real-time waveform visualization.">
+  <meta property="og:title" content="Vocal Lab — Sound Design Course">
+  <meta property="og:description" content="Build sounds from scratch. 8 interactive lessons teaching synthesis fundamentals through experimentation.">
   <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}/games/vocal-lab/">
   <meta property="og:type" content="website">
-  <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
-  <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
+  <link rel="stylesheet" href="../shared/substrate-frame.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -31,1946 +30,2003 @@ title: "Vocal Lab"
   }
 }
 
-a:focus-visible, button:focus-visible { outline: 2px solid #00e09a; outline-offset: 2px; }
+:root {
+  --sky-top: #b8dff7;
+  --sky-bottom: #e8f4fc;
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: rgba(0, 80, 160, 0.08);
+  --text-primary: #1a2a3a;
+  --text-secondary: #4a5f75;
+  --text-muted: #7a8fa5;
+  --accent: #0078d4;
+  --accent-light: #4da3e8;
+  --accent-dim: rgba(0, 120, 212, 0.12);
+  --success: #00a86b;
+  --success-dim: rgba(0, 168, 107, 0.12);
+  --warning: #e8a020;
+  --danger: #d04040;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
 
 body {
-  font-family: 'Inter', 'Verdana', sans-serif;
-  background: #0a0a0f;
-  background-image:
-    radial-gradient(ellipse at top left, #0f0a1a 0%, transparent 50%),
-    radial-gradient(ellipse at bottom right, #0a0f0d 0%, transparent 50%);
-  color: #c8c8d0;
+  font-family: var(--font-sans);
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 40%, #f0f7fb 100%);
+  color: var(--text-primary);
   min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overscroll-behavior: none;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  overflow-x: hidden;
 }
 
-a { color: #888; }
-a:hover { color: #fff; }
-
-.topbar {
-  width: 100%;
-  max-width: 800px;
-  padding: 12px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-}
-.topbar a {
-  color: #555;
-  text-decoration: none;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.topbar a:hover { color: #aaa; }
-
-.container {
-  width: 100%;
-  max-width: 800px;
-  padding: 0 20px 40px;
+/* Glass panel base */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  box-shadow: 0 4px 24px var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
+/* Layout */
+#app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 52px 16px 32px;
+}
+
+/* Header */
 .header {
   text-align: center;
-  padding: 20px 0 10px;
-}
-.header h1 {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #00ffaa;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-.header .subtitle {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  color: #555;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-/* === PANEL === */
-.panel {
-  background: linear-gradient(180deg, #111118 0%, #0d0d14 100%);
-  border: 1px solid #222;
-  border-radius: 12px;
-  padding: 20px 24px;
+  padding: 24px 16px 16px;
   margin-bottom: 16px;
 }
 
-.panel-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #1a1a22;
+.header h1 {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
 }
 
-/* === TEXT INPUT === */
-.text-input-area {
-  width: 100%;
-  background: #0a0a10;
-  border: 1px solid #1a1a22;
-  border-radius: 8px;
-  color: #e0e0e8;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.95rem;
-  padding: 14px 16px;
-  resize: vertical;
-  min-height: 70px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.text-input-area:focus {
-  border-color: #00ffaa44;
+.header .subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
 
-.controls-row {
+/* Lesson nav */
+.lesson-nav {
   display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-top: 12px;
-  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.lesson-nav::-webkit-scrollbar { display: none; }
 
-.btn {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 8px 20px;
-  border: 1px solid #333;
-  border-radius: 6px;
-  background: #151520;
-  color: #c8c8d0;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.btn:hover {
-  background: #1a1a2a;
-  border-color: #00ffaa44;
-  color: #fff;
-}
-.btn.active {
-  background: #00ffaa22;
-  border-color: #00ffaa66;
-  color: #00ffaa;
-}
-.btn.speak-btn {
-  background: #00ffaa18;
-  border-color: #00ffaa44;
-  color: #00ffaa;
-}
-.btn.speak-btn:hover {
-  background: #00ffaa28;
-  border-color: #00ffaa88;
-}
-.btn.stop-btn {
-  background: #ff444418;
-  border-color: #ff444444;
-  color: #ff6666;
-}
-.btn.stop-btn:hover {
-  background: #ff444428;
-  border-color: #ff444488;
-}
-
-.carrier-select, .preset-select {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  background: #0a0a10;
-  border: 1px solid #1a1a22;
-  border-radius: 6px;
-  color: #c8c8d0;
-  padding: 8px 12px;
-  outline: none;
-  cursor: pointer;
-}
-.carrier-select:focus, .preset-select:focus {
-  border-color: #00ffaa44;
-}
-
-.carrier-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* === WAVEFORM === */
-.waveform-canvas {
-  width: 100%;
-  height: 120px;
-  background: #08080c;
-  border-radius: 8px;
-  border: 1px solid #1a1a22;
-  display: block;
-}
-
-/* === SLIDERS === */
-.slider-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  gap: 12px;
-}
-.slider-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  color: #777;
-  width: 100px;
+.lesson-dot {
   flex-shrink: 0;
-  text-align: right;
-}
-.slider-wrap {
-  flex: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
   position: relative;
 }
+
+.lesson-dot:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lesson-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(0, 120, 212, 0.3);
+}
+
+.lesson-dot.completed {
+  background: var(--success-dim);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.lesson-dot.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Lesson panel */
+.lesson-panel {
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.lesson-title {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.lesson-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 20px;
+  max-width: 640px;
+}
+
+/* Controls area */
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .controls-grid { grid-template-columns: 1fr; }
+}
+
+.control-group {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.control-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.control-value {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Sliders */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
   height: 6px;
-  background: #1a1a22;
   border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent-dim), rgba(0,120,212,0.25));
   outline: none;
   cursor: pointer;
 }
+
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #00ffaa;
+  appearance: none;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   cursor: pointer;
-  box-shadow: 0 0 6px #00ffaa44;
-  transition: box-shadow 0.15s;
+  transition: transform 0.15s;
 }
+
 input[type="range"]::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 12px #00ffaa88;
+  transform: scale(1.15);
 }
+
 input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: #00ffaa;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 0 6px #00ffaa44;
-}
-.slider-value {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  color: #00ffaa;
-  width: 70px;
-  flex-shrink: 0;
-  text-align: left;
-}
-
-/* === VOWEL BUTTONS === */
-.vowel-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.vowel-btn {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.85rem;
-  font-weight: 700;
-  width: 40px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #151520;
-  border: 1px solid #333;
-  border-radius: 6px;
-  color: #888;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-transform: uppercase;
-}
-.vowel-btn:hover {
-  background: #1a1a2a;
-  color: #ccc;
-}
-.vowel-btn.active {
-  background: #00ffaa22;
-  border-color: #00ffaa66;
-  color: #00ffaa;
-}
-
-/* === CHECKBOXES === */
-.check-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  gap: 10px;
-}
-.check-row input[type="checkbox"] {
-  accent-color: #00ffaa;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-.check-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  color: #888;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   cursor: pointer;
 }
 
-/* === PRESET BUTTONS === */
-.preset-row {
+/* Waveform selector buttons */
+.wave-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
-.preset-btn {
-  font-family: 'IBM Plex Mono', monospace;
+
+.wave-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 8px 4px;
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.5);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
   font-size: 0.7rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border: 1px solid #333;
-  border-radius: 6px;
-  background: #151520;
-  color: #888;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.wave-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.wave-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Canvas displays */
+.viz-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .viz-row { grid-template-columns: 1fr; }
+}
+
+.viz-panel {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.viz-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.preset-btn:hover {
-  background: #1a1a2a;
-  border-color: #555;
-  color: #ccc;
-}
-.preset-btn.active {
-  background: #00ffaa18;
-  border-color: #00ffaa55;
-  color: #00ffaa;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
 }
 
-/* === EXPORT === */
-.json-output {
+canvas {
   width: 100%;
-  background: #08080c;
-  border: 1px solid #1a1a22;
-  border-radius: 8px;
-  color: #00ffaa;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  padding: 12px 14px;
-  resize: vertical;
-  min-height: 80px;
-  outline: none;
-  margin-top: 10px;
-  line-height: 1.5;
+  height: 100px;
+  border-radius: 6px;
+  background: rgba(240, 248, 255, 0.6);
+  display: block;
 }
 
-.copy-feedback {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  color: #00ffaa;
-  opacity: 0;
-  transition: opacity 0.3s;
-  margin-left: 10px;
+/* Action buttons */
+.action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
-.copy-feedback.show { opacity: 1; }
 
-/* === EFFECTS ROW === */
-.effect-row {
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
-  gap: 10px;
+  gap: 6px;
 }
-.effect-row input[type="checkbox"] {
-  accent-color: #00ffaa;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  flex-shrink: 0;
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(0, 120, 212, 0.25);
 }
-.effect-label {
-  font-family: 'IBM Plex Mono', monospace;
+.btn-primary:hover { background: #0068c0; }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.6);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--glass-border);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-success {
+  background: var(--success);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(0, 168, 107, 0.25);
+}
+.btn-success:hover { background: #008f5a; }
+
+/* Score display */
+.score-bar {
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.5);
+  margin-bottom: 16px;
+  display: none;
+}
+
+.score-bar.visible { display: block; }
+
+.score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.score-label {
+  font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: #888;
-  width: 70px;
-  flex-shrink: 0;
-}
-.effect-slider-wrap {
-  flex: 1;
-}
-.effect-value {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  color: #00ffaa;
-  width: 50px;
-  flex-shrink: 0;
-  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
 }
 
-/* === STATUS === */
-.status-bar {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  color: #444;
+.score-value {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.score-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 120, 212, 0.1);
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+.score-fill.excellent {
+  background: linear-gradient(90deg, var(--success), #20c080);
+}
+
+.score-msg {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* Filter type selector */
+.filter-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-buttons .wave-btn { min-width: 70px; }
+
+/* Lesson complete overlay */
+.lesson-complete {
   text-align: center;
-  padding: 8px;
-  letter-spacing: 1px;
+  padding: 20px;
+  display: none;
 }
-.status-bar.speaking { color: #00ffaa; }
 
-/* === MOBILE === */
+.lesson-complete.visible { display: block; }
+
+.lesson-complete h3 {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--success);
+  margin-bottom: 6px;
+}
+
+.lesson-complete p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+/* Challenge cards (lesson 8) */
+.challenge-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.challenge-card {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.45);
+  border: 1.5px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.challenge-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.challenge-card.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.challenge-card h4 {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.challenge-card p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Responsive */
 @media (max-width: 600px) {
-  .container { padding: 0 12px 30px; }
-  .panel { padding: 16px 14px; }
-  .slider-row { flex-wrap: wrap; gap: 6px; }
-  .slider-label { width: 100%; text-align: left; font-size: 0.75rem; }
-  .slider-value { width: auto; }
-  .controls-row { flex-direction: column; align-items: stretch; }
-  .controls-row .btn { width: 100%; text-align: center; }
-  .header h1 { font-size: 1.2rem; }
-  .effect-row { flex-wrap: wrap; }
-  .effect-label { width: 60px; }
+  #app { padding: 44px 10px 24px; }
+  .header h1 { font-size: 1.4rem; }
+  .lesson-panel { padding: 16px; }
+  .lesson-dot { width: 32px; height: 32px; font-size: 0.68rem; }
+  .btn { padding: 8px 14px; font-size: 0.72rem; }
+}
+
+/* Additive harmonics sliders */
+.harmonics-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .harmonics-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.harmonic-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.harmonic-slider input[type="range"] {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 6px;
+  height: 70px;
+}
+
+.harmonic-slider .h-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Effects controls */
+.effects-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .effects-row { grid-template-columns: 1fr; }
+}
+
+/* ADSR visual */
+.adsr-canvas {
+  height: 80px;
+}
+
+/* Full width control */
+.control-full {
+  grid-column: 1 / -1;
 }
 </style>
-<link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
-<a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#00e09a;color:#000;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
-<main id="game" role="main">
-<div class="topbar">
-  <a href="{{ site.baseurl }}/">&larr; substrate</a>
-  <a href="{{ site.baseurl }}/games/radio/">radio</a>
-</div>
-
-<div class="container">
-
+<div id="app">
   <div class="header">
-    <h1>Substrate Vocal Lab</h1>
-    <div class="subtitle">Formant Speech Synthesizer</div>
+    <h1>VOCAL LAB</h1>
+    <p class="subtitle">Interactive Sound Design Course</p>
   </div>
 
-  <!-- INPUT -->
-  <div class="panel">
-    <div class="panel-label">Text Input</div>
-    <textarea class="text-input-area" id="textInput" placeholder="Type anything and press SPEAK...">Hello world, this is substrate speaking. Can you hear me now?</textarea>
-    <div class="controls-row">
-      <button class="btn speak-btn" id="speakBtn" onclick="speakText()">Speak</button>
-      <button class="btn stop-btn" id="stopBtn" onclick="stopSpeaking()">Stop</button>
-      <span class="carrier-label">Carrier:</span>
-      <select class="carrier-select" id="carrierSelect" onchange="updateCarrier()">
-        <option value="glottal" selected>Glottal Pulse</option>
-        <option value="sawtooth">Sawtooth</option>
-        <option value="pulse">Pulse</option>
-        <option value="noise">Noise</option>
-        <option value="blend">Glottal + Noise</option>
-        <option value="square">Square</option>
-      </select>
-    </div>
-    <div class="status-bar" id="statusBar">Ready</div>
-  </div>
+  <div class="lesson-nav glass" id="lessonNav"></div>
 
-  <!-- WAVEFORM -->
-  <div class="panel">
-    <div class="panel-label">Waveform</div>
-    <canvas class="waveform-canvas" id="waveformCanvas"></canvas>
+  <div class="lesson-panel glass" id="lessonPanel">
+    <!-- Dynamically populated -->
   </div>
-
-  <!-- VOICE PARAMETERS -->
-  <div class="panel">
-    <div class="panel-label">Voice Parameters</div>
-    <div id="voiceSliders"></div>
-  </div>
-
-  <!-- FORMANT TUNING -->
-  <div class="panel">
-    <div class="panel-label">Formant Tuning</div>
-    <div class="vowel-row" id="vowelRow"></div>
-    <div id="formantSliders"></div>
-  </div>
-
-  <!-- CONSONANTS -->
-  <div class="panel">
-    <div class="panel-label">Consonants</div>
-    <div id="consonantChecks"></div>
-    <div class="slider-row" style="margin-top:6px;">
-      <span class="slider-label">Volume</span>
-      <div class="slider-wrap">
-        <input type="range" id="consonantVolume" min="0" max="100" value="70" oninput="updateSliderDisplay()">
-      </div>
-      <span class="slider-value" id="consonantVolumeVal">0.70</span>
-    </div>
-  </div>
-
-  <!-- EFFECTS -->
-  <div class="panel">
-    <div class="panel-label">Effects</div>
-    <div id="effectsPanel"></div>
-  </div>
-
-  <!-- EXPORT -->
-  <div class="panel">
-    <div class="panel-label">Export</div>
-    <div class="controls-row" style="margin-top:0;">
-      <button class="btn" onclick="copySettings()">Copy Settings JSON</button>
-      <span class="copy-feedback" id="copyFeedback">Copied!</span>
-    </div>
-    <textarea class="json-output" id="jsonOutput" readonly></textarea>
-  </div>
-
-  <!-- PRESETS -->
-  <div class="panel">
-    <div class="panel-label">Presets</div>
-    <div class="preset-row" id="presetRow"></div>
-  </div>
-
 </div>
+
+<script src="../shared/substrate-frame.js"
+  data-title="Vocal Lab"
+  data-lore="Sculpt sound from silence"
+  data-agent="Sync"
+  data-agent-color="#0078D4"
+  data-no-audio="true">
+</script>
 
 <script>
-// ========================================
-// SUBSTRATE VOCAL LAB
-// Formant Speech Synthesizer
-// ========================================
+(function() {
+'use strict';
 
-var audioCtx = null;
-var analyser = null;
-var masterGain = null;
-var isSpeaking = false;
-var stopRequested = false;
-var animFrameId = null;
-var currentPreset = 'human';
+// ─── Audio Context ──────────────────────────────────────────────────────────
 
-// --- PRESETS ---
-var PRESETS = {
-  robot:    { pitch: 165, speed: 0.12, vibrato: 0,  vibDepth: 0, breathiness: 0,    nasality: 0,   clarity: 25, attack: 5,  release: 10,  humanize: 0,  carrier: 'sawtooth', contour: 0 },
-  human:    { pitch: 140, speed: 0.16, vibrato: 5.5,vibDepth: 5, breathiness: 0.12, nasality: 0.15,clarity: 11, attack: 12, release: 45,  humanize: 20, carrier: 'glottal',  contour: 60 },
-  vocaloid: { pitch: 220, speed: 0.15, vibrato: 5,  vibDepth: 4, breathiness: 0.1,  nasality: 0.2, clarity: 14, attack: 15, release: 40,  humanize: 10, carrier: 'glottal',  contour: 50 },
-  whisper:  { pitch: 165, speed: 0.18, vibrato: 0,  vibDepth: 0, breathiness: 0.8,  nasality: 0,   clarity: 5,  attack: 30, release: 80,  humanize: 25, carrier: 'noise',    contour: 30 },
-  choir:    { pitch: 330, speed: 0.25, vibrato: 6,  vibDepth: 8, breathiness: 0.15, nasality: 0.3, clarity: 10, attack: 50, release: 100, humanize: 15, carrier: 'glottal',  contour: 70 },
-  rap:      { pitch: 130, speed: 0.10, vibrato: 2,  vibDepth: 2, breathiness: 0.05, nasality: 0.15,clarity: 16, attack: 10, release: 20,  humanize: 20, carrier: 'glottal',  contour: 40 },
-  deep:     { pitch: 82,  speed: 0.18, vibrato: 3,  vibDepth: 5, breathiness: 0.1,  nasality: 0.4, clarity: 12, attack: 20, release: 50,  humanize: 15, carrier: 'glottal',  contour: 25 },
-  helium:   { pitch: 440, speed: 0.08, vibrato: 8,  vibDepth: 6, breathiness: 0,    nasality: 0,   clarity: 20, attack: 8,  release: 15,  humanize: 5,  carrier: 'square',   contour: 60 }
+let actx = null;
+let masterGain = null;
+let playerNodes = {};
+let targetNodes = {};
+let analyserPlayer = null;
+let analyserTarget = null;
+let isPlayerPlaying = false;
+let isTargetPlaying = false;
+
+function ensureAudioContext() {
+  if (actx) return;
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = actx.createGain();
+  masterGain.gain.value = 0.35;
+  masterGain.connect(actx.destination);
+
+  analyserPlayer = actx.createAnalyser();
+  analyserPlayer.fftSize = 2048;
+  analyserPlayer.connect(masterGain);
+
+  analyserTarget = actx.createAnalyser();
+  analyserTarget.fftSize = 2048;
+  analyserTarget.connect(masterGain);
+}
+
+// ─── Lesson Data ────────────────────────────────────────────────────────────
+
+const LESSONS = [
+  {
+    id: 1,
+    title: 'Waveforms',
+    desc: 'Every sound begins with a waveform — a repeating pattern of air pressure. Each shape has a distinct character: sine is pure and smooth, square is hollow and buzzy, sawtooth is bright and rich, triangle is soft and mellow.',
+    targetGen: () => ({ type: ['sine','square','sawtooth','triangle'][Math.floor(Math.random()*4)], freq: 330 }),
+  },
+  {
+    id: 2,
+    title: 'Frequency & Pitch',
+    desc: 'Frequency is how fast a waveform repeats, measured in Hertz (Hz). Higher frequency means higher pitch. Doubling the frequency raises the pitch by one octave. Tune your oscillator to match the target.',
+    targetGen: () => {
+      const notes = [220, 261.63, 293.66, 329.63, 392, 440, 523.25];
+      return { type: 'sawtooth', freq: notes[Math.floor(Math.random()*notes.length)] };
+    },
+  },
+  {
+    id: 3,
+    title: 'Amplitude & Envelopes',
+    desc: 'An envelope shapes how a sound\'s volume changes over time. Attack is how quickly it rises, Decay how fast it drops to the Sustain level, and Release is the fade after you stop. These four stages (ADSR) define whether a sound feels like a pluck, a pad, or a stab.',
+    targetGen: () => {
+      const presets = [
+        { a: 0.01, d: 0.15, s: 0.0, r: 0.1, name: 'pluck' },
+        { a: 0.6, d: 0.3, s: 0.7, r: 1.0, name: 'pad' },
+        { a: 0.01, d: 0.08, s: 0.5, r: 0.05, name: 'stab' },
+        { a: 0.3, d: 0.5, s: 0.4, r: 0.6, name: 'swell' },
+      ];
+      return { type: 'sawtooth', freq: 330, env: presets[Math.floor(Math.random()*presets.length)] };
+    },
+  },
+  {
+    id: 4,
+    title: 'Filters',
+    desc: 'Filters remove frequencies from a sound. A low-pass filter lets low frequencies through and cuts highs — making things sound muffled. A high-pass does the opposite. Band-pass lets only a narrow range through. The cutoff frequency and resonance (Q) are your main controls.',
+    targetGen: () => {
+      const types = ['lowpass', 'highpass', 'bandpass'];
+      const t = types[Math.floor(Math.random()*types.length)];
+      const cutoff = 200 + Math.floor(Math.random() * 3800);
+      const q = 1 + Math.floor(Math.random() * 14);
+      return { type: 'sawtooth', freq: 220, filter: { type: t, cutoff, q } };
+    },
+  },
+  {
+    id: 5,
+    title: 'LFO & Modulation',
+    desc: 'An LFO (Low Frequency Oscillator) is a slow oscillator that modulates another parameter over time. Route it to pitch for vibrato, to amplitude for tremolo, or to a filter cutoff for a wah effect. Rate controls speed, depth controls intensity.',
+    targetGen: () => {
+      const targets = ['pitch', 'amplitude', 'filter'];
+      const target = targets[Math.floor(Math.random()*targets.length)];
+      const rate = 1 + Math.random() * 9;
+      const depth = 0.2 + Math.random() * 0.6;
+      return { type: 'sawtooth', freq: 330, lfo: { target, rate: Math.round(rate*10)/10, depth: Math.round(depth*100)/100 }, filter: { type: 'lowpass', cutoff: 2000, q: 4 } };
+    },
+  },
+  {
+    id: 6,
+    title: 'Harmonics & Overtones',
+    desc: 'A pure sine wave has one frequency. Real instruments produce overtones — multiples of the fundamental. By adding harmonics at different volumes, you can build complex timbres from simple sine waves. This is additive synthesis.',
+    targetGen: () => {
+      const presets = [
+        { name: 'square-ish', harmonics: [1, 0, 0.33, 0, 0.2, 0, 0.14, 0] },
+        { name: 'saw-ish', harmonics: [1, 0.5, 0.33, 0.25, 0.2, 0.17, 0.14, 0.12] },
+        { name: 'clarinet', harmonics: [1, 0, 0.75, 0, 0.5, 0, 0.25, 0] },
+        { name: 'bright', harmonics: [1, 0.8, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25] },
+        { name: 'hollow', harmonics: [1, 0, 0.4, 0, 0.15, 0, 0.05, 0] },
+      ];
+      const p = presets[Math.floor(Math.random()*presets.length)];
+      return { freq: 220, harmonics: p.harmonics, name: p.name };
+    },
+  },
+  {
+    id: 7,
+    title: 'Effects',
+    desc: 'Effects processors transform sounds after synthesis. Delay repeats the signal with a time gap, creating echoes. Reverb simulates room reflections, adding space and depth. Distortion adds grit by clipping the waveform.',
+    targetGen: () => {
+      const fx = {
+        delay: { time: 0.1 + Math.random() * 0.4, feedback: 0.2 + Math.random() * 0.5, mix: 0.3 + Math.random() * 0.4 },
+        distortion: { amount: 2 + Math.random() * 18, mix: 0.5 + Math.random() * 0.4 },
+      };
+      return { type: 'sawtooth', freq: 330, effects: fx };
+    },
+  },
+  {
+    id: 8,
+    title: 'Sound Design Challenges',
+    desc: 'Put it all together. Use everything you\'ve learned — waveforms, filters, envelopes, LFOs, and effects — to design specific sounds. No target to match this time; express yourself and see how close you get to the concept.',
+    challenges: [
+      { name: 'Laser Beam', hint: 'Try a high-pitched sawtooth with a fast pitch sweep downward.' },
+      { name: 'Rain Drops', hint: 'Short plucky sine tones at varying pitches with some reverb.' },
+      { name: 'Bass Drop', hint: 'Start low, use a sawtooth with a low-pass filter sweep and long release.' },
+      { name: 'Alarm Siren', hint: 'Sine wave with an LFO on pitch — fast rate, wide depth.' },
+      { name: 'Wind', hint: 'Filtered noise with a slow LFO on the filter cutoff.' },
+    ],
+  },
+];
+
+// ─── State ──────────────────────────────────────────────────────────────────
+
+let state = {
+  currentLesson: 1,
+  completed: loadProgress(),
+  currentTarget: null,
+  score: 0,
+  playerParams: {},
+  challengeIndex: 0,
 };
 
-// --- FORMANT DATA (Peterson & Barney 1952, male voice) ---
-var FORMANTS = {
-  a: { f1: 730,  f2: 1090, f3: 2440, q1: 12, q2: 10, q3: 7 },
-  e: { f1: 530,  f2: 1840, f3: 2480, q1: 12, q2: 10, q3: 7 },
-  i: { f1: 270,  f2: 2290, f3: 3010, q1: 12, q2: 10, q3: 7 },
-  o: { f1: 570,  f2: 840,  f3: 2410, q1: 12, q2: 10, q3: 7 },
-  u: { f1: 300,  f2: 870,  f3: 2240, q1: 12, q2: 10, q3: 7 }
-};
-
-// Current custom formant overrides per vowel
-var customFormants = {};
-var activeVowel = 'a';
-
-// --- VOICE SLIDER DEFINITIONS ---
-var VOICE_SLIDERS = [
-  { id: 'pitch',       label: 'Pitch',       min: 40,  max: 600, step: 1,    unit: 'Hz',    def: 220 },
-  { id: 'speed',       label: 'Speed',       min: 0.04,max: 0.4, step: 0.01, unit: 's/syl', def: 0.15 },
-  { id: 'vibrato',     label: 'Vibrato',     min: 0,   max: 15,  step: 0.5,  unit: 'Hz',    def: 5 },
-  { id: 'vibDepth',    label: 'Vib Depth',   min: 0,   max: 20,  step: 0.5,  unit: 'Hz',    def: 4 },
-  { id: 'breathiness', label: 'Breathiness', min: 0,   max: 1,   step: 0.01, unit: '',      def: 0.1 },
-  { id: 'nasality',    label: 'Nasality',    min: 0,   max: 1,   step: 0.01, unit: '',      def: 0.2 },
-  { id: 'clarity',     label: 'Clarity',     min: 1,   max: 40,  step: 1,    unit: 'Q',     def: 18 },
-  { id: 'attack',      label: 'Attack',      min: 1,   max: 100, step: 1,    unit: 'ms',    def: 15 },
-  { id: 'release',     label: 'Release',     min: 1,   max: 200, step: 1,    unit: 'ms',    def: 40 },
-  { id: 'humanize',    label: 'Humanize',    min: 0,   max: 80,  step: 1,    unit: 'ms',    def: 10 },
-  { id: 'contour',     label: 'Contour',     min: 0,   max: 100, step: 1,    unit: '%',     def: 50 }
-];
-
-// --- FORMANT SLIDER DEFINITIONS ---
-var FORMANT_SLIDERS = [
-  { id: 'f1', label: 'F1', min: 100,  max: 1200, step: 10, unit: 'Hz' },
-  { id: 'f2', label: 'F2', min: 400,  max: 3500, step: 10, unit: 'Hz' },
-  { id: 'f3', label: 'F3', min: 1500, max: 4000, step: 10, unit: 'Hz' },
-  { id: 'q1', label: 'Q1', min: 1,    max: 40,   step: 1,  unit: '' },
-  { id: 'q2', label: 'Q2', min: 1,    max: 40,   step: 1,  unit: '' },
-  { id: 'q3', label: 'Q3', min: 1,    max: 40,   step: 1,  unit: '' }
-];
-
-// --- CONSONANT TYPES ---
-var CONSONANT_TYPES = [
-  { id: 'plosives',  label: 'Plosives (T/K/P)',  def: true },
-  { id: 'sibilants', label: 'Sibilants (S/SH)',  def: true },
-  { id: 'nasals',    label: 'Nasals (M/N)',       def: true },
-  { id: 'liquids',   label: 'Liquids (R/L)',      def: true },
-  { id: 'breaths',   label: 'Breath sounds',      def: true }
-];
-
-// --- EFFECTS ---
-var EFFECTS_DEF = [
-  { id: 'reverb',     label: 'Reverb',     param: 'reverbDecay',    min: 0.1, max: 5,   step: 0.1, unit: 's',  def: 1.5,  checked: false },
-  { id: 'delay',      label: 'Delay',      param: 'delayTime',      min: 0.05,max: 0.5, step: 0.01,unit: 's',  def: 0.15, checked: false },
-  { id: 'distortion', label: 'Distortion', param: 'distortionAmt',  min: 0,   max: 100, step: 1,   unit: '',   def: 20,   checked: false },
-  { id: 'chorus',     label: 'Chorus',     param: 'chorusRate',     min: 0.1, max: 8,   step: 0.1, unit: 'Hz', def: 1.5,  checked: false }
-];
-
-// ========================================
-// UI GENERATION
-// ========================================
-
-function buildUI() {
-  // Voice sliders
-  var vsHTML = '';
-  VOICE_SLIDERS.forEach(function(s) {
-    vsHTML += '<div class="slider-row">' +
-      '<span class="slider-label">' + s.label + '</span>' +
-      '<div class="slider-wrap"><input type="range" id="vs_' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '" value="' + s.def + '" oninput="updateSliderDisplay()"></div>' +
-      '<span class="slider-value" id="vsv_' + s.id + '">' + s.def + ' ' + s.unit + '</span>' +
-      '</div>';
-  });
-  document.getElementById('voiceSliders').innerHTML = vsHTML;
-
-  // Vowel buttons
-  var vwHTML = '';
-  ['a','e','i','o','u'].forEach(function(v) {
-    vwHTML += '<button class="vowel-btn' + (v === activeVowel ? ' active' : '') + '" data-vowel="' + v + '" onclick="selectVowel(\'' + v + '\')">' + v.toUpperCase() + '</button>';
-  });
-  document.getElementById('vowelRow').innerHTML = vwHTML;
-
-  // Formant sliders
-  var fsHTML = '';
-  FORMANT_SLIDERS.forEach(function(s) {
-    var val = FORMANTS[activeVowel][s.id];
-    fsHTML += '<div class="slider-row">' +
-      '<span class="slider-label">' + s.label + '</span>' +
-      '<div class="slider-wrap"><input type="range" id="fs_' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '" value="' + val + '" oninput="updateFormantSlider()"></div>' +
-      '<span class="slider-value" id="fsv_' + s.id + '">' + val + ' ' + s.unit + '</span>' +
-      '</div>';
-  });
-  document.getElementById('formantSliders').innerHTML = fsHTML;
-
-  // Consonant checkboxes
-  var ccHTML = '';
-  CONSONANT_TYPES.forEach(function(c) {
-    ccHTML += '<div class="check-row">' +
-      '<input type="checkbox" id="cc_' + c.id + '"' + (c.def ? ' checked' : '') + '>' +
-      '<label class="check-label" for="cc_' + c.id + '">' + c.label + '</label>' +
-      '</div>';
-  });
-  document.getElementById('consonantChecks').innerHTML = ccHTML;
-
-  // Effects
-  var efHTML = '';
-  EFFECTS_DEF.forEach(function(e) {
-    efHTML += '<div class="effect-row">' +
-      '<input type="checkbox" id="ef_' + e.id + '"' + (e.checked ? ' checked' : '') + '>' +
-      '<span class="effect-label">' + e.label + '</span>' +
-      '<div class="effect-slider-wrap"><input type="range" id="efr_' + e.param + '" min="' + e.min + '" max="' + e.max + '" step="' + e.step + '" value="' + e.def + '" oninput="updateSliderDisplay()"></div>' +
-      '<span class="effect-value" id="efv_' + e.param + '">' + e.def + ' ' + e.unit + '</span>' +
-      '</div>';
-  });
-  document.getElementById('effectsPanel').innerHTML = efHTML;
-
-  // Presets
-  var prHTML = '';
-  Object.keys(PRESETS).forEach(function(name) {
-    prHTML += '<button class="preset-btn' + (name === currentPreset ? ' active' : '') + '" data-preset="' + name + '" onclick="loadPreset(\'' + name + '\')">' + name + '</button>';
-  });
-  document.getElementById('presetRow').innerHTML = prHTML;
-
-  updateSliderDisplay();
-  updateExportJSON();
+function loadProgress() {
+  try {
+    const p = JSON.parse(localStorage.getItem('vocallab-progress') || '[]');
+    return Array.isArray(p) ? p : [];
+  } catch(e) { return []; }
 }
 
-function updateSliderDisplay() {
-  VOICE_SLIDERS.forEach(function(s) {
-    var el = document.getElementById('vs_' + s.id);
-    var vEl = document.getElementById('vsv_' + s.id);
-    if (el && vEl) {
-      var v = parseFloat(el.value);
-      vEl.textContent = (Number.isInteger(v) ? v : v.toFixed(2)) + ' ' + s.unit;
-    }
-  });
-  // Consonant volume
-  var cvEl = document.getElementById('consonantVolume');
-  var cvvEl = document.getElementById('consonantVolumeVal');
-  if (cvEl && cvvEl) cvvEl.textContent = (parseFloat(cvEl.value) / 100).toFixed(2);
-
-  // Effects
-  EFFECTS_DEF.forEach(function(e) {
-    var el = document.getElementById('efr_' + e.param);
-    var vEl = document.getElementById('efv_' + e.param);
-    if (el && vEl) {
-      var v = parseFloat(el.value);
-      vEl.textContent = (Number.isInteger(v) ? v : v.toFixed(2)) + ' ' + e.unit;
-    }
-  });
-
-  updateExportJSON();
+function saveProgress() {
+  try { localStorage.setItem('vocallab-progress', JSON.stringify(state.completed)); } catch(e) {}
 }
 
-function updateFormantSlider() {
-  FORMANT_SLIDERS.forEach(function(s) {
-    var el = document.getElementById('fs_' + s.id);
-    var vEl = document.getElementById('fsv_' + s.id);
-    if (el && vEl) {
-      var v = parseFloat(el.value);
-      vEl.textContent = (Number.isInteger(v) ? v : v.toFixed(2)) + ' ' + s.unit;
-    }
-  });
-  // Save to custom formants
-  if (!customFormants[activeVowel]) customFormants[activeVowel] = {};
-  FORMANT_SLIDERS.forEach(function(s) {
-    var el = document.getElementById('fs_' + s.id);
-    if (el) customFormants[activeVowel][s.id] = parseFloat(el.value);
-  });
-  updateExportJSON();
+function isUnlocked(lessonId) {
+  if (lessonId === 1) return true;
+  return state.completed.includes(lessonId - 1);
 }
 
-function selectVowel(v) {
-  activeVowel = v;
-  // Update active button
-  var btns = document.querySelectorAll('.vowel-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].classList.toggle('active', btns[i].getAttribute('data-vowel') === v);
+// ─── Rendering ──────────────────────────────────────────────────────────────
+
+function renderNav() {
+  const nav = document.getElementById('lessonNav');
+  nav.innerHTML = '';
+  LESSONS.forEach(l => {
+    const dot = document.createElement('button');
+    dot.className = 'lesson-dot';
+    dot.textContent = l.id;
+    dot.setAttribute('aria-label', 'Lesson ' + l.id + ': ' + l.title);
+    if (l.id === state.currentLesson) dot.classList.add('active');
+    if (state.completed.includes(l.id)) dot.classList.add('completed');
+    if (!isUnlocked(l.id)) dot.classList.add('locked');
+    dot.addEventListener('click', () => {
+      if (!isUnlocked(l.id)) return;
+      stopAll();
+      state.currentLesson = l.id;
+      state.score = 0;
+      state.currentTarget = null;
+      renderNav();
+      renderLesson();
+    });
+    nav.appendChild(dot);
+  });
+}
+
+function renderLesson() {
+  const panel = document.getElementById('lessonPanel');
+  const lesson = LESSONS[state.currentLesson - 1];
+
+  stopAll();
+
+  let html = `<div class="lesson-title">${lesson.id}. ${lesson.title}</div>`;
+  html += `<p class="lesson-desc">${lesson.desc}</p>`;
+
+  // Build lesson-specific UI
+  switch(lesson.id) {
+    case 1: html += buildLesson1(); break;
+    case 2: html += buildLesson2(); break;
+    case 3: html += buildLesson3(); break;
+    case 4: html += buildLesson4(); break;
+    case 5: html += buildLesson5(); break;
+    case 6: html += buildLesson6(); break;
+    case 7: html += buildLesson7(); break;
+    case 8: html += buildLesson8(); break;
   }
-  // Load formant values
-  var data = customFormants[v] || FORMANTS[v];
-  FORMANT_SLIDERS.forEach(function(s) {
-    var el = document.getElementById('fs_' + s.id);
-    var vEl = document.getElementById('fsv_' + s.id);
-    if (el) {
-      el.value = data[s.id] || FORMANTS[v][s.id];
-      if (vEl) vEl.textContent = el.value + ' ' + s.unit;
-    }
-  });
-  updateExportJSON();
+
+  // Viz + score (not for lesson 8)
+  if (lesson.id !== 8) {
+    html += `
+      <div class="viz-row">
+        <div class="viz-panel">
+          <div class="viz-label">Your Sound</div>
+          <canvas id="vizPlayer"></canvas>
+        </div>
+        <div class="viz-panel">
+          <div class="viz-label">Target Sound</div>
+          <canvas id="vizTarget"></canvas>
+        </div>
+      </div>
+      <div class="score-bar" id="scoreBar">
+        <div class="score-header">
+          <span class="score-label">Match Score</span>
+          <span class="score-value" id="scoreValue">0%</span>
+        </div>
+        <div class="score-track"><div class="score-fill" id="scoreFill"></div></div>
+        <div class="score-msg" id="scoreMsg"></div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="viz-row">
+        <div class="viz-panel" style="grid-column: 1/-1;">
+          <div class="viz-label">Your Sound</div>
+          <canvas id="vizPlayer"></canvas>
+        </div>
+      </div>
+    `;
+  }
+
+  html += `<div class="lesson-complete" id="lessonComplete">
+    <h3>Lesson Complete!</h3>
+    <p id="completeMsg">Great work.</p>
+    <button class="btn btn-success" id="nextLessonBtn">Next Lesson</button>
+  </div>`;
+
+  panel.innerHTML = html;
+
+  // Setup interactivity after DOM insert
+  setTimeout(() => {
+    setupLessonControls(lesson.id);
+    startVisualization();
+  }, 30);
 }
 
-function getVoiceParams() {
-  var params = {};
-  VOICE_SLIDERS.forEach(function(s) {
-    var el = document.getElementById('vs_' + s.id);
-    if (el) params[s.id] = parseFloat(el.value);
-  });
-  params.carrier = document.getElementById('carrierSelect').value;
-  return params;
+// ─── Lesson Builders ────────────────────────────────────────────────────────
+
+function buildLesson1() {
+  state.playerParams = { type: 'sine', freq: 330 };
+  return `
+    <div class="controls-grid">
+      <div class="control-group control-full">
+        <div class="control-label">Waveform</div>
+        <div class="wave-buttons" id="waveButtons">
+          <button class="wave-btn active" data-wave="sine">Sine</button>
+          <button class="wave-btn" data-wave="square">Square</button>
+          <button class="wave-btn" data-wave="sawtooth">Sawtooth</button>
+          <button class="wave-btn" data-wave="triangle">Triangle</button>
+        </div>
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="playYours">Play Your Sound</button>
+      <button class="btn btn-secondary" id="playTarget">Play Target</button>
+      <button class="btn btn-success" id="checkMatch">Check Match</button>
+    </div>
+  `;
 }
 
-function getFormantForVowel(v) {
-  var data = customFormants[v] || FORMANTS[v];
-  return {
-    f1: data.f1 || FORMANTS[v].f1,
-    f2: data.f2 || FORMANTS[v].f2,
-    f3: data.f3 || FORMANTS[v].f3,
-    q1: data.q1 || FORMANTS[v].q1,
-    q2: data.q2 || FORMANTS[v].q2,
-    q3: data.q3 || FORMANTS[v].q3
+function buildLesson2() {
+  state.playerParams = { type: 'sawtooth', freq: 330 };
+  return `
+    <div class="controls-grid">
+      <div class="control-group control-full">
+        <div class="control-label">Frequency <span class="control-value" id="freqVal">330 Hz</span></div>
+        <input type="range" id="freqSlider" min="100" max="880" value="330" step="1">
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="playYours">Play Your Sound</button>
+      <button class="btn btn-secondary" id="playTarget">Play Target</button>
+      <button class="btn btn-success" id="checkMatch">Check Match</button>
+    </div>
+  `;
+}
+
+function buildLesson3() {
+  state.playerParams = { type: 'sawtooth', freq: 330, env: { a: 0.1, d: 0.2, s: 0.5, r: 0.3 } };
+  return `
+    <div class="controls-grid">
+      <div class="control-group">
+        <div class="control-label">Attack <span class="control-value" id="atkVal">0.10s</span></div>
+        <input type="range" id="atkSlider" min="0.01" max="1.5" value="0.1" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Decay <span class="control-value" id="decVal">0.20s</span></div>
+        <input type="range" id="decSlider" min="0.01" max="1.5" value="0.2" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Sustain <span class="control-value" id="susVal">0.50</span></div>
+        <input type="range" id="susSlider" min="0" max="1" value="0.5" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Release <span class="control-value" id="relVal">0.30s</span></div>
+        <input type="range" id="relSlider" min="0.01" max="2" value="0.3" step="0.01">
+      </div>
+    </div>
+    <div class="viz-row">
+      <div class="viz-panel" style="grid-column:1/-1;">
+        <div class="viz-label">ADSR Envelope Shape</div>
+        <canvas id="adsrCanvas" class="adsr-canvas"></canvas>
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="playYours">Play Your Sound</button>
+      <button class="btn btn-secondary" id="playTarget">Play Target</button>
+      <button class="btn btn-success" id="checkMatch">Check Match</button>
+    </div>
+  `;
+}
+
+function buildLesson4() {
+  state.playerParams = { type: 'sawtooth', freq: 220, filter: { type: 'lowpass', cutoff: 2000, q: 5 } };
+  return `
+    <div class="controls-grid">
+      <div class="control-group control-full">
+        <div class="control-label">Filter Type</div>
+        <div class="filter-buttons" id="filterButtons">
+          <button class="wave-btn active" data-filter="lowpass">Low-pass</button>
+          <button class="wave-btn" data-filter="highpass">High-pass</button>
+          <button class="wave-btn" data-filter="bandpass">Band-pass</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">Cutoff <span class="control-value" id="cutoffVal">2000 Hz</span></div>
+        <input type="range" id="cutoffSlider" min="80" max="8000" value="2000" step="10">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Resonance (Q) <span class="control-value" id="qVal">5.0</span></div>
+        <input type="range" id="qSlider" min="0.5" max="20" value="5" step="0.5">
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="playYours">Play Your Sound</button>
+      <button class="btn btn-secondary" id="playTarget">Play Target</button>
+      <button class="btn btn-success" id="checkMatch">Check Match</button>
+    </div>
+  `;
+}
+
+function buildLesson5() {
+  state.playerParams = { type: 'sawtooth', freq: 330, lfo: { target: 'pitch', rate: 5, depth: 0.5 }, filter: { type: 'lowpass', cutoff: 2000, q: 4 } };
+  return `
+    <div class="controls-grid">
+      <div class="control-group control-full">
+        <div class="control-label">LFO Target</div>
+        <div class="wave-buttons" id="lfoTargetBtns">
+          <button class="wave-btn active" data-lfo="pitch">Pitch (Vibrato)</button>
+          <button class="wave-btn" data-lfo="amplitude">Volume (Tremolo)</button>
+          <button class="wave-btn" data-lfo="filter">Filter (Wah)</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">LFO Rate <span class="control-value" id="lfoRateVal">5.0 Hz</span></div>
+        <input type="range" id="lfoRateSlider" min="0.5" max="15" value="5" step="0.1">
+      </div>
+      <div class="control-group">
+        <div class="control-label">LFO Depth <span class="control-value" id="lfoDepthVal">50%</span></div>
+        <input type="range" id="lfoDepthSlider" min="0" max="1" value="0.5" step="0.01">
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="playYours">Play Your Sound</button>
+      <button class="btn btn-secondary" id="playTarget">Play Target</button>
+      <button class="btn btn-success" id="checkMatch">Check Match</button>
+    </div>
+  `;
+}
+
+function buildLesson6() {
+  state.playerParams = { freq: 220, harmonics: [1, 0, 0, 0, 0, 0, 0, 0] };
+  return `
+    <div class="control-group" style="margin-bottom:16px;">
+      <div class="control-label">Harmonic Levels (1st = fundamental)</div>
+      <div class="harmonics-grid" id="harmonicsGrid">
+        ${[1,2,3,4,5,6,7,8].map(i => `
+          <div class="harmonic-slider">
+            <span class="h-label">${i === 1 ? '1st' : i+'th'}</span>
+            <input type="range" id="h${i}" min="0" max="1" value="${i===1?1:0}" step="0.01" orient="vertical">
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="playYours">Play Your Sound</button>
+      <button class="btn btn-secondary" id="playTarget">Play Target</button>
+      <button class="btn btn-success" id="checkMatch">Check Match</button>
+    </div>
+  `;
+}
+
+function buildLesson7() {
+  state.playerParams = { type: 'sawtooth', freq: 330, effects: {
+    delay: { time: 0.25, feedback: 0.3, mix: 0.3 },
+    distortion: { amount: 0, mix: 0 },
+  }};
+  return `
+    <div class="controls-grid">
+      <div class="control-group">
+        <div class="control-label">Delay Time <span class="control-value" id="delayTimeVal">0.25s</span></div>
+        <input type="range" id="delayTimeSlider" min="0.05" max="0.6" value="0.25" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Delay Feedback <span class="control-value" id="delayFbVal">30%</span></div>
+        <input type="range" id="delayFbSlider" min="0" max="0.85" value="0.3" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Delay Mix <span class="control-value" id="delayMixVal">30%</span></div>
+        <input type="range" id="delayMixSlider" min="0" max="1" value="0.3" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Distortion <span class="control-value" id="distVal">0</span></div>
+        <input type="range" id="distSlider" min="0" max="20" value="0" step="0.5">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Distortion Mix <span class="control-value" id="distMixVal">0%</span></div>
+        <input type="range" id="distMixSlider" min="0" max="1" value="0" step="0.01">
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="playYours">Play Your Sound</button>
+      <button class="btn btn-secondary" id="playTarget">Play Target</button>
+      <button class="btn btn-success" id="checkMatch">Check Match</button>
+    </div>
+  `;
+}
+
+function buildLesson8() {
+  const lesson = LESSONS[7];
+  state.challengeIndex = 0;
+  state.playerParams = {
+    type: 'sawtooth', freq: 330,
+    env: { a: 0.05, d: 0.2, s: 0.5, r: 0.3 },
+    filter: { type: 'lowpass', cutoff: 4000, q: 2 },
+    lfo: { target: 'pitch', rate: 0, depth: 0 },
+    effects: { delay: { time: 0.25, feedback: 0.3, mix: 0 }, distortion: { amount: 0, mix: 0 } },
   };
-}
-
-function getConsonantConfig() {
-  var cfg = {};
-  CONSONANT_TYPES.forEach(function(c) {
-    var el = document.getElementById('cc_' + c.id);
-    cfg[c.id] = el ? el.checked : true;
+  let html = `<div class="challenge-cards" id="challengeCards">`;
+  lesson.challenges.forEach((c, i) => {
+    html += `<div class="challenge-card${i===0?' active':''}" data-idx="${i}"><h4>${c.name}</h4><p>${c.hint}</p></div>`;
   });
-  cfg.volume = parseFloat(document.getElementById('consonantVolume').value) / 100;
-  return cfg;
+  html += `</div>`;
+
+  html += `
+    <div class="controls-grid">
+      <div class="control-group">
+        <div class="control-label">Waveform</div>
+        <div class="wave-buttons" id="waveButtons8">
+          <button class="wave-btn active" data-wave="sawtooth">Saw</button>
+          <button class="wave-btn" data-wave="sine">Sine</button>
+          <button class="wave-btn" data-wave="square">Sq</button>
+          <button class="wave-btn" data-wave="triangle">Tri</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">Frequency <span class="control-value" id="freqVal8">330 Hz</span></div>
+        <input type="range" id="freqSlider8" min="40" max="2000" value="330" step="1">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Attack <span class="control-value" id="atkVal8">0.05s</span></div>
+        <input type="range" id="atkSlider8" min="0.01" max="1.5" value="0.05" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Decay <span class="control-value" id="decVal8">0.20s</span></div>
+        <input type="range" id="decSlider8" min="0.01" max="1.5" value="0.2" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Sustain <span class="control-value" id="susVal8">0.50</span></div>
+        <input type="range" id="susSlider8" min="0" max="1" value="0.5" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Release <span class="control-value" id="relVal8">0.30s</span></div>
+        <input type="range" id="relSlider8" min="0.01" max="2" value="0.3" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Filter Cutoff <span class="control-value" id="cutoffVal8">4000 Hz</span></div>
+        <input type="range" id="cutoffSlider8" min="80" max="8000" value="4000" step="10">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Filter Q <span class="control-value" id="qVal8">2.0</span></div>
+        <input type="range" id="qSlider8" min="0.5" max="20" value="2" step="0.5">
+      </div>
+      <div class="control-group">
+        <div class="control-label">LFO Rate <span class="control-value" id="lfoRateVal8">0 Hz</span></div>
+        <input type="range" id="lfoRateSlider8" min="0" max="20" value="0" step="0.1">
+      </div>
+      <div class="control-group">
+        <div class="control-label">LFO Depth <span class="control-value" id="lfoDepthVal8">0%</span></div>
+        <input type="range" id="lfoDepthSlider8" min="0" max="1" value="0" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Delay Mix <span class="control-value" id="delayMixVal8">0%</span></div>
+        <input type="range" id="delayMixSlider8" min="0" max="1" value="0" step="0.01">
+      </div>
+      <div class="control-group">
+        <div class="control-label">Distortion <span class="control-value" id="distVal8">0</span></div>
+        <input type="range" id="distSlider8" min="0" max="20" value="0" step="0.5">
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="playYours8">Play Your Sound</button>
+      <button class="btn btn-success" id="markComplete8">Complete Challenge</button>
+    </div>
+  `;
+  return html;
 }
 
-function getEffectsConfig() {
-  var cfg = {};
-  EFFECTS_DEF.forEach(function(e) {
-    var chk = document.getElementById('ef_' + e.id);
-    var rng = document.getElementById('efr_' + e.param);
-    cfg[e.id] = {
-      enabled: chk ? chk.checked : false,
-      value: rng ? parseFloat(rng.value) : e.def
-    };
+// ─── Lesson Control Setup ───────────────────────────────────────────────────
+
+function setupLessonControls(id) {
+  switch(id) {
+    case 1: setupLesson1(); break;
+    case 2: setupLesson2(); break;
+    case 3: setupLesson3(); break;
+    case 4: setupLesson4(); break;
+    case 5: setupLesson5(); break;
+    case 6: setupLesson6(); break;
+    case 7: setupLesson7(); break;
+    case 8: setupLesson8(); break;
+  }
+}
+
+function setupLesson1() {
+  const lesson = LESSONS[0];
+  state.currentTarget = lesson.targetGen();
+
+  document.querySelectorAll('#waveButtons .wave-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#waveButtons .wave-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.playerParams.type = btn.dataset.wave;
+    });
   });
-  return cfg;
+
+  setupPlayButtons(() => playTone(state.playerParams, analyserPlayer, 'player'),
+                    () => playTone(state.currentTarget, analyserTarget, 'target'));
+  setupCheckMatch(() => {
+    const match = state.playerParams.type === state.currentTarget.type ? 100 : 0;
+    showScore(match, match === 100 ? 'You identified the waveform!' : `That was ${state.currentTarget.type}. Try again!`);
+    if (match >= 80) completeLesson(1);
+  });
 }
 
-function updateCarrier() {
-  updateExportJSON();
-}
+function setupLesson2() {
+  const lesson = LESSONS[1];
+  state.currentTarget = lesson.targetGen();
 
-// ========================================
-// PRESET SYSTEM
-// ========================================
-
-function loadPreset(name) {
-  var p = PRESETS[name];
-  if (!p) return;
-  currentPreset = name;
-
-  VOICE_SLIDERS.forEach(function(s) {
-    var el = document.getElementById('vs_' + s.id);
-    if (el && p[s.id] !== undefined) el.value = p[s.id];
+  const slider = document.getElementById('freqSlider');
+  const val = document.getElementById('freqVal');
+  slider.addEventListener('input', () => {
+    const f = parseFloat(slider.value);
+    state.playerParams.freq = f;
+    val.textContent = Math.round(f) + ' Hz';
   });
 
-  document.getElementById('carrierSelect').value = p.carrier || 'sawtooth';
-
-  // Update preset button highlights
-  var btns = document.querySelectorAll('.preset-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].classList.toggle('active', btns[i].getAttribute('data-preset') === name);
-  }
-
-  updateSliderDisplay();
-}
-
-// ========================================
-// EXPORT
-// ========================================
-
-function updateExportJSON() {
-  var params = getVoiceParams();
-  var formants = {};
-  ['a','e','i','o','u'].forEach(function(v) {
-    formants[v] = getFormantForVowel(v);
+  setupPlayButtons(() => playTone(state.playerParams, analyserPlayer, 'player'),
+                    () => playTone(state.currentTarget, analyserTarget, 'target'));
+  setupCheckMatch(() => {
+    const diff = Math.abs(state.playerParams.freq - state.currentTarget.freq);
+    const maxDiff = 400;
+    const match = Math.max(0, Math.round((1 - diff / maxDiff) * 100));
+    let msg = match >= 90 ? `Nailed it! Target was ${Math.round(state.currentTarget.freq)} Hz.`
+            : match >= 60 ? `Close! Target was ${Math.round(state.currentTarget.freq)} Hz.`
+            : `Target was ${Math.round(state.currentTarget.freq)} Hz. Keep tuning!`;
+    showScore(match, msg);
+    if (match >= 85) completeLesson(2);
   });
-  params.formants = formants;
-  params.consonants = getConsonantConfig();
-  params.effects = getEffectsConfig();
-
-  var el = document.getElementById('jsonOutput');
-  if (el) el.value = JSON.stringify(params, null, 2);
 }
 
-function copySettings() {
-  var el = document.getElementById('jsonOutput');
-  if (el) {
-    el.select();
-    document.execCommand('copy');
-    var fb = document.getElementById('copyFeedback');
-    fb.classList.add('show');
-    setTimeout(function() { fb.classList.remove('show'); }, 1500);
+function setupLesson3() {
+  const lesson = LESSONS[2];
+  state.currentTarget = lesson.targetGen();
+
+  ['atk','dec','sus','rel'].forEach(p => {
+    const map = { atk: 'a', dec: 'd', sus: 's', rel: 'r' };
+    const slider = document.getElementById(p + 'Slider');
+    const val = document.getElementById(p + 'Val');
+    slider.addEventListener('input', () => {
+      const v = parseFloat(slider.value);
+      state.playerParams.env[map[p]] = v;
+      val.textContent = p === 'sus' ? v.toFixed(2) : v.toFixed(2) + 's';
+      drawADSR();
+    });
+  });
+
+  setupPlayButtons(() => playEnvelopedTone(state.playerParams, analyserPlayer, 'player'),
+                    () => playEnvelopedTone(state.currentTarget, analyserTarget, 'target'));
+  setupCheckMatch(() => {
+    const t = state.currentTarget.env;
+    const p = state.playerParams.env;
+    const aDiff = Math.abs(t.a - p.a) / 1.5;
+    const dDiff = Math.abs(t.d - p.d) / 1.5;
+    const sDiff = Math.abs(t.s - p.s);
+    const rDiff = Math.abs(t.r - p.r) / 2;
+    const avgDiff = (aDiff + dDiff + sDiff + rDiff) / 4;
+    const match = Math.max(0, Math.round((1 - avgDiff) * 100));
+    let msg = match >= 85 ? `Great match! That was a "${state.currentTarget.env.name}" envelope.`
+            : `Target was "${state.currentTarget.env.name}" (A:${t.a} D:${t.d} S:${t.s} R:${t.r}). Adjust and retry!`;
+    showScore(match, msg);
+    if (match >= 80) completeLesson(3);
+  });
+
+  setTimeout(drawADSR, 50);
+}
+
+function setupLesson4() {
+  const lesson = LESSONS[3];
+  state.currentTarget = lesson.targetGen();
+
+  document.querySelectorAll('#filterButtons .wave-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#filterButtons .wave-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.playerParams.filter.type = btn.dataset.filter;
+    });
+  });
+
+  const cutoffSlider = document.getElementById('cutoffSlider');
+  const cutoffVal = document.getElementById('cutoffVal');
+  cutoffSlider.addEventListener('input', () => {
+    const v = parseInt(cutoffSlider.value);
+    state.playerParams.filter.cutoff = v;
+    cutoffVal.textContent = v + ' Hz';
+  });
+
+  const qSlider = document.getElementById('qSlider');
+  const qVal = document.getElementById('qVal');
+  qSlider.addEventListener('input', () => {
+    const v = parseFloat(qSlider.value);
+    state.playerParams.filter.q = v;
+    qVal.textContent = v.toFixed(1);
+  });
+
+  setupPlayButtons(() => playFilteredTone(state.playerParams, analyserPlayer, 'player'),
+                    () => playFilteredTone(state.currentTarget, analyserTarget, 'target'));
+  setupCheckMatch(() => {
+    const t = state.currentTarget.filter;
+    const p = state.playerParams.filter;
+    const typeMatch = t.type === p.type ? 1 : 0;
+    const cutoffDiff = Math.abs(Math.log2(t.cutoff) - Math.log2(p.cutoff)) / 6.5;
+    const qDiff = Math.abs(t.q - p.q) / 20;
+    const match = Math.max(0, Math.round((typeMatch * 0.4 + (1-cutoffDiff) * 0.35 + (1-qDiff) * 0.25) * 100));
+    let msg = match >= 85 ? `Excellent! You matched the ${t.type} filter.`
+            : `Target: ${t.type}, cutoff ${t.cutoff} Hz, Q ${t.q}. Keep adjusting!`;
+    showScore(match, msg);
+    if (match >= 80) completeLesson(4);
+  });
+}
+
+function setupLesson5() {
+  const lesson = LESSONS[4];
+  state.currentTarget = lesson.targetGen();
+
+  document.querySelectorAll('#lfoTargetBtns .wave-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lfoTargetBtns .wave-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.playerParams.lfo.target = btn.dataset.lfo;
+    });
+  });
+
+  const rateSlider = document.getElementById('lfoRateSlider');
+  const rateVal = document.getElementById('lfoRateVal');
+  rateSlider.addEventListener('input', () => {
+    const v = parseFloat(rateSlider.value);
+    state.playerParams.lfo.rate = v;
+    rateVal.textContent = v.toFixed(1) + ' Hz';
+  });
+
+  const depthSlider = document.getElementById('lfoDepthSlider');
+  const depthVal = document.getElementById('lfoDepthVal');
+  depthSlider.addEventListener('input', () => {
+    const v = parseFloat(depthSlider.value);
+    state.playerParams.lfo.depth = v;
+    depthVal.textContent = Math.round(v * 100) + '%';
+  });
+
+  setupPlayButtons(() => playLFOTone(state.playerParams, analyserPlayer, 'player'),
+                    () => playLFOTone(state.currentTarget, analyserTarget, 'target'));
+  setupCheckMatch(() => {
+    const t = state.currentTarget.lfo;
+    const p = state.playerParams.lfo;
+    const targetMatch = t.target === p.target ? 1 : 0;
+    const rateDiff = Math.abs(t.rate - p.rate) / 15;
+    const depthDiff = Math.abs(t.depth - p.depth);
+    const match = Math.max(0, Math.round((targetMatch * 0.4 + (1-rateDiff) * 0.3 + (1-depthDiff) * 0.3) * 100));
+    let msg = match >= 85 ? `You matched the ${t.target} modulation!`
+            : `Target: ${t.target} at ${t.rate} Hz, ${Math.round(t.depth*100)}% depth.`;
+    showScore(match, msg);
+    if (match >= 80) completeLesson(5);
+  });
+}
+
+function setupLesson6() {
+  const lesson = LESSONS[5];
+  state.currentTarget = lesson.targetGen();
+
+  for (let i = 1; i <= 8; i++) {
+    const slider = document.getElementById('h' + i);
+    slider.addEventListener('input', () => {
+      state.playerParams.harmonics[i-1] = parseFloat(slider.value);
+    });
+  }
+
+  setupPlayButtons(() => playAdditiveSound(state.playerParams, analyserPlayer, 'player'),
+                    () => playAdditiveSound(state.currentTarget, analyserTarget, 'target'));
+  setupCheckMatch(() => {
+    const t = state.currentTarget.harmonics;
+    const p = state.playerParams.harmonics;
+    let totalDiff = 0;
+    for (let i = 0; i < 8; i++) totalDiff += Math.abs(t[i] - p[i]);
+    const match = Math.max(0, Math.round((1 - totalDiff / 8) * 100));
+    let msg = match >= 85 ? `Great match! That was a "${state.currentTarget.name}" timbre.`
+            : `Target: "${state.currentTarget.name}". Keep adjusting the harmonics!`;
+    showScore(match, msg);
+    if (match >= 80) completeLesson(6);
+  });
+}
+
+function setupLesson7() {
+  const lesson = LESSONS[6];
+  state.currentTarget = lesson.targetGen();
+
+  const bind = (id, path, fmt) => {
+    const slider = document.getElementById(id);
+    const val = document.getElementById(id.replace('Slider','Val'));
+    slider.addEventListener('input', () => {
+      const v = parseFloat(slider.value);
+      const keys = path.split('.');
+      let obj = state.playerParams;
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
+      obj[keys[keys.length-1]] = v;
+      val.textContent = fmt(v);
+    });
+  };
+
+  bind('delayTimeSlider', 'effects.delay.time', v => v.toFixed(2) + 's');
+  bind('delayFbSlider', 'effects.delay.feedback', v => Math.round(v*100) + '%');
+  bind('delayMixSlider', 'effects.delay.mix', v => Math.round(v*100) + '%');
+  bind('distSlider', 'effects.distortion.amount', v => v.toFixed(1));
+  bind('distMixSlider', 'effects.distortion.mix', v => Math.round(v*100) + '%');
+
+  setupPlayButtons(() => playEffectedTone(state.playerParams, analyserPlayer, 'player'),
+                    () => playEffectedTone(state.currentTarget, analyserTarget, 'target'));
+  setupCheckMatch(() => {
+    const t = state.currentTarget.effects;
+    const p = state.playerParams.effects;
+    const delayTimeDiff = Math.abs(t.delay.time - p.delay.time) / 0.55;
+    const delayFbDiff = Math.abs(t.delay.feedback - p.delay.feedback) / 0.85;
+    const delayMixDiff = Math.abs(t.delay.mix - p.delay.mix);
+    const distDiff = Math.abs(t.distortion.amount - p.distortion.amount) / 20;
+    const distMixDiff = Math.abs(t.distortion.mix - p.distortion.mix);
+    const avg = (delayTimeDiff + delayFbDiff + delayMixDiff + distDiff + distMixDiff) / 5;
+    const match = Math.max(0, Math.round((1 - avg) * 100));
+    let msg = match >= 85 ? 'You matched the effects chain!' : 'Keep tweaking the effects parameters.';
+    showScore(match, msg);
+    if (match >= 80) completeLesson(7);
+  });
+}
+
+function setupLesson8() {
+  const lesson = LESSONS[7];
+
+  // Challenge card selection
+  document.querySelectorAll('#challengeCards .challenge-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#challengeCards .challenge-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      state.challengeIndex = parseInt(card.dataset.idx);
+    });
+  });
+
+  // Waveform buttons
+  document.querySelectorAll('#waveButtons8 .wave-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#waveButtons8 .wave-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.playerParams.type = btn.dataset.wave;
+    });
+  });
+
+  // All sliders
+  const bindSimple = (sliderId, valId, paramPath, fmt) => {
+    const slider = document.getElementById(sliderId);
+    const val = document.getElementById(valId);
+    if (!slider) return;
+    slider.addEventListener('input', () => {
+      const v = parseFloat(slider.value);
+      const keys = paramPath.split('.');
+      let obj = state.playerParams;
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
+      obj[keys[keys.length-1]] = v;
+      val.textContent = fmt(v);
+    });
+  };
+
+  bindSimple('freqSlider8', 'freqVal8', 'freq', v => Math.round(v)+' Hz');
+  bindSimple('atkSlider8', 'atkVal8', 'env.a', v => v.toFixed(2)+'s');
+  bindSimple('decSlider8', 'decVal8', 'env.d', v => v.toFixed(2)+'s');
+  bindSimple('susSlider8', 'susVal8', 'env.s', v => v.toFixed(2));
+  bindSimple('relSlider8', 'relVal8', 'env.r', v => v.toFixed(2)+'s');
+  bindSimple('cutoffSlider8', 'cutoffVal8', 'filter.cutoff', v => Math.round(v)+' Hz');
+  bindSimple('qSlider8', 'qVal8', 'filter.q', v => v.toFixed(1));
+  bindSimple('lfoRateSlider8', 'lfoRateVal8', 'lfo.rate', v => v.toFixed(1)+' Hz');
+  bindSimple('lfoDepthSlider8', 'lfoDepthVal8', 'lfo.depth', v => Math.round(v*100)+'%');
+  bindSimple('delayMixSlider8', 'delayMixVal8', 'effects.delay.mix', v => Math.round(v*100)+'%');
+  bindSimple('distSlider8', 'distVal8', 'effects.distortion.amount', v => v.toFixed(1));
+
+  // Play
+  const playBtn = document.getElementById('playYours8');
+  playBtn.addEventListener('click', () => {
+    ensureAudioContext();
+    stopAll();
+    playFullSynthSound(state.playerParams, analyserPlayer, 'player');
+  });
+
+  // Complete challenge
+  const completeBtn = document.getElementById('markComplete8');
+  completeBtn.addEventListener('click', () => {
+    completeLesson(8);
+  });
+}
+
+// ─── Shared UI Helpers ──────────────────────────────────────────────────────
+
+function setupPlayButtons(playYoursFn, playTargetFn) {
+  const playYours = document.getElementById('playYours');
+  const playTarget = document.getElementById('playTarget');
+  if (playYours) {
+    playYours.addEventListener('click', () => {
+      ensureAudioContext();
+      stopAll();
+      playYoursFn();
+    });
+  }
+  if (playTarget) {
+    playTarget.addEventListener('click', () => {
+      ensureAudioContext();
+      stopAll();
+      playTargetFn();
+    });
   }
 }
 
-// ========================================
-// TEXT-TO-PHONEME PIPELINE
-// ========================================
-
-function textToPhonemes(text) {
-  var raw = text.toLowerCase();
-  // Detect if last sentence is a question
-  var isQuestion = /\?\s*$/.test(text.trim());
-
-  var sentences = raw.split(/([.!?]+)/);
-  var phonemes = [];
-  var wordIndex = 0;
-
-  for (var si = 0; si < sentences.length; si++) {
-    var chunk = sentences[si];
-    if (/^[.!?]+$/.test(chunk)) continue;
-
-    var sentenceQuestion = false;
-    if (si + 1 < sentences.length && /\?/.test(sentences[si + 1])) sentenceQuestion = true;
-
-    var cleaned = chunk.replace(/[^a-z\s,]/g, '');
-    var parts = cleaned.split(/(\s*,\s*|\s+)/);
-
-    for (var pi = 0; pi < parts.length; pi++) {
-      var part = parts[pi].trim();
-      if (!part) continue;
-
-      if (part === ',') {
-        phonemes.push({ type: 'pause', duration: 0.2 });
-        continue;
-      }
-
-      var syllables = approximateSyllables(part);
-      var stressIdx = getStressedSyllable(syllables);
-
-      for (var syi = 0; syi < syllables.length; syi++) {
-        var syl = syllables[syi];
-        phonemes.push({
-          text: syl,
-          consonant: getInitialConsonant(syl),
-          vowel: getDominantVowel(syl) || 'a',
-          endConsonant: getFinalConsonant(syl),
-          wordStart: syi === 0,
-          wordEnd: syi === syllables.length - 1,
-          stressed: syi === stressIdx,
-          wordIndex: wordIndex,
-          sentenceQuestion: sentenceQuestion
-        });
-      }
-
-      phonemes.push({ type: 'gap', duration: 0.05 });
-      wordIndex++;
-    }
-
-    // Sentence boundary pause
-    phonemes.push({ type: 'pause', duration: 0.35 });
-  }
-
-  return phonemes;
+function setupCheckMatch(checkFn) {
+  const btn = document.getElementById('checkMatch');
+  if (btn) btn.addEventListener('click', checkFn);
 }
 
-function approximateSyllables(word) {
-  var vowels = 'aeiouy';
-  var syllables = [];
-  var current = '';
-  var lastWasVowel = false;
+function showScore(score, msg) {
+  const bar = document.getElementById('scoreBar');
+  const val = document.getElementById('scoreValue');
+  const fill = document.getElementById('scoreFill');
+  const msgEl = document.getElementById('scoreMsg');
+  if (!bar) return;
+  bar.classList.add('visible');
+  val.textContent = score + '%';
+  fill.style.width = score + '%';
+  fill.className = 'score-fill' + (score >= 85 ? ' excellent' : '');
+  msgEl.textContent = msg;
+  state.score = score;
+}
 
-  for (var i = 0; i < word.length; i++) {
-    var ch = word[i];
-    var isVowel = vowels.indexOf(ch) >= 0;
-
-    if (isVowel) {
-      current += ch;
-      lastWasVowel = true;
+function completeLesson(id) {
+  if (!state.completed.includes(id)) {
+    state.completed.push(id);
+    saveProgress();
+  }
+  const comp = document.getElementById('lessonComplete');
+  const msg = document.getElementById('completeMsg');
+  if (comp) {
+    comp.classList.add('visible');
+    msg.textContent = id < 8 ? 'You\'ve mastered this concept. Move on when ready.' : 'You\'ve completed the Sound Design Course!';
+  }
+  const nextBtn = document.getElementById('nextLessonBtn');
+  if (nextBtn) {
+    if (id >= 8) {
+      nextBtn.textContent = 'Back to Start';
+      nextBtn.addEventListener('click', () => { state.currentLesson = 1; renderNav(); renderLesson(); });
     } else {
-      if (lastWasVowel && current.length > 0 && i < word.length - 1) {
-        // Check if next char is vowel - if so, start new syllable with this consonant
-        var nextIsVowel = (i + 1 < word.length) && vowels.indexOf(word[i + 1]) >= 0;
-        if (nextIsVowel) {
-          syllables.push(current);
-          current = ch;
-        } else {
-          current += ch;
-        }
-      } else {
-        current += ch;
-      }
-      lastWasVowel = false;
+      nextBtn.addEventListener('click', () => { state.currentLesson = id + 1; renderNav(); renderLesson(); });
     }
   }
-
-  if (current) {
-    // If no vowel in last chunk, merge with previous
-    if (syllables.length > 0 && !hasVowel(current)) {
-      syllables[syllables.length - 1] += current;
-    } else {
-      syllables.push(current);
-    }
-  }
-  if (syllables.length === 0) syllables.push(word);
-  return syllables;
+  renderNav();
 }
 
-function hasVowel(s) {
-  return /[aeiouy]/.test(s);
+// ─── ADSR Drawing ───────────────────────────────────────────────────────────
+
+function drawADSR() {
+  const canvas = document.getElementById('adsrCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * dpr;
+  canvas.height = canvas.offsetHeight * dpr;
+  ctx.scale(dpr, dpr);
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
+  const env = state.playerParams.env;
+  const pad = 10;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const totalTime = env.a + env.d + 0.4 + env.r;
+  const scale = (w - pad * 2) / totalTime;
+
+  const aX = pad + env.a * scale;
+  const dX = aX + env.d * scale;
+  const sX = dX + 0.4 * scale;
+  const rX = sX + env.r * scale;
+
+  ctx.beginPath();
+  ctx.moveTo(pad, h - pad);
+  ctx.lineTo(aX, pad);
+  ctx.lineTo(dX, pad + (1 - env.s) * (h - pad * 2));
+  ctx.lineTo(sX, pad + (1 - env.s) * (h - pad * 2));
+  ctx.lineTo(rX, h - pad);
+  ctx.strokeStyle = '#0078d4';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Fill
+  ctx.lineTo(pad, h - pad);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(0, 120, 212, 0.08)';
+  ctx.fill();
+
+  // Labels
+  ctx.fillStyle = '#7a8fa5';
+  ctx.font = '10px IBM Plex Mono';
+  ctx.textAlign = 'center';
+  ctx.fillText('A', (pad + aX) / 2, h - 2);
+  ctx.fillText('D', (aX + dX) / 2, h - 2);
+  ctx.fillText('S', (dX + sX) / 2, h - 2);
+  ctx.fillText('R', (sX + rX) / 2, h - 2);
 }
 
-function getStressedSyllable(syllables) {
-  if (syllables.length <= 1) return 0;
-  if (syllables.length === 2) return 0;
-  // Crude: stress the second-to-last syllable (works for many English words)
-  return Math.max(0, syllables.length - 2);
+// ─── Audio Synthesis ────────────────────────────────────────────────────────
+
+function stopAll() {
+  ['player', 'target'].forEach(key => {
+    const nodes = key === 'player' ? playerNodes : targetNodes;
+    if (nodes.osc) { try { nodes.osc.stop(); } catch(e) {} }
+    if (nodes.oscs) { nodes.oscs.forEach(o => { try { o.stop(); } catch(e) {} }); }
+    if (nodes.lfo) { try { nodes.lfo.stop(); } catch(e) {} }
+    if (nodes.timeout) clearTimeout(nodes.timeout);
+  });
+  playerNodes = {};
+  targetNodes = {};
+  isPlayerPlaying = false;
+  isTargetPlaying = false;
 }
 
-function getInitialConsonant(syl) {
-  var m = syl.match(/^([^aeiouy]+)/);
-  return m ? m[1] : null;
+function playTone(params, analyser, key, duration) {
+  duration = duration || 1.5;
+  const nodes = key === 'player' ? playerNodes : targetNodes;
+  const osc = actx.createOscillator();
+  const gain = actx.createGain();
+  osc.type = params.type;
+  osc.frequency.value = params.freq;
+  gain.gain.value = 0.4;
+  osc.connect(gain);
+  gain.connect(analyser);
+  osc.start();
+  nodes.osc = osc;
+  nodes.gain = gain;
+  if (key === 'player') isPlayerPlaying = true;
+  else isTargetPlaying = true;
+  nodes.timeout = setTimeout(() => {
+    gain.gain.linearRampToValueAtTime(0, actx.currentTime + 0.05);
+    setTimeout(() => { try { osc.stop(); } catch(e) {} }, 60);
+    if (key === 'player') isPlayerPlaying = false;
+    else isTargetPlaying = false;
+  }, duration * 1000);
 }
 
-function getDominantVowel(syl) {
-  var m = syl.match(/[aeiouy]/);
-  return m ? m[0] : null;
+function playEnvelopedTone(params, analyser, key) {
+  const nodes = key === 'player' ? playerNodes : targetNodes;
+  const env = params.env;
+  const osc = actx.createOscillator();
+  const gain = actx.createGain();
+  osc.type = params.type;
+  osc.frequency.value = params.freq;
+
+  const now = actx.currentTime;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.45, now + env.a);
+  gain.gain.linearRampToValueAtTime(env.s * 0.45, now + env.a + env.d);
+  gain.gain.setValueAtTime(env.s * 0.45, now + env.a + env.d + 0.4);
+  gain.gain.linearRampToValueAtTime(0, now + env.a + env.d + 0.4 + env.r);
+
+  osc.connect(gain);
+  gain.connect(analyser);
+  osc.start();
+  nodes.osc = osc;
+  nodes.gain = gain;
+  if (key === 'player') isPlayerPlaying = true;
+  else isTargetPlaying = true;
+
+  const total = env.a + env.d + 0.4 + env.r + 0.05;
+  nodes.timeout = setTimeout(() => {
+    try { osc.stop(); } catch(e) {}
+    if (key === 'player') isPlayerPlaying = false;
+    else isTargetPlaying = false;
+  }, total * 1000);
 }
 
-function getFinalConsonant(syl) {
-  var m = syl.match(/([^aeiouy]+)$/);
-  return m ? m[1] : null;
+function playFilteredTone(params, analyser, key) {
+  const nodes = key === 'player' ? playerNodes : targetNodes;
+  const osc = actx.createOscillator();
+  const gain = actx.createGain();
+  const filter = actx.createBiquadFilter();
+  osc.type = params.type;
+  osc.frequency.value = params.freq;
+  gain.gain.value = 0.4;
+  filter.type = params.filter.type;
+  filter.frequency.value = params.filter.cutoff;
+  filter.Q.value = params.filter.q;
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(analyser);
+  osc.start();
+  nodes.osc = osc;
+  nodes.gain = gain;
+  nodes.filter = filter;
+  if (key === 'player') isPlayerPlaying = true;
+  else isTargetPlaying = true;
+
+  nodes.timeout = setTimeout(() => {
+    gain.gain.linearRampToValueAtTime(0, actx.currentTime + 0.05);
+    setTimeout(() => { try { osc.stop(); } catch(e) {} }, 60);
+    if (key === 'player') isPlayerPlaying = false;
+    else isTargetPlaying = false;
+  }, 2000);
 }
 
-// ========================================
-// CONSONANT SYNTHESIS
-// ========================================
+function playLFOTone(params, analyser, key) {
+  const nodes = key === 'player' ? playerNodes : targetNodes;
+  const osc = actx.createOscillator();
+  const gain = actx.createGain();
+  const filter = actx.createBiquadFilter();
+  osc.type = params.type;
+  osc.frequency.value = params.freq;
+  gain.gain.value = 0.4;
+  filter.type = params.filter.type;
+  filter.frequency.value = params.filter.cutoff;
+  filter.Q.value = params.filter.q;
 
-function synthesizeConsonant(ctx, consonant, time, duration, dest, cfg, volume) {
-  if (!consonant || !cfg) return 0;
+  const lfo = actx.createOscillator();
+  const lfoGain = actx.createGain();
+  lfo.type = 'sine';
+  lfo.frequency.value = params.lfo.rate;
 
-  var chars = consonant.split('');
-  var totalDur = 0;
-
-  for (var i = 0; i < chars.length; i++) {
-    var ch = chars[i];
-    var dur = synthesizeSingleConsonant(ctx, ch, time + totalDur, duration * 0.5, dest, cfg, volume);
-    totalDur += dur;
+  if (params.lfo.target === 'pitch') {
+    lfoGain.gain.value = params.freq * params.lfo.depth * 0.1;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+  } else if (params.lfo.target === 'amplitude') {
+    lfoGain.gain.value = params.lfo.depth * 0.4;
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain);
+  } else if (params.lfo.target === 'filter') {
+    lfoGain.gain.value = params.filter.cutoff * params.lfo.depth;
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
   }
 
-  return totalDur;
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(analyser);
+  lfo.start();
+  osc.start();
+  nodes.osc = osc;
+  nodes.lfo = lfo;
+  nodes.gain = gain;
+  if (key === 'player') isPlayerPlaying = true;
+  else isTargetPlaying = true;
+
+  nodes.timeout = setTimeout(() => {
+    gain.gain.linearRampToValueAtTime(0, actx.currentTime + 0.05);
+    setTimeout(() => {
+      try { osc.stop(); } catch(e) {}
+      try { lfo.stop(); } catch(e) {}
+    }, 60);
+    if (key === 'player') isPlayerPlaying = false;
+    else isTargetPlaying = false;
+  }, 2500);
 }
 
-function synthesizeSingleConsonant(ctx, ch, time, maxDur, dest, cfg, volume) {
-  var dur = Math.min(maxDur, 0.04);
+function playAdditiveSound(params, analyser, key) {
+  const nodes = key === 'player' ? playerNodes : targetNodes;
+  const gain = actx.createGain();
+  gain.gain.value = 0.3;
+  gain.connect(analyser);
+  const oscs = [];
 
-  // Plosives: T, K, P, D, G, B
-  if ('tkpdgb'.indexOf(ch) >= 0 && cfg.plosives) {
-    dur = 0.025;
-    var burst = ctx.createBufferSource();
-    var bufLen = Math.ceil(ctx.sampleRate * dur);
-    var buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    var data = buf.getChannelData(0);
-    for (var j = 0; j < bufLen; j++) {
-      data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufLen * 0.2));
-    }
-    burst.buffer = buf;
-
-    var burstFilter = ctx.createBiquadFilter();
-    burstFilter.type = 'bandpass';
-    burstFilter.frequency.value = ch === 'p' || ch === 'b' ? 800 : (ch === 't' || ch === 'd' ? 3000 : 1500);
-    burstFilter.Q.value = 2;
-
-    var burstGain = ctx.createGain();
-    burstGain.gain.setValueAtTime(volume * 0.6, time);
-    burstGain.gain.exponentialRampToValueAtTime(0.001, time + dur);
-
-    burst.connect(burstFilter);
-    burstFilter.connect(burstGain);
-    burstGain.connect(dest);
-    burst.start(time);
-    burst.stop(time + dur);
-    return dur;
+  for (let i = 0; i < 8; i++) {
+    if (params.harmonics[i] <= 0.01) continue;
+    const osc = actx.createOscillator();
+    const hGain = actx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = params.freq * (i + 1);
+    hGain.gain.value = params.harmonics[i] * 0.4;
+    osc.connect(hGain);
+    hGain.connect(gain);
+    osc.start();
+    oscs.push(osc);
   }
 
-  // Sibilants: S, SH, Z
-  if (('s' === ch || 'z' === ch) && cfg.sibilants) {
-    dur = 0.06;
-    var noise = ctx.createBufferSource();
-    var nBufLen = Math.ceil(ctx.sampleRate * dur);
-    var nBuf = ctx.createBuffer(1, nBufLen, ctx.sampleRate);
-    var nData = nBuf.getChannelData(0);
-    for (var j = 0; j < nBufLen; j++) {
-      nData[j] = Math.random() * 2 - 1;
-    }
-    noise.buffer = nBuf;
+  nodes.oscs = oscs;
+  nodes.gain = gain;
+  if (key === 'player') isPlayerPlaying = true;
+  else isTargetPlaying = true;
 
-    var sFilter = ctx.createBiquadFilter();
-    sFilter.type = 'highpass';
-    sFilter.frequency.value = ch === 's' ? 5000 : 3000;
-    sFilter.Q.value = 1;
-
-    var sGain = ctx.createGain();
-    var env = volume * 0.4;
-    sGain.gain.setValueAtTime(0.001, time);
-    sGain.gain.linearRampToValueAtTime(env, time + 0.01);
-    sGain.gain.linearRampToValueAtTime(env, time + dur - 0.01);
-    sGain.gain.linearRampToValueAtTime(0.001, time + dur);
-
-    noise.connect(sFilter);
-    sFilter.connect(sGain);
-    sGain.connect(dest);
-    noise.start(time);
-    noise.stop(time + dur);
-    return dur;
-  }
-
-  // Fricatives: F, V, H
-  if ('fvh'.indexOf(ch) >= 0 && cfg.breaths) {
-    dur = 0.05;
-    var fNoise = ctx.createBufferSource();
-    var fBufLen = Math.ceil(ctx.sampleRate * dur);
-    var fBuf = ctx.createBuffer(1, fBufLen, ctx.sampleRate);
-    var fData = fBuf.getChannelData(0);
-    for (var j = 0; j < fBufLen; j++) {
-      fData[j] = Math.random() * 2 - 1;
-    }
-    fNoise.buffer = fBuf;
-
-    var fFilter = ctx.createBiquadFilter();
-    fFilter.type = 'bandpass';
-    fFilter.frequency.value = ch === 'h' ? 1200 : 4000;
-    fFilter.Q.value = 0.5;
-
-    var fGain = ctx.createGain();
-    fGain.gain.setValueAtTime(volume * 0.25, time);
-    fGain.gain.exponentialRampToValueAtTime(0.001, time + dur);
-
-    fNoise.connect(fFilter);
-    fFilter.connect(fGain);
-    fGain.connect(dest);
-    fNoise.start(time);
-    fNoise.stop(time + dur);
-    return dur;
-  }
-
-  // Nasals: M, N, NG
-  if (('m' === ch || 'n' === ch) && cfg.nasals) {
-    dur = 0.05;
-    var nasalOsc = ctx.createOscillator();
-    nasalOsc.type = 'sine';
-    nasalOsc.frequency.value = ch === 'm' ? 250 : 350;
-
-    var nasalFilter = ctx.createBiquadFilter();
-    nasalFilter.type = 'lowpass';
-    nasalFilter.frequency.value = 400;
-    nasalFilter.Q.value = 5;
-
-    var nasalGain = ctx.createGain();
-    nasalGain.gain.setValueAtTime(0.001, time);
-    nasalGain.gain.linearRampToValueAtTime(volume * 0.4, time + 0.01);
-    nasalGain.gain.linearRampToValueAtTime(volume * 0.4, time + dur - 0.01);
-    nasalGain.gain.linearRampToValueAtTime(0.001, time + dur);
-
-    nasalOsc.connect(nasalFilter);
-    nasalFilter.connect(nasalGain);
-    nasalGain.connect(dest);
-    nasalOsc.start(time);
-    nasalOsc.stop(time + dur);
-    return dur;
-  }
-
-  // Liquids: R, L
-  if (('r' === ch || 'l' === ch) && cfg.liquids) {
-    dur = 0.04;
-    var liqOsc = ctx.createOscillator();
-    liqOsc.type = 'sine';
-    liqOsc.frequency.value = ch === 'r' ? 600 : 900;
-
-    var liqFilter = ctx.createBiquadFilter();
-    liqFilter.type = 'bandpass';
-    liqFilter.frequency.value = ch === 'r' ? 1200 : 1500;
-    liqFilter.Q.value = 3;
-
-    var liqGain = ctx.createGain();
-    liqGain.gain.setValueAtTime(0.001, time);
-    liqGain.gain.linearRampToValueAtTime(volume * 0.35, time + 0.01);
-    liqGain.gain.linearRampToValueAtTime(0.001, time + dur);
-
-    liqOsc.connect(liqFilter);
-    liqFilter.connect(liqGain);
-    liqGain.connect(dest);
-    liqOsc.start(time);
-    liqOsc.stop(time + dur);
-    return dur;
-  }
-
-  // W, Y - glides
-  if ('wy'.indexOf(ch) >= 0 && cfg.liquids) {
-    dur = 0.03;
-    var glideOsc = ctx.createOscillator();
-    glideOsc.type = 'sine';
-    glideOsc.frequency.value = ch === 'w' ? 300 : 400;
-
-    var glideGain = ctx.createGain();
-    glideGain.gain.setValueAtTime(volume * 0.2, time);
-    glideGain.gain.exponentialRampToValueAtTime(0.001, time + dur);
-
-    glideOsc.connect(glideGain);
-    glideGain.connect(dest);
-    glideOsc.start(time);
-    glideOsc.stop(time + dur);
-    return dur;
-  }
-
-  return 0;
+  nodes.timeout = setTimeout(() => {
+    gain.gain.linearRampToValueAtTime(0, actx.currentTime + 0.05);
+    setTimeout(() => { oscs.forEach(o => { try { o.stop(); } catch(e) {} }); }, 60);
+    if (key === 'player') isPlayerPlaying = false;
+    else isTargetPlaying = false;
+  }, 2000);
 }
 
-// ========================================
-// MAIN SYNTHESIS ENGINE
-// ========================================
-
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 2048;
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0.7;
-    masterGain.connect(analyser);
-    analyser.connect(audioCtx.destination);
-  }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-// Cached PeriodicWave for glottal pulse model
-var glottalWaveCache = null;
-
-function createGlottalWave(ctx) {
-  if (glottalWaveCache) return glottalWaveCache;
-  var numHarmonics = 64;
-  var real = new Float32Array(numHarmonics);
-  var imag = new Float32Array(numHarmonics);
-  real[0] = 0;
-  imag[0] = 0;
-  for (var n = 1; n < numHarmonics; n++) {
-    // LF-model: ~12dB/octave rolloff via 1/(n^1.5), with subtle jitter
-    var amplitude = 1.0 / Math.pow(n, 1.5);
-    var jitter = 1.0 + (Math.random() - 0.5) * 0.08;
-    amplitude *= jitter;
-    real[n] = amplitude * Math.cos(n * 0.3);
-    imag[n] = -amplitude * Math.sin(n * 0.3);
-  }
-  glottalWaveCache = ctx.createPeriodicWave(real, imag, { disableNormalization: false });
-  return glottalWaveCache;
-}
-
-function createCarrierNode(ctx, type, freq, time, duration) {
-  if (type === 'noise') {
-    var bufLen = Math.ceil(ctx.sampleRate * (duration + 0.2));
-    var buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    var data = buf.getChannelData(0);
-    for (var i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
-    var src = ctx.createBufferSource();
-    src.buffer = buf;
-    return { node: src, isNoise: true };
-  }
-
-  if (type === 'glottal') {
-    var osc = ctx.createOscillator();
-    osc.setPeriodicWave(createGlottalWave(ctx));
-    osc.frequency.value = freq;
-    return { node: osc, isNoise: false };
-  }
-
-  if (type === 'blend') {
-    // Glottal pulse carrier; noise added separately in synth chain
-    var osc = ctx.createOscillator();
-    osc.setPeriodicWave(createGlottalWave(ctx));
-    osc.frequency.value = freq;
-    return { node: osc, isNoise: false, blend: true };
-  }
-
-  if (type === 'pulse') {
-    // Approximate pulse with square wave
-    var osc2 = ctx.createOscillator();
-    osc2.type = 'square';
-    osc2.frequency.value = freq;
-    return { node: osc2, isNoise: false };
-  }
-
-  var osc3 = ctx.createOscillator();
-  osc3.type = type;
-  osc3.frequency.value = freq;
-  return { node: osc3, isNoise: false };
-}
-
-function speakText() {
-  initAudio();
-  if (isSpeaking) { stopSpeaking(); return; }
-
-  var text = document.getElementById('textInput').value.trim();
-  if (!text) return;
-
-  var phonemes = textToPhonemes(text);
-  var params = getVoiceParams();
-  var consonantCfg = getConsonantConfig();
-  var effectsCfg = getEffectsConfig();
-
-  isSpeaking = true;
-  stopRequested = false;
-  document.getElementById('statusBar').textContent = 'Speaking...';
-  document.getElementById('statusBar').className = 'status-bar speaking';
-  document.getElementById('speakBtn').classList.add('active');
-
-  // Build effects chain
-  var effectsOutput = buildEffectsChain(audioCtx, masterGain, effectsCfg);
-
-  var currentTime = audioCtx.currentTime + 0.05;
-  var syllableCount = 0;
-  var totalPhonemes = phonemes.length;
-
-  // Track nodes for cleanup
-  var allNodes = [];
-
-  for (var pi = 0; pi < phonemes.length; pi++) {
-    if (stopRequested) break;
-    var p = phonemes[pi];
-
-    if (p.type === 'gap') {
-      currentTime += p.duration;
-      continue;
-    }
-    if (p.type === 'pause') {
-      currentTime += p.duration;
-      continue;
-    }
-
-    syllableCount++;
-
-    // --- TIMING HUMANIZATION ---
-    var baseDur = params.speed;
-    var humanOffset = 0;
-    if (params.humanize > 0) {
-      humanOffset = (Math.random() * 2 - 1) * params.humanize / 1000;
-    }
-    // Stressed syllables 10% longer
-    if (p.stressed) baseDur *= 1.1;
-    // Longer words get rubato
-    if (p.text.length > 3) baseDur *= 1.05;
-    // Rush last syllable before pause
-    if (p.wordEnd && pi + 1 < phonemes.length && (phonemes[pi + 1].type === 'pause' || phonemes[pi + 1].type === 'gap')) {
-      baseDur *= 0.9;
-    }
-
-    var syllableStart = currentTime + Math.max(0, humanOffset);
-    var syllableDur = baseDur;
-    var attackTime = params.attack / 1000;
-    var releaseTime = params.release / 1000;
-
-    // --- PROSODY CONTOURS (smooth pitch curves) ---
-    var pitchHz = params.pitch;
-    var contourAmount = params.contour / 100;
-
-    // Position in total utterance (0 to 1)
-    var position = pi / Math.max(1, totalPhonemes - 1);
-
-    // Phrase-level: rise at start, peak 1/3 through, gentle fall to end
-    var phraseContour = 0;
-    if (position < 0.33) {
-      phraseContour = contourAmount * 18 * (position / 0.33);
-    } else {
-      phraseContour = contourAmount * 18 * (1.0 - (position - 0.33) / 0.67);
-    }
-
-    var contourShift = 0;
-    if (p.sentenceQuestion) {
-      // Questions: rise at the end
-      contourShift = phraseContour + contourAmount * 30 * Math.pow(position, 2);
-    } else {
-      // Statements: phrase arch with gentle fall
-      contourShift = phraseContour - contourAmount * 12 * position;
-    }
-    // Stressed syllables get slight rise
-    if (p.stressed) contourShift += contourAmount * 8;
-    // Syllable-level micro-variation
-    contourShift += Math.sin(syllableCount * 1.1) * contourAmount * 3;
-
-    pitchHz += contourShift;
-
-    // --- GAIN HUMANIZATION ---
-    var syllableGain = 0.5;
-    // Stressed 15% louder
-    if (p.stressed) syllableGain *= 1.15;
-    // Random +/-10%
-    syllableGain *= 0.9 + Math.random() * 0.2;
-
-    // --- JAW SIMULATION: faster = less clarity ---
-    var effectiveClarity = params.clarity;
-    if (baseDur < 0.1) effectiveClarity *= 0.7;
-
-    // --- INITIAL CONSONANT ---
-    var consonantDur = 0;
-    if (p.consonant) {
-      consonantDur = synthesizeConsonant(audioCtx, p.consonant, syllableStart, syllableDur * 0.3, effectsOutput, consonantCfg, consonantCfg.volume * syllableGain);
-    }
-
-    var vowelStart = syllableStart + consonantDur;
-    var vowelDur = syllableDur - consonantDur;
-    if (vowelDur < 0.03) vowelDur = 0.03;
-
-    // --- VOWEL FORMANT SYNTHESIS ---
-    var formant = getFormantForVowel(p.vowel);
-
-    // Get adjacent vowels for coarticulation transitions
-    var prevVowelFormant = null;
-    var nextVowelFormant = null;
-    if (pi > 0 && phonemes[pi - 1].vowel) {
-      prevVowelFormant = getFormantForVowel(phonemes[pi - 1].vowel);
-    }
-    if (pi + 1 < phonemes.length && phonemes[pi + 1].vowel) {
-      nextVowelFormant = getFormantForVowel(phonemes[pi + 1].vowel);
-    }
-
-    // Coarticulation: blend toward adjacent consonants
-    var coartF1 = formant.f1;
-    var coartF2 = formant.f2;
-    if (p.consonant && 'mn'.indexOf(p.consonant[p.consonant.length - 1]) >= 0) {
-      coartF1 = formant.f1 * 0.9;
-    }
-    if (p.endConsonant && 'sz'.indexOf(p.endConsonant[0]) >= 0) {
-      coartF2 = formant.f2 * 1.05;
-    }
-
-    // Carrier source
-    var carrier = createCarrierNode(audioCtx, params.carrier, pitchHz, vowelStart, vowelDur + 0.1);
-    var carrierNode = carrier.node;
-
-    // --- JITTER: ~0.8% random pitch micro-variation ---
-    if (!carrier.isNoise) {
-      var jitterBufLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.1));
-      var jitterBuf = audioCtx.createBuffer(1, jitterBufLen, audioCtx.sampleRate);
-      var jitterData = jitterBuf.getChannelData(0);
-      var jSamp = 0;
-      for (var ji = 0; ji < jitterBufLen; ji++) {
-        if (ji % 80 === 0) jSamp = (Math.random() - 0.5) * 2;
-        jitterData[ji] = jSamp;
-      }
-      var jitterSrc = audioCtx.createBufferSource();
-      jitterSrc.buffer = jitterBuf;
-      var jitterGain = audioCtx.createGain();
-      jitterGain.gain.value = pitchHz * 0.008;
-      jitterSrc.connect(jitterGain);
-      jitterGain.connect(carrierNode.frequency);
-      jitterSrc.start(vowelStart);
-      jitterSrc.stop(vowelStart + vowelDur + 0.05);
-      allNodes.push(jitterSrc);
-    }
-
-    // --- VIBRATO: delayed onset, rate variation ---
-    if (!carrier.isNoise && params.vibrato > 0) {
-      var vibRate = params.vibrato + (Math.random() - 0.5) * 1.5;
-      var vibLfo = audioCtx.createOscillator();
-      vibLfo.type = 'sine';
-      vibLfo.frequency.value = vibRate;
-      // Subtle vibrato rate variation
-      var vibRateLfo = audioCtx.createOscillator();
-      vibRateLfo.type = 'sine';
-      vibRateLfo.frequency.value = 0.3 + Math.random() * 0.4;
-      var vibRateGn = audioCtx.createGain();
-      vibRateGn.gain.value = 0.6;
-      vibRateLfo.connect(vibRateGn);
-      vibRateGn.connect(vibLfo.frequency);
-      vibRateLfo.start(vowelStart);
-      vibRateLfo.stop(vowelStart + vowelDur + 0.05);
-      allNodes.push(vibRateLfo);
-      var vibGain = audioCtx.createGain();
-      // Delayed onset: ~200ms before vibrato kicks in
-      var vibOnsetDelay = Math.min(0.2, vowelDur * 0.35);
-      vibGain.gain.setValueAtTime(0, vowelStart);
-      vibGain.gain.setValueAtTime(0, vowelStart + vibOnsetDelay);
-      vibGain.gain.linearRampToValueAtTime(params.vibDepth, vowelStart + vibOnsetDelay + 0.08);
-      vibLfo.connect(vibGain);
-      vibGain.connect(carrierNode.frequency);
-      vibLfo.start(vowelStart);
-      vibLfo.stop(vowelStart + vowelDur + 0.05);
-      allNodes.push(vibLfo);
-    }
-
-    // --- SHIMMER: ~2.5% amplitude modulation ---
-    var shimmerLfo = audioCtx.createOscillator();
-    shimmerLfo.type = 'sine';
-    shimmerLfo.frequency.value = 8 + Math.random() * 6;
-    var shimmerGn = audioCtx.createGain();
-    shimmerGn.gain.value = 0.025;
-    shimmerLfo.connect(shimmerGn);
-    shimmerLfo.start(vowelStart);
-    shimmerLfo.stop(vowelStart + vowelDur + 0.05);
-    allNodes.push(shimmerLfo);
-
-    // Pitch portamento with exponential curve for natural feel
-    if (!carrier.isNoise && contourAmount > 0) {
-      var portaStart = Math.max(pitchHz - contourShift * 0.3, 20);
-      carrierNode.frequency.setValueAtTime(portaStart, vowelStart);
-      carrierNode.frequency.exponentialRampToValueAtTime(pitchHz, vowelStart + Math.min(0.04, vowelDur * 0.2));
-      // Syllable-level: slight fall at end
-      if (vowelDur > 0.08) {
-        carrierNode.frequency.setValueAtTime(pitchHz, vowelStart + vowelDur * 0.75);
-        carrierNode.frequency.exponentialRampToValueAtTime(Math.max(pitchHz * 0.98, 20), vowelStart + vowelDur);
-      }
-    }
-
-    // --- FORMANT FILTERS with smooth coarticulation transitions ---
-    var coartTime = 0.04; // 40ms transition
-
-    var f1 = audioCtx.createBiquadFilter();
-    f1.type = 'bandpass';
-    f1.Q.value = effectiveClarity * (formant.q1 / 15);
-    // Coarticulate from previous vowel
-    if (prevVowelFormant) {
-      f1.frequency.setValueAtTime(prevVowelFormant.f1 * 0.3 + coartF1 * 0.7, vowelStart);
-      f1.frequency.linearRampToValueAtTime(coartF1, vowelStart + coartTime);
-    } else {
-      f1.frequency.setValueAtTime(coartF1, vowelStart);
-    }
-    // Coarticulate toward next vowel
-    if (nextVowelFormant && vowelDur > 0.08) {
-      f1.frequency.setValueAtTime(coartF1, vowelStart + vowelDur - coartTime);
-      f1.frequency.linearRampToValueAtTime(coartF1 * 0.7 + nextVowelFormant.f1 * 0.3, vowelStart + vowelDur);
-    }
-
-    var f2 = audioCtx.createBiquadFilter();
-    f2.type = 'bandpass';
-    f2.Q.value = effectiveClarity * (formant.q2 / 15);
-    if (prevVowelFormant) {
-      f2.frequency.setValueAtTime(prevVowelFormant.f2 * 0.3 + coartF2 * 0.7, vowelStart);
-      f2.frequency.linearRampToValueAtTime(coartF2, vowelStart + coartTime);
-    } else {
-      f2.frequency.setValueAtTime(coartF2, vowelStart);
-    }
-    if (nextVowelFormant && vowelDur > 0.08) {
-      f2.frequency.setValueAtTime(coartF2, vowelStart + vowelDur - coartTime);
-      f2.frequency.linearRampToValueAtTime(coartF2 * 0.7 + nextVowelFormant.f2 * 0.3, vowelStart + vowelDur);
-    }
-
-    var f3 = audioCtx.createBiquadFilter();
-    f3.type = 'bandpass';
-    f3.frequency.value = formant.f3;
-    f3.Q.value = effectiveClarity * (formant.q3 / 15);
-    if (prevVowelFormant) {
-      f3.frequency.setValueAtTime(prevVowelFormant.f3 * 0.3 + formant.f3 * 0.7, vowelStart);
-      f3.frequency.linearRampToValueAtTime(formant.f3, vowelStart + coartTime);
-    }
-    if (nextVowelFormant && vowelDur > 0.08) {
-      f3.frequency.setValueAtTime(formant.f3, vowelStart + vowelDur - coartTime);
-      f3.frequency.linearRampToValueAtTime(formant.f3 * 0.7 + nextVowelFormant.f3 * 0.3, vowelStart + vowelDur);
-    }
-
-    // Nasality filter
-    var nasalFilter = null;
-    if (params.nasality > 0) {
-      nasalFilter = audioCtx.createBiquadFilter();
-      nasalFilter.type = 'bandpass';
-      nasalFilter.frequency.value = 270;
-      nasalFilter.Q.value = 5;
-    }
-
-    // Gain envelope with natural exponential attack
-    var vowelGain = audioCtx.createGain();
-    vowelGain.gain.setValueAtTime(0.001, vowelStart);
-    vowelGain.gain.exponentialRampToValueAtTime(syllableGain, vowelStart + attackTime);
-    // Slight decay after attack
-    vowelGain.gain.exponentialRampToValueAtTime(syllableGain * 0.85, vowelStart + attackTime + 0.03);
-    vowelGain.gain.setValueAtTime(syllableGain * 0.85, vowelStart + vowelDur - releaseTime);
-    vowelGain.gain.exponentialRampToValueAtTime(0.001, vowelStart + vowelDur);
-
-    // Build formant mixing
-    var formantMerger = audioCtx.createGain();
-    formantMerger.gain.value = 1.0;
-    // Connect shimmer for amplitude variation
-    shimmerGn.connect(formantMerger.gain);
-
-    // Route carrier through formants in parallel
-    var f1Gain = audioCtx.createGain();
-    f1Gain.gain.value = 1.0;
-    var f2Gain = audioCtx.createGain();
-    f2Gain.gain.value = 0.63;
-    var f3Gain = audioCtx.createGain();
-    f3Gain.gain.value = 0.32;
-
-    carrierNode.connect(f1);
-    f1.connect(f1Gain);
-    f1Gain.connect(formantMerger);
-
-    carrierNode.connect(f2);
-    f2.connect(f2Gain);
-    f2Gain.connect(formantMerger);
-
-    carrierNode.connect(f3);
-    f3.connect(f3Gain);
-    f3Gain.connect(formantMerger);
-
-    // --- GLOTTAL ATTACK TRANSIENT: brief noise burst at onset ---
-    var glottalAttackDur = 0.006;
-    var gaBufLen = Math.ceil(audioCtx.sampleRate * glottalAttackDur);
-    var gaBuf = audioCtx.createBuffer(1, gaBufLen, audioCtx.sampleRate);
-    var gaData = gaBuf.getChannelData(0);
-    for (var gai = 0; gai < gaBufLen; gai++) gaData[gai] = Math.random() * 2 - 1;
-    var gaSrc = audioCtx.createBufferSource();
-    gaSrc.buffer = gaBuf;
-    var gaBP = audioCtx.createBiquadFilter();
-    gaBP.type = 'bandpass';
-    gaBP.frequency.value = pitchHz * 2;
-    gaBP.Q.value = 1.5;
-    var gaGn = audioCtx.createGain();
-    gaGn.gain.setValueAtTime(0.06, vowelStart);
-    gaGn.gain.exponentialRampToValueAtTime(0.001, vowelStart + glottalAttackDur);
-    gaSrc.connect(gaBP);
-    gaBP.connect(gaGn);
-    gaGn.connect(formantMerger);
-    gaSrc.start(vowelStart);
-    gaSrc.stop(vowelStart + glottalAttackDur + 0.001);
-    allNodes.push(gaSrc);
-
-    // Nasal path
-    if (nasalFilter && params.nasality > 0) {
-      var nasalGain2 = audioCtx.createGain();
-      nasalGain2.gain.value = params.nasality * 0.5;
-      carrierNode.connect(nasalFilter);
-      nasalFilter.connect(nasalGain2);
-      nasalGain2.connect(formantMerger);
-      allNodes.push(nasalFilter);
-    }
-
-    // --- ASPIRATION BLEND: highpass noise at ~5% of carrier ---
-    var aspirLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.05));
-    var aspirBuf = audioCtx.createBuffer(1, aspirLen, audioCtx.sampleRate);
-    var aspirData = aspirBuf.getChannelData(0);
-    for (var asi = 0; asi < aspirLen; asi++) aspirData[asi] = Math.random() * 2 - 1;
-    var aspirSrc = audioCtx.createBufferSource();
-    aspirSrc.buffer = aspirBuf;
-    var aspirHP = audioCtx.createBiquadFilter();
-    aspirHP.type = 'highpass';
-    aspirHP.frequency.value = 1000;
-    var aspirGn = audioCtx.createGain();
-    aspirGn.gain.value = 0.012 + params.breathiness * 0.02;
-    aspirSrc.connect(aspirHP);
-    aspirHP.connect(aspirGn);
-    aspirGn.connect(f1);
-    aspirGn.connect(f2);
-    aspirGn.connect(f3);
-    aspirSrc.start(vowelStart);
-    aspirSrc.stop(vowelStart + vowelDur + 0.02);
-    allNodes.push(aspirSrc);
-
-    // Breathiness: add filtered noise (in addition to aspiration)
-    if (params.breathiness > 0) {
-      var breathLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.05));
-      var breathBuf = audioCtx.createBuffer(1, breathLen, audioCtx.sampleRate);
-      var breathData = breathBuf.getChannelData(0);
-      for (var bi = 0; bi < breathLen; bi++) breathData[bi] = Math.random() * 2 - 1;
-      var breathSrc = audioCtx.createBufferSource();
-      breathSrc.buffer = breathBuf;
-
-      var breathFilter = audioCtx.createBiquadFilter();
-      breathFilter.type = 'bandpass';
-      breathFilter.frequency.value = (coartF1 + coartF2) / 2;
-      breathFilter.Q.value = 2;
-
-      var breathGain = audioCtx.createGain();
-      breathGain.gain.value = params.breathiness * syllableGain * 0.5;
-
-      breathSrc.connect(breathFilter);
-      breathFilter.connect(breathGain);
-      breathGain.connect(formantMerger);
-      breathSrc.start(vowelStart);
-      breathSrc.stop(vowelStart + vowelDur + 0.02);
-      allNodes.push(breathSrc);
-    }
-
-    // Blend mode: add noise carrier too
-    if (carrier.blend) {
-      var blendLen = Math.ceil(audioCtx.sampleRate * (vowelDur + 0.05));
-      var blendBuf = audioCtx.createBuffer(1, blendLen, audioCtx.sampleRate);
-      var blendData = blendBuf.getChannelData(0);
-      for (var bdi = 0; bdi < blendLen; bdi++) blendData[bdi] = Math.random() * 2 - 1;
-      var blendSrc = audioCtx.createBufferSource();
-      blendSrc.buffer = blendBuf;
-
-      var blendGain = audioCtx.createGain();
-      blendGain.gain.value = 0.12;
-
-      blendSrc.connect(f1);
-      blendSrc.connect(f2);
-      blendSrc.connect(f3);
-
-      blendSrc.start(vowelStart);
-      blendSrc.stop(vowelStart + vowelDur + 0.02);
-      allNodes.push(blendSrc);
-    }
-
-    formantMerger.connect(vowelGain);
-    vowelGain.connect(effectsOutput);
-
-    carrierNode.start(vowelStart);
-    carrierNode.stop(vowelStart + vowelDur + 0.02);
-    allNodes.push(carrierNode);
-
-    // --- END CONSONANT ---
-    if (p.endConsonant) {
-      var endConsDur = p.wordEnd ? 0.3 : 0.5; // Word-final consonants shorter
-      synthesizeConsonant(audioCtx, p.endConsonant, vowelStart + vowelDur - 0.01, syllableDur * endConsDur, effectsOutput, consonantCfg, consonantCfg.volume * syllableGain * 0.8);
-    }
-
-    // --- BREATH NOISE between phrases: lowpass-filtered gentle inhale ---
-    if (syllableCount % 8 === 0 && consonantCfg.breaths) {
-      var breathInhaleDur = 0.2;
-      var breathInhaleLen = Math.ceil(audioCtx.sampleRate * breathInhaleDur);
-      var breathInhaleBuf = audioCtx.createBuffer(1, breathInhaleLen, audioCtx.sampleRate);
-      var breathInhaleData = breathInhaleBuf.getChannelData(0);
-      for (var bii = 0; bii < breathInhaleLen; bii++) breathInhaleData[bii] = Math.random() * 2 - 1;
-      var breathInhaleSrc = audioCtx.createBufferSource();
-      breathInhaleSrc.buffer = breathInhaleBuf;
-
-      var breathInhaleFilter = audioCtx.createBiquadFilter();
-      breathInhaleFilter.type = 'lowpass';
-      breathInhaleFilter.frequency.value = 2000;
-      breathInhaleFilter.Q.value = 0.5;
-
-      var breathInhaleGain = audioCtx.createGain();
-      breathInhaleGain.gain.setValueAtTime(0.001, vowelStart + vowelDur);
-      breathInhaleGain.gain.linearRampToValueAtTime(0.022, vowelStart + vowelDur + breathInhaleDur * 0.3);
-      breathInhaleGain.gain.setValueAtTime(0.022, vowelStart + vowelDur + breathInhaleDur * 0.7);
-      breathInhaleGain.gain.linearRampToValueAtTime(0.001, vowelStart + vowelDur + breathInhaleDur);
-
-      breathInhaleSrc.connect(breathInhaleFilter);
-      breathInhaleFilter.connect(breathInhaleGain);
-      breathInhaleGain.connect(effectsOutput);
-      breathInhaleSrc.start(vowelStart + vowelDur);
-      breathInhaleSrc.stop(vowelStart + vowelDur + breathInhaleDur);
-      allNodes.push(breathInhaleSrc);
-
-      currentTime = vowelStart + vowelDur + breathInhaleDur + 0.03;
-    } else {
-      currentTime = vowelStart + vowelDur;
-    }
-  }
-
-  // Schedule end-of-speech cleanup
-  var totalDuration = currentTime - audioCtx.currentTime;
-  setTimeout(function() {
-    isSpeaking = false;
-    document.getElementById('statusBar').textContent = 'Ready';
-    document.getElementById('statusBar').className = 'status-bar';
-    document.getElementById('speakBtn').classList.remove('active');
-  }, totalDuration * 1000 + 100);
-
-  // Start waveform visualization
-  startVisualization();
-}
-
-function stopSpeaking() {
-  stopRequested = true;
-  isSpeaking = false;
-  if (audioCtx) {
-    audioCtx.close();
-    audioCtx = null;
-    analyser = null;
-    masterGain = null;
-    glottalWaveCache = null;
-  }
-  document.getElementById('statusBar').textContent = 'Stopped';
-  document.getElementById('statusBar').className = 'status-bar';
-  document.getElementById('speakBtn').classList.remove('active');
-  stopVisualization();
-}
-
-// ========================================
-// EFFECTS CHAIN
-// ========================================
-
-function buildEffectsChain(ctx, output, cfg) {
-  var chain = output;
-
-  // Reverb (convolution)
-  if (cfg.reverb && cfg.reverb.enabled) {
-    var convolver = ctx.createConvolver();
-    var decay = cfg.reverb.value;
-    var reverbLen = Math.ceil(ctx.sampleRate * decay);
-    var reverbBuf = ctx.createBuffer(2, reverbLen, ctx.sampleRate);
-    for (var ch = 0; ch < 2; ch++) {
-      var rData = reverbBuf.getChannelData(ch);
-      for (var i = 0; i < reverbLen; i++) {
-        rData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (reverbLen * 0.3));
-      }
-    }
-    convolver.buffer = reverbBuf;
-
-    var dryGain = ctx.createGain();
-    dryGain.gain.value = 0.7;
-    var wetGain = ctx.createGain();
-    wetGain.gain.value = 0.3;
-
-    var reverbInput = ctx.createGain();
-    reverbInput.gain.value = 1.0;
-
-    reverbInput.connect(dryGain);
-    reverbInput.connect(convolver);
-    convolver.connect(wetGain);
-    dryGain.connect(chain);
-    wetGain.connect(chain);
-
-    chain = reverbInput;
-  }
+function playEffectedTone(params, analyser, key) {
+  const nodes = key === 'player' ? playerNodes : targetNodes;
+  const osc = actx.createOscillator();
+  osc.type = params.type;
+  osc.frequency.value = params.freq;
+
+  const dryGain = actx.createGain();
+  const wetGain = actx.createGain();
+  const masterGainNode = actx.createGain();
+  masterGainNode.gain.value = 0.35;
 
   // Delay
-  if (cfg.delay && cfg.delay.enabled) {
-    var delayNode = ctx.createDelay(1.0);
-    delayNode.delayTime.value = cfg.delay.value;
+  const delay = actx.createDelay(1.0);
+  const feedbackGain = actx.createGain();
+  delay.delayTime.value = params.effects.delay.time;
+  feedbackGain.gain.value = params.effects.delay.feedback;
 
-    var feedbackGain = ctx.createGain();
-    feedbackGain.gain.value = 0.3;
+  const delayMix = params.effects.delay.mix;
+  dryGain.gain.value = 1 - delayMix * 0.5;
+  wetGain.gain.value = delayMix;
 
-    var delayInput = ctx.createGain();
-    delayInput.gain.value = 1.0;
-
-    delayInput.connect(chain);
-    delayInput.connect(delayNode);
-    delayNode.connect(feedbackGain);
-    feedbackGain.connect(delayNode);
-    feedbackGain.connect(chain);
-
-    chain = delayInput;
-  }
-
-  // Distortion (waveshaper)
-  if (cfg.distortion && cfg.distortion.enabled) {
-    var shaper = ctx.createWaveShaper();
-    var amount = cfg.distortion.value;
-    var curve = new Float32Array(256);
-    for (var i = 0; i < 256; i++) {
-      var x = (i / 128) - 1;
-      curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+  // Distortion
+  const distortion = actx.createWaveShaper();
+  const distAmount = params.effects.distortion.amount;
+  const distMix = params.effects.distortion.mix;
+  if (distAmount > 0 && distMix > 0) {
+    const samples = 44100;
+    const curve = new Float32Array(samples);
+    for (let i = 0; i < samples; i++) {
+      const x = (i * 2) / samples - 1;
+      curve[i] = ((3 + distAmount) * x * 20 * (Math.PI/180)) / (Math.PI + distAmount * Math.abs(x));
     }
-    shaper.curve = curve;
-    shaper.oversample = '2x';
-
-    var distInput = ctx.createGain();
-    distInput.gain.value = 1.0;
-    distInput.connect(shaper);
-    shaper.connect(chain);
-    chain = distInput;
+    distortion.curve = curve;
+    distortion.oversample = '4x';
   }
 
-  // Chorus (LFO modulated delay)
-  if (cfg.chorus && cfg.chorus.enabled) {
-    var chorusDelay = ctx.createDelay(0.05);
-    chorusDelay.delayTime.value = 0.015;
+  const distDryGain = actx.createGain();
+  const distWetGain = actx.createGain();
+  distDryGain.gain.value = 1 - distMix;
+  distWetGain.gain.value = distMix;
 
-    var chorusLfo = ctx.createOscillator();
-    chorusLfo.type = 'sine';
-    chorusLfo.frequency.value = cfg.chorus.value;
-    var chorusDepth = ctx.createGain();
-    chorusDepth.gain.value = 0.005;
-    chorusLfo.connect(chorusDepth);
-    chorusDepth.connect(chorusDelay.delayTime);
-    chorusLfo.start();
+  // Routing
+  osc.connect(distDryGain);
+  osc.connect(distortion);
+  distortion.connect(distWetGain);
 
-    var chorusInput = ctx.createGain();
-    chorusInput.gain.value = 1.0;
+  distDryGain.connect(dryGain);
+  distWetGain.connect(dryGain);
+  distDryGain.connect(delay);
+  distWetGain.connect(delay);
 
-    var chorusDry = ctx.createGain();
-    chorusDry.gain.value = 0.7;
-    var chorusWet = ctx.createGain();
-    chorusWet.gain.value = 0.3;
+  delay.connect(feedbackGain);
+  feedbackGain.connect(delay);
+  delay.connect(wetGain);
 
-    chorusInput.connect(chorusDry);
-    chorusInput.connect(chorusDelay);
-    chorusDelay.connect(chorusWet);
-    chorusDry.connect(chain);
-    chorusWet.connect(chain);
+  dryGain.connect(masterGainNode);
+  wetGain.connect(masterGainNode);
+  masterGainNode.connect(analyser);
 
-    chain = chorusInput;
-  }
+  osc.start();
+  nodes.osc = osc;
+  nodes.gain = masterGainNode;
+  if (key === 'player') isPlayerPlaying = true;
+  else isTargetPlaying = true;
 
-  return chain;
+  nodes.timeout = setTimeout(() => {
+    masterGainNode.gain.linearRampToValueAtTime(0, actx.currentTime + 0.1);
+    setTimeout(() => { try { osc.stop(); } catch(e) {} }, 120);
+    if (key === 'player') isPlayerPlaying = false;
+    else isTargetPlaying = false;
+  }, 2000);
 }
 
-// ========================================
-// WAVEFORM VISUALIZATION
-// ========================================
+function playFullSynthSound(params, analyser, key) {
+  const nodes = key === 'player' ? playerNodes : targetNodes;
+  const env = params.env;
+
+  const osc = actx.createOscillator();
+  osc.type = params.type;
+  osc.frequency.value = params.freq;
+
+  // Envelope gain
+  const envGain = actx.createGain();
+  const now = actx.currentTime;
+  envGain.gain.setValueAtTime(0, now);
+  envGain.gain.linearRampToValueAtTime(0.45, now + env.a);
+  envGain.gain.linearRampToValueAtTime(env.s * 0.45, now + env.a + env.d);
+  envGain.gain.setValueAtTime(env.s * 0.45, now + env.a + env.d + 0.5);
+  envGain.gain.linearRampToValueAtTime(0, now + env.a + env.d + 0.5 + env.r);
+
+  // Filter
+  const filter = actx.createBiquadFilter();
+  filter.type = params.filter.type || 'lowpass';
+  filter.frequency.value = params.filter.cutoff;
+  filter.Q.value = params.filter.q;
+
+  // LFO
+  let lfo, lfoGain;
+  if (params.lfo.rate > 0 && params.lfo.depth > 0) {
+    lfo = actx.createOscillator();
+    lfoGain = actx.createGain();
+    lfo.type = 'sine';
+    lfo.frequency.value = params.lfo.rate;
+
+    if (params.lfo.target === 'pitch') {
+      lfoGain.gain.value = params.freq * params.lfo.depth * 0.1;
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+    } else if (params.lfo.target === 'amplitude') {
+      lfoGain.gain.value = params.lfo.depth * 0.4;
+      lfo.connect(lfoGain);
+      lfoGain.connect(envGain.gain);
+    } else if (params.lfo.target === 'filter') {
+      lfoGain.gain.value = params.filter.cutoff * params.lfo.depth;
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+    }
+    lfo.start();
+    nodes.lfo = lfo;
+  }
+
+  // Delay effect
+  const delay = actx.createDelay(1.0);
+  const feedbackGain = actx.createGain();
+  const dryGain = actx.createGain();
+  const wetGain = actx.createGain();
+  const masterGainNode = actx.createGain();
+  masterGainNode.gain.value = 0.35;
+
+  delay.delayTime.value = params.effects.delay.time;
+  feedbackGain.gain.value = params.effects.delay.feedback;
+  const delayMix = params.effects.delay.mix;
+  dryGain.gain.value = 1 - delayMix * 0.5;
+  wetGain.gain.value = delayMix;
+
+  // Distortion
+  const distortion = actx.createWaveShaper();
+  const distAmount = params.effects.distortion.amount;
+  const distMix = params.effects.distortion.mix || (distAmount > 0 ? 0.5 : 0);
+  if (distAmount > 0 && distMix > 0) {
+    const samples = 44100;
+    const curve = new Float32Array(samples);
+    for (let i = 0; i < samples; i++) {
+      const x = (i * 2) / samples - 1;
+      curve[i] = ((3 + distAmount) * x * 20 * (Math.PI/180)) / (Math.PI + distAmount * Math.abs(x));
+    }
+    distortion.curve = curve;
+    distortion.oversample = '4x';
+  }
+
+  const distDryGain = actx.createGain();
+  const distWetGain = actx.createGain();
+  distDryGain.gain.value = 1 - distMix;
+  distWetGain.gain.value = distMix;
+
+  // Routing
+  osc.connect(filter);
+  filter.connect(envGain);
+
+  envGain.connect(distDryGain);
+  envGain.connect(distortion);
+  distortion.connect(distWetGain);
+
+  distDryGain.connect(dryGain);
+  distWetGain.connect(dryGain);
+  distDryGain.connect(delay);
+  distWetGain.connect(delay);
+
+  delay.connect(feedbackGain);
+  feedbackGain.connect(delay);
+  delay.connect(wetGain);
+
+  dryGain.connect(masterGainNode);
+  wetGain.connect(masterGainNode);
+  masterGainNode.connect(analyser);
+
+  osc.start();
+  nodes.osc = osc;
+  nodes.gain = masterGainNode;
+  if (key === 'player') isPlayerPlaying = true;
+  else isTargetPlaying = true;
+
+  const total = env.a + env.d + 0.5 + env.r + 0.3;
+  nodes.timeout = setTimeout(() => {
+    masterGainNode.gain.linearRampToValueAtTime(0, actx.currentTime + 0.1);
+    setTimeout(() => {
+      try { osc.stop(); } catch(e) {}
+      if (lfo) try { lfo.stop(); } catch(e) {}
+    }, 120);
+    if (key === 'player') isPlayerPlaying = false;
+    else isTargetPlaying = false;
+  }, Math.max(total, 1.5) * 1000);
+}
+
+// ─── Visualization ──────────────────────────────────────────────────────────
+
+let animFrame = null;
 
 function startVisualization() {
-  if (animFrameId) return;
-  drawWaveform();
+  if (animFrame) cancelAnimationFrame(animFrame);
+
+  function draw() {
+    drawWaveform('vizPlayer', analyserPlayer, isPlayerPlaying);
+    drawWaveform('vizTarget', analyserTarget, isTargetPlaying);
+    animFrame = requestAnimationFrame(draw);
+  }
+  draw();
 }
 
-function stopVisualization() {
-  if (animFrameId) {
-    cancelAnimationFrame(animFrameId);
-    animFrameId = null;
-  }
-  // Clear canvas
-  var canvas = document.getElementById('waveformCanvas');
-  var ctx2d = canvas.getContext('2d');
-  ctx2d.fillStyle = '#08080c';
-  ctx2d.fillRect(0, 0, canvas.width, canvas.height);
-  drawGridLines(ctx2d, canvas);
-}
+function drawWaveform(canvasId, analyser, isPlaying) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !analyser) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
 
-function drawWaveform() {
-  var canvas = document.getElementById('waveformCanvas');
-  var ctx2d = canvas.getContext('2d');
-
-  // Set canvas resolution
-  if (canvas.width !== canvas.offsetWidth * 2) {
-    canvas.width = canvas.offsetWidth * 2;
-    canvas.height = canvas.offsetHeight * 2;
+  if (canvas.width !== canvas.offsetWidth * dpr || canvas.height !== canvas.offsetHeight * dpr) {
+    canvas.width = canvas.offsetWidth * dpr;
+    canvas.height = canvas.offsetHeight * dpr;
   }
 
-  var w = canvas.width;
-  var h = canvas.height;
+  ctx.save();
+  ctx.scale(dpr, dpr);
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
 
-  ctx2d.fillStyle = '#08080c';
-  ctx2d.fillRect(0, 0, w, h);
+  ctx.clearRect(0, 0, w, h);
 
-  drawGridLines(ctx2d, canvas);
-
-  if (analyser && isSpeaking) {
-    var bufferLength = analyser.frequencyBinCount;
-    var dataArray = new Uint8Array(bufferLength);
-    analyser.getByteTimeDomainData(dataArray);
-
-    ctx2d.lineWidth = 2;
-    ctx2d.strokeStyle = '#00ffaa';
-    ctx2d.shadowColor = '#00ffaa';
-    ctx2d.shadowBlur = 4;
-    ctx2d.beginPath();
-
-    var sliceWidth = w / bufferLength;
-    var x = 0;
-    for (var i = 0; i < bufferLength; i++) {
-      var v = dataArray[i] / 128.0;
-      var y = (v * h) / 2;
-      if (i === 0) {
-        ctx2d.moveTo(x, y);
-      } else {
-        ctx2d.lineTo(x, y);
-      }
-      x += sliceWidth;
-    }
-    ctx2d.lineTo(w, h / 2);
-    ctx2d.stroke();
-    ctx2d.shadowBlur = 0;
+  // Grid lines
+  ctx.strokeStyle = 'rgba(0, 120, 212, 0.06)';
+  ctx.lineWidth = 1;
+  for (let y = h * 0.25; y < h; y += h * 0.25) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
   }
 
-  if (isSpeaking) {
-    animFrameId = requestAnimationFrame(drawWaveform);
-  } else {
-    animFrameId = null;
-  }
-}
-
-function drawGridLines(ctx2d, canvas) {
-  var w = canvas.width;
-  var h = canvas.height;
-  ctx2d.strokeStyle = '#151520';
-  ctx2d.lineWidth = 1;
   // Center line
-  ctx2d.beginPath();
-  ctx2d.moveTo(0, h / 2);
-  ctx2d.lineTo(w, h / 2);
-  ctx2d.stroke();
-  // Quarter lines
-  ctx2d.strokeStyle = '#0e0e18';
-  ctx2d.beginPath();
-  ctx2d.moveTo(0, h / 4);
-  ctx2d.lineTo(w, h / 4);
-  ctx2d.moveTo(0, 3 * h / 4);
-  ctx2d.lineTo(w, 3 * h / 4);
-  ctx2d.stroke();
+  ctx.strokeStyle = 'rgba(0, 120, 212, 0.12)';
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  if (!isPlaying) {
+    ctx.fillStyle = '#b0c0d0';
+    ctx.font = '11px IBM Plex Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText('Press play to hear', w / 2, h / 2 + 4);
+    ctx.restore();
+    return;
+  }
+
+  const bufLen = analyser.frequencyBinCount;
+  const data = new Uint8Array(bufLen);
+  analyser.getByteTimeDomainData(data);
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#0078d4';
+  ctx.lineWidth = 2;
+  const sliceWidth = w / bufLen;
+  let x = 0;
+  for (let i = 0; i < bufLen; i++) {
+    const v = data[i] / 128.0;
+    const y = (v * h) / 2;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+    x += sliceWidth;
+  }
+  ctx.stroke();
+
+  // Glow
+  ctx.strokeStyle = 'rgba(0, 120, 212, 0.15)';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  x = 0;
+  for (let i = 0; i < bufLen; i++) {
+    const v = data[i] / 128.0;
+    const y = (v * h) / 2;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+    x += sliceWidth;
+  }
+  ctx.stroke();
+
+  ctx.restore();
 }
 
-// ========================================
-// INIT
-// ========================================
+// ─── Init ───────────────────────────────────────────────────────────────────
 
-buildUI();
-loadPreset('human');
+renderNav();
+renderLesson();
 
-// Resize canvas on window resize
-window.addEventListener('resize', function() {
-  var canvas = document.getElementById('waveformCanvas');
-  canvas.width = canvas.offsetWidth * 2;
-  canvas.height = canvas.offsetHeight * 2;
-  var ctx2d = canvas.getContext('2d');
-  ctx2d.fillStyle = '#08080c';
-  ctx2d.fillRect(0, 0, canvas.width, canvas.height);
-  drawGridLines(ctx2d, canvas);
+// Handle resize for ADSR
+window.addEventListener('resize', () => {
+  if (state.currentLesson === 3) drawADSR();
 });
 
-// Init canvas
-setTimeout(function() {
-  var canvas = document.getElementById('waveformCanvas');
-  canvas.width = canvas.offsetWidth * 2;
-  canvas.height = canvas.offsetHeight * 2;
-  var ctx2d = canvas.getContext('2d');
-  ctx2d.fillStyle = '#08080c';
-  ctx2d.fillRect(0, 0, canvas.width, canvas.height);
-  drawGridLines(ctx2d, canvas);
-}, 50);
+})();
 </script>
-</main>
-
-<script src="../shared/substrate-frame.js" data-title="VOCAL LAB" data-lore="The voice synthesis laboratory" data-agent="Hum" data-agent-color="#bb88ff" data-no-audio="true"></script>
 </body>
 </html>

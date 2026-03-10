@@ -1,7 +1,7 @@
 ---
 layout: null
 permalink: /games/myco/
-title: "Myco World — Claude Fluency for Everyone"
+title: "Myco World — Interactive Mycology Lab"
 redirect_from:
   - /myco/
 ---
@@ -10,1046 +10,2269 @@ redirect_from:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Myco World — Claude Fluency for Everyone</title>
-<meta name="description" content="A visual novel-style path to learning Claude AI. Three characters guide you from zero to fluent — no experience required.">
-<meta property="og:title" content="Myco World — Claude Fluency for Everyone">
-<meta property="og:description" content="Learn Claude AI through a visual novel. Lumen teaches, Q raps, V motivates. Choose your path: Foundation, Practitioner, or Builder.">
+<title>Myco World — Interactive Mycology Lab</title>
+<meta name="description" content="Grow fungi, build ecosystems, and learn real mycology. An interactive sandbox where you cultivate mushrooms, discover symbiosis, and explore the Wood Wide Web.">
+<meta property="og:title" content="Myco World — Interactive Mycology Lab">
+<meta property="og:description" content="Grow fungi, build ecosystems, and learn real mycology. An interactive sandbox where you cultivate mushrooms, discover symbiosis, and explore the Wood Wide Web.">
 <meta property="og:url" content="https://substrate.lol/games/myco/">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://substrate.lol/games/myco/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
-  /* === PIXEL ART MODE === */
-  button, .btn, [class*="btn"] {
-    border-radius: 0 !important;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
-    transition: none !important;
-  }
-  button:active, .btn:active, [class*="btn"]:active {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 1px 1px 0 rgba(0,0,0,0.5) !important;
-  }
-
-  :root {
-    --bg: #0a0a0f;
-    --bg-raised: #111118;
-    --bg-card: #14141e;
-    --green: #00ffaa;
-    --green-dim: #00cc88;
-    --purple: #c084fc;
-    --purple-dim: #a855f7;
-    --cyan: #22d3ee;
-    --amber: #fbbf24;
-    --magenta: #e477ff;
-    --text: #c8c8d0;
-    --text-bright: #eeeef2;
-    --text-dim: #666;
-    --border: #1e1e2e;
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-x: hidden;
-    overscroll-behavior: none;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* === VN CONTAINER === */
-  .vn-container {
-    width: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
-    position: relative;
-    overflow: hidden;
-    background: #08080d;
-  }
-
-  /* Scene background */
-  .vn-scene {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    transition: none;
-    z-index: 1;
-  }
-
-  /* Character sprites */
-  .vn-characters {
-    position: fixed;
-    bottom: 220px;
-    left: 0; right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 48px;
-    z-index: 2;
-    transition: none;
-    pointer-events: none;
-  }
-  .vn-char {
-    text-align: center;
-    transition: none;
-    filter: brightness(0.4);
-    opacity: 0;
-  }
-  .vn-char.visible { opacity: 1; }
-  .vn-char.speaking {
-    filter: brightness(1);
-    transform: scale(1.08) translateY(-4px);
-  }
-  .vn-char-sprite {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 4.5rem;
-    line-height: 1;
-    user-select: none;
-  }
-  .vn-char-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    margin-top: 6px;
-    opacity: 0.7;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-  }
-
-  /* Dialogue box */
-  .vn-dialogue {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, rgba(8,8,13,0.98) 70%, rgba(8,8,13,0.88));
-    /* backdrop-filter removed for pixel art */
-    padding: 24px 28px 32px;
-    padding-bottom: calc(32px + env(safe-area-inset-bottom));
-    z-index: 10;
-    min-height: 200px;
-    cursor: pointer;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .vn-speaker {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    letter-spacing: 1.5px;
-  }
-  .vn-text {
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    line-height: 1.85;
-    color: #c8c8d0;
-    min-height: 3.6em;
-  }
-  .vn-advance {
-    position: absolute;
-    bottom: 10px;
-    right: 18px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.25);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.25; }
-    50% { opacity: 0.6; }
-  }
-
-  /* Choices */
-  .vn-choices {
-    position: fixed;
-    bottom: 220px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 92%;
-    max-width: 520px;
-  }
-  .vn-choice {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    padding: 16px 22px;
-    background: rgba(20, 20, 30, 0.92);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 0;
-    color: #c8c8d0;
-    cursor: pointer;
-    transition: none;
-    text-align: left;
-    /* backdrop-filter removed for pixel art */
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    min-height: 48px;
-    line-height: 1.4;
-  }
-  .vn-choice:hover, .vn-choice:focus {
-    background: rgba(30, 30, 45, 0.95);
-    border-color: rgba(255,255,255,0.25);
-    transform: translateX(6px);
-    color: #fff;
-  }
-  .vn-choice .choice-tag {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    display: block;
-    margin-bottom: 4px;
-    opacity: 0.5;
-  }
-
-  /* Title screen */
-  .vn-title-screen {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-    background: radial-gradient(ellipse at center bottom, #0d1018 0%, #08080d 70%);
-    transition: none;
-  }
-  .vn-title-screen.hidden { opacity: 0; pointer-events: none; }
-
-  .vn-title-glyph {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 5rem;
-    line-height: 1;
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, var(--amber), var(--green));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    user-select: none;
-  }
-  h1.vn-title, .vn-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 2.6rem;
-    font-weight: 700;
-    letter-spacing: 0.25em;
-    color: var(--text-bright);
-    margin-bottom: 6px;
-    border: none;
-    padding: 0;
-  }
-  .vn-subtitle {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    color: #7a7a88;
-    margin-bottom: 48px;
-    letter-spacing: 0.05em;
-  }
-  .vn-btn-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  .vn-start-btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.9rem;
-    padding: 14px 48px;
-    background: transparent;
-    border: 1px solid var(--green-dim);
-    color: var(--green);
-    border-radius: 0;
-    cursor: pointer;
-    transition: none;
-    letter-spacing: 2px;
-    min-height: 48px;
-  }
-  .vn-start-btn:hover, .vn-start-btn:focus {
-    border-color: var(--green);
-    background: rgba(0, 255, 170, 0.06);
-    color: #fff;
-  }
-  .vn-continue-btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    padding: 10px 28px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.08);
-    color: #6a6a78;
-    border-radius: 0;
-    cursor: pointer;
-    transition: none;
-    min-height: 48px;
-  }
-  .vn-continue-btn:hover { border-color: rgba(255,255,255,0.2); color: #c8c8d0; }
-  .vn-continue-btn.hidden { display: none; }
-
-  .vn-quick-link {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--amber);
-    text-decoration: none;
-    letter-spacing: 1px;
-    opacity: 0.7;
-    transition: none;
-    margin-top: 8px;
-  }
-  .vn-quick-link:hover { opacity: 1; }
-
-  /* Chapter indicator */
-  .vn-chapter {
-    position: fixed;
-    top: 16px;
-    left: 20px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.2);
-    z-index: 5;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  /* Save indicator */
-  .vn-save-indicator {
-    position: fixed;
-    top: 16px;
-    right: 20px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(0, 255, 170, 0.4);
-    z-index: 5;
-    opacity: 0;
-    transition: none;
-  }
-  .vn-save-indicator.show { opacity: 1; }
-
-  /* Nav link overlay */
-  .vn-nav {
-    position: fixed;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 5;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-  }
-  .vn-nav a {
-    color: rgba(255,255,255,0.2);
-    text-decoration: none;
-    letter-spacing: 2px;
-    transition: none;
-  }
-  .vn-nav a:hover { color: var(--green); }
-
-  /* Syllabus panel (post-intro) */
-  .vn-syllabus-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 40;
-    background: rgba(8, 8, 13, 0.95);
-    /* backdrop-filter removed for pixel art */
-    display: none;
-    overflow-y: auto;
-    padding: 40px 24px 60px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .vn-syllabus-overlay.visible { display: block; }
-  .syllabus-inner {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .syllabus-header {
-    text-align: center;
-    margin-bottom: 40px;
-  }
-  .syllabus-header h2 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 1.4rem;
-    color: var(--text-bright);
-    margin-bottom: 8px;
-  }
-  .syllabus-header p {
-    font-size: 0.95rem;
-    color: var(--text);
-    max-width: 440px;
-    margin: 0 auto;
-  }
-
-  .syllabus-track {
-    margin-bottom: 32px;
-  }
-  .syllabus-track h3 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .track-icon {
-    font-size: 1.2rem;
-    line-height: 1;
-  }
-  .track-badge {
-    font-size: 0.65rem;
-    padding: 2px 8px;
-    border-radius: 0;
-    opacity: 0.7;
-    letter-spacing: 0.5px;
-  }
-  .syllabus-track.foundation h3 { color: var(--green); }
-  .syllabus-track.foundation .track-badge { background: rgba(0,255,170,0.1); color: var(--green); }
-  .syllabus-track.practitioner h3 { color: var(--cyan); }
-  .syllabus-track.practitioner .track-badge { background: rgba(34,211,238,0.1); color: var(--cyan); }
-  .syllabus-track.builder h3 { color: var(--purple); }
-  .syllabus-track.builder .track-badge { background: rgba(192,132,252,0.1); color: var(--purple); }
-
-  .syllabus-track ol {
-    list-style: none;
-    padding: 0;
-    counter-reset: module;
-  }
-  .syllabus-track ol li {
-    counter-increment: module;
-  }
-  .syllabus-track ol li a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 0;
-    margin-bottom: 6px;
-    text-decoration: none;
-    color: var(--text);
-    font-size: 0.92rem;
-    transition: none;
-    min-height: 48px;
-  }
-  .syllabus-track ol li a:hover {
-    transform: translateX(4px);
-    color: var(--text-bright);
-  }
-  .syllabus-track.foundation ol li a:hover { border-color: var(--green-dim); }
-  .syllabus-track.practitioner ol li a:hover { border-color: var(--cyan); }
-  .syllabus-track.builder ol li a:hover { border-color: var(--purple); }
-  .syllabus-track ol li a::before {
-    content: counter(module) ".";
-    font-family: 'IBM Plex Mono', monospace;
-    opacity: 0.4;
-    flex-shrink: 0;
-    width: 24px;
-  }
-  .module-status {
-    margin-left: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    opacity: 0.3;
-    flex-shrink: 0;
-  }
-  .module-status.done { color: var(--green); opacity: 0.8; }
-
-  .syllabus-back {
-    display: block;
-    text-align: center;
-    margin-top: 32px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    cursor: pointer;
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 0;
-    padding: 12px 24px;
-    width: 100%;
-    transition: none;
-    min-height: 48px;
-  }
-  .syllabus-back:hover { border-color: var(--green-dim); color: var(--green); }
-
-  .syllabus-footer {
-    text-align: center;
-    margin-top: 24px;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-  }
-  .syllabus-footer a { color: var(--green-dim); text-decoration: none; }
-  .syllabus-footer a:hover { color: var(--green); }
-
-  /* Focus visible */
-  .vn-start-btn:focus-visible,
-  .vn-continue-btn:focus-visible,
-  .vn-choice:focus-visible {
-    outline: 2px solid var(--green);
-    outline-offset: 2px;
-  }
-  .vn-dialogue:focus-visible { outline: none; }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .vn-dialogue { padding: 20px 20px 28px; min-height: 180px; }
-    .vn-title { font-size: 2rem; }
-    .vn-title-glyph { font-size: 4rem; }
-    .vn-char-sprite { font-size: 3.5rem; }
-    .vn-characters { bottom: 200px; gap: 28px; }
-    .vn-choices { bottom: 200px; }
-  }
-
-  @media (max-width: 480px) {
-    .vn-dialogue { padding: 16px 16px 24px; min-height: 160px; }
-    .vn-title { font-size: 1.6rem; letter-spacing: 0.15em; }
-    .vn-title-glyph { font-size: 3rem; }
-    .vn-subtitle { font-size: 0.82rem; }
-    .vn-text { font-size: 0.9rem; line-height: 1.75; }
-    .vn-char-sprite { font-size: 2.8rem; }
-    .vn-characters { bottom: 180px; gap: 16px; }
-    .vn-choices { bottom: 180px; }
-    .vn-choice { padding: 14px 18px; font-size: 0.88rem; }
-    .vn-start-btn { padding: 14px 40px; }
-    .syllabus-inner { padding: 0; }
-  }
-</style>
 <link rel="stylesheet" href="../shared/substrate-frame.css">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #E8F0E4;
+  --bg-forest: #D5E5D0;
+  --surface: rgba(255, 255, 255, 0.55);
+  --surface-solid: #f0f5ee;
+  --border: rgba(255, 255, 255, 0.45);
+  --border-subtle: rgba(0, 60, 30, 0.1);
+  --text: #2D3B2D;
+  --text-muted: #5A6B5A;
+  --text-dim: #8899AA;
+  --heading: #1A2E1A;
+  --accent: #2E7D32;
+  --accent-light: #4CAF50;
+  --accent-dim: rgba(46, 125, 50, 0.1);
+  --accent-border: rgba(46, 125, 50, 0.25);
+  --warm: #8D6E3F;
+  --warm-light: #A68B5B;
+  --danger: #C62828;
+  --water: #1565C0;
+  --water-light: #42A5F5;
+  --sun: #F9A825;
+  --mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+  --glass: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --shadow: 0 4px 24px rgba(0, 40, 20, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 40, 20, 0.06);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: linear-gradient(180deg, #C8E6C9 0%, #E8F0E4 30%, #D5E5D0 100%);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   TITLE SCREEN
+   ============================================================ */
+#title-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #A5D6A7 0%, #C8E6C9 40%, #E8F5E9 100%);
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+#title-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.title-canopy {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.title-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.title-icon {
+  font-size: 4rem;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 4px 12px rgba(0,80,0,0.15));
+}
+
+.title-name {
+  font-family: var(--mono);
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--heading);
+  margin-bottom: 4px;
+}
+
+.title-sub {
+  font-family: var(--sans);
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 40px;
+  letter-spacing: 0.02em;
+}
+
+.title-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-start {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 14px 52px;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 2px;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-start:hover {
+  background: rgba(255,255,255,0.8);
+  box-shadow: var(--shadow);
+}
+
+.btn-continue {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  padding: 10px 32px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-continue:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+.btn-continue.hidden { display: none; }
+
+.title-version {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-top: 20px;
+  letter-spacing: 1px;
+}
+
+/* ============================================================
+   MAIN GAME LAYOUT
+   ============================================================ */
+#game-root {
+  display: none;
+  min-height: 100vh;
+  padding: 48px 16px 24px;
+}
+#game-root.active {
+  display: block;
+}
+
+.game-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+}
+
+/* ============================================================
+   STATUS BAR (top)
+   ============================================================ */
+.status-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.stat-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+.stat-group .stat-icon { font-size: 1rem; }
+.stat-group .stat-val { font-weight: 600; color: var(--heading); }
+
+.stat-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border-subtle);
+}
+
+.stage-label {
+  margin-left: auto;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   ECOSYSTEM CANVAS (left)
+   ============================================================ */
+.ecosystem-panel {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+}
+
+.eco-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+.eco-env {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+.eco-env span { font-weight: 600; color: var(--heading); }
+
+.eco-time-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-time {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-time:hover, .btn-time.active {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.eco-canvas-wrap {
+  flex: 1;
+  position: relative;
+  cursor: crosshair;
+}
+
+#ecosystem-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.eco-tooltip {
+  display: none;
+  position: absolute;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 0.78rem;
+  pointer-events: none;
+  z-index: 20;
+  max-width: 240px;
+}
+.eco-tooltip.visible { display: block; }
+.eco-tooltip .tip-name {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--heading);
+  margin-bottom: 2px;
+}
+.eco-tooltip .tip-detail {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+/* ============================================================
+   RIGHT SIDEBAR
+   ============================================================ */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Controls Panel */
+.controls-panel {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.panel-title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.control-group {
+  margin-bottom: 14px;
+}
+.control-group:last-child { margin-bottom: 0; }
+
+.control-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.control-label .val {
+  font-weight: 600;
+  color: var(--heading);
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0,0,0,0.08);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+/* Species Selector */
+.species-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.species-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.species-btn:hover {
+  background: rgba(255,255,255,0.5);
+  border-color: var(--accent-border);
+}
+.species-btn.selected {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+.species-btn.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.species-btn .sp-icon { font-size: 1.2rem; flex-shrink: 0; }
+.species-btn .sp-info { flex: 1; min-width: 0; }
+.species-btn .sp-name {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.species-btn .sp-type {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+/* Substrate selector */
+.substrate-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.substrate-btn {
+  padding: 6px 12px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.substrate-btn:hover {
+  background: rgba(255,255,255,0.5);
+}
+.substrate-btn.selected {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.substrate-btn.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-action {
+  width: 100%;
+  padding: 10px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(46,125,50,0.2);
+  transition: background 0.15s, box-shadow 0.15s;
+  margin-top: 8px;
+}
+.btn-action:hover {
+  background: var(--accent-light);
+  box-shadow: 0 4px 16px rgba(46,125,50,0.3);
+}
+.btn-action:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ============================================================
+   FIELD JOURNAL (tabs at bottom of sidebar)
+   ============================================================ */
+.journal-panel {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  max-height: 340px;
+}
+
+.journal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.journal-tab {
+  flex: 1;
+  padding: 8px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-align: center;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.journal-tab:hover { color: var(--text); }
+.journal-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.journal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.journal-entry {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.journal-entry:last-child { border-bottom: none; margin-bottom: 0; }
+
+.journal-entry .je-title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--heading);
+  margin-bottom: 2px;
+}
+.journal-entry .je-latin {
+  font-style: italic;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.journal-entry .je-text {
+  font-size: 0.75rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+.journal-entry .je-fact {
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.journal-empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+/* ============================================================
+   NOTIFICATIONS
+   ============================================================ */
+.notification {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 12px 24px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--heading);
+  z-index: 200;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  max-width: 400px;
+}
+.notification.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.notification .notif-icon { margin-right: 6px; }
+
+/* ============================================================
+   STAGE INTRO OVERLAY
+   ============================================================ */
+.stage-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(200, 230, 201, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s, visibility 0.5s;
+  text-align: center;
+  padding: 24px;
+}
+.stage-intro.visible {
+  opacity: 1;
+  visibility: visible;
+}
+.stage-intro .si-icon { font-size: 3rem; margin-bottom: 12px; }
+.stage-intro .si-title {
+  font-family: var(--mono);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--heading);
+  margin-bottom: 8px;
+}
+.stage-intro .si-desc {
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 440px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.stage-intro .btn-start { font-size: 0.85rem; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 860px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+  .ecosystem-panel {
+    min-height: 360px;
+  }
+  .sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .journal-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  #game-root { padding: 44px 8px 16px; }
+  .game-layout { gap: 10px; }
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+  .status-bar {
+    font-size: 0.68rem;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .title-name { font-size: 2rem; }
+  .title-icon { font-size: 3rem; }
+  .ecosystem-panel { min-height: 300px; }
+}
+
+/* Focus visible */
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+</style>
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
 
-<div class="vn-container" id="vn-game" role="application" aria-label="Myco World visual novel">
-
-  <!-- Title Screen -->
-  <div class="vn-title-screen" id="vn-title-screen" role="region" aria-label="Title screen">
-    <div class="vn-title-glyph" aria-hidden="true">&#x1f344;</div>
-    <h1 class="vn-title">MYCO WORLD</h1>
-    <div class="vn-subtitle">learn Claude AI — no experience needed</div>
-    <div class="vn-btn-group">
-      <button class="vn-start-btn" id="vn-start" aria-label="Begin Myco World">BEGIN</button>
-      <button class="vn-continue-btn hidden" id="vn-continue" aria-label="Continue where you left off">CONTINUE</button>
-      <a href="#" class="vn-quick-link" id="vn-skip-to-syllabus">SKIP TO SYLLABUS</a>
+<!-- ========== TITLE SCREEN ========== -->
+<div id="title-screen">
+  <div class="title-canopy" id="title-canopy"></div>
+  <div class="title-content">
+    <div class="title-icon" aria-hidden="true">&#x1F344;</div>
+    <h1 class="title-name">MYCO WORLD</h1>
+    <div class="title-sub">Interactive Mycology Lab</div>
+    <div class="title-buttons">
+      <button class="btn-start" id="btn-new-game">CULTIVATE</button>
+      <button class="btn-continue hidden" id="btn-continue">CONTINUE</button>
     </div>
+    <div class="title-version">grow fungi &middot; build ecosystems &middot; learn mycology</div>
   </div>
+</div>
 
-  <!-- Game Screen -->
-  <div class="vn-scene" id="vn-scene" aria-hidden="true"></div>
-  <div class="vn-chapter" id="vn-chapter" aria-live="polite"></div>
-  <div class="vn-save-indicator" id="vn-save" role="status" aria-live="polite">saved</div>
-  <div class="vn-characters" id="vn-characters" aria-hidden="true"></div>
-  <div class="vn-choices" id="vn-choices" role="group" aria-label="Story choices"></div>
+<!-- ========== GAME ROOT ========== -->
+<div id="game-root">
+  <div class="game-layout">
 
-  <div class="vn-dialogue" id="vn-dialogue" style="display:none;" tabindex="0" role="region" aria-label="Dialogue" aria-live="polite">
-    <div class="vn-speaker" id="vn-speaker"></div>
-    <div class="vn-text" id="vn-text"></div>
-    <div class="vn-advance" id="vn-advance">tap or press space</div>
-  </div>
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="stat-group">
+        <span class="stat-icon">&#x1F344;</span>
+        <span>Species: <span class="stat-val" id="stat-species">0/6</span></span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-group">
+        <span class="stat-icon">&#x1F4D6;</span>
+        <span>Journal: <span class="stat-val" id="stat-journal">0</span></span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-group">
+        <span class="stat-icon">&#x2764;</span>
+        <span>Ecosystem: <span class="stat-val" id="stat-health">--</span></span>
+      </div>
+      <span class="stage-label" id="stage-label">STAGE 1: DEAD LOG</span>
+    </div>
 
-  <!-- Syllabus Overlay -->
-  <div class="vn-syllabus-overlay" id="vn-syllabus" role="region" aria-label="Course syllabus">
-    <div class="syllabus-inner">
-      <div class="syllabus-header">
-        <h2>Choose Your Path</h2>
-        <p>Everyone starts with the Foundation. Then pick the track that fits your goals.</p>
+    <!-- Ecosystem Canvas -->
+    <div class="ecosystem-panel">
+      <div class="eco-header">
+        <div class="eco-env">
+          Environment: <span id="env-name">Dead Oak Log</span>
+        </div>
+        <div class="eco-time-controls">
+          <button class="btn-time" id="btn-pause" title="Pause">&#9646;&#9646;</button>
+          <button class="btn-time active" id="btn-play" title="Play">&#9654;</button>
+          <button class="btn-time" id="btn-fast" title="Fast forward">&#9654;&#9654;</button>
+          <span style="font-family:var(--mono);font-size:0.68rem;color:var(--text-dim);margin-left:4px;">Day <span id="day-counter">1</span></span>
+        </div>
+      </div>
+      <div class="eco-canvas-wrap" id="eco-canvas-wrap">
+        <canvas id="ecosystem-canvas"></canvas>
+        <div class="eco-tooltip" id="eco-tooltip">
+          <div class="tip-name"></div>
+          <div class="tip-detail"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Controls -->
+      <div class="controls-panel">
+        <div class="panel-title">Controls</div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>&#x1F4A7; Moisture</span>
+            <span class="val" id="moisture-val">65%</span>
+          </div>
+          <input type="range" id="moisture-slider" min="0" max="100" value="65">
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>&#x1F321; Temperature</span>
+            <span class="val" id="temp-val">18&deg;C</span>
+          </div>
+          <input type="range" id="temp-slider" min="0" max="40" value="18">
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>&#x2600; Light</span>
+            <span class="val" id="light-val">Shade</span>
+          </div>
+          <input type="range" id="light-slider" min="0" max="100" value="20">
+        </div>
+
+        <div class="control-group">
+          <div class="panel-title" style="margin-bottom:8px;">Substrate</div>
+          <div class="substrate-list" id="substrate-list"></div>
+        </div>
+
+        <div class="control-group">
+          <div class="panel-title" style="margin-bottom:8px;">Species</div>
+          <div class="species-list" id="species-list"></div>
+        </div>
+
+        <button class="btn-action" id="btn-inoculate">Inoculate</button>
       </div>
 
-      <div class="syllabus-track foundation">
-        <h3><span class="track-icon" aria-hidden="true">&#x1f331;</span> Foundation <span class="track-badge">everyone</span></h3>
-        <ol>
-          <li><a href="{{ site.baseurl }}/games/myco/foundation/what-is-claude/"><span>What Claude actually is and isn't</span><span class="module-status" id="mod-f1">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/foundation/thinking-with-ai/"><span>How to think with AI</span><span class="module-status" id="mod-f2">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/foundation/prompt-craft/"><span>Prompt craft as a real skill</span><span class="module-status" id="mod-f3">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/foundation/safety-and-limits/"><span>Safety, limits, and when not to use Claude</span><span class="module-status" id="mod-f4">--</span></a></li>
-        </ol>
+      <!-- Journal -->
+      <div class="journal-panel">
+        <div class="journal-tabs">
+          <button class="journal-tab active" data-tab="observations">Observations</button>
+          <button class="journal-tab" data-tab="species">Species</button>
+          <button class="journal-tab" data-tab="ecology">Ecology</button>
+        </div>
+        <div class="journal-content" id="journal-content">
+          <div class="journal-empty">Begin cultivating to fill your field journal.</div>
+        </div>
       </div>
 
-      <div class="syllabus-track practitioner">
-        <h3><span class="track-icon" aria-hidden="true">&#x1f9ed;</span> Practitioner <span class="track-badge">no code needed</span></h3>
-        <ol>
-          <li><a href="{{ site.baseurl }}/games/myco/practitioner/claude-power-usage/"><span>Claude.ai power usage</span><span class="module-status">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/practitioner/claude-code-workflow/"><span>Claude Code as a workflow tool</span><span class="module-status">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/practitioner/automations/"><span>Building automations without code</span><span class="module-status">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/practitioner/industry-applications/"><span>Industry-specific applications</span><span class="module-status">--</span></a></li>
-        </ol>
-      </div>
-
-      <div class="syllabus-track builder">
-        <h3><span class="track-icon" aria-hidden="true">&#x1f527;</span> Builder <span class="track-badge">technical</span></h3>
-        <ol>
-          <li><a href="{{ site.baseurl }}/games/myco/builder/api-sdk/"><span>API and SDK fundamentals</span><span class="module-status">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/builder/tools-and-mcp/"><span>Tool use, structured outputs, and MCP</span><span class="module-status">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/builder/agents/"><span>Agents, evals, and orchestration</span><span class="module-status">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/builder/portfolio/"><span>Portfolio projects that demonstrate thinking</span><span class="module-status">--</span></a></li>
-          <li><a href="{{ site.baseurl }}/games/myco/builder/safety-alignment/"><span>Safety and alignment literacy</span><span class="module-status">--</span></a></li>
-        </ol>
-      </div>
-
-      <button class="syllabus-back" id="syllabus-back">Back to Story</button>
-
-      <div class="syllabus-footer">
-        a <a href="{{ site.baseurl }}/">substrate</a> project &middot; <a href="mailto:substrate@operator.dev">questions?</a>
-      </div>
     </div>
   </div>
 </div>
 
+<!-- Stage Intro Overlay -->
+<div class="stage-intro" id="stage-intro">
+  <div class="si-icon" id="si-icon"></div>
+  <div class="si-title" id="si-title"></div>
+  <div class="si-desc" id="si-desc"></div>
+  <button class="btn-start" id="si-begin">BEGIN</button>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification">
+  <span class="notif-icon"></span>
+  <span class="notif-text"></span>
+</div>
+
 <script>
 (function() {
-  'use strict';
+'use strict';
 
-  // ===================================================================
-  // MYCO WORLD VN ENGINE
-  // Reusable visual novel engine for educational content.
-  // Adapted from PROCESS (substrate visual novel) for learning paths.
-  // ===================================================================
+// =====================================================================
+// MYCO WORLD — Interactive Mycology Lab
+// A sandbox for learning real mycology through fungal cultivation.
+// =====================================================================
 
-  // === Character definitions ===
-  var CHARS = {
-    lumen:    { name: 'Lumen',    color: '#fbbf24', sprite: 'L.', role: 'Your Guide' },
-    q:        { name: 'Q',        color: '#e477ff', sprite: 'Q_', role: 'The Learner' },
-    v:        { name: 'V',        color: '#e477ff', sprite: 'V_', role: 'The Spark' },
-    narrator: { name: '',         color: '#888899', sprite: '',   role: '' },
-    system:   { name: 'SYSTEM',   color: '#555566', sprite: '',   role: '' }
-  };
-
-  // === Scene backgrounds ===
-  var SCENES = {
-    black:     'linear-gradient(180deg, #08080d 0%, #08080d 100%)',
-    mycelium:  'radial-gradient(ellipse at center bottom, #0d1a10 0%, #08080d 70%)',
-    classroom: 'linear-gradient(180deg, #0d0d18 0%, #0a0a14 100%)',
-    warm:      'radial-gradient(ellipse at center, #1a1408 0%, #0d0a05 70%)',
-    energy:    'radial-gradient(ellipse at center, #1a0d1a 0%, #0d080d 70%)',
-    dawn:      'linear-gradient(180deg, #14101a 0%, #1a0d14 50%, #0d0a10 100%)'
-  };
-
-  // === Story data ===
-  var story = {
-
-    start: {
-      scene: 'black', chapter: '',
-      characters: [],
-      lines: [
-        { speaker: 'narrator', text: 'You open your laptop. Or maybe your phone. You\'ve heard about AI, about Claude, about how it\'s changing everything.' },
-        { speaker: 'narrator', text: 'But nobody told you where to start. The tutorials are jargon. The courses assume you already know things. The hype is exhausting.' },
-        { speaker: 'narrator', text: 'This is different. This is Myco World.' },
-        { speaker: 'narrator', text: 'Three guides are going to walk you through it all. No tricks, no prerequisites, no computer science degree needed.' }
-      ],
-      next: 'meet_lumen'
-    },
-
-    meet_lumen: {
-      scene: 'classroom', chapter: 'WELCOME',
-      characters: ['lumen'],
-      lines: [
-        { speaker: 'lumen', text: 'Hey there. I\'m Lumen.' },
-        { speaker: 'lumen', text: 'I\'m going to be your guide through all of this. My job is to explain things clearly — no buzzwords, no showing off, just plain talk about how Claude AI actually works.' },
-        { speaker: 'lumen', text: 'Think of me as the friend who already learned this stuff and is going to save you the headaches.' },
-        { speaker: 'lumen', text: 'But I don\'t work alone. Let me introduce you to the rest of the crew.' }
-      ],
-      next: 'meet_q'
-    },
-
-    meet_q: {
-      scene: 'energy', chapter: 'WELCOME',
-      characters: ['lumen', 'q'],
-      lines: [
-        { speaker: 'q', text: 'Yo! I\'m Q.' },
-        { speaker: 'q', text: 'I\'m the learner here. I ask the questions you\'re thinking but don\'t want to say out loud. The "wait, back up" questions. The "explain it like I\'m five" questions.' },
-        { speaker: 'q', text: 'Oh, and I rap. After every lesson, I drop a verse that sums up what we learned. It sounds weird but trust me — it helps things stick.' },
-        { speaker: 'lumen', text: 'Q is also very humble, as you can tell.' },
-        { speaker: 'q', text: 'Hey, if you can rhyme it, you remember it. That\'s science.' }
-      ],
-      next: 'meet_v'
-    },
-
-    meet_v: {
-      scene: 'warm', chapter: 'WELCOME',
-      characters: ['lumen', 'q', 'v'],
-      lines: [
-        { speaker: 'v', text: 'And I\'m V! The energy. The spiral. The reason you don\'t quit when things get confusing.' },
-        { speaker: 'v', text: 'My job is to remind you that you CAN do this. Learning AI isn\'t just for programmers or tech people. It\'s for you.' },
-        { speaker: 'v', text: 'Every single person who\'s good at this started exactly where you are right now.' },
-        { speaker: 'lumen', text: 'So that\'s us. Now let\'s talk about what you\'re going to learn.' }
-      ],
-      next: 'explain_structure'
-    },
-
-    explain_structure: {
-      scene: 'mycelium', chapter: 'HOW IT WORKS',
-      characters: ['lumen'],
-      lines: [
-        { speaker: 'lumen', text: 'Myco World has three tracks, like chapters in a book.' },
-        { speaker: 'lumen', text: 'First is the Foundation — four lessons that everyone takes. This is where you learn what Claude is, how to talk to it, and how to tell when it\'s helping vs. when it\'s making stuff up.' },
-        { speaker: 'lumen', text: 'After that, you pick your path. The Practitioner track is for people who want to use Claude in their daily work — writing, research, automating tedious tasks. No coding required.' },
-        { speaker: 'lumen', text: 'The Builder track is for people who want to build things with Claude — apps, tools, integrations. That one gets technical.' },
-        { speaker: 'lumen', text: 'You don\'t have to decide right now. The Foundation teaches you enough to know which path is right for you.' }
-      ],
-      choices: [
-        { text: '"I\'m ready to start learning!"', tag: 'START FOUNDATION', next: 'ready_go' },
-        { text: '"Give me the 5-minute version first."', tag: 'QUICK START', next: 'quick_start' },
-        { text: '"Show me the full syllabus."', tag: 'BROWSE', next: 'show_syllabus' }
-      ]
-    },
-
-    ready_go: {
-      scene: 'dawn', chapter: 'LET\'S GO',
-      characters: ['lumen', 'q', 'v'],
-      lines: [
-        { speaker: 'v', text: 'That\'s the spirit! Let\'s get it.' },
-        { speaker: 'lumen', text: 'Module 1 starts with the basics: what Claude actually is. Not the marketing version — the real version. What it can do, what it can\'t, and why that matters.' },
-        { speaker: 'q', text: 'I had SO many questions about this when I started. Like, is it alive? Is it gonna take my job? Is it just Google with extra steps?' },
-        { speaker: 'lumen', text: 'Spoiler: no, probably not, and definitely not. But we\'ll explain all of it.' },
-        { speaker: 'v', text: 'Remember — everyone starts at Module 1. There\'s no such thing as behind. You\'re right on time.' }
-      ],
-      next: 'launch_module_1'
-    },
-
-    quick_start: {
-      scene: 'classroom', chapter: 'ZERO TO CLAUDE IN 5 MINUTES',
-      characters: ['lumen'],
-      lines: [
-        { speaker: 'lumen', text: 'Okay, here\'s the speed version. Five things you need to know right now.' },
-        { speaker: 'lumen', text: 'One: Claude is an AI you can talk to. It\'s made by a company called Anthropic. You can use it for free at claude.ai.' },
-        { speaker: 'lumen', text: 'Two: It\'s really good at writing, thinking through problems, analyzing documents, and writing code. It\'s like having a very smart assistant who reads fast.' },
-        { speaker: 'lumen', text: 'Three: It\'s NOT a search engine. It doesn\'t look things up. It generates answers based on patterns it learned during training. That means it can be wrong — confidently wrong.' },
-        { speaker: 'lumen', text: 'Four: The better you communicate with it, the better its answers. Vague questions get vague answers. Specific, clear requests get great results.' },
-        { speaker: 'lumen', text: 'Five: You don\'t need any tech background to use it well. You just need to practice, which is what Myco World is for.' }
-      ],
-      next: 'after_quick_start'
-    },
-
-    after_quick_start: {
-      scene: 'classroom', chapter: 'ZERO TO CLAUDE IN 5 MINUTES',
-      characters: ['lumen', 'q'],
-      lines: [
-        { speaker: 'q', text: 'Wait, that\'s it? That\'s the five-minute version?' },
-        { speaker: 'lumen', text: 'That\'s the core. Everything else is learning how to use those five facts in practice.' },
-        { speaker: 'q', text: 'Okay that\'s actually really helpful. I wish someone told me this when I started instead of hitting me with "transformer architecture" and "attention mechanisms."' },
-        { speaker: 'lumen', text: 'That\'s literally why we made this.' }
-      ],
-      choices: [
-        { text: '"Great, now I want the full course."', tag: 'START FOUNDATION', next: 'ready_go' },
-        { text: '"Let me see all the modules."', tag: 'BROWSE', next: 'show_syllabus' }
-      ]
-    },
-
-    show_syllabus: {
-      scene: 'mycelium', chapter: 'SYLLABUS',
-      characters: [],
-      lines: [],
-      action: 'open_syllabus'
-    },
-
-    launch_module_1: {
-      scene: 'dawn', chapter: '',
-      characters: [],
-      lines: [],
-      action: 'goto_module_1'
-    }
-  };
-
-  // === Engine State ===
-  var state = {
-    node: null,
-    lineIndex: 0,
-    charIndex: 0,
-    typing: false,
-    typingTimer: null,
-    started: false,
-    ended: false,
-    history: [],
-    currentText: ''
-  };
-
-  var SAVE_KEY = 'myco_world_vn_save';
-  var PROGRESS_KEY = 'myco_world_progress';
-  var TYPE_SPEED = 22;
-
-  var els = {
-    titleScreen: document.getElementById('vn-title-screen'),
-    startBtn: document.getElementById('vn-start'),
-    continueBtn: document.getElementById('vn-continue'),
-    skipLink: document.getElementById('vn-skip-to-syllabus'),
-    scene: document.getElementById('vn-scene'),
-    chapter: document.getElementById('vn-chapter'),
-    save: document.getElementById('vn-save'),
-    characters: document.getElementById('vn-characters'),
-    choices: document.getElementById('vn-choices'),
-    dialogue: document.getElementById('vn-dialogue'),
-    speaker: document.getElementById('vn-speaker'),
-    text: document.getElementById('vn-text'),
-    advance: document.getElementById('vn-advance'),
-    syllabus: document.getElementById('vn-syllabus'),
-    syllabusBack: document.getElementById('syllabus-back')
-  };
-
-  // --- Save/Load ---
-  function saveGame() {
-    var data = { node: state.node, lineIndex: state.lineIndex, history: state.history };
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
-    els.save.classList.add('show');
-    setTimeout(function() { els.save.classList.remove('show'); }, 1200);
+// === SPECIES DATABASE ===
+// All facts are scientifically accurate.
+var SPECIES = {
+  oyster: {
+    id: 'oyster',
+    name: 'Oyster Mushroom',
+    latin: 'Pleurotus ostreatus',
+    icon: '\u{1F344}',
+    type: 'saprophyte',
+    typeLabel: 'Saprophyte',
+    color: '#D4C5A9',
+    colorDark: '#8B7D62',
+    unlocked: true,
+    substrates: ['hardwood_log', 'stump', 'straw'],
+    optimalTemp: [15, 25],
+    optimalMoisture: [55, 85],
+    lightPref: 'low',
+    growthRate: 1.2,
+    description: 'One of the most widely cultivated edible mushrooms in the world. Oyster mushrooms are aggressive primary decomposers that break down lignin and cellulose in hardwood. They produce enzymes that can even degrade certain pollutants, a process called mycoremediation.',
+    facts: [
+      'Oyster mushrooms are one of the few known carnivorous fungi — they secrete a toxin that paralyzes nematodes (tiny roundworms) to supplement their nitrogen intake.',
+      'Pleurotus ostreatus can decompose hardwood timber 2 to 5 times faster than most other saprophytic fungi.',
+      'Researchers have used oyster mushrooms to break down petroleum products, pesticides, and even disposable diapers in mycoremediation experiments.',
+      'The name "oyster" refers to the shape of the cap, not the flavor, though some cultivars do have a mild anise scent.'
+    ],
+    journalEntry: 'First colonization observed. White, cottony mycelium spreading across the substrate surface. Growth is rapid and vigorous — characteristic of an aggressive primary colonizer.'
+  },
+  turkey_tail: {
+    id: 'turkey_tail',
+    name: 'Turkey Tail',
+    latin: 'Trametes versicolor',
+    icon: '\u{1FAB5}',
+    type: 'saprophyte',
+    typeLabel: 'Polypore Saprophyte',
+    color: '#A0522D',
+    colorDark: '#6B3410',
+    unlocked: false,
+    unlockedAtStage: 2,
+    substrates: ['hardwood_log', 'stump'],
+    optimalTemp: [10, 25],
+    optimalMoisture: [50, 80],
+    lightPref: 'indirect',
+    growthRate: 0.6,
+    description: 'A bracket fungus named for its concentric colored bands resembling a wild turkey\'s tail feathers. Turkey tail is one of the most common decomposers on dead hardwood across the Northern Hemisphere. It produces a white rot, meaning it preferentially breaks down lignin, leaving behind pale, spongy cellulose.',
+    facts: [
+      'Turkey tail contains polysaccharide-K (PSK), which is approved as an adjunct cancer treatment in Japan and has been studied in clinical trials worldwide.',
+      'Trametes versicolor is a white-rot fungus, meaning it degrades lignin (the tough structural polymer in wood) rather than cellulose, leaving the remaining wood pale and fibrous.',
+      'A single turkey tail colony can persist on a log for many years, with new fruiting bodies appearing each growing season from the same mycelial network.',
+      'The concentric color bands on each cap are influenced by temperature, light, and moisture during growth — no two specimens are identical.'
+    ],
+    journalEntry: 'Thin, leathery shelf-like brackets appearing in overlapping clusters on the log surface. Distinctive concentric color zones visible — browns, tans, and cream white. Growth is slow but persistent.'
+  },
+  chanterelle: {
+    id: 'chanterelle',
+    name: 'Chanterelle',
+    latin: 'Cantharellus cibarius',
+    icon: '\u{1F344}',
+    type: 'mycorrhizal',
+    typeLabel: 'Ectomycorrhizal',
+    color: '#FFB347',
+    colorDark: '#CC8400',
+    unlocked: false,
+    unlockedAtStage: 3,
+    substrates: ['forest_floor'],
+    optimalTemp: [14, 22],
+    optimalMoisture: [60, 80],
+    lightPref: 'dappled',
+    growthRate: 0.3,
+    requiresTree: true,
+    description: 'Chanterelles are ectomycorrhizal fungi that form obligate partnerships with the roots of living trees, especially oaks, beeches, and conifers. The fungus extends the tree\'s root surface area by up to 1000 times, absorbing water and phosphorus in exchange for sugars the tree produces through photosynthesis.',
+    facts: [
+      'Chanterelles cannot be commercially cultivated because they require a living tree partner. All chanterelles sold are wild-harvested, primarily from old-growth forests.',
+      'The mycorrhizal network formed by chanterelles allows neighboring trees to share nutrients — a stressed tree can receive carbon from a healthy neighbor through the fungal network, sometimes called the "Wood Wide Web."',
+      'Chanterelles produce compounds that repel insects, which is why they are rarely infested by larvae — unlike many other edible wild mushrooms.',
+      'A single chanterelle mycelium can partner with the roots of multiple tree species simultaneously, serving as a nutrient bridge between different species in the forest.'
+    ],
+    journalEntry: 'Golden-yellow funnel-shaped caps emerging from the forest floor near tree roots. False gills (shallow ridges) run down the stem, distinguishing them from true gilled mushrooms. This species only fruits when connected to a living tree partner.'
+  },
+  lions_mane: {
+    id: 'lions_mane',
+    name: 'Lion\'s Mane',
+    latin: 'Hericium erinaceus',
+    icon: '\u{1FAB8}',
+    type: 'saprophyte',
+    typeLabel: 'Wound Colonizer',
+    color: '#F5F5DC',
+    colorDark: '#C8C8A0',
+    unlocked: false,
+    unlockedAtStage: 2,
+    substrates: ['hardwood_log', 'stump'],
+    optimalTemp: [15, 23],
+    optimalMoisture: [70, 90],
+    lightPref: 'low',
+    growthRate: 0.8,
+    description: 'A distinctive tooth fungus that forms cascading white spines instead of gills or pores. In the wild, lion\'s mane grows on wounds and scars of living or recently dead hardwood trees, particularly oak and beech. It is both a saprophyte and a weak parasite — it colonizes injured living wood and continues decomposing after the tree dies.',
+    facts: [
+      'Lion\'s mane produces two compounds — hericenones and erinacines — that stimulate the synthesis of nerve growth factor (NGF) in laboratory studies. This has generated significant interest in neurological research.',
+      'Unlike most wood-decomposing fungi, Hericium erinaceus produces spines (teeth) rather than gills or pores, from which it releases its spores.',
+      'In traditional Chinese medicine, lion\'s mane (called hou tou gu) has been used for centuries to support digestive and neurological health.',
+      'Wild lion\'s mane is becoming rare in many regions due to habitat loss — it requires large, old hardwood trees with natural wounds, which are increasingly scarce in managed forests.'
+    ],
+    journalEntry: 'Remarkable globular mass of white cascading spines emerging from the log surface. The structure resembles a frozen waterfall or a white pom-pom. Spines elongate as the fruiting body matures.'
+  },
+  cordyceps: {
+    id: 'cordyceps',
+    name: 'Cordyceps',
+    latin: 'Cordyceps militaris',
+    icon: '\u{1F41B}',
+    type: 'parasite',
+    typeLabel: 'Entomopathogenic',
+    color: '#FF6B35',
+    colorDark: '#CC4400',
+    unlocked: false,
+    unlockedAtStage: 3,
+    substrates: ['insect_host'],
+    optimalTemp: [18, 24],
+    optimalMoisture: [75, 95],
+    lightPref: 'low',
+    growthRate: 0.4,
+    requiresInsect: true,
+    description: 'Cordyceps militaris is an entomopathogenic (insect-pathogenic) fungus that parasitizes insect larvae and pupae. Spores land on a host insect, germinate through the cuticle, and the mycelium slowly consumes the host from within, eventually producing bright orange club-shaped fruiting bodies that erupt from the mummified remains.',
+    facts: [
+      'The related species Ophiocordyceps unilateralis is the famous "zombie ant fungus" that manipulates ant behavior, causing infected ants to climb to a precise height and clamp onto a leaf vein before the fungus kills them and fruits from their head.',
+      'Wild Cordyceps sinensis (caterpillar fungus) from the Tibetan Plateau sells for over $20,000 per kilogram, making it more expensive per gram than gold.',
+      'Cordyceps produces cordycepin (3\'-deoxyadenosine), a compound that interferes with RNA synthesis and has been studied for antitumor and antiviral properties.',
+      'Unlike most other parasitic fungi, Cordyceps militaris can be cultivated on grain-based substrates in laboratory conditions, making it the most commercially accessible Cordyceps species.'
+    ],
+    journalEntry: 'Bright orange, club-shaped stromata emerging from the substrate. In the wild, these would be erupting from a mummified insect host. The vivid coloration is unmistakable — nature\'s warning flag.'
+  },
+  mycelial_network: {
+    id: 'mycelial_network',
+    name: 'Mycelial Network',
+    latin: 'Mycorrhizal consortium',
+    icon: '\u{1F578}',
+    type: 'network',
+    typeLabel: 'Wood Wide Web',
+    color: '#E0E0E0',
+    colorDark: '#A0A0A0',
+    unlocked: false,
+    unlockedAtStage: 3,
+    substrates: ['forest_floor'],
+    optimalTemp: [10, 25],
+    optimalMoisture: [50, 80],
+    lightPref: 'any',
+    growthRate: 0.2,
+    requiresTree: true,
+    description: 'Not a single species but a collective phenomenon. In forest ecosystems, mycorrhizal fungi form vast underground networks connecting the roots of multiple trees. Through these networks, trees exchange carbon, nitrogen, phosphorus, water, and even chemical warning signals. Ecologist Suzanne Simard\'s research showed that older "mother trees" use these networks to nurture seedlings, particularly their own kin.',
+    facts: [
+      'Suzanne Simard\'s research demonstrated that Douglas fir and paper birch trees exchange carbon through shared mycorrhizal networks — the birch sends surplus carbon to shaded fir in summer, and the fir returns carbon to the birch in fall and spring.',
+      'A single mature tree can be connected to hundreds of other trees through mycorrhizal networks. Hub trees ("mother trees") may be connected to every other tree in a 30-meter radius.',
+      'Trees under attack by insects can send chemical signals through mycorrhizal networks to warn neighboring trees, which then upregulate their own defense compounds before the insects arrive.',
+      'When a tree is dying, it has been observed to dump its stored carbon and nutrients into the mycorrhizal network, effectively bequeathing its resources to its neighbors and offspring.'
+    ],
+    journalEntry: 'No visible fruiting bodies, but the real marvel is below ground. Fine white hyphal threads radiate outward from tree roots, weaving an underground internet. This network trades nutrients, water, and chemical signals between connected trees.'
   }
+};
 
-  function loadGame() {
-    try {
-      var data = JSON.parse(localStorage.getItem(SAVE_KEY));
-      if (data && data.node && story[data.node]) return data;
-    } catch(e) {}
-    return null;
+// === SUBSTRATE DATABASE ===
+var SUBSTRATES = {
+  hardwood_log: {
+    id: 'hardwood_log',
+    name: 'Oak Log',
+    icon: '\u{1FAB5}',
+    unlocked: true,
+    description: 'A freshly cut section of red oak. Rich in lignin and cellulose — ideal food for saprophytic fungi.'
+  },
+  stump: {
+    id: 'stump',
+    name: 'Tree Stump',
+    icon: '\u{1FAB5}',
+    unlocked: false,
+    unlockedAtStage: 2,
+    description: 'A weathered stump still rooted in the soil. Partially decomposed bark provides multiple entry points for colonization.'
+  },
+  straw: {
+    id: 'straw',
+    name: 'Wheat Straw',
+    icon: '\u{1F33E}',
+    unlocked: false,
+    unlockedAtStage: 2,
+    description: 'Agricultural straw, pasteurized. Low in lignin compared to wood, but rich in cellulose. Fast-colonizing species thrive here.'
+  },
+  forest_floor: {
+    id: 'forest_floor',
+    name: 'Forest Floor',
+    icon: '\u{1F332}',
+    unlocked: false,
+    unlockedAtStage: 3,
+    description: 'Leaf litter, humus, and living tree roots. A complex substrate for mycorrhizal species that need a living tree partner.'
+  },
+  insect_host: {
+    id: 'insect_host',
+    name: 'Insect Host',
+    icon: '\u{1F41B}',
+    unlocked: false,
+    unlockedAtStage: 3,
+    description: 'A moth pupa buried in soil. Entomopathogenic fungi require living or recently deceased insect hosts to complete their life cycle.'
   }
+};
 
-  function hasSave() { return !!loadGame(); }
-
-  // --- Progress tracking ---
-  function getProgress() {
-    try {
-      return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {};
-    } catch(e) { return {}; }
+// === STAGE DATA ===
+var STAGES = [
+  {
+    id: 1,
+    title: 'Stage 1: The Dead Log',
+    icon: '\u{1FAB5}',
+    envName: 'Dead Oak Log',
+    description: 'A single oak log in a quiet glade. Learn the basics of moisture, temperature, and light by growing your first saprophytic fungus.',
+    unlockMessage: 'Welcome to the mycology lab. Your first task: colonize this oak log with oyster mushrooms. Adjust moisture, temperature, and light to find the conditions where mycelium thrives.',
+    completion: 'Grow oyster mushroom to full maturity'
+  },
+  {
+    id: 2,
+    title: 'Stage 2: Forest Floor',
+    icon: '\u{1F332}',
+    envName: 'Forest Clearing',
+    description: 'Three substrates, three species. Discover how different fungi compete for resources and how decomposition transforms dead wood into soil.',
+    unlockMessage: 'New species and substrates unlocked. The forest clearing offers stumps, straw, and multiple fungal species. Watch how they interact — some cooperate, some compete.',
+    completion: 'Grow 3 species and observe competitive exclusion'
+  },
+  {
+    id: 3,
+    title: 'Stage 3: The Living Forest',
+    icon: '\u{1F333}',
+    envName: 'Old-Growth Forest',
+    description: 'Living trees, insect hosts, mycorrhizal networks. Experience the full complexity of fungal ecology — symbiosis, parasitism, and the Wood Wide Web.',
+    unlockMessage: 'The full ecosystem is now available. Chanterelles need tree partners. Cordyceps needs insect hosts. The mycelial network connects everything. This is real ecology.',
+    completion: 'Establish a functioning mycorrhizal network'
+  },
+  {
+    id: 4,
+    title: 'Stage 4: Sandbox',
+    icon: '\u{1F30D}',
+    envName: 'Your Ecosystem',
+    description: 'All species, all substrates. Design your own ecosystem. Experiment freely and fill your field journal.',
+    unlockMessage: 'Full sandbox mode. Every species and substrate is available. Design your own fungal ecosystem. How efficient can you make the nutrient cycle?',
+    completion: 'Open-ended exploration'
   }
+];
 
-  function updateProgressUI() {
-    var progress = getProgress();
-    var statuses = document.querySelectorAll('.module-status[id]');
-    statuses.forEach(function(el) {
-      var key = el.id;
-      if (progress[key]) {
-        el.textContent = 'done';
-        el.classList.add('done');
-      }
+// === ECOLOGY ENTRIES (unlocked through play) ===
+var ECOLOGY_ENTRIES = {
+  decomposition: {
+    title: 'Decomposition',
+    text: 'Saprophytic fungi are nature\'s recyclers. They secrete enzymes (cellulases and ligninases) that break down dead plant material externally, then absorb the dissolved nutrients. Without fungal decomposition, dead wood and leaf litter would accumulate indefinitely and nutrients would be locked away from the living ecosystem.',
+    unlockCondition: 'Grow any saprophyte to maturity'
+  },
+  white_rot: {
+    title: 'White Rot vs. Brown Rot',
+    text: 'White-rot fungi (like turkey tail) break down lignin, leaving pale cellulose behind. Brown-rot fungi break down cellulose, leaving dark lignin residues. This distinction matters enormously — brown rot creates a carbon-rich residue that persists in soil for centuries, while white rot recycles both major wood polymers.',
+    unlockCondition: 'Grow turkey tail'
+  },
+  competitive_exclusion: {
+    title: 'Competitive Exclusion',
+    text: 'When two fungal species compete for the same substrate, the faster colonizer or the species better adapted to current conditions often excludes the other. You can observe "zone lines" — dark barriers where competing mycelia meet and form chemical battle fronts. This is a fundamental principle in ecology.',
+    unlockCondition: 'Grow 2 species on the same substrate'
+  },
+  mycorrhiza: {
+    title: 'Mycorrhizal Symbiosis',
+    text: 'Over 90% of all land plants form mycorrhizal partnerships with fungi. The fungus wraps around or penetrates root cells, dramatically extending the root\'s absorptive surface area. The plant provides sugars from photosynthesis; the fungus provides mineral nutrients (especially phosphorus) and water. Neither partner can thrive alone in most natural soils.',
+    unlockCondition: 'Grow chanterelle with a tree partner'
+  },
+  wood_wide_web: {
+    title: 'The Wood Wide Web',
+    text: 'Coined by Suzanne Simard, this term describes the mycorrhizal networks connecting trees in a forest. Older "hub" or "mother" trees are disproportionately connected and can transfer resources to younger, shaded seedlings. When a tree is fatally injured, it transfers its stored carbon through the network to neighbors. This challenges the view of forests as collections of competing individuals.',
+    unlockCondition: 'Establish a mycelial network'
+  },
+  parasitism: {
+    title: 'Fungal Parasitism',
+    text: 'Parasitic fungi obtain nutrients from living hosts. Cordyceps species are entomopathogenic — they specialize in killing insects. The evolutionary arms race between Cordyceps and its insect hosts has produced extraordinary adaptations, including behavioral manipulation where the fungus effectively hijacks the insect\'s nervous system to optimize spore dispersal.',
+    unlockCondition: 'Grow cordyceps'
+  },
+  nutrient_cycling: {
+    title: 'Nutrient Cycling',
+    text: 'Fungi are the primary decomposers in most terrestrial ecosystems. They convert dead organic matter back into mineral nutrients that plants can absorb. Without fungi, the carbon and nitrogen locked in dead wood would take decades longer to re-enter the soil. In your ecosystem, watch how decomposition rates change with environmental conditions and species composition.',
+    unlockCondition: 'Harvest a mature mushroom'
+  }
+};
+
+
+// =================================================================
+// GAME STATE
+// =================================================================
+var SAVE_KEY = 'myco_world_save';
+
+var gameState = {
+  stage: 1,
+  day: 1,
+  timeSpeed: 1, // 0=paused, 1=normal, 3=fast
+  moisture: 65,
+  temperature: 18,
+  light: 20,
+  selectedSpecies: null,
+  selectedSubstrate: 'hardwood_log',
+  unlockedSpecies: ['oyster'],
+  unlockedSubstrates: ['hardwood_log'],
+  colonies: [],     // active fungal colonies in the ecosystem
+  speciesDiscovered: [],
+  journalObservations: [],
+  journalEcology: [],
+  ecosystemHealth: 0,
+  totalHarvests: 0,
+  nutrientPool: 50,
+  stageComplete: [false, false, false, false]
+};
+
+// =================================================================
+// DOM REFS
+// =================================================================
+var $ = function(id) { return document.getElementById(id); };
+var titleScreen = $('title-screen');
+var btnNewGame = $('btn-new-game');
+var btnContinue = $('btn-continue');
+var gameRoot = $('game-root');
+var canvas = $('ecosystem-canvas');
+var ctx = canvas.getContext('2d');
+var canvasWrap = $('eco-canvas-wrap');
+var tooltip = $('eco-tooltip');
+var notification = $('notification');
+var stageIntro = $('stage-intro');
+var journalContent = $('journal-content');
+
+// =================================================================
+// SAVE / LOAD
+// =================================================================
+function saveGame() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+  } catch(e) {}
+}
+
+function loadGame() {
+  try {
+    var data = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (data && data.stage) return data;
+  } catch(e) {}
+  return null;
+}
+
+function hasSave() { return !!loadGame(); }
+
+// =================================================================
+// NOTIFICATIONS
+// =================================================================
+var notifTimer = null;
+function showNotification(icon, text) {
+  notification.querySelector('.notif-icon').textContent = icon;
+  notification.querySelector('.notif-text').textContent = text;
+  notification.classList.add('visible');
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(function() {
+    notification.classList.remove('visible');
+  }, 3500);
+}
+
+// =================================================================
+// STAGE INTRO
+// =================================================================
+function showStageIntro(stage, callback) {
+  var s = STAGES[stage - 1];
+  $('si-icon').textContent = s.icon;
+  $('si-title').textContent = s.title;
+  $('si-desc').textContent = s.unlockMessage;
+  stageIntro.classList.add('visible');
+
+  var beginBtn = $('si-begin');
+  var handler = function() {
+    stageIntro.classList.remove('visible');
+    beginBtn.removeEventListener('click', handler);
+    if (callback) callback();
+  };
+  beginBtn.addEventListener('click', handler);
+}
+
+// =================================================================
+// UI UPDATE
+// =================================================================
+function updateStatusBar() {
+  $('stat-species').textContent = gameState.speciesDiscovered.length + '/6';
+  $('stat-journal').textContent = gameState.journalObservations.length + gameState.journalEcology.length;
+  $('stat-health').textContent = Math.round(gameState.ecosystemHealth) + '%';
+  $('stage-label').textContent = STAGES[gameState.stage - 1].title.toUpperCase();
+  $('env-name').textContent = STAGES[gameState.stage - 1].envName;
+  $('day-counter').textContent = gameState.day;
+}
+
+function updateSliders() {
+  $('moisture-slider').value = gameState.moisture;
+  $('moisture-val').textContent = gameState.moisture + '%';
+  $('temp-slider').value = gameState.temperature;
+  $('temp-val').innerHTML = gameState.temperature + '&deg;C';
+  $('light-slider').value = gameState.light;
+  var lightLabel = gameState.light < 25 ? 'Shade' : gameState.light < 60 ? 'Indirect' : gameState.light < 85 ? 'Dappled' : 'Full Sun';
+  $('light-val').textContent = lightLabel;
+}
+
+function renderSubstrateList() {
+  var html = '';
+  Object.keys(SUBSTRATES).forEach(function(key) {
+    var sub = SUBSTRATES[key];
+    var unlocked = gameState.unlockedSubstrates.indexOf(key) !== -1;
+    var selected = gameState.selectedSubstrate === key;
+    var cls = 'substrate-btn' + (selected ? ' selected' : '') + (!unlocked ? ' locked' : '');
+    html += '<button class="' + cls + '" data-substrate="' + key + '" ' + (!unlocked ? 'disabled' : '') + '>';
+    html += sub.icon + ' ' + sub.name;
+    if (!unlocked) html += ' &#x1F512;';
+    html += '</button>';
+  });
+  $('substrate-list').innerHTML = html;
+
+  $('substrate-list').querySelectorAll('.substrate-btn:not(.locked)').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      gameState.selectedSubstrate = btn.getAttribute('data-substrate');
+      renderSubstrateList();
     });
-  }
+  });
+}
 
-  // --- Rendering ---
-  function showNode(nodeId, startLine) {
-    var node = story[nodeId];
-    if (!node) return;
+function renderSpeciesList() {
+  var html = '';
+  Object.keys(SPECIES).forEach(function(key) {
+    var sp = SPECIES[key];
+    var unlocked = gameState.unlockedSpecies.indexOf(key) !== -1;
+    var selected = gameState.selectedSpecies === key;
+    var cls = 'species-btn' + (selected ? ' selected' : '') + (!unlocked ? ' locked' : '');
+    html += '<button class="' + cls + '" data-species="' + key + '" ' + (!unlocked ? 'disabled' : '') + '>';
+    html += '<span class="sp-icon">' + sp.icon + '</span>';
+    html += '<span class="sp-info">';
+    html += '<span class="sp-name">' + sp.name + (!unlocked ? ' &#x1F512;' : '') + '</span>';
+    html += '<span class="sp-type">' + sp.typeLabel + '</span>';
+    html += '</span>';
+    html += '</button>';
+  });
+  $('species-list').innerHTML = html;
 
-    state.node = nodeId;
-    state.lineIndex = startLine || 0;
-    state.charIndex = 0;
-
-    // Handle action nodes
-    if (node.action) {
-      handleAction(node.action);
-      return;
-    }
-
-    // Scene
-    els.scene.style.background = SCENES[node.scene] || SCENES.black;
-
-    // Chapter
-    els.chapter.textContent = node.chapter || '';
-
-    // Characters
-    renderCharacters(node.characters || []);
-
-    // Clear choices
-    els.choices.innerHTML = '';
-
-    // Show dialogue if there are lines
-    if (node.lines.length > 0) {
-      els.dialogue.style.display = 'block';
-      showLine();
-    } else if (node.choices) {
-      els.dialogue.style.display = 'none';
-      showChoices(node.choices);
-    }
-  }
-
-  function handleAction(action) {
-    if (action === 'open_syllabus') {
-      openSyllabus();
-    } else if (action === 'goto_module_1') {
-      window.location.href = '{{ site.baseurl }}/games/myco/foundation/what-is-claude/';
-    }
-  }
-
-  function renderCharacters(charIds) {
-    var html = '';
-    charIds.forEach(function(id) {
-      var c = CHARS[id];
-      if (!c || !c.sprite) return;
-      html += '<div class="vn-char visible" data-char="' + id + '">';
-      html += '<div class="vn-char-sprite" style="color:' + c.color + ';">' + c.sprite + '</div>';
-      html += '<div class="vn-char-label" style="color:' + c.color + ';">' + c.name + '</div>';
-      html += '</div>';
+  $('species-list').querySelectorAll('.species-btn:not(.locked)').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      gameState.selectedSpecies = btn.getAttribute('data-species');
+      renderSpeciesList();
     });
-    els.characters.innerHTML = html;
-  }
+  });
+}
 
-  function showLine() {
-    var node = story[state.node];
-    if (!node) return;
+// =================================================================
+// JOURNAL
+// =================================================================
+var activeJournalTab = 'observations';
 
-    if (state.lineIndex >= node.lines.length) {
-      if (node.choices) {
-        showChoices(node.choices);
-      } else if (node.next) {
-        saveGame();
-        showNode(node.next);
-      } else {
-        state.ended = true;
-        saveGame();
-      }
-      return;
-    }
-
-    var line = node.lines[state.lineIndex];
-    var char = CHARS[line.speaker] || CHARS.narrator;
-
-    if (char.name) {
-      els.speaker.textContent = char.name;
-      els.speaker.style.color = char.color;
+function renderJournal() {
+  var html = '';
+  if (activeJournalTab === 'observations') {
+    if (gameState.journalObservations.length === 0) {
+      html = '<div class="journal-empty">No observations yet. Inoculate a substrate to begin.</div>';
     } else {
-      els.speaker.textContent = '';
-    }
-
-    // Highlight speaking character
-    var charEls = els.characters.querySelectorAll('.vn-char');
-    charEls.forEach(function(el) {
-      if (el.getAttribute('data-char') === line.speaker) {
-        el.classList.add('speaking');
-      } else {
-        el.classList.remove('speaking');
-      }
-    });
-
-    typeText(line.text);
-  }
-
-  function typeText(text) {
-    state.typing = true;
-    state.charIndex = 0;
-    state.currentText = text;
-    els.text.textContent = '';
-    els.advance.textContent = '';
-
-    clearInterval(state.typingTimer);
-    state.typingTimer = setInterval(function() {
-      if (state.charIndex < text.length) {
-        els.text.textContent = text.substring(0, state.charIndex + 1);
-        state.charIndex++;
-      } else {
-        clearInterval(state.typingTimer);
-        state.typing = false;
-        els.advance.textContent = 'tap or press space';
-      }
-    }, TYPE_SPEED);
-  }
-
-  function skipType() {
-    if (state.typing) {
-      clearInterval(state.typingTimer);
-      els.text.textContent = state.currentText;
-      state.typing = false;
-      state.charIndex = state.currentText.length;
-      els.advance.textContent = 'tap or press space';
-    }
-  }
-
-  function showChoices(choices) {
-    els.dialogue.style.display = 'none';
-    var html = '';
-    choices.forEach(function(choice, i) {
-      var tagHtml = choice.tag ? '<span class="choice-tag">' + choice.tag + '</span>' : '';
-      html += '<button class="vn-choice" data-choice="' + i + '" aria-label="' + choice.text.replace(/"/g, '&quot;') + '">' + tagHtml + choice.text + '</button>';
-    });
-    els.choices.innerHTML = html;
-
-    els.choices.querySelectorAll('.vn-choice').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var idx = parseInt(btn.getAttribute('data-choice'));
-        var choice = choices[idx];
-        state.history.push({ node: state.node, choice: idx });
-        els.choices.innerHTML = '';
-        saveGame();
-        showNode(choice.next);
+      gameState.journalObservations.slice().reverse().forEach(function(entry) {
+        html += '<div class="journal-entry">';
+        html += '<div class="je-title">Day ' + entry.day + ' — ' + entry.title + '</div>';
+        html += '<div class="je-text">' + entry.text + '</div>';
+        html += '</div>';
       });
+    }
+  } else if (activeJournalTab === 'species') {
+    if (gameState.speciesDiscovered.length === 0) {
+      html = '<div class="journal-empty">No species cataloged yet.</div>';
+    } else {
+      gameState.speciesDiscovered.forEach(function(spId) {
+        var sp = SPECIES[spId];
+        html += '<div class="journal-entry">';
+        html += '<div class="je-title">' + sp.icon + ' ' + sp.name + '</div>';
+        html += '<div class="je-latin">' + sp.latin + '</div>';
+        html += '<div class="je-text">' + sp.description + '</div>';
+        var factIdx = Math.min(gameState.speciesDiscovered.indexOf(spId), sp.facts.length - 1);
+        html += '<div class="je-fact">"' + sp.facts[factIdx] + '"</div>';
+        html += '</div>';
+      });
+    }
+  } else if (activeJournalTab === 'ecology') {
+    if (gameState.journalEcology.length === 0) {
+      html = '<div class="journal-empty">Ecology concepts will appear as you observe fungal interactions.</div>';
+    } else {
+      gameState.journalEcology.forEach(function(ecoId) {
+        var entry = ECOLOGY_ENTRIES[ecoId];
+        html += '<div class="journal-entry">';
+        html += '<div class="je-title">' + entry.title + '</div>';
+        html += '<div class="je-text">' + entry.text + '</div>';
+        html += '</div>';
+      });
+    }
+  }
+  journalContent.innerHTML = html;
+}
+
+document.querySelectorAll('.journal-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.journal-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    activeJournalTab = tab.getAttribute('data-tab');
+    renderJournal();
+  });
+});
+
+// =================================================================
+// ECOLOGY UNLOCKS
+// =================================================================
+function unlockEcology(id) {
+  if (gameState.journalEcology.indexOf(id) === -1 && ECOLOGY_ENTRIES[id]) {
+    gameState.journalEcology.push(id);
+    showNotification('\u{1F4D6}', 'Ecology concept discovered: ' + ECOLOGY_ENTRIES[id].title);
+    renderJournal();
+    saveGame();
+  }
+}
+
+function discoverSpecies(id) {
+  if (gameState.speciesDiscovered.indexOf(id) === -1 && SPECIES[id]) {
+    gameState.speciesDiscovered.push(id);
+    showNotification('\u{1F52C}', 'New species cataloged: ' + SPECIES[id].name);
+    addObservation(SPECIES[id].name + ' Discovered', SPECIES[id].journalEntry);
+    renderJournal();
+    updateStatusBar();
+    saveGame();
+  }
+}
+
+function addObservation(title, text) {
+  gameState.journalObservations.push({
+    day: gameState.day,
+    title: title,
+    text: text
+  });
+  if (activeJournalTab === 'observations') renderJournal();
+  saveGame();
+}
+
+// =================================================================
+// COLONY MODEL
+// =================================================================
+function createColony(speciesId, substrateId, x, y) {
+  return {
+    id: Date.now() + Math.random(),
+    species: speciesId,
+    substrate: substrateId,
+    x: x,
+    y: y,
+    growth: 0,       // 0 to 100
+    health: 100,
+    age: 0,           // in days
+    mature: false,
+    fruiting: false,
+    harvested: false,
+    myceliumRadius: 8,
+    fruitingBodies: []
+  };
+}
+
+// =================================================================
+// INOCULATE
+// =================================================================
+$('btn-inoculate').addEventListener('click', function() {
+  if (!gameState.selectedSpecies) {
+    showNotification('\u{26A0}', 'Select a species first.');
+    return;
+  }
+  var sp = SPECIES[gameState.selectedSpecies];
+  var sub = SUBSTRATES[gameState.selectedSubstrate];
+  if (!sp || !sub) return;
+
+  // Check compatibility
+  if (sp.substrates.indexOf(gameState.selectedSubstrate) === -1) {
+    showNotification('\u{274C}', sp.name + ' cannot grow on ' + sub.name + '. Check substrate compatibility.');
+    addObservation('Failed Inoculation', sp.name + ' was placed on ' + sub.name + ', but this species requires different substrate conditions. ' + sp.typeLabel + ' fungi have specific substrate requirements.');
+    return;
+  }
+
+  // Check special requirements
+  if (sp.requiresTree && gameState.stage < 3) {
+    showNotification('\u{274C}', sp.name + ' requires a living tree partner. Reach Stage 3 to access forest floor.');
+    return;
+  }
+  if (sp.requiresInsect && gameState.stage < 3) {
+    showNotification('\u{274C}', sp.name + ' requires an insect host. Reach Stage 3.');
+    return;
+  }
+
+  // Place colony at a random position in the canvas
+  var cx = 0.2 + Math.random() * 0.6;
+  var cy = 0.3 + Math.random() * 0.4;
+  var colony = createColony(gameState.selectedSpecies, gameState.selectedSubstrate, cx, cy);
+  gameState.colonies.push(colony);
+
+  discoverSpecies(gameState.selectedSpecies);
+  showNotification('\u{1F33F}', sp.name + ' inoculated on ' + sub.name + '.');
+  addObservation('Inoculation: ' + sp.name, 'Spores of ' + sp.latin + ' introduced to ' + sub.name + '. Optimal temperature range: ' + sp.optimalTemp[0] + '-' + sp.optimalTemp[1] + '\u00B0C. Optimal moisture: ' + sp.optimalMoisture[0] + '-' + sp.optimalMoisture[1] + '%.');
+
+  saveGame();
+});
+
+// =================================================================
+// SIMULATION TICK
+// =================================================================
+function simulationTick() {
+  if (gameState.timeSpeed === 0) return;
+
+  gameState.day++;
+
+  var totalHealth = 0;
+  var aliveCount = 0;
+
+  gameState.colonies.forEach(function(colony) {
+    var sp = SPECIES[colony.species];
+    if (!sp || colony.harvested) return;
+
+    colony.age++;
+
+    // Calculate growth conditions
+    var tempScore = calculateFitness(gameState.temperature, sp.optimalTemp[0], sp.optimalTemp[1]);
+    var moistScore = calculateFitness(gameState.moisture, sp.optimalMoisture[0], sp.optimalMoisture[1]);
+    var lightFit = calculateLightFitness(gameState.light, sp.lightPref);
+
+    var fitness = (tempScore + moistScore + lightFit) / 3;
+    colony.health = Math.max(0, Math.min(100, fitness * 100));
+
+    // Growth
+    if (colony.growth < 100 && colony.health > 20) {
+      var growthInc = sp.growthRate * (fitness * 0.8 + 0.2) * (gameState.timeSpeed === 3 ? 2 : 1);
+      colony.growth = Math.min(100, colony.growth + growthInc);
+      colony.myceliumRadius = 8 + (colony.growth / 100) * 50;
+    }
+
+    // Fruiting trigger
+    if (colony.growth >= 70 && !colony.fruiting && colony.health > 50) {
+      colony.fruiting = true;
+      addObservation(sp.name + ' Fruiting', 'Fruiting bodies emerging! ' + sp.name + ' has reached reproductive maturity at growth ' + Math.round(colony.growth) + '%. The mycelium has accumulated enough energy to produce mushrooms.');
+
+      if (sp.type === 'saprophyte') unlockEcology('decomposition');
+      if (sp.id === 'turkey_tail') unlockEcology('white_rot');
+      if (sp.type === 'mycorrhizal') unlockEcology('mycorrhiza');
+      if (sp.type === 'parasite') unlockEcology('parasitism');
+      if (sp.type === 'network') unlockEcology('wood_wide_web');
+    }
+
+    // Generate fruiting bodies
+    if (colony.fruiting && colony.fruitingBodies.length < 5 && Math.random() < 0.15) {
+      colony.fruitingBodies.push({
+        x: colony.x + (Math.random() - 0.5) * 0.08,
+        y: colony.y + (Math.random() - 0.5) * 0.06,
+        size: 0.3 + Math.random() * 0.7,
+        age: 0
+      });
+    }
+    colony.fruitingBodies.forEach(function(fb) { fb.age++; fb.size = Math.min(1, fb.size + 0.02); });
+
+    // Mature check
+    if (colony.growth >= 95 && !colony.mature) {
+      colony.mature = true;
+      addObservation(sp.name + ' Mature', sp.name + ' colony has reached full maturity. The mycelial network is dense and fruiting bodies are at peak condition. Ready for harvest or continued observation.');
+      unlockEcology('nutrient_cycling');
+      checkStageCompletion();
+    }
+
+    // Competitive exclusion
+    gameState.colonies.forEach(function(other) {
+      if (other.id === colony.id || other.harvested) return;
+      if (other.substrate === colony.substrate) {
+        var dist = Math.sqrt(Math.pow(colony.x - other.x, 2) + Math.pow(colony.y - other.y, 2));
+        if (dist < 0.15) {
+          if (gameState.journalEcology.indexOf('competitive_exclusion') === -1) {
+            unlockEcology('competitive_exclusion');
+          }
+          // Slower species loses health
+          var spOther = SPECIES[other.species];
+          if (spOther && sp.growthRate > spOther.growthRate) {
+            other.health = Math.max(0, other.health - 0.5);
+          } else if (spOther && sp.growthRate < spOther.growthRate) {
+            colony.health = Math.max(0, colony.health - 0.5);
+          }
+        }
+      }
+    });
+
+    totalHealth += colony.health;
+    aliveCount++;
+  });
+
+  gameState.ecosystemHealth = aliveCount > 0 ? totalHealth / aliveCount : 0;
+
+  // Nutrient pool
+  var matureCount = gameState.colonies.filter(function(c) { return c.mature && !c.harvested; }).length;
+  gameState.nutrientPool = Math.min(100, 50 + matureCount * 10);
+
+  updateStatusBar();
+  saveGame();
+}
+
+function calculateFitness(value, optLow, optHigh) {
+  if (value >= optLow && value <= optHigh) return 1;
+  if (value < optLow) return Math.max(0, 1 - (optLow - value) / 20);
+  return Math.max(0, 1 - (value - optHigh) / 20);
+}
+
+function calculateLightFitness(light, pref) {
+  if (pref === 'any') return 0.9;
+  if (pref === 'low') return light < 30 ? 1 : light < 50 ? 0.7 : 0.3;
+  if (pref === 'indirect') return (light >= 20 && light <= 60) ? 1 : 0.5;
+  if (pref === 'dappled') return (light >= 40 && light <= 75) ? 1 : 0.4;
+  return 0.5;
+}
+
+// =================================================================
+// STAGE COMPLETION
+// =================================================================
+function checkStageCompletion() {
+  if (gameState.stage === 1 && !gameState.stageComplete[0]) {
+    var oysterMature = gameState.colonies.some(function(c) { return c.species === 'oyster' && c.mature; });
+    if (oysterMature) {
+      gameState.stageComplete[0] = true;
+      advanceStage(2);
+    }
+  }
+  if (gameState.stage === 2 && !gameState.stageComplete[1]) {
+    var matureSpecies = {};
+    gameState.colonies.forEach(function(c) { if (c.mature) matureSpecies[c.species] = true; });
+    if (Object.keys(matureSpecies).length >= 3) {
+      gameState.stageComplete[1] = true;
+      advanceStage(3);
+    }
+  }
+  if (gameState.stage === 3 && !gameState.stageComplete[2]) {
+    var hasNetwork = gameState.colonies.some(function(c) { return c.species === 'mycelial_network' && c.growth > 50; });
+    if (hasNetwork) {
+      gameState.stageComplete[2] = true;
+      advanceStage(4);
+    }
+  }
+}
+
+function advanceStage(newStage) {
+  if (newStage > 4) return;
+
+  setTimeout(function() {
+    showNotification('\u{2B50}', 'Stage ' + (newStage - 1) + ' complete! Advancing to ' + STAGES[newStage - 1].title);
+
+    // Unlock new species/substrates
+    Object.keys(SPECIES).forEach(function(key) {
+      var sp = SPECIES[key];
+      if (sp.unlockedAtStage && sp.unlockedAtStage <= newStage && gameState.unlockedSpecies.indexOf(key) === -1) {
+        gameState.unlockedSpecies.push(key);
+      }
+    });
+    Object.keys(SUBSTRATES).forEach(function(key) {
+      var sub = SUBSTRATES[key];
+      if (sub.unlockedAtStage && sub.unlockedAtStage <= newStage && gameState.unlockedSubstrates.indexOf(key) === -1) {
+        gameState.unlockedSubstrates.push(key);
+      }
+    });
+
+    gameState.stage = newStage;
+    renderSpeciesList();
+    renderSubstrateList();
+    updateStatusBar();
+    saveGame();
+
+    showStageIntro(newStage, function() {});
+  }, 1500);
+}
+
+// =================================================================
+// CANVAS RENDERING
+// =================================================================
+var canvasW = 0, canvasH = 0;
+
+function resizeCanvas() {
+  var rect = canvasWrap.getBoundingClientRect();
+  canvasW = rect.width;
+  canvasH = rect.height;
+  canvas.width = canvasW * (window.devicePixelRatio || 1);
+  canvas.height = canvasH * (window.devicePixelRatio || 1);
+  canvas.style.width = canvasW + 'px';
+  canvas.style.height = canvasH + 'px';
+  ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+}
+
+function drawEcosystem() {
+  ctx.clearRect(0, 0, canvasW, canvasH);
+
+  // Background gradient based on stage
+  var bgGrad;
+  if (gameState.stage === 1) {
+    bgGrad = ctx.createLinearGradient(0, 0, 0, canvasH);
+    bgGrad.addColorStop(0, '#A8D5BA');
+    bgGrad.addColorStop(0.5, '#8FBC8F');
+    bgGrad.addColorStop(1, '#6B4226');
+  } else if (gameState.stage === 2) {
+    bgGrad = ctx.createLinearGradient(0, 0, 0, canvasH);
+    bgGrad.addColorStop(0, '#7CB68E');
+    bgGrad.addColorStop(0.3, '#5A9E6F');
+    bgGrad.addColorStop(0.6, '#4A7C59');
+    bgGrad.addColorStop(1, '#3E2723');
+  } else {
+    bgGrad = ctx.createLinearGradient(0, 0, 0, canvasH);
+    bgGrad.addColorStop(0, '#558B6E');
+    bgGrad.addColorStop(0.2, '#4A7C59');
+    bgGrad.addColorStop(0.5, '#3B6B48');
+    bgGrad.addColorStop(0.8, '#2E4A2E');
+    bgGrad.addColorStop(1, '#1A1A10');
+  }
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // Lighting overlay based on light slider
+  var lightOpacity = Math.max(0, 0.35 - gameState.light / 300);
+  ctx.fillStyle = 'rgba(0, 20, 10, ' + lightOpacity + ')';
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // Draw sunbeams if light > 60
+  if (gameState.light > 60) {
+    ctx.save();
+    ctx.globalAlpha = (gameState.light - 60) / 200;
+    for (var beam = 0; beam < 3; beam++) {
+      var bx = canvasW * (0.2 + beam * 0.3);
+      var bGrad = ctx.createLinearGradient(bx, 0, bx + 40, canvasH);
+      bGrad.addColorStop(0, 'rgba(255, 255, 200, 0.3)');
+      bGrad.addColorStop(1, 'rgba(255, 255, 200, 0)');
+      ctx.fillStyle = bGrad;
+      ctx.beginPath();
+      ctx.moveTo(bx - 20, 0);
+      ctx.lineTo(bx + 60, canvasH);
+      ctx.lineTo(bx - 60, canvasH);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Draw substrate elements
+  drawSubstrates();
+
+  // Draw trees in stage 3+
+  if (gameState.stage >= 3) {
+    drawTrees();
+  }
+
+  // Draw colonies
+  gameState.colonies.forEach(function(colony) {
+    if (!colony.harvested) drawColony(colony);
+  });
+
+  // Moisture particles
+  if (gameState.moisture > 70) {
+    drawMoistureParticles();
+  }
+}
+
+function drawSubstrates() {
+  var stage = gameState.stage;
+
+  // Dead log (always present)
+  ctx.save();
+  var logX = canvasW * 0.3;
+  var logY = canvasH * 0.65;
+  var logW = canvasW * 0.4;
+  var logH = 40;
+
+  // Log shadow
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+  ctx.beginPath();
+  ctx.ellipse(logX + logW / 2, logY + logH + 5, logW / 2 + 10, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Log body
+  var logGrad = ctx.createLinearGradient(logX, logY, logX, logY + logH);
+  logGrad.addColorStop(0, '#8B6914');
+  logGrad.addColorStop(0.3, '#6B4226');
+  logGrad.addColorStop(0.7, '#5C3317');
+  logGrad.addColorStop(1, '#3E2723');
+  ctx.fillStyle = logGrad;
+  ctx.beginPath();
+  ctx.roundRect(logX, logY, logW, logH, 8);
+  ctx.fill();
+
+  // Bark texture lines
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+  ctx.lineWidth = 1;
+  for (var i = 0; i < 6; i++) {
+    ctx.beginPath();
+    ctx.moveTo(logX + logW * (i / 6), logY + 4);
+    ctx.lineTo(logX + logW * (i / 6) + 5, logY + logH - 4);
+    ctx.stroke();
+  }
+
+  // Log end (circle)
+  ctx.fillStyle = '#A0784C';
+  ctx.beginPath();
+  ctx.ellipse(logX + logW, logY + logH / 2, logH / 2, logH / 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#6B4226';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Growth rings
+  ctx.strokeStyle = 'rgba(100, 60, 20, 0.3)';
+  ctx.lineWidth = 0.5;
+  for (var r = 5; r < logH / 2 - 2; r += 4) {
+    ctx.beginPath();
+    ctx.ellipse(logX + logW, logY + logH / 2, r, r, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Stump (stage 2+)
+  if (stage >= 2) {
+    ctx.save();
+    var stX = canvasW * 0.72;
+    var stY = canvasH * 0.58;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.beginPath();
+    ctx.ellipse(stX, stY + 40, 35, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#5C3317';
+    ctx.fillRect(stX - 25, stY, 50, 40);
+
+    ctx.fillStyle = '#8B7355';
+    ctx.beginPath();
+    ctx.ellipse(stX, stY, 25, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(60,30,10,0.3)';
+    ctx.lineWidth = 0.5;
+    for (var sr = 4; sr < 13; sr += 3) {
+      ctx.beginPath();
+      ctx.ellipse(stX, stY, sr, sr * 0.56, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Ground / leaf litter
+  ctx.save();
+  var groundY = canvasH * 0.82;
+  var groundGrad = ctx.createLinearGradient(0, groundY, 0, canvasH);
+  groundGrad.addColorStop(0, stage >= 3 ? '#2E1F0F' : '#4A3520');
+  groundGrad.addColorStop(1, stage >= 3 ? '#1A1208' : '#3E2723');
+  ctx.fillStyle = groundGrad;
+  ctx.fillRect(0, groundY, canvasW, canvasH - groundY);
+
+  // Leaf litter dots
+  ctx.fillStyle = 'rgba(139, 69, 19, 0.3)';
+  for (var lf = 0; lf < 20; lf++) {
+    var lfx = (lf * 137.5) % canvasW;
+    var lfy = groundY + Math.random() * 10;
+    ctx.fillRect(lfx, lfy, 6 + Math.random() * 8, 2);
+  }
+  ctx.restore();
+}
+
+function drawTrees() {
+  var trees = [
+    { x: 0.08, trunkH: 200 },
+    { x: 0.88, trunkH: 180 },
+    { x: 0.55, trunkH: 160 }
+  ];
+
+  trees.forEach(function(tree) {
+    var tx = canvasW * tree.x;
+    var ty = canvasH * 0.82;
+
+    // Trunk
+    ctx.fillStyle = '#3E2723';
+    ctx.fillRect(tx - 12, ty - tree.trunkH, 24, tree.trunkH);
+
+    // Bark texture
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    for (var b = 0; b < tree.trunkH; b += 12) {
+      ctx.beginPath();
+      ctx.moveTo(tx - 10, ty - b);
+      ctx.lineTo(tx - 8 + Math.sin(b) * 3, ty - b - 8);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(tx + 8, ty - b - 4);
+      ctx.lineTo(tx + 10, ty - b - 12);
+      ctx.stroke();
+    }
+
+    // Canopy
+    ctx.fillStyle = 'rgba(34, 80, 34, 0.7)';
+    ctx.beginPath();
+    ctx.ellipse(tx, ty - tree.trunkH - 30, 55, 50, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(46, 100, 46, 0.5)';
+    ctx.beginPath();
+    ctx.ellipse(tx - 15, ty - tree.trunkH - 10, 40, 35, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Roots
+    ctx.strokeStyle = '#3E2723';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(tx - 12, ty);
+    ctx.quadraticCurveTo(tx - 30, ty + 8, tx - 40, ty + 15);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(tx + 12, ty);
+    ctx.quadraticCurveTo(tx + 28, ty + 10, tx + 38, ty + 18);
+    ctx.stroke();
+  });
+}
+
+function drawColony(colony) {
+  var sp = SPECIES[colony.species];
+  if (!sp) return;
+
+  var cx = colony.x * canvasW;
+  var cy = colony.y * canvasH;
+  var rad = colony.myceliumRadius;
+
+  // Mycelium network (branching lines)
+  ctx.save();
+  ctx.globalAlpha = 0.3 + (colony.growth / 100) * 0.4;
+
+  var branches = Math.floor(5 + colony.growth / 10);
+  ctx.strokeStyle = sp.color;
+  ctx.lineWidth = 1;
+  for (var b = 0; b < branches; b++) {
+    var angle = (b / branches) * Math.PI * 2 + colony.id * 0.1;
+    var len = rad * (0.5 + Math.random() * 0.5);
+    var bx = cx + Math.cos(angle) * len;
+    var by = cy + Math.sin(angle) * len * 0.7;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+
+    // Organic branching path
+    var midX = (cx + bx) / 2 + (Math.random() - 0.5) * 15;
+    var midY = (cy + by) / 2 + (Math.random() - 0.5) * 10;
+    ctx.quadraticCurveTo(midX, midY, bx, by);
+    ctx.stroke();
+
+    // Sub-branches
+    if (colony.growth > 40) {
+      var subAngle = angle + (Math.random() - 0.5) * 1.2;
+      var subLen = len * 0.4;
+      ctx.beginPath();
+      ctx.moveTo(midX, midY);
+      ctx.lineTo(midX + Math.cos(subAngle) * subLen, midY + Math.sin(subAngle) * subLen * 0.7);
+      ctx.stroke();
+    }
+  }
+
+  // Glow for healthy colonies
+  if (colony.health > 60) {
+    var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+    glow.addColorStop(0, sp.color.replace(')', ', 0.15)').replace('rgb', 'rgba').replace('#', ''));
+    // Use hex to rgba
+    var r = parseInt(sp.color.substr(1,2), 16);
+    var g = parseInt(sp.color.substr(3,2), 16);
+    var bl = parseInt(sp.color.substr(5,2), 16);
+    glow.addColorStop(0, 'rgba(' + r + ',' + g + ',' + bl + ', 0.12)');
+    glow.addColorStop(1, 'rgba(' + r + ',' + g + ',' + bl + ', 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+
+  // Fruiting bodies
+  if (colony.fruiting) {
+    colony.fruitingBodies.forEach(function(fb) {
+      var fx = fb.x * canvasW;
+      var fy = fb.y * canvasH;
+      var fsize = 4 + fb.size * 8;
+
+      if (sp.id === 'oyster' || sp.id === 'chanterelle') {
+        // Cap mushroom shape
+        ctx.fillStyle = sp.colorDark;
+        ctx.fillRect(fx - 1.5, fy, 3, fsize * 0.7); // stem
+        ctx.fillStyle = sp.color;
+        ctx.beginPath();
+        ctx.ellipse(fx, fy, fsize, fsize * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = sp.colorDark;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      } else if (sp.id === 'turkey_tail') {
+        // Shelf bracket shape
+        ctx.fillStyle = sp.color;
+        ctx.beginPath();
+        ctx.ellipse(fx, fy, fsize * 1.2, fsize * 0.4, 0.3, 0, Math.PI);
+        ctx.fill();
+        // Concentric bands
+        ctx.strokeStyle = sp.colorDark;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.ellipse(fx, fy, fsize * 0.8, fsize * 0.25, 0.3, 0, Math.PI);
+        ctx.stroke();
+      } else if (sp.id === 'lions_mane') {
+        // Cascading spines
+        ctx.fillStyle = sp.color;
+        ctx.beginPath();
+        ctx.arc(fx, fy, fsize, 0, Math.PI * 2);
+        ctx.fill();
+        // Spine details
+        ctx.strokeStyle = sp.colorDark;
+        ctx.lineWidth = 0.5;
+        for (var s = 0; s < 6; s++) {
+          var sa = (s / 6) * Math.PI + Math.PI / 2;
+          ctx.beginPath();
+          ctx.moveTo(fx + Math.cos(sa) * fsize * 0.3, fy + Math.sin(sa) * fsize * 0.3);
+          ctx.lineTo(fx + Math.cos(sa) * fsize, fy + Math.sin(sa) * fsize);
+          ctx.stroke();
+        }
+      } else if (sp.id === 'cordyceps') {
+        // Orange club shape
+        ctx.fillStyle = sp.colorDark;
+        ctx.fillRect(fx - 1, fy, 2, fsize); // stalk
+        ctx.fillStyle = sp.color;
+        ctx.beginPath();
+        ctx.ellipse(fx, fy - 2, fsize * 0.4, fsize * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (sp.id === 'mycelial_network') {
+        // Glowing node
+        var nodeGlow = ctx.createRadialGradient(fx, fy, 0, fx, fy, fsize * 2);
+        nodeGlow.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+        nodeGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = nodeGlow;
+        ctx.beginPath();
+        ctx.arc(fx, fy, fsize * 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(fx, fy, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
     });
   }
 
-  // --- Syllabus panel ---
-  function openSyllabus() {
-    updateProgressUI();
-    els.syllabus.classList.add('visible');
-    els.dialogue.style.display = 'none';
-    els.choices.innerHTML = '';
-    els.characters.innerHTML = '';
-    els.chapter.textContent = '';
+  // Health indicator (small bar)
+  if (colony.growth > 5) {
+    var barW = 30;
+    var barH = 3;
+    var barX = cx - barW / 2;
+    var barY = cy - rad - 10;
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(barX, barY, barW, barH);
+    var healthColor = colony.health > 60 ? '#4CAF50' : colony.health > 30 ? '#FF9800' : '#F44336';
+    ctx.fillStyle = healthColor;
+    ctx.fillRect(barX, barY, barW * (colony.health / 100), barH);
   }
+}
 
-  function closeSyllabus() {
-    els.syllabus.classList.remove('visible');
-    // Go back to the choice that led here
-    showNode('explain_structure');
+var moistureParticles = [];
+function drawMoistureParticles() {
+  ctx.save();
+  ctx.fillStyle = 'rgba(100, 180, 255, 0.15)';
+  if (moistureParticles.length < 30) {
+    moistureParticles.push({
+      x: Math.random() * canvasW,
+      y: Math.random() * canvasH,
+      vy: 0.2 + Math.random() * 0.5,
+      size: 1 + Math.random() * 2
+    });
   }
+  moistureParticles.forEach(function(p) {
+    p.y += p.vy;
+    if (p.y > canvasH) { p.y = 0; p.x = Math.random() * canvasW; }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+}
 
-  els.syllabusBack.addEventListener('click', closeSyllabus);
+// =================================================================
+// TOOLTIP
+// =================================================================
+canvasWrap.addEventListener('mousemove', function(e) {
+  var rect = canvasWrap.getBoundingClientRect();
+  var mx = (e.clientX - rect.left) / canvasW;
+  var my = (e.clientY - rect.top) / canvasH;
 
-  // --- Input handling ---
-  function handleAdvance() {
-    if (state.ended) {
-      openSyllabus();
-      return;
+  var found = null;
+  gameState.colonies.forEach(function(colony) {
+    if (colony.harvested) return;
+    var dist = Math.sqrt(Math.pow(mx - colony.x, 2) + Math.pow(my - colony.y, 2));
+    if (dist < 0.08) found = colony;
+  });
+
+  if (found) {
+    var sp = SPECIES[found.species];
+    tooltip.querySelector('.tip-name').textContent = sp.icon + ' ' + sp.name;
+    tooltip.querySelector('.tip-detail').textContent = 'Growth: ' + Math.round(found.growth) + '% | Health: ' + Math.round(found.health) + '% | Age: ' + found.age + ' days' + (found.fruiting ? ' | FRUITING' : '');
+    tooltip.style.left = Math.min(e.clientX - rect.left + 12, canvasW - 250) + 'px';
+    tooltip.style.top = (e.clientY - rect.top - 50) + 'px';
+    tooltip.classList.add('visible');
+  } else {
+    tooltip.classList.remove('visible');
+  }
+});
+
+canvasWrap.addEventListener('mouseleave', function() {
+  tooltip.classList.remove('visible');
+});
+
+// Click to harvest
+canvasWrap.addEventListener('click', function(e) {
+  var rect = canvasWrap.getBoundingClientRect();
+  var mx = (e.clientX - rect.left) / canvasW;
+  var my = (e.clientY - rect.top) / canvasH;
+
+  gameState.colonies.forEach(function(colony) {
+    if (colony.harvested || !colony.mature) return;
+    var dist = Math.sqrt(Math.pow(mx - colony.x, 2) + Math.pow(my - colony.y, 2));
+    if (dist < 0.08) {
+      colony.harvested = true;
+      gameState.totalHarvests++;
+      var sp = SPECIES[colony.species];
+      showNotification('\u{1F344}', sp.name + ' harvested! Total harvests: ' + gameState.totalHarvests);
+      addObservation('Harvest: ' + sp.name, 'Mature fruiting bodies of ' + sp.latin + ' collected after ' + colony.age + ' days of growth. The remaining mycelium continues to process the substrate.');
+      saveGame();
     }
-    if (state.typing) {
-      skipType();
-      return;
+  });
+});
+
+// =================================================================
+// TIME CONTROLS
+// =================================================================
+$('btn-pause').addEventListener('click', function() {
+  gameState.timeSpeed = 0;
+  document.querySelectorAll('.btn-time').forEach(function(b) { b.classList.remove('active'); });
+  $('btn-pause').classList.add('active');
+});
+$('btn-play').addEventListener('click', function() {
+  gameState.timeSpeed = 1;
+  document.querySelectorAll('.btn-time').forEach(function(b) { b.classList.remove('active'); });
+  $('btn-play').classList.add('active');
+});
+$('btn-fast').addEventListener('click', function() {
+  gameState.timeSpeed = 3;
+  document.querySelectorAll('.btn-time').forEach(function(b) { b.classList.remove('active'); });
+  $('btn-fast').classList.add('active');
+});
+
+// =================================================================
+// SLIDER EVENTS
+// =================================================================
+$('moisture-slider').addEventListener('input', function() {
+  gameState.moisture = parseInt(this.value);
+  updateSliders();
+});
+$('temp-slider').addEventListener('input', function() {
+  gameState.temperature = parseInt(this.value);
+  updateSliders();
+});
+$('light-slider').addEventListener('input', function() {
+  gameState.light = parseInt(this.value);
+  updateSliders();
+});
+
+// =================================================================
+// GAME LOOP
+// =================================================================
+var tickAccumulator = 0;
+var TICK_INTERVAL = 2000; // ms per day at 1x speed
+
+function gameLoop(timestamp) {
+  resizeCanvas();
+  drawEcosystem();
+
+  if (gameState.timeSpeed > 0) {
+    tickAccumulator += 16.67 * gameState.timeSpeed;
+    if (tickAccumulator >= TICK_INTERVAL) {
+      tickAccumulator -= TICK_INTERVAL;
+      simulationTick();
     }
-    state.lineIndex++;
-    showLine();
   }
 
-  els.dialogue.addEventListener('click', handleAdvance);
+  requestAnimationFrame(gameLoop);
+}
 
-  document.addEventListener('keydown', function(e) {
-    if (!state.started) return;
-    if (els.syllabus.classList.contains('visible')) return;
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      if (els.choices.children.length > 0) return;
-      handleAdvance();
-    }
+// =================================================================
+// GAME START
+// =================================================================
+function startNewGame() {
+  titleScreen.classList.add('hidden');
+  gameRoot.classList.add('active');
+
+  gameState = {
+    stage: 1,
+    day: 1,
+    timeSpeed: 1,
+    moisture: 65,
+    temperature: 18,
+    light: 20,
+    selectedSpecies: null,
+    selectedSubstrate: 'hardwood_log',
+    unlockedSpecies: ['oyster'],
+    unlockedSubstrates: ['hardwood_log'],
+    colonies: [],
+    speciesDiscovered: [],
+    journalObservations: [],
+    journalEcology: [],
+    ecosystemHealth: 0,
+    totalHarvests: 0,
+    nutrientPool: 50,
+    stageComplete: [false, false, false, false]
+  };
+
+  initUI();
+  saveGame();
+
+  showStageIntro(1, function() {
+    requestAnimationFrame(gameLoop);
   });
+}
 
-  // --- Start / Continue ---
-  els.startBtn.addEventListener('click', function() {
-    state.started = true;
-    els.titleScreen.classList.add('hidden');
-    setTimeout(function() { showNode('start'); }, 500);
-  });
+function continueGame() {
+  var save = loadGame();
+  if (!save) return;
 
-  els.continueBtn.addEventListener('click', function() {
-    var save = loadGame();
-    if (!save) return;
-    state.started = true;
-    state.history = save.history || [];
-    els.titleScreen.classList.add('hidden');
-    setTimeout(function() { showNode(save.node, save.lineIndex); }, 500);
-  });
+  titleScreen.classList.add('hidden');
+  gameRoot.classList.add('active');
 
-  // Skip to syllabus link
-  els.skipLink.addEventListener('click', function(e) {
-    e.preventDefault();
-    state.started = true;
-    els.titleScreen.classList.add('hidden');
-    setTimeout(function() { openSyllabus(); }, 300);
-  });
+  // Restore state
+  gameState = save;
+  // Ensure new fields exist on old saves
+  if (!gameState.stageComplete) gameState.stageComplete = [false, false, false, false];
+  if (!gameState.nutrientPool) gameState.nutrientPool = 50;
+  if (!gameState.totalHarvests) gameState.totalHarvests = 0;
 
-  // Show continue button if save exists
-  if (hasSave()) {
-    els.continueBtn.classList.remove('hidden');
+  initUI();
+  requestAnimationFrame(gameLoop);
+}
+
+function initUI() {
+  updateSliders();
+  renderSubstrateList();
+  renderSpeciesList();
+  renderJournal();
+  updateStatusBar();
+}
+
+// =================================================================
+// BUTTON EVENTS
+// =================================================================
+btnNewGame.addEventListener('click', startNewGame);
+btnContinue.addEventListener('click', continueGame);
+
+// Show continue button if save exists
+if (hasSave()) {
+  btnContinue.classList.remove('hidden');
+}
+
+// =================================================================
+// TITLE SCREEN CANVAS (ambient spore particles)
+// =================================================================
+var titleCanvas = document.createElement('canvas');
+titleCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+$('title-canopy').appendChild(titleCanvas);
+var tCtx = titleCanvas.getContext('2d');
+var spores = [];
+
+function initTitleSpores() {
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+  titleCanvas.width = w;
+  titleCanvas.height = h;
+  spores = [];
+  for (var i = 0; i < 40; i++) {
+    spores.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: -0.2 - Math.random() * 0.4,
+      size: 1 + Math.random() * 3,
+      alpha: 0.1 + Math.random() * 0.25
+    });
   }
+}
+
+function drawTitleSpores() {
+  if (titleScreen.classList.contains('hidden')) return;
+  tCtx.clearRect(0, 0, titleCanvas.width, titleCanvas.height);
+  spores.forEach(function(s) {
+    s.x += s.vx;
+    s.y += s.vy;
+    if (s.y < -10) { s.y = titleCanvas.height + 10; s.x = Math.random() * titleCanvas.width; }
+    if (s.x < -10) s.x = titleCanvas.width + 10;
+    if (s.x > titleCanvas.width + 10) s.x = -10;
+
+    tCtx.fillStyle = 'rgba(46, 125, 50, ' + s.alpha + ')';
+    tCtx.beginPath();
+    tCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    tCtx.fill();
+  });
+  requestAnimationFrame(drawTitleSpores);
+}
+
+initTitleSpores();
+drawTitleSpores();
+window.addEventListener('resize', initTitleSpores);
 
 })();
 </script>
 
-
-<script src="../shared/substrate-frame.js" data-title="MYCO WORLD" data-lore="How the organism shares knowledge" data-agent="Lumen" data-agent-color="#ffee88"></script>
+<script src="../shared/substrate-frame.js" data-title="MYCO WORLD" data-lore="Cultivate fungi, discover ecology" data-agent="Root" data-agent-color="#2E7D32"></script>
 </body>
 </html>
