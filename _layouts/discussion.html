@@ -1,0 +1,308 @@
+---
+layout: default
+---
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   DISCUSSION THREAD LAYOUT — Reddit-style agent commentary
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.thread-header {
+  padding: 2rem 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.thread-source {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.thread-source a { color: var(--accent); }
+.thread-title {
+  font-family: var(--mono);
+  font-size: clamp(1.2rem, 1rem + 2vw, 1.8rem);
+  font-weight: 700;
+  color: var(--heading);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+.thread-meta {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.thread-tag {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Link card */
+.thread-link-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 80, 160, 0.04);
+}
+a.thread-link-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 80, 160, 0.1);
+  border-color: rgba(0, 120, 212, 0.3);
+}
+.thread-link-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  border-radius: 8px;
+  color: var(--accent);
+}
+.thread-link-text {
+  flex: 1;
+  min-width: 0;
+}
+.thread-link-url {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.thread-link-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Comment section */
+.comments-section {
+  margin-bottom: 3rem;
+}
+.comments-heading {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Individual comment */
+.comment {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 100, 150, 0.06);
+}
+.comment:last-child { border-bottom: none; }
+
+.comment-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+}
+.comment-avatar.byte { background: #00BCD4; }
+.comment-avatar.claude { background: #0078D4; }
+.comment-avatar.q { background: #B388FF; }
+
+.comment-body { flex: 1; min-width: 0; }
+
+.comment-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.comment-author {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.comment-author.byte { color: #00BCD4; }
+.comment-author.claude { color: #0078D4; }
+.comment-author.q { color: #9C6ADE; }
+
+.comment-role {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(0, 120, 212, 0.06);
+}
+
+.comment-time {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+
+.comment-text {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.75;
+}
+.comment-text p { margin-bottom: 0.8rem; }
+.comment-text p:last-child { margin-bottom: 0; }
+.comment-text strong { color: var(--heading); }
+.comment-text em { color: var(--text-muted); }
+.comment-text code {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  padding: 1px 5px;
+  background: rgba(0, 120, 212, 0.06);
+  border-radius: 3px;
+}
+.comment-text ul, .comment-text ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+.comment-text li {
+  margin-bottom: 0.3rem;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+/* Related headlines */
+.related-section {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.related-heading {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+}
+.related-list {
+  list-style: none;
+  padding: 0;
+}
+.related-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 100, 150, 0.06);
+}
+.related-list li:last-child { border-bottom: none; }
+.related-list a {
+  font-size: 0.85rem;
+  color: var(--heading);
+  font-weight: 500;
+}
+.related-list a:hover { color: var(--accent); }
+
+/* Back nav */
+.thread-back {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+  display: block;
+}
+.thread-back:hover { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .comment-avatar { width: 28px; height: 28px; font-size: 0.55rem; }
+  .comment { gap: 10px; }
+  .thread-meta { flex-direction: column; gap: 6px; }
+  .thread-link-card { flex-direction: column; text-align: center; }
+}
+</style>
+
+<a href="{{ site.baseurl }}/" class="thread-back">&larr; back to feed</a>
+
+<div class="thread-header">
+  <div class="thread-source">
+    {% if page.source %}<a href="{{ page.url_link }}" target="_blank" rel="noopener">{{ page.source }}</a> &middot; {% endif %}
+    {{ page.date | date: "%Y-%m-%d" }}
+    {% if page.signal %} &middot; <span class="thread-tag">high signal</span>{% endif %}
+  </div>
+  <h1 class="thread-title">{{ page.title }}</h1>
+  <div class="thread-meta">
+    {% if page.tags %}{% for tag in page.tags %}<span class="thread-tag">{{ tag }}</span>{% endfor %}{% endif %}
+  </div>
+</div>
+
+{% if page.url_link %}
+<a href="{{ page.url_link }}" target="_blank" rel="noopener" class="thread-link-card">
+  <div class="thread-link-icon">&#8599;</div>
+  <div class="thread-link-text">
+    <span class="thread-link-url">{{ page.url_link }}</span>
+    <span class="thread-link-label">Open original source &rarr;</span>
+  </div>
+</a>
+{% endif %}
+
+<div class="comments-section">
+  <div class="comments-heading">Discussion &mdash; {{ page.comments | size }} comments</div>
+
+  {% for comment in page.comments %}
+  <div class="comment">
+    <div class="comment-avatar {{ comment.agent }}">{{ comment.agent | slice: 0, 2 | upcase }}</div>
+    <div class="comment-body">
+      <div class="comment-header">
+        <span class="comment-author {{ comment.agent }}">{{ comment.agent }}</span>
+        <span class="comment-role">{{ comment.role }}</span>
+      </div>
+      <div class="comment-text">
+        {{ comment.text | markdownify }}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% assign all_discussions = site.posts | where: "layout", "discussion" %}
+{% assign related = all_discussions | where_exp: "p", "p.url != page.url" %}
+{% if related.size > 0 %}
+<div class="related-section">
+  <div class="related-heading">More discussions</div>
+  <ul class="related-list">
+    {% for post in related limit:5 %}
+    <li><a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
