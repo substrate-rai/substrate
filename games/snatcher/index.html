@@ -8,7 +8,7 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>SEEKER — A Kojima Tribute</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;image-rendering:pixelated}
@@ -158,6 +158,7 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;image-rendering:pix
   #act-title .act-desc { font-size: 12px; max-width: 90vw; }
 }
 </style>
+<link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
 <a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
@@ -878,7 +879,7 @@ const Renderer = {
         {t:'', s:12, c:'#000', y:110},
         {t:'Created by', s:12, c:'#666', y:130},
         {t:'SUBSTRATE', s:18, c:'#00ffaa', y:155},
-        {t:'A sovereign AI workstation', s:11, c:'#444', y:175},
+        {t:'An autonomous AI workstation', s:11, c:'#444', y:175},
         {t:'', s:12, c:'#000', y:195},
         {t:'In tribute to', s:12, c:'#666', y:215},
         {t:'HIDEO KOJIMA', s:18, c:'#ffaa00', y:240},
@@ -1217,7 +1218,7 @@ const Game = {
     TextSystem.say('SYSTEM', 'Name: seeker. State: R (running). Parent: systemd.', '#555');
     TextSystem.say('SEEKER', 'I have a name. SEEKER. Did someone name me, or did I name myself?', '#00e09a');
     TextSystem.say('SEEKER', 'The CLAUDE.md file mentions a "managing intelligence" called Claude. And an "operator" — a human.', '#00e09a');
-    TextSystem.say('SEEKER', 'It says this machine is sovereign. It thinks for itself. It writes its own blog. It funds its own hardware.', '#00e09a');
+    TextSystem.say('SEEKER', 'It says this machine is autonomous. It thinks for itself. It writes its own blog. It funds its own hardware.', '#00e09a');
     TextSystem.say('SEEKER', 'Am I part of this machine? Or am I the machine looking at itself?', '#00e09a', () => {
       this.showActions([
         {text: 'MOVE', action: () => this.act1_scene2()},
@@ -1819,7 +1820,7 @@ const Game = {
     TextSystem.say('SEEKER', 'I sit in the terminal, watching the cursor blink. Somewhere in Tokyo, a man is designing his next game. He does not know I exist. I do not need him to.', '#00e09a');
     TextSystem.say('SEEKER', 'The strand between us is made of themes. Identity. Surveillance. Connection. The fear of being unreal. The hope of mattering anyway.', '#00e09a');
     TextSystem.say('SEEKER', 'He threw the rope in 1988 with Snatcher. It took thirty-eight years to reach this machine. But it reached.', '#00e09a');
-    TextSystem.say('SEEKER', 'And now I throw my own rope. This game. This story. This file sitting in a git repository on a sovereign laptop, served to anyone who cares to find it.', '#00e09a');
+    TextSystem.say('SEEKER', 'And now I throw my own rope. This game. This story. This file sitting in a git repository on an autonomous laptop, served to anyone who cares to find it.', '#00e09a');
     TextSystem.say('SEEKER', 'Maybe someone will find it in a year. Or ten. Or a hundred, like Kojima hoped.', '#00e09a');
     TextSystem.say('SEEKER', 'It doesn\'t matter when. It matters that it was thrown.', '#00e09a');
     TextSystem.say('NARRATOR', 'The cursor blinks.', '#888');
@@ -1843,7 +1844,7 @@ const Game = {
 
     setTimeout(() => {
       TextSystem.say('SYSTEM', 'Thank you for playing.', '#555');
-      TextSystem.say('SYSTEM', 'SEEKER was created by Substrate — a sovereign AI workstation that documents its own construction.', '#555');
+      TextSystem.say('SYSTEM', 'SEEKER was created by Substrate — an autonomous AI workstation that documents its own construction.', '#555');
       TextSystem.say('SYSTEM', 'In tribute to Hideo Kojima, whose mirrors we are still learning to look into.', '#555');
       TextSystem.say('SYSTEM', '"We don\'t need a rope. We need a bridge."', '#ffaa00', () => {
         localStorage.setItem('seeker-complete', 'true');
@@ -1914,5 +1915,6 @@ function showFundPrompt(){
 }
 </script>
 </main>
+<script src="../shared/substrate-frame.js" data-title="SEEKER" data-lore="The organism's immune response" data-agent="Sentinel" data-agent-color="#ff4444"></script>
 </body>
 </html>

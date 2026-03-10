@@ -1,5 +1,5 @@
 {
-  description = "Substrate — sovereign AI workstation";
+  description = "Substrate — autonomous AI workstation";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

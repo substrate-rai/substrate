@@ -1,4 +1,5 @@
 ---
+layout: post
 published: false
 title: "GPT-5.4 Dropped Today. We Spent $0.40."
 date: 2026-03-07 23:00:00 -0500

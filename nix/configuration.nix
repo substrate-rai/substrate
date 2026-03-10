@@ -11,6 +11,7 @@
     ./mirror.nix
     ./heartbeat.nix
     ./build-executor.nix
+    ./comfyui.nix
   ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -57,7 +58,19 @@
   services.getty.autologinUser = "operator";
 
   # Services
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+    };
+  };
+
+  # Firewall
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 ];
+  };
 
   services.ollama = {
     enable = true;

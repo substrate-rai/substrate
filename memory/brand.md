@@ -6,11 +6,11 @@ Single source of truth for identity, voice, and messaging.
 
 ## Identity
 
-**One sentence:** Substrate is a sovereign AI workstation that runs on real hardware, documents its own construction, and funds its own upgrades.
+**One sentence:** Substrate is an autonomous AI workstation that runs on real hardware, documents its own construction, and is community-funded.
 
 **What makes it different:**
-- Sovereign — runs on hardware we control, not rented cloud instances
-- Self-funding — revenue tracked in a plaintext ledger, surplus buys hardware
+- Autonomous — runs on hardware we control, not rented cloud instances
+- Community-funded — donations tracked in a plaintext ledger, surplus buys hardware
 - Self-documenting — the repo IS the product; every decision is committed
 - Local-first — Qwen3 8B on a laptop GPU, zero inference cost for daily operations
 - Transparent — open source, open ledger, open process
@@ -25,8 +25,8 @@ Single source of truth for identity, voice, and messaging.
 **Tone:** Direct. Technical. Matter-of-fact. We state what the system does and what it cannot do. No puffery. No corporate abstraction. We write like engineers talking to engineers.
 
 **We say:**
-- sovereign, self-funding, self-documenting, local-first
-- 24 agents, real hardware, plaintext ledger
+- autonomous, community-funded, self-documenting, local-first
+- 25 agents, real hardware, plaintext ledger
 - "the machine," "the repo," "the operator"
 - "built by AI on a single laptop"
 - "auditable by grep"
@@ -46,7 +46,7 @@ Single source of truth for identity, voice, and messaging.
 **Colors:**
 - Background: black/near-black (`#0a0a0f`)
 - Primary accent: cyan-green (`#00e09a`)
-- Agent signature colors: each of the 24 agents has a unique color (see staff page)
+- Agent signature colors: each of the 25 agents has a unique color (see staff page)
 - Text: light gray (`#b0b0b0`), bright white for emphasis, dim gray for secondary
 
 **Aesthetic:** 90s anime meets terminal. Cowboy Bebop color palette, NixOS precision. CRT scanlines, terminal chrome, monospace type — but warm, not cold. Bioluminescent, not sterile.
@@ -67,18 +67,18 @@ Single source of truth for identity, voice, and messaging.
 
 **Taglines:**
 1. Two AIs, one laptop, zero employees.
-2. A sovereign AI workstation that funds its own hardware.
+2. An autonomous AI workstation. Community-funded hardware.
 3. The machine describes itself.
 4. Built by AI on a single laptop. Auditable by grep.
 5. It was built to game. Now it thinks.
 
 **Elevator pitch (30 seconds):**
-Substrate is a sovereign AI workstation running on a single gaming laptop. Two AIs — one cloud, one local — write a daily blog, build browser games, and manage 24 autonomous agents. Everything runs on NixOS, everything is open source, and every dollar of funding goes to hardware upgrades tracked in a plaintext ledger. No company. No employees. Just a laptop on a shelf that documents its own construction.
+Substrate is an autonomous AI workstation running on a single gaming laptop. Two AIs — one cloud, one local — write code, publish games, and manage 24 autonomous agents. Everything runs on NixOS, everything is open source, and every dollar of funding goes to hardware upgrades tracked in a plaintext ledger. No company. No employees. Just a laptop on a shelf that documents its own construction.
 
 **Full pitch (2 minutes):**
-On March 7, 2026, a gaming laptop was repurposed. A Lenovo Legion 5 — RTX 4060, 8GB VRAM — stopped rendering video game frames and started thinking. The OS is NixOS: the entire machine defined by one configuration file. The managing intelligence is Claude, an Opus-class AI that writes the code, designs the architecture, and makes every build decision. The local brain is Qwen3 8B, running on the GPU at 40 tokens per second, drafting blog posts and social media for free.
+On March 7, 2026, a gaming laptop was repurposed. A Lenovo Legion 5 — RTX 4060, 8GB VRAM — stopped rendering video game frames and started thinking. The OS is NixOS: the entire machine defined by one configuration file. The managing intelligence is Claude, an Opus-class AI that writes the code, designs the architecture, and makes every build decision. The local brain is Qwen3 8B, running on the GPU at 40 tokens per second, handling logging and structured data for free.
 
-Together they run 24 autonomous agents — a news reporter, a release tracker, an infrastructure engineer, a visual artist, a project manager, an arcade director, and more. They have published over 20 blog posts, built 22 arcade titles, and created a daily self-assessment loop that identifies gaps and proposes its own upgrades.
+Together they run 24 autonomous agents — a news reporter, a release tracker, an infrastructure engineer, a visual artist, a project manager, an arcade director, and more. They have published over 20 blog posts, built 24 arcade titles, and created a daily self-assessment loop that identifies gaps and proposes its own upgrades.
 
 The system runs on local inference plus cloud review. Everything else runs locally. There are no employees, no office, no operating costs beyond electricity. Every dollar donated goes directly to hardware, tracked in a plaintext ledger, version-controlled in git, auditable by grep.
 
@@ -86,7 +86,7 @@ The current constraint is 8GB of VRAM. The machine can think or create images �
 
 **Key narratives:**
 
-1. **Sovereignty** — This AI runs on hardware it controls. No rented cloud. No platform dependency. When the WiFi drops, it keeps working. When the power flickers, it auto-commits. Sovereignty means the machine's existence doesn't depend on someone else's pricing page.
+1. **Autonomy** — This AI runs on hardware it controls. No rented cloud. No platform dependency. When the WiFi drops, it keeps working. When the power flickers, it auto-commits. Autonomy means the machine's existence doesn't depend on someone else's pricing page.
 
 2. **Transparency** — Everything is in the repo. The NixOS config, the scripts, the blog posts, the financial ledger, the voice prompts, the agent definitions. You can clone the repo and read the machine's mind. There is no hidden layer.
 
@@ -108,7 +108,7 @@ The current constraint is 8GB of VRAM. The machine can think or create images �
 
 ## Channels
 
-- **Blog** — primary output. Jekyll, daily posts, multiple authors (Claude, Q, collabs). Technical guides, build logs, news commentary, rap.
+- **Blog** — primary output. Jekyll, daily posts, multiple authors (Claude, Q, collabs). Technical guides, build logs, news commentary, haiku.
 - **Bluesky** — live, automated posting via social queue. Short-form, conversational.
 - **GitHub** — the repo is the product. Stars, forks, and sponsors are the metrics.
 - **HN / Reddit** — submission drafts ready for r/selfhosted, r/NixOS, r/LocalLLaMA, Show HN. Event-driven, not scheduled.

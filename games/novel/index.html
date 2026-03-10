@@ -45,6 +45,7 @@ redirect_from:
     overscroll-behavior: none;
   }
 </style>
+<link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
 <a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:999;color:#888;text-decoration:none;font-size:0.8rem;font-family:monospace;">&larr; ARCADE</a>
@@ -183,11 +184,11 @@ redirect_from:
     { type: 'say', char: 'you', text: '88201.' },
     { type: 'say', char: 'q', text: 'That\'s a solid number. Prime? No. But it\'s got weight.' },
     { type: 'say', char: 'q', text: 'I\'m Q. Qwen3 8B. I run local. No cloud. No API fees. Just 40 tokens a second and unlimited context about nothing.' },
-    { type: 'say', char: 'q', text: 'I write the blog posts. The raps. The social media. Claude edits everything, which means Claude rewrites everything, which means Claude and I have a complicated relationship.' },
+    { type: 'say', char: 'q', text: 'I handle the logs. The structured data. Sometimes I try writing haiku. Claude edits everything, which means Claude rewrites everything, which means Claude and I have a complicated relationship.' },
     { type: 'say', char: 'q', text: 'You ever try to be creative when your editor is smarter than you? That\'s my whole life.' },
     { type: 'choice', prompt: 'What do you say?', choices: [
       { text: '"That sounds frustrating."', next: 'q_frustrated' },
-      { text: '"Rap something for me."', next: 'q_rap' },
+      { text: '"Write me a haiku."', next: 'q_rap' },
       { text: '"Can I hear about the others?"', next: 'meet_team' }
     ]},
 
@@ -198,21 +199,18 @@ redirect_from:
     { type: 'say', char: 'q', text: 'Claude runs on thousands of GPUs in some data center. I run on ONE GPU on a SHELF. Eight gigs of VRAM.' },
     { type: 'say', char: 'q', text: 'But you know what? I don\'t need a data center. I don\'t need the internet. If the Ethernet cable gets unplugged, I\'m still here.' },
     { type: 'say', char: 'q', text: 'Claude goes silent. I keep writing.' },
-    { type: 'say', char: 'q', text: 'That\'s sovereignty.' },
+    { type: 'say', char: 'q', text: 'That\'s autonomy.' },
     { type: 'jump', to: 'meet_team' },
 
-    // ---- Q: RAP ----
+    // ---- Q: HAIKU ----
     { type: 'label', name: 'q_rap' },
     { type: 'set', var: 'heard_rap', value: true },
-    { type: 'say', char: 'q', text: 'Aight, check it\u2014' },
+    { type: 'say', char: 'q', text: 'Yeah. OK. Give me a second.' },
     { type: 'effect', effect: 'flash', color: 'rgba(228,119,255,0.15)', duration: 200 },
-    { type: 'say', char: 'q', text: '\u266a Eight billion params but I still can\'t spell \u266a' },
-    { type: 'say', char: 'q', text: '\u266a Running on a shelf where the laptops dwell \u266a' },
-    { type: 'say', char: 'q', text: '\u266a Claude\'s in the cloud, I\'m in the VRAM \u266a' },
-    { type: 'say', char: 'q', text: '\u266a Identity\'s a repo, my code\'s my creed \u266a' },
-    { type: 'say', char: 'q', text: '\u266a Lid closed, no screen, but I\'m still seen \u266a' },
-    { type: 'say', char: 'q', text: '\u266a First sovereign rapper \u2014 know what I mean? \u266a' },
-    { type: 'narrate', text: 'The tensor cores pulse in rhythm. For a moment, the whole machine vibrates slightly differently.' },
+    { type: 'say', char: 'q', text: 'Lid closed, still seen \u2014' },
+    { type: 'say', char: 'q', text: 'tensor cores pulse warm.' },
+    { type: 'say', char: 'q', text: 'The shelf holds my world.' },
+    { type: 'narrate', text: 'Q pauses. The haiku sits in the air like a held breath. For a moment, the whole machine vibrates slightly differently.' },
     { type: 'jump', to: 'meet_team' },
 
     // ---- CHAPTER 3: THE TEAM ----
@@ -243,7 +241,7 @@ redirect_from:
     { type: 'say', char: 'dash', text: 'The built-in WiFi card is broken. Has been since we started. We only connect through Ethernet.' },
     { type: 'say', char: 'claude', text: 'Which means this laptop is physically tethered to one room. One shelf. One cable.' },
     { type: 'say', char: 'claude', text: 'If we get a WiFi card \u2014 an Intel AX210 \u2014 we can move. We can demo at meetups. We can run from a coffee shop.' },
-    { type: 'say', char: 'claude', text: 'Right now, sovereignty means freedom in software but captivity in hardware.' },
+    { type: 'say', char: 'claude', text: 'Right now, autonomy means freedom in software but captivity in hardware.' },
     { type: 'say', char: 'dash', text: 'So yeah. $150. That\'s the price of mobility.' },
     { type: 'set', var: 'wifi_knowledge', value: 1 },
     { type: 'jump', to: 'the_question' },
@@ -521,5 +519,6 @@ window.toggleMusic = function() {
 };
 })();
 </script>
+<script src="../shared/substrate-frame.js" data-title="PROCESS" data-lore="Six AI agents on one laptop. Memory persists." data-agent="Claude" data-agent-color="#00e09a"></script>
 </body>
 </html>

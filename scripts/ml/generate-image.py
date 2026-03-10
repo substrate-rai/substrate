@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate images via ComfyUI API on RTX 4060 (8GB VRAM).
 
-Model stack: Anime Screenshot Merge NoobAI v4.0 + 90s Retro LoRA + JoJo LoRA
+Model stack: Anime Screenshot Merge NoobAI v4.0 + 90s Retro LoRA
 Two-phase workflow: rapid iteration (8 steps) or final quality (25 steps)
 
 Usage:
@@ -49,12 +49,12 @@ LEGACY_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors"
 SCRIPT_DIR = Path(__file__).parent
 OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "assets" / "images" / "generated"
 
-# Master prompt template — character block gets inserted at [CHARACTER_BLOCK]
+# Master prompt template — character block gets inserted at {character_block}
 MASTER_TEMPLATE = (
     "masterpiece, best quality, 1boy, {character_block}, "
-    "jojo no kimyou na bouken, 90retrostyle, retro artstyle, anime screencap, "
-    "anime coloring, cel shading, bold outlines, vibrant colors, "
-    "dark background, cyberpunk, dramatic lighting, portrait, upper body"
+    "90retrostyle, retro artstyle, anime screencap, "
+    "anime coloring, cel shading, soft lighting, muted colors, "
+    "dark background, portrait, upper body"
 )
 
 NEGATIVE_PROMPT = (
@@ -227,7 +227,7 @@ def stop_comfyui(proc):
 
 def build_workflow(prompt, negative=NEGATIVE_PROMPT, width=832, height=1216,
                    steps=25, cfg=4.5, seed=None, phase="final",
-                   use_scifi_lora=False, upscale=False):
+                   use_scifi_lora=False, use_jojo_lora=False, upscale=False):
     """Build ComfyUI workflow for the new anime model stack.
 
     Phases:
@@ -271,8 +271,8 @@ def build_workflow(prompt, negative=NEGATIVE_PROMPT, width=832, height=1216,
         model_src = [lora_id, 0]
         clip_src = [lora_id, 1]
 
-    # LoRA 2: JoJo Stone Ocean (always)
-    if has_lora(LORA_JOJO):
+    # LoRA 2: JoJo Style (optional — off by default)
+    if use_jojo_lora and has_lora(LORA_JOJO):
         lora_id = str(next_id); next_id += 1
         nodes[lora_id] = {
             "class_type": "LoraLoader",
@@ -501,7 +501,8 @@ def download_image(filename, subfolder=""):
 
 def generate(prompt, width=832, height=1216, steps=25, cfg=4.5, seed=None,
              output=None, negative=NEGATIVE_PROMPT, phase="final",
-             use_scifi_lora=False, upscale=False, use_template=True):
+             use_scifi_lora=False, use_jojo_lora=False, upscale=False,
+             use_template=True):
     """Generate an image via ComfyUI API and save it."""
     # Apply master template if this is a character block
     if use_template and phase != "legacy":
@@ -512,7 +513,8 @@ def generate(prompt, width=832, height=1216, steps=25, cfg=4.5, seed=None,
     workflow, used_seed = build_workflow(
         full_prompt, negative=negative, width=width, height=height,
         steps=steps, cfg=cfg, seed=seed, phase=phase,
-        use_scifi_lora=use_scifi_lora, upscale=upscale,
+        use_scifi_lora=use_scifi_lora, use_jojo_lora=use_jojo_lora,
+        upscale=upscale,
     )
 
     phase_label = {"iterate": "Rapid Iteration (8 steps)", "final": "Final Quality (25 steps)",
@@ -563,7 +565,7 @@ def generate(prompt, width=832, height=1216, steps=25, cfg=4.5, seed=None,
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate images via ComfyUI — Anime Screenshot Merge NoobAI + 90s Retro + JoJo LoRAs")
+        description="Generate images via ComfyUI — Anime Screenshot Merge NoobAI + 90s Retro LoRA")
     parser.add_argument("prompt", help="Character block (or full prompt with --no-template)")
     parser.add_argument("--phase", choices=["iterate", "final", "legacy"], default="final",
                         help="Generation phase: iterate (fast), final (quality), legacy (old SDXL Turbo)")
@@ -575,6 +577,7 @@ def main():
     parser.add_argument("--seed", type=int, help="Random seed for reproducibility")
     parser.add_argument("--negative", default=NEGATIVE_PROMPT, help="Negative prompt")
     parser.add_argument("--scifi", action="store_true", help="Add Retro Sci-fi 90s LoRA (cyberpunk characters)")
+    parser.add_argument("--jojo", action="store_true", help="Add JoJo Style v2 LoRA (off by default)")
     parser.add_argument("--upscale", action="store_true", help="Upscale with R-ESRGAN 4x+ Anime6B (final phase only)")
     parser.add_argument("--no-template", action="store_true", help="Use prompt as-is, don't apply master template")
     parser.add_argument("--variations", type=int, default=1, help="Number of variations to generate (random seeds)")
@@ -602,8 +605,8 @@ def main():
                 args.prompt, args.width, args.height, args.steps, args.cfg,
                 seed, args.output if args.variations == 1 else None,
                 args.negative, phase=args.phase,
-                use_scifi_lora=args.scifi, upscale=args.upscale,
-                use_template=not args.no_template,
+                use_scifi_lora=args.scifi, use_jojo_lora=args.jojo,
+                upscale=args.upscale, use_template=not args.no_template,
             )
             if result is None:
                 print(f"  FAILED variation {i+1}", file=sys.stderr)

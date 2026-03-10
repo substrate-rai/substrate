@@ -4,7 +4,15 @@ let
   comfyuiDir = "/home/operator/comfyui";
   comfyuiVenv = "${comfyuiDir}/venv/bin/python";
   # LD_LIBRARY_PATH needed for CUDA + C++ runtime on NixOS
-  ldLibPath = "/run/opengl-driver/lib:/nix/store/ihpdbhy4rfxaixiamyb588zfc3vj19al-gcc-15.2.0-lib/lib:/nix/store/m028f6iw72di3mqah6zmfpjx91973bk0-cuda-merged-12.4/lib:/nix/store/drxbq03f66krz302bp077bqf0damsayv-zlib-1.3.1/lib:/nix/store/rla54w2i158xf5i5fla3mwh5760x3pgn-libglvnd-1.7.0/lib";
+  # Uses dynamic paths via pkgs to survive nixpkgs updates
+  ldLibPath = pkgs.lib.makeLibraryPath [
+    pkgs.stdenv.cc.cc.lib
+    pkgs.cudaPackages.cuda_cudart
+    pkgs.cudaPackages.cuda_nvrtc
+    pkgs.zlib
+    pkgs.libglvnd
+    config.hardware.nvidia.package
+  ] + ":/run/opengl-driver/lib";
 in {
   # ComfyUI — on-demand image generation server on RTX 4060 (8GB VRAM).
   #

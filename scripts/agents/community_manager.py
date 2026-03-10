@@ -59,7 +59,7 @@ POST_TEMPLATES = {
     ],
     "progress": [
         "Substrate funding: ${total:.2f}/${target:.2f} ({pct:.0f}%). {days} days in. The machine keeps building.",
-        "Progress report: {pct:.0f}% funded. ${remaining:.2f} remaining. Every dollar is a vote for sovereign AI.",
+        "Progress report: {pct:.0f}% funded. ${remaining:.2f} remaining. Every dollar is a vote for autonomous AI.",
     ],
     "engagement": [
         "What would you build with a machine that documents its own construction? Substrate is finding out.",

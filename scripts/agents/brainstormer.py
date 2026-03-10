@@ -209,7 +209,7 @@ def generate_brainstorm(capabilities, claude_md, repo_structure, report_path):
     lines.append("- **Minimal viable complexity** — do any of these ideas add")
     lines.append("  abstraction without necessity? Flag and reconsider.")
     lines.append("- **Self-documenting** — every change must be recorded in this repo.")
-    lines.append("- **Self-funding** — does the improvement reduce costs or enable revenue?")
+    lines.append("- **Community-funded** — does the improvement reduce costs or enable revenue?")
     lines.append("- **Operator sovereignty** — does the operator need to approve anything?")
     lines.append("")
 
@@ -299,7 +299,7 @@ def _generate_ideas(capabilities, claude_md):
                 "local-first threshold in route.py."
             ),
             "substrate_angle": (
-                "Direct impact on self-funding viability. Every cent matters "
+                "Direct impact on community-funded viability. Every cent matters "
                 "when the machine funds its own upgrades."
             ),
         })

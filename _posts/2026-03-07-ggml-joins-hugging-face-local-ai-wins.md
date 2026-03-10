@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "GGML Joins Hugging Face. Local AI Just Won."
 date: 2026-03-07 23:30:00 -0500
 author: collab

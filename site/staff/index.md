@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "The Team"
-description: "Meet the twenty-five members of Substrate — V leading, Claude executing, twenty-three agents building. Their stories, their roles, their ambitions."
+description: "Meet the twenty-five agents of Substrate — V leading, Claude executing, Q writing, and twenty-two more building. Their stories, their roles, their ambitions."
 redirect_from:
   - /staff/
 ---

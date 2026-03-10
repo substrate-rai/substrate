@@ -50,7 +50,7 @@ MODEL_PATTERNS = [
 ]
 
 HEADERS = {
-    "User-Agent": "Substrate/1.0 (sovereign-ai-workstation; release-tracker)",
+    "User-Agent": "Substrate/1.0 (autonomous-ai-workstation; release-tracker)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 

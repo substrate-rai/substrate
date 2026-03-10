@@ -50,7 +50,7 @@ P._dom=function(){
  T.$cp=mk('div',PA+'top:16px;left:20px;'+MF+'font-size:.65rem;color:rgba(255,255,255,.2);z-index:5;letter-spacing:2px;text-transform:uppercase',B);
  T.$sv=mk('div',PA+'top:16px;right:60px;'+MF+'font-size:.6rem;color:rgba(0,224,154,.4);z-index:5;opacity:0;transition:opacity .3s',B);T.$sv.textContent='saved';
  bt('\u2630',PA+'top:12px;right:16px;z-index:60;background:rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.15);color:#aaa;padding:4px 8px;cursor:pointer;'+MF+'font-size:1rem;border-radius:0',B,function(){if(T.s.on)T.$mn.style.display=T.$mn.style.display==='flex'?'none':'flex'});
- T.$mn=mk('div',OV+'55;background:rgba(0,0,0,.85);display:none;'+FC+'gap:12px',B);
+ T.$mn=mk('div',OV+'55;background:rgba(0,0,0,.85);'+FC+'gap:12px;display:none',B);
  mk('div',MF+'font-size:1rem;color:#888;margin-bottom:16px;letter-spacing:3px',T.$mn).textContent='MENU';
  'resume:RESUME,save1:SAVE 1,save2:SAVE 2,save3:SAVE 3,load1:LOAD 1,load2:LOAD 2,load3:LOAD 3'.split(',').forEach(function(s){var p=s.split(':');bt(p[1],SB,T.$mn,function(){T._mc(p[0])})});
  T.$cl=mk('div',PA+'bottom:200px;left:50%;transform:translateX(-50%);z-index:20;display:flex;flex-direction:column;gap:8px;width:90%;max-width:480px',B);

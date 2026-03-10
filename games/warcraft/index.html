@@ -9,7 +9,7 @@ redirect_from:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>DOMINION — Substrate Arcade</title>
 <meta name="description" content="Build your base, gather resources, and expand your dominion in this Warcraft-inspired RTS. Procedural 3D, zero assets, built by AI.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -156,6 +156,7 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
 #defeat-screen button{background:linear-gradient(180deg,#3a2020,#1a1010);border:2px solid #cc3333;color:#cc3333;font-family:inherit;font-size:13px;padding:8px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s}
 #defeat-screen button:hover{background:linear-gradient(180deg,#5a3030,#3a2020);box-shadow:0 0 15px rgba(204,51,51,0.2)}
 </style>
+<link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
 
@@ -2229,5 +2230,6 @@ window.addEventListener('beforeunload',()=>{
 updateCamera();
 gameLoop();
 </script>
+<script src="../shared/substrate-frame.js" data-title="DOMINION" data-lore="Territory and sovereignty" data-agent="Arc" data-agent-color="#ffcc44"></script>
 </body>
 </html>

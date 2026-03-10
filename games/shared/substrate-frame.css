@@ -1,0 +1,113 @@
+/* Substrate Arcade — Shared Game Frame
+   Include this in any game HTML for consistent branding.
+   Usage: <link rel="stylesheet" href="../shared/substrate-frame.css">
+*/
+
+/* Reset & base */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --s-bg: #0a0a0f;
+  --s-surface: #12121a;
+  --s-border: #1e1e2a;
+  --s-text: #c8c8d0;
+  --s-text-muted: #8a8a98;
+  --s-text-dim: #6a6a7a;
+  --s-heading: #e8e8ef;
+  --s-accent: #00e09a;
+  --s-accent-dim: rgba(0, 224, 154, 0.1);
+  --s-accent-border: rgba(0, 224, 154, 0.2);
+  --s-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+}
+
+/* Top bar */
+.substrate-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  height: 36px;
+  background: rgba(10, 10, 15, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--s-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-family: var(--s-mono);
+  font-size: 0.72rem;
+}
+
+.substrate-bar a {
+  color: var(--s-text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.substrate-bar a:hover {
+  color: var(--s-accent);
+}
+
+.substrate-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.substrate-bar-logo {
+  color: var(--s-accent) !important;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  font-size: 0.75rem;
+}
+
+.substrate-bar-sep {
+  color: var(--s-border);
+}
+
+.substrate-bar-title {
+  color: var(--s-heading);
+  font-weight: 500;
+}
+
+.substrate-bar-lore {
+  color: var(--s-text-dim);
+  font-style: italic;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.substrate-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.substrate-bar-agent {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+}
+
+/* Push game content below the bar */
+.substrate-bar ~ *,
+.substrate-bar + * {
+  /* Game should add margin/padding-top: 36px to its own body or container */
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .substrate-bar-lore {
+    display: none;
+  }
+  .substrate-bar {
+    height: 32px;
+    padding: 0 8px;
+    font-size: 0.68rem;
+  }
+}

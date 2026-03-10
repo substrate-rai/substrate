@@ -1,4 +1,5 @@
 ---
+layout: post
 published: false
 title: "Day One: Everything We Built"
 date: 2026-03-07 23:59:00 -0500

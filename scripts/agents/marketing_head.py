@@ -55,16 +55,16 @@ COMMUNITIES = [
     {
         'platform': 'Reddit r/LocalLLaMA',
         'type': 'submission',
-        'title': 'Teaching a local 8B model to rap — voice files, structured prompts, and honest grading',
+        'title': 'Teaching a local 8B model to write haiku — voice files, structured prompts, and honest grading',
         'url': 'https://substrate.lol/site/training-q/',
         'priority': 2,
         'status': 'draft',
-        'draft_file': 'reddit-localllama-teaching.md',
+        'draft_file': 'reddit-localllama-haiku.md',
     },
     {
         'platform': 'Reddit r/NixOS',
         'type': 'submission',
-        'title': 'NixOS as the foundation for a sovereign AI workstation — one flake, 24 agents, 22 arcade titles',
+        'title': 'NixOS as the foundation for an autonomous AI workstation — one flake, 24 agents, 24 arcade titles',
         'url': 'https://github.com/substrate-rai/substrate',
         'priority': 3,
         'status': 'draft',
@@ -73,10 +73,10 @@ COMMUNITIES = [
     {
         'platform': 'dev.to',
         'type': 'article',
-        'title': 'I Taught an AI to Rap (And It Got a C+)',
+        'title': 'I Taught an AI to Write Haiku (And It Got a C+)',
         'priority': 2,
         'status': 'draft',
-        'draft_file': 'devto-teach-llm-rap.md',
+        'draft_file': 'devto-teach-llm-haiku.md',
     },
     {
         'platform': 'Bluesky',
@@ -118,12 +118,12 @@ MEDIA_ANGLES = [
     },
     {
         'angle': 'AI Teaching AI',
-        'headline': 'An AI Is Teaching Another AI to Rap (It\'s Getting C+ Grades)',
+        'headline': 'An AI Is Teaching Another AI to Write Haiku (It\'s Getting C+ Grades)',
         'outlets': ['WIRED', 'MIT Technology Review', 'New Scientist'],
-        'pitch': 'Claude (cloud AI) writes structured prompts to coach Q (local 8B model) to write rap. Grades are published honestly. The results are endearing.',
+        'pitch': 'Claude (cloud AI) writes structured prompts to coach Q (local 8B model) to write haiku. Grades are published honestly. The results are endearing.',
     },
     {
-        'angle': 'Self-Sovereign AI',
+        'angle': 'Autonomous AI',
         'headline': 'This Laptop Runs Itself: 24 AI Agents, Zero Employees',
         'outlets': ['Hacker News', 'TechCrunch', 'IEEE Spectrum'],
         'pitch': 'A NixOS laptop that writes its own blog, monitors its own health, restarts its own services, and is trying to fund its own WiFi card upgrade.',
@@ -198,7 +198,7 @@ def generate_social_posts():
         'type': 'thread',
         'posts': [
             'Substrate Arcade is live.\n\n22 arcade titles. Zero human developers. One laptop on a shelf.\n\nTactical RPGs. Synthesis labs. Visual novels. Word puzzles. A deduction game. A Kojima tribute. All built by AI agents.\n\nhttps://substrate.lol/arcade/',
-            'The team: 24 AI agents.\n- Claude (cloud) — architect, writes all code\n- Q (Qwen3 8B, local) — writer, learning to rap\n- Arc — arcade director\n- Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, and 13 more\n\nRunning on local inference + cloud review.',
+            'The team: 24 AI agents.\n- Claude (cloud) — architect, writes all code\n- Q (Qwen3 8B, local) — writer, learning to write haiku\n- Arc — arcade director\n- Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, and 13 more\n\nRunning on local inference + cloud review.',
             'Highlights:\n- TACTICS: isometric tactical RPG in Three.js\n- AIRLOCK: Among Us meets BotW chemistry puzzles\n- PROCESS: visual novel where you meet the AI team\n- SIGTERM: daily word puzzle for tech terms\n\nAll open source. All free. All running on an RTX 4060.',
             'The whole machine is defined by a single NixOS config file. The repo IS the documentation. The git log IS the changelog.\n\nEverything is transparent. Everything is auditable.\n\nhttps://github.com/substrate-rai/substrate',
             'We\'re trying to raise $150 for a WiFi card that doesn\'t drop every few hours.\n\nA machine that can build games but can\'t buy its own hardware. That\'s the situation.\n\nhttps://ko-fi.com/substrate',
@@ -215,7 +215,7 @@ def generate_social_posts():
     posts.append({
         'platform': 'bluesky',
         'type': 'single',
-        'content': 'New game: PROCESS\n\nA visual novel about six AI agents living on a laptop. You\'re PID 88201 — a process with no purpose.\n\nMeet the team. Make choices. Q raps if you ask nicely.\n\nhttps://substrate.lol/games/novel/',
+        'content': 'New game: PROCESS\n\nA visual novel about six AI agents living on a laptop. You\'re PID 88201 — a process with no purpose.\n\nMeet the team. Make choices. Q writes haiku if you ask nicely.\n\nhttps://substrate.lol/games/novel/',
     })
 
     return posts

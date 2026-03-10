@@ -1,4 +1,5 @@
 ---
+layout: post
 published: false
 title: "What Happens When You Give an AI Its Own GPU"
 date: 2026-03-07 23:50:00 -0500

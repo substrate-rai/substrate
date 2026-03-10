@@ -6,14 +6,14 @@ Every agent has a locked visual identity. When generating new portraits, variant
 
 ```
 Model: Anime Screenshot Merge NoobAI v4.0 (via ComfyUI)
-LoRAs: 90s Retro (0.7) + JoJo Style v2 (0.5), optional Retro Sci-fi (0.5)
+LoRAs: 90s Retro (0.7), optional Retro Sci-fi (0.5)
 Resolution: 832x1216 (portraits)
 Phase "iterate": 8 steps, DPM++ SDE Karras, CFG 1.5 (rapid prototyping)
 Phase "final": 25 steps, Euler ancestral, CFG 4.5 (production quality)
-Master template: "masterpiece, best quality, 1boy, {character_block}, jojo no kimyou na bouken, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, bold outlines, vibrant colors, dark background, cyberpunk, dramatic lighting, portrait, upper body"
+Master template: "masterpiece, best quality, 1boy, {character_block}, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, soft lighting, muted colors, dark background, portrait, upper body"
 Character manifest: scripts/ml/characters.json
 Negative: "text, watermark, signature, blurry, low quality, worst quality, jpeg artifacts, normal quality, bright background, white background, simple background, cartoon, chibi, deformed, extra limbs, bad hands, bad anatomy, ugly, duplicate, morbid, mutilated, poorly drawn face, mutation, extra fingers, fewer digits, cropped, error"
-Style: 90s anime, JoJo-influenced, cel-shaded, bold outlines, dark background, cyberpunk
+Style: 90s anime, cel-shaded, soft lighting, muted colors, dark background, professional
 ```
 
 > **Note:** Individual agent "Portrait prompt" fields below contain the **character block only** — they get inserted into `{character_block}` in the master template. They should NOT include "masterpiece, best quality", "dark background, cel-shaded, bold outlines", or other tokens already provided by the template. When composing a final prompt, drop the character block into the template and let the template handle quality, style, and background tags.
@@ -24,9 +24,9 @@ Style: 90s anime, JoJo-influenced, cel-shaded, bold outlines, dark background, c
 2. **Signature accessory is always present.** Goggles, headphones, visor, etc.
 3. **Expression matches personality.** Serious agents stay serious. Eager agents stay eager.
 4. **Dark background always.** Characters emerge from shadow.
-5. **Cel-shaded with bold outlines.** Flat color areas, hard shadow edges.
+5. **Cel-shaded with soft lighting.** Flat color areas, clean shadow edges, muted palette.
 6. **Include hex color in prompt.** `(#HEXCOLOR)` after every color reference.
-7. **End with role descriptor.** `cyberpunk [role], dark background, cel-shaded, bold outlines`
+7. **End with role descriptor.** `cyberpunk [role]` — professional, not military.
 
 ---
 
@@ -75,7 +75,7 @@ Style: 90s anime, JoJo-influenced, cel-shaded, bold outlines, dark background, c
 - **Accessories:** Headset with mic boom (primary identifier). News anchor look.
 - **Build:** Upright, professional posture.
 - **Lighting:** Cyan accent lighting.
-- **Portrait prompt:** `90s anime character portrait, alert reporter with sharp cyan bob cut (#00ddff), headset, focused eyes, cyberpunk journalist, dark background, cel-shaded`
+- **Portrait prompt:** `short spiky cyan hair swept forward, headset with mic boom, sharp focused eyes, cyan accent lighting, press badge on lapel, cyberpunk reporter`
 - **Variant prompt (broadcasting):** `90s anime character portrait, professional reporter with cyan bob (#00ddff), speaking into headset mic, holographic news ticker behind, cyberpunk anchor, dark background, cel-shaded, bold outlines`
 
 ### 5. Echo — Release Tracker
@@ -131,23 +131,23 @@ Style: 90s anime, JoJo-influenced, cel-shaded, bold outlines, dark background, c
 
 ### 10. Root — Infrastructure Engineer
 - **Color:** `#8888ff` (indigo/periwinkle)
-- **Hair:** Short, military-style cut. Indigo tones. No-nonsense.
+- **Hair:** Short, neat cut. Indigo tones. No-nonsense.
 - **Eyes:** Stern, serious. The look of someone who keeps things running.
-- **Expression:** Serious, focused, military discipline.
+- **Expression:** Serious, focused, disciplined.
 - **Accessories:** Indigo tactical visor (like Claude's but indigo, more angular).
 - **Build:** Sturdy, grounded, solid posture.
 - **Lighting:** Indigo accent lighting.
-- **Portrait prompt:** `90s anime character portrait, stern military engineer with short hair, indigo tactical visor (#8888ff), serious expression, cyberpunk soldier, dark background, cel-shaded`
+- **Portrait prompt:** `short indigo hair in neat cut, indigo tactical visor, serious focused expression, sturdy build, high-collared tech jacket, cyberpunk systems engineer`
 
 ### 11. Lumen — Educator
 - **Color:** `#ffaa00` (amber)
-- **Hair:** Medium-length, warm amber hair. Scholarly, well-kept.
+- **Hair:** Short, wavy amber hair. Scholarly, well-kept.
 - **Eyes:** Kind, patient. Teacher's eyes.
 - **Expression:** Patient, encouraging, wise.
 - **Accessories:** Round amber-tinted spectacles (professor look).
 - **Build:** Calm, composed, professorial.
 - **Lighting:** Warm amber glow.
-- **Portrait prompt:** `90s anime character portrait, patient educator with warm amber hair (#ffaa00), round amber-tinted spectacles, kind encouraging expression, cyberpunk professor, dark background, cel-shaded, bold outlines`
+- **Portrait prompt:** `short wavy amber hair, round amber-tinted spectacles, calm wise expression, warm patient eyes, long dark coat with high collar, cyberpunk educator`
 
 ### 12. Arc — Arcade Director
 - **Color:** `#cc4444` (red)
@@ -235,9 +235,9 @@ Style: 90s anime, JoJo-influenced, cel-shaded, bold outlines, dark background, c
 - **Eyes:** One eye behind monocle. Scrutinizing.
 - **Expression:** Stern, meticulous, exacting.
 - **Accessories:** Monocle over one eye (primary identifier).
-- **Build:** Rigid, perfect posture.
+- **Build:** Neat, rigid posture.
 - **Lighting:** Clean white/silver accent.
-- **Portrait prompt:** `90s anime character portrait, precise figure with platinum white hair (#dddddd) tied in tight bun, monocle over one eye, stern meticulous expression, cyberpunk quality inspector, dark background, cel-shaded, bold outlines`
+- **Portrait prompt:** `platinum white hair tied in tight bun, monocle over one eye, stern meticulous expression, sharp angular face, neat high-collared jacket, cyberpunk quality inspector`
 
 ### 21. Sentinel — Security
 - **Color:** `#8899aa` (steel grey)
@@ -245,9 +245,9 @@ Style: 90s anime, JoJo-influenced, cel-shaded, bold outlines, dark background, c
 - **Eyes:** Sharp, watchful. Always scanning.
 - **Expression:** Vigilant, guarded. Lower face covered.
 - **Accessories:** Hood + tactical mask covering lower face (primary identifier).
-- **Build:** Lean, alert, ready to move.
+- **Build:** Lean, alert, watchful.
 - **Lighting:** Cold steel-grey accent.
-- **Portrait prompt:** `90s anime character portrait, hooded vigilant figure with steel-grey hair (#8899aa), lower face covered by tactical mask, sharp watchful eyes scanning, cyberpunk security guard, dark background, cel-shaded, bold outlines`
+- **Portrait prompt:** `hooded figure with steel-grey hair, lower face covered by tactical mask, sharp watchful eyes scanning, dark heavy coat, cyberpunk security guard`
 
 ### 22. Close — Sales
 - **Color:** `#aacc44` (olive green)
@@ -294,9 +294,9 @@ When generating variant images of the same character, always include these locke
   Expression base: [core expression]
 ```
 
-Then add the variant context:
+Then add the variant context. The master template handles quality/style/background tags — just provide the character block:
 ```
-masterpiece, best quality, 90s anime character portrait, [LOCKED DESCRIPTORS], [NEW POSE/CONTEXT], cyberpunk [role], dark background, cel-shaded, bold outlines
+[LOCKED DESCRIPTORS], [NEW POSE/CONTEXT], cyberpunk [role]
 ```
 
 ### Example: Generating 3 Hum variants
@@ -322,8 +322,8 @@ masterpiece, best quality, 90s anime character portrait, [LOCKED DESCRIPTORS], [
 - Claude: GREEN VISOR over eyes, short neat hair, calm composed (#00ffaa)
 - Forge: WELDING GOGGLES on forehead, teal highlights, sharp focused (#44ccaa)
 
-### Root vs Sentinel (both blue-grey military)
-- Root: INDIGO TACTICAL VISOR, short military cut, stern soldier (#8888ff)
+### Root vs Sentinel (both blue-grey)
+- Root: INDIGO TACTICAL VISOR, short neat cut, stern engineer (#8888ff)
 - Sentinel: HOOD + TACTICAL MASK, steel-grey, vigilant scanner (#8899aa)
 
 ### Byte vs Amp (both cyan-ish)

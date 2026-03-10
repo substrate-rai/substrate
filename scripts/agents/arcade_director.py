@@ -30,22 +30,28 @@ ASSETS_IMG_DIR = os.path.join(REPO_DIR, "assets", "images", "generated")
 KNOWN_GAMES = [
     ("puzzle", "SIGTERM", "Word puzzle"),
     ("adventure", "SUBPROCESS", "Text adventure"),
-    ("card", "VERSUS", "Competitive word duel"),
-    ("mycelium", "MYCELIUM", "Real-time strategy"),
-    ("chemistry", "SYNTHESIS", "Capability synthesis lab"),
+    ("mycelium", "MYCELIUM", "3D simulation"),
+    ("chemistry", "SYNTHESIS", "Sandbox"),
     ("tactics", "TACTICS", "Tactical RPG"),
     ("novel", "PROCESS", "Visual novel"),
     ("airlock", "AIRLOCK", "Physics puzzle"),
-    ("cascade", "CASCADE", "Momentum game"),
+    ("cascade", "CASCADE", "Quick decisions"),
     ("objection", "OBJECTION!", "Courtroom drama"),
-    ("cypher", "V_CYPHER", "Rap battle"),
-    ("bootloader", "BOOTLOADER", "Focus tool"),
-    ("brigade", "BRIGADE", "Social deduction"),
+    ("cypher", "V_CYPHER", "Visual novel"),
+    ("bootloader", "BOOTLOADER", "Sandbox"),
+    ("brigade", "BRIGADE", "Recruitment VN"),
     ("radio", "RADIO", "Music player"),
-    ("album", "ALBUM", "Album viewer"),
+    ("album", "ALBUM", "Creative tool"),
     ("myco", "MYCOWORLD", "Educational VN"),
-    ("signal", "SIGNAL", "AI deduction game"),
+    ("signal", "SIGNAL", "Deduction game"),
     ("snatcher", "SEEKER", "Kojima tribute"),
+    ("dragonforce", "DRAGONFORCE", "Army battle"),
+    ("warcraft", "DOMINION", "RTS"),
+    ("deckbuilder", "STACK OVERFLOW", "Deckbuilder"),
+    ("idle", "SUBSTRATE GROWTH", "Idle clicker"),
+    ("runner", "PIPELINE", "Endless runner"),
+    ("vocal-lab", "VOCAL LAB", "Audio synthesis"),
+    ("card", "PITCH CARD", "Landing page"),
 ]
 
 SIZE_BUDGET_KB = 200
@@ -429,6 +435,79 @@ def check_asset_integrity(html_content, game_dir):
 # Link Checker
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Playability Checker (NEW — checks what players actually experience)
+# ---------------------------------------------------------------------------
+
+def check_playability(html_content, slug):
+    """Check if a player can actually figure out how to play this game.
+
+    This is what Arc SHOULD have been checking from the start:
+    not bracket balance, but whether a human can start playing.
+    """
+    issues = []
+
+    # 1. Does the game have visible instructions or a tutorial?
+    has_how_to = bool(re.search(
+        r'how\s+to\s+play|instructions|tutorial|controls|help',
+        html_content, re.IGNORECASE
+    ))
+    has_placeholder_text = bool(re.search(
+        r'placeholder\s*=\s*["\'][^"\']*(?:type|try|enter|command)',
+        html_content, re.IGNORECASE
+    ))
+    has_visible_controls = bool(re.search(
+        r'(?:WASD|arrow\s*keys|click|tap|swipe|drag)',
+        html_content, re.IGNORECASE
+    ))
+    if not has_how_to and not has_placeholder_text and not has_visible_controls:
+        issues.append("playability: no visible instructions — new player won't know what to do")
+
+    # 2. Does the game have a start/play button or auto-start?
+    has_start = bool(re.search(
+        r'(?:start|play|begin|new\s+game|launch)',
+        html_content, re.IGNORECASE
+    ))
+    if not has_start:
+        issues.append("playability: no start/play button found")
+
+    # 3. Does it have any win/lose/score condition?
+    has_win_condition = bool(re.search(
+        r'(?:win|lose|score|points|game\s*over|victory|defeat|complete|streak|level)',
+        html_content, re.IGNORECASE
+    ))
+    if not has_win_condition:
+        issues.append("playability: no win/lose/score condition found — is this a game or a demo?")
+
+    # 4. Does it have touch event handlers (not just CSS touch-action)?
+    has_touch_handlers = bool(re.search(
+        r'(?:touchstart|touchend|touchmove|ontouchstart|pointer(?:down|up|move))',
+        html_content, re.IGNORECASE
+    ))
+    has_click_handlers = bool(re.search(
+        r'(?:addEventListener\s*\(\s*["\']click|onclick|\.click\s*\()',
+        html_content, re.IGNORECASE
+    ))
+    if not has_touch_handlers and not has_click_handlers:
+        issues.append("playability: no click/touch event handlers found — game may not be interactive")
+
+    # 5. Does canvas-based game have any visible UI overlay?
+    has_canvas = bool(re.search(r'<canvas', html_content, re.IGNORECASE))
+    if has_canvas:
+        has_ui_overlay = bool(re.search(
+            r'(?:position\s*:\s*(?:absolute|fixed).*?(?:z-index|pointer-events))',
+            html_content, re.DOTALL | re.IGNORECASE
+        ))
+        has_hud = bool(re.search(
+            r'(?:hud|overlay|ui-panel|controls|toolbar|sidebar)',
+            html_content, re.IGNORECASE
+        ))
+        if not has_ui_overlay and not has_hud:
+            issues.append("playability: canvas game with no visible UI overlay — player has no feedback")
+
+    return issues
+
+
 def check_internal_links(html_content, slug):
     """Check that internal links between games reference valid targets."""
     issues = []
@@ -500,6 +579,7 @@ def scan_game(slug, title, genre):
             "html": None,
             "js": None,
             "mobile": None,
+            "play": None,
             "assets": None,
             "links": None,
             "size": None,
@@ -562,17 +642,22 @@ def scan_game(slug, title, genre):
     result["issues"].extend(mobile_issues)
     result["checks"]["mobile"] = "pass" if not mobile_issues else "fail"
 
-    # 4. Asset Integrity
+    # 4. Playability (the check that actually matters)
+    play_issues = check_playability(content, slug)
+    result["issues"].extend(play_issues)
+    result["checks"]["play"] = "pass" if not play_issues else "fail"
+
+    # 5. Asset Integrity
     asset_issues = check_asset_integrity(content, game_dir)
     result["issues"].extend(asset_issues)
     result["checks"]["assets"] = "pass" if not asset_issues else "fail"
 
-    # 5. Link Check
+    # 6. Link Check
     link_issues = check_internal_links(content, slug)
     result["issues"].extend(link_issues)
     result["checks"]["links"] = "pass" if not link_issues else "fail"
 
-    # 6. Size Audit
+    # 7. Size Audit
     size_kb, large_files = audit_size(game_dir)
     result["size_kb"] = size_kb
     result["large_files"] = large_files
@@ -586,6 +671,7 @@ def scan_game(slug, title, genre):
     critical = [i for i in result["issues"] if i.startswith("CRITICAL")]
     errors = [i for i in result["issues"]
               if i.startswith("html:") or i.startswith("js (") or i.startswith("asset:")]
+    play_fails = [i for i in result["issues"] if i.startswith("playability:")]
     warnings = [i for i in result["issues"]
                 if i.startswith("mobile:") or i.startswith("size:") or i.startswith("link:")]
 

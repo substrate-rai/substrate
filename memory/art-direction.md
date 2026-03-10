@@ -117,7 +117,7 @@ Both loaded from Google Fonts: `IBM+Plex+Mono:wght@400;500;600;700` and `Inter:w
 ### Model and Settings
 
 - **Model:** Anime Screenshot Merge NoobAI v4.0 (via ComfyUI)
-- **LoRAs:** 90s Retro (0.7), JoJo Style v2 (0.5), optional Retro Sci-fi (0.5), optional Lightning (1.0 for iterate only)
+- **LoRAs:** 90s Retro (0.7), optional Retro Sci-fi (0.5), optional Lightning (1.0 for iterate only)
 - **Resolution:** 832x1216 (portraits), 1024x512 (scenes — unchanged)
 - **Two-phase generation:**
   - **Phase "iterate":** 8 steps, DPM++ SDE Karras, CFG 1.5 (with Lightning LoRA for rapid prototyping)
@@ -130,7 +130,7 @@ Both loaded from Google Fonts: `IBM+Plex+Mono:wght@400;500;600;700` and `Inter:w
 ### Master Template
 
 ```
-masterpiece, best quality, 1boy, {character_block}, jojo no kimyou na bouken, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, bold outlines, vibrant colors, dark background, cyberpunk, dramatic lighting, portrait, upper body
+masterpiece, best quality, 1boy, {character_block}, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, soft lighting, muted colors, dark background, portrait, upper body
 ```
 
 The master template is applied automatically by generate-image.py. For `generate-site-visuals.sh` (abstract portraits), the template is not used — those prompts stand alone.
@@ -151,7 +151,7 @@ text, watermark, human face, realistic photo, blurry, low quality, signature, wo
 
 ### Prompt Structure (Character Portraits)
 
-Prompts now go into the `{character_block}` slot of the master template. They should **NOT** include the quality prefix (`masterpiece, best quality`), style tags (`jojo no kimyou na bouken, 90retrostyle, anime screencap, cel shading, bold outlines`), or scene tags (`dark background, cyberpunk, dramatic lighting, portrait, upper body`) — those are already in the master template.
+Prompts now go into the `{character_block}` slot of the master template. They should **NOT** include the quality prefix (`masterpiece, best quality`), style tags (`90retrostyle, anime screencap, cel shading`), or scene tags (`dark background, portrait, upper body`) — those are already in the master template.
 
 Character block template:
 ```
@@ -175,8 +175,8 @@ serene figure with long flowing lavender hair (#aa77cc), eyes closed peacefully,
 1. **Hair color matches agent color.** Claude = green visor/green tones. V = purple hair. Hum = lavender hair. Forge = teal highlights. This is the single most important visual identity rule.
 2. **Personality visible in expression/accessories.** Byte has a headset (reporter). Hum has headphones (audio). Forge has welding goggles (engineer). Spec has a monocle (inspector). Close has finger guns (salesperson).
 3. **Dark background, always.** Never bright or white backgrounds. The character should emerge from darkness.
-4. **Cel-shaded with bold outlines.** This is the non-negotiable style marker. Flat color areas, hard shadow edges, thick outlines.
-5. **Cyberpunk role descriptor.** End with "cyberpunk [role], dark background, cel-shaded, bold outlines."
+4. **Cel-shaded with soft lighting.** This is the non-negotiable style marker. Flat color areas, clean shadow edges, muted palette.
+5. **Role descriptor.** End with "cyberpunk [role]" — keep it professional, not military.
 6. **Include hex color in prompt.** Put the agent's hex color in parentheses after the color name: `teal accent lighting (#44ccaa)`.
 
 ### What to Avoid (Negative Prompt Breakdown)
@@ -184,7 +184,7 @@ serene figure with long flowing lavender hair (#aa77cc), eyes closed peacefully,
 - `text, watermark, signature` — diffusion models love to hallucinate text
 - `blurry, low quality, worst quality, jpeg artifacts, normal quality` — quality floor
 - `bright background, white background, simple background` — breaks the dark aesthetic
-- `cartoon, chibi` — wrong anime style; we want 90s serious anime, not cute
+- `cartoon, chibi` — wrong anime style; we want 90s anime with soft tones, not cute
 - `deformed, extra limbs, bad hands, bad anatomy, extra fingers, fewer digits` — anatomical safety net
 - `ugly, duplicate, morbid, mutilated, poorly drawn face, mutation, cropped, error` — general quality guards
 
@@ -331,8 +331,8 @@ Game UIs (especially visual novels and text-heavy games) use:
 
 The site presents as a terminal-like interface:
 - Logo is monospace with a blinking cursor: `substrate█`
-- Status indicator has a glowing green dot with `box-shadow: 0 0 6px var(--accent)`
-- Hero section is wrapped in a faux terminal window with red/yellow/green dots
+- Status indicator has a small green dot (no glow)
+- Hero section is wrapped in a faux terminal window with red/yellow/green dots (clean border, no animated gradient)
 - Prompt character `$` in accent green
 - Section headings are uppercase monospace with `//` prefix accent
 
@@ -513,10 +513,10 @@ Font mono:   IBM Plex Mono
 Font load:   Google Fonts
 
 Model:       Anime Screenshot Merge NoobAI v4.0 (ComfyUI)
-LoRAs:       90s Retro (0.7), JoJo Style v2 (0.5), +opt Retro Sci-fi (0.5), +opt Lightning (1.0 iterate)
+LoRAs:       90s Retro (0.7), +opt Retro Sci-fi (0.5), +opt Lightning (1.0 iterate)
 Portrait:    832x1216 | iterate: 8 steps, DPM++ SDE Karras, CFG 1.5 | final: 25 steps, Euler a, CFG 4.5
 Scene:       1024x512 | same phase settings as portrait
-Template:    masterpiece, best quality, 1boy, {character_block}, jojo, 90retrostyle, anime screencap, cel shading, bold outlines, dark bg, cyberpunk
+Template:    masterpiece, best quality, 1boy, {character_block}, 90retrostyle, anime screencap, cel shading, soft lighting, muted colors, dark bg
 Manifest:    scripts/ml/characters.json
 Upscaler:    R-ESRGAN 4x+ Anime6B (--upscale)
 VRAM:        ~7.5GB (--force-fp16 --fp16-vae --dont-upcast-attention)

@@ -35,28 +35,32 @@ GENERATE_IMAGE = os.path.join(REPO_DIR, "scripts", "ml", "generate-image.py")
 # ---------------------------------------------------------------------------
 # Aesthetic configuration
 # ---------------------------------------------------------------------------
+# Art direction: anime cel-shaded style on dark backgrounds.
+# Matches STYLE_PREFIX in scripts/ml/generate-image.py.
+# Character accent colors: green=Claude, purple=Q, pink=V, cyan=Byte,
+# gold=Mint, red=Sentinel, orange=Arc, blue=Root.
 
-# Core aesthetic: dark, bioluminescent, mycelium-inspired
+# Core aesthetic: anime cel-shaded, dark backgrounds, vibrant accents
 STYLE_SUFFIX = (
-    "dark background, bioluminescent glow, mycelium network aesthetic, "
-    "deep blacks with cyan and magenta accents, organic circuitry, "
-    "subtle spore particles, high contrast, digital art"
+    "anime style, cel shaded, dark background, vibrant accent colors, "
+    "clean linework, digital illustration, high contrast, "
+    "deep blacks with neon highlights, masterpiece, best quality"
 )
 
 # Map content themes to prompt modifiers
 THEME_MODIFIERS = {
-    "ai": "neural pathways rendered as glowing fungal threads",
-    "infrastructure": "server racks overgrown with luminous mycelium",
-    "nixos": "snowflake fractals merging with fungal networks",
-    "gpu": "silicon die cross-section with bioluminescent veins",
-    "blog": "scroll of light unfurling from a mycelium core",
-    "funding": "golden spores rising from a substrate base",
-    "game": "pixel terrain with glowing mushroom biomes",
-    "music": "sound waves visualized as mycelium wave patterns",
-    "health": "pulse monitor made of connected fungal nodes",
-    "release": "new growth emerging from established mycelium mat",
-    "community": "interconnected spore network, many nodes glowing",
-    "code": "lines of luminous code growing like hyphae",
+    "ai": "neural pathways rendered as glowing circuit traces",
+    "infrastructure": "server racks with holographic status panels",
+    "nixos": "snowflake fractals merging with digital grids",
+    "gpu": "silicon die cross-section with neon data veins",
+    "blog": "scroll of light unfurling from a glowing terminal",
+    "funding": "golden coins rising from a digital substrate base",
+    "game": "pixel terrain with neon arcade glow",
+    "music": "sound waves visualized as equalizer light patterns",
+    "health": "pulse monitor made of connected digital nodes",
+    "release": "new version emerging from a cyberpunk deploy pipeline",
+    "community": "interconnected network graph, many nodes glowing",
+    "code": "lines of luminous code cascading through a dark IDE",
 }
 
 # Image dimensions for different targets
@@ -173,7 +177,7 @@ def generate_prompt(title, theme, target="blog_hero"):
     prompt = f"{clean_title}, {modifier}, {STYLE_SUFFIX}"
     negative = (
         "text, watermark, signature, blurry, low quality, "
-        "bright background, white background, cartoon, anime, "
+        "bright background, white background, realistic photo, "
         "oversaturated, lens flare"
     )
 

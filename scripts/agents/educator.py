@@ -57,15 +57,15 @@ CURRICULUM_FRAMEWORK = [
     ("prompting", "The Art of Asking", "practical", "beginner",
      "Prompt engineering basics. How the question shapes the answer."),
     ("local-inference", "AI on Your Machine", "practical", "intermediate",
-     "Run models locally. Understand quantization, VRAM, and sovereignty."),
+     "Run models locally. Understand quantization, VRAM, and autonomy."),
     ("routing", "Two Brains: Local vs Cloud", "practical", "intermediate",
      "How Substrate routes tasks between local and cloud models."),
 
     # Ethics and Society
     ("bias", "Bias in the Machine", "ethics", "beginner",
      "Where does AI bias come from? Interactive examples of training data effects."),
-    ("sovereignty", "Who Owns the AI?", "ethics", "beginner",
-     "Sovereign AI vs platform AI. Why control matters."),
+    ("autonomy", "Who Owns the AI?", "ethics", "beginner",
+     "Autonomous AI vs platform AI. Why control matters."),
     ("alignment", "Teaching Values", "ethics", "advanced",
      "The alignment problem: how do you teach a machine what you want?"),
 
@@ -78,8 +78,8 @@ CURRICULUM_FRAMEWORK = [
     # Systems
     ("nixos-basics", "Declarative Systems", "systems", "intermediate",
      "Why NixOS? How declaring your system is better than configuring it."),
-    ("self-funding", "Machines That Pay for Themselves", "systems", "advanced",
-     "Economics of self-sustaining AI systems. Revenue, costs, and growth."),
+    ("community-funded", "Machines That Pay for Themselves", "systems", "advanced",
+     "Economics of community-funded AI systems. Revenue, costs, and growth."),
 ]
 
 # Concept simplification templates
@@ -103,9 +103,9 @@ CONCEPT_TEMPLATES = {
         "the model pays attention to 'cat' (who sat?) and 'mat' (where?). This "
         "ability to relate distant words is what makes modern AI so capable."
     ),
-    "sovereignty": (
+    "autonomy": (
         "When you use a cloud AI service, someone else controls the model, sees your "
-        "data, sets the rules, and can shut it off. Sovereign AI means running the "
+        "data, sets the rules, and can shut it off. Autonomous AI means running the "
         "model on hardware you own, with rules you set. It is the difference between "
         "renting an apartment and owning your home."
     ),

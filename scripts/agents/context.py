@@ -37,7 +37,7 @@ VOICE_SLUGS = {
 DOMAIN_FILES = {
     "Pixel":    ["art-direction.md", "visuals/"],
     "Myth":     ["lore/", "narrative/"],
-    "Neon":     ["art-direction.md", "design/"],
+    "Neon":     ["art-direction.md", "design/", "game-design/mobile-patterns.md"],
     "Hum":      ["audio/"],
     "Spec":     [],
     "Forge":    ["site/"],
@@ -57,6 +57,9 @@ DOMAIN_FILES = {
     "Sentinel": ["bugs/", "security/"],
     "Close":    ["sales/"],
     "Promo":    [],
+    "V":        ["narrative/"],
+    "Q":        ["narrative/"],
+    "Claude":   [],
 }
 
 

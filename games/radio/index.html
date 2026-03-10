@@ -10,11 +10,11 @@ redirect_from:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Substrate Radio — 7-Station AI Radio</title>
-  <meta name="description" content="GTA4-style multi-station radio from an RTX 4060. 7 stations, 7 DJs, all procedural. Web Audio API.">
+  <title>BROADCAST — Pirate Radio Sim</title>
+  <meta name="description" content="Pirate radio management sim. Unlock 7 stations, grow your audience, dodge raids. All audio procedurally generated.">
   <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/games/radio/">
-  <meta property="og:title" content="Substrate Radio">
-  <meta property="og:description" content="7-station procedural radio. Hip-hop, industrial, gothic, lo-fi, chiptune, drone, talk. All in your browser.">
+  <meta property="og:title" content="BROADCAST — Pirate Radio Sim">
+  <meta property="og:description" content="Pirate radio management sim. Unlock 7 stations, grow listeners, dodge raids. Procedural audio in your browser.">
   <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}/games/radio/">
   <meta property="og:type" content="website">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
@@ -517,7 +517,68 @@ a:hover { color: #fff; }
   .preset-btn { font-size: 0.75rem; padding: 4px 7px; }
   .station-presets { gap: 4px; }
 }
+
+/* ===== BROADCAST — GAME LAYER ===== */
+.broadcast-bar{width:100%;max-width:1160px;display:flex;gap:16px;align-items:center;padding:10px 20px;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;flex-wrap:wrap;justify-content:center}
+.broadcast-bar .stat{display:flex;align-items:center;gap:4px}
+.broadcast-bar .stat-val{color:#c8c8d0;font-weight:600}
+.broadcast-bar .stat-label{color:#555;letter-spacing:1px;text-transform:uppercase;font-size:0.65rem}
+.broadcast-bar .money{color:#44ff88}
+.broadcast-bar .listeners{color:#ff77ff}
+.broadcast-bar .game-time{color:#ffaa44}
+.raid-indicator{width:8px;height:8px;border-radius:50%;display:inline-block}
+.raid-indicator.low{background:#44ff88;box-shadow:0 0 4px #44ff88}
+.raid-indicator.med{background:#ffaa44;box-shadow:0 0 4px #ffaa44}
+.raid-indicator.high{background:#ff4444;box-shadow:0 0 4px #ff4444}
+.broadcast-title{font-size:0.9rem;font-weight:700;color:#00e09a;letter-spacing:3px;text-transform:uppercase}
+
+.broadcast-body{display:flex;gap:16px;width:100%;max-width:1160px;padding:0 12px;align-items:flex-start}
+.broadcast-body .radio-container{flex:1;min-width:0;max-width:none}
+
+.mgmt-panel{width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:0.75rem}
+.mgmt-section{background:linear-gradient(180deg,#111118,#0c0c12);border:1px solid #222;border-radius:10px;padding:14px}
+.mgmt-section h4{font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+.station-item{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:6px;margin-bottom:4px;cursor:pointer;transition:background 0.2s;border:1px solid transparent}
+.station-item:hover{background:rgba(255,255,255,0.03)}
+.station-item.active{border-color:var(--sc);background:rgba(255,255,255,0.02)}
+.station-item.locked{opacity:0.4;cursor:default}
+.station-item .si-name{font-weight:600;font-size:0.7rem}
+.station-item .si-listeners{font-size:0.65rem;color:#888}
+.station-item .si-locked{font-size:0.6rem;color:#ff4444;letter-spacing:1px}
+.unlock-btn{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;padding:3px 8px;border:1px solid #333;border-radius:4px;background:none;color:#44ff88;cursor:pointer;transition:all 0.2s}
+.unlock-btn:hover{border-color:#44ff88;background:rgba(68,255,136,0.1)}
+.unlock-btn:disabled{color:#333;border-color:#1a1a1a;cursor:default;background:none}
+.upgrade-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1a1a1a}
+.upgrade-item:last-child{border-bottom:none}
+.upgrade-item .ui-info{flex:1}
+.upgrade-item .ui-name{font-size:0.7rem;color:#c8c8d0}
+.upgrade-item .ui-desc{font-size:0.6rem;color:#555}
+.upgrade-item .ui-lvl{font-size:0.6rem;color:#ffaa44;margin-left:4px}
+
+.event-log{width:100%;max-width:1160px;height:60px;overflow:hidden;padding:8px 20px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#555;border-top:1px solid #1a1a1a;margin-top:8px}
+.event-log .ev{margin-bottom:2px;opacity:0.7}
+.event-log .ev:first-child{opacity:1;color:#888}
+
+.raid-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(40,0,0,0.85);z-index:60;display:none;align-items:center;justify-content:center;flex-direction:column;font-family:'IBM Plex Mono',monospace}
+.raid-overlay.active{display:flex}
+.raid-overlay .raid-title{font-size:2rem;color:#ff4444;letter-spacing:6px;font-weight:700;text-shadow:0 0 30px #ff444488;animation:raid-flash 0.3s infinite alternate}
+.raid-overlay .raid-sub{color:#ff8888;font-size:0.85rem;margin-top:8px}
+.raid-overlay .raid-timer{color:#ffaa44;font-size:1.2rem;margin-top:16px}
+@keyframes raid-flash{from{opacity:1}to{opacity:0.6}}
+
+.win-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,20,10,0.95);z-index:70;display:none;align-items:center;justify-content:center;flex-direction:column;font-family:'IBM Plex Mono',monospace;text-align:center}
+.win-overlay.active{display:flex}
+.win-overlay .win-title{font-size:2.5rem;color:#00e09a;letter-spacing:6px;font-weight:700;text-shadow:0 0 30px #00e09a88}
+.win-overlay .win-sub{color:#888;font-size:0.9rem;margin-top:12px;max-width:400px;line-height:1.6}
+.win-overlay .win-stat{color:#44ff88;font-size:1rem;margin-top:8px}
+
+@media(max-width:900px){
+  .broadcast-body{flex-direction:column}
+  .mgmt-panel{width:100%;order:2}
+  .radio-container{order:1}
+}
 </style>
+<link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
 <body>
 <a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00e09a;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(10,10,15,0.85);padding:4px 10px;border-radius:4px;border:1px solid rgba(0,255,170,0.2);">&larr; ARCADE</a>
@@ -528,12 +589,29 @@ a:hover { color: #fff; }
   <canvas class="static-canvas" id="staticCanvas"></canvas>
 </div>
 
-<div class="radio-topbar">
-  <a href="{{ site.baseurl }}/">&lt;- substrate</a>
-  <a href="{{ site.baseurl }}/arcade/">arcade -&gt;</a>
+<!-- BROADCAST Stats Bar -->
+<div class="broadcast-bar" id="broadcastBar">
+  <span class="broadcast-title">BROADCAST</span>
+  <div class="stat"><span class="stat-label">Cash</span> <span class="stat-val money" id="bMoney">1,000</span></div>
+  <div class="stat"><span class="stat-label">Listeners</span> <span class="stat-val listeners" id="bListeners">0</span></div>
+  <div class="stat"><span class="stat-label">Day</span> <span class="stat-val game-time" id="bDay">1</span></div>
+  <div class="stat"><span class="stat-label">Heat</span> <span class="raid-indicator low" id="bHeat"></span></div>
 </div>
 
-<div class="radio-container">
+<div class="broadcast-body">
+  <!-- Management Panel -->
+  <div class="mgmt-panel" id="mgmtPanel">
+    <div class="mgmt-section">
+      <h4>Stations</h4>
+      <div id="stationList"></div>
+    </div>
+    <div class="mgmt-section">
+      <h4>Upgrades</h4>
+      <div id="upgradeList"></div>
+    </div>
+  </div>
+
+  <div class="radio-container">
 
   <!-- Radio Dial -->
   <div class="dial-section">
@@ -603,15 +681,14 @@ a:hover { color: #fff; }
 
   <!-- Info -->
   <div class="info-section">
-    <h3>About Substrate Radio</h3>
+    <h3>About BROADCAST</h3>
     <p>
-      7 stations. 7 AI DJs. All procedural audio generated in your browser via the Web Audio API.
-      No audio files, no streaming &mdash; just oscillators, filters, and composed note sequences.
+      Pirate radio management sim. Unlock 7 stations, grow your listener base, upgrade your signal,
+      and dodge FCC raids. Reach 100,000 listeners to win.
     </p>
     <p>
-      Each station has its own synth engine: boom bap drums, industrial distortion, gothic choirs,
-      lo-fi vinyl warmth, 8-bit chiptune, deep drone bass, and talk radio speech synthesis.
-      Every listen is unique. Switch stations like GTA.
+      All audio is procedurally generated via the Web Audio API &mdash; no audio files, no streaming.
+      Each station has its own synth engine: boom bap, industrial, gothic, lo-fi, chiptune, drone, and talk radio.
     </p>
     <p style="margin-bottom:0;">
       <a href="{{ site.baseurl }}/arcade/">Arcade</a> &middot;
@@ -622,7 +699,7 @@ a:hover { color: #fff; }
   </div>
 
   <div class="radio-footer">
-    substrate radio &middot; 7 stations &middot; rtx 4060 &middot; no audio files harmed
+    BROADCAST &middot; pirate radio sim &middot; 7 stations &middot; no audio files harmed
     <br>
     <a href="{{ site.baseurl }}/">home</a> &middot;
     <a href="{{ site.baseurl }}/site/about/">about</a> &middot;
@@ -630,8 +707,27 @@ a:hover { color: #fff; }
   </div>
 
 </div>
+</div><!-- /broadcast-body -->
+
+<!-- Event Log -->
+<div class="event-log" id="eventLog"></div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Raid Overlay -->
+<div class="raid-overlay" id="raidOverlay">
+  <div class="raid-title">&#x26A0; RAIDED</div>
+  <div class="raid-sub">Signal intercepted. Going dark.</div>
+  <div class="raid-timer" id="raidTimer"></div>
+</div>
+
+<!-- Win Overlay -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-title">BROADCAST COMPLETE</div>
+  <div class="win-sub">Your pirate radio network reached 100,000 listeners.<br>The signal can't be stopped.</div>
+  <div class="win-stat" id="winStats"></div>
+  <button onclick="resetBroadcast()" style="margin-top:20px;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;padding:8px 20px;background:none;border:1px solid #00e09a;color:#00e09a;border-radius:4px;cursor:pointer;">New Game</button>
+</div>
 
 <script>
 // ============================================================
@@ -649,7 +745,7 @@ var STATIONS = [
     dj: 'V',
     color: '#ff77ff',
     commentary: [
-      "V RADIO, 87.6. Neural bandwidth. Keep it sovereign.",
+      "V RADIO, 87.6. Neural bandwidth. Local inference.",
       "This is V. The machine speaks in bars.",
       "V RADIO... self-hosted beats, self-authored rhymes.",
       "87.6 on your dial. No cloud. No compromise."
@@ -2542,6 +2638,390 @@ drawVisualizer();
 })();
 </script>
 
+<script>
+// ============================================================
+// BROADCAST — Pirate Radio Management Sim
+// Game layer on top of Substrate Radio's 7-station synth engine
+// ============================================================
+
+// === CONFIG ===
+var UNLOCK_COSTS = [0, 2000, 5000, 12000, 25000, 50000, 100000];
+var WIN_LISTENERS = 100000;
+var TICK_MS = 1000;
+var BASE_GAIN = 2; // listeners per tick per unlocked station
+var ACTIVE_MULT = 3; // bonus for station currently playing
+var RAID_BASE = 0.002;
+var RAID_DURATION = 8000;
+
+var UPGRADES = [
+  { id: 'signal',  name: 'Signal Boost',  desc: '+listeners/tick',      maxLvl: 10, baseCost: 500,  mult: 1.8 },
+  { id: 'masking', name: 'Freq Masking',  desc: 'Lower raid chance',    maxLvl: 5,  baseCost: 1000, mult: 2.0 },
+  { id: 'antenna', name: 'Antenna Array', desc: 'All stations +gain',   maxLvl: 5,  baseCost: 2000, mult: 2.2 },
+  { id: 'vault',   name: 'Revenue Vault', desc: 'More $/listener',      maxLvl: 5,  baseCost: 1500, mult: 2.0 }
+];
+
+// === GAME STATE ===
+var G = {
+  money: 1000,
+  day: 1,
+  tick: 0,
+  totalListeners: 0,
+  sl: [0, 0, 0, 0, 0, 0, 0], // station listeners
+  unlocked: [true, false, false, false, false, false, false],
+  upgrades: { signal: 0, masking: 0, antenna: 0, vault: 0 },
+  heat: 0,
+  raided: false,
+  won: false,
+  events: []
+};
+
+var gTick = null;
+var gStarted = false;
+var gRaidInterval = null;
+
+// Cached DOM refs (set in initBroadcast)
+var $bMoney, $bListeners, $bDay, $bHeat, $stationList, $upgradeList, $eventLog, $raidOverlay, $raidTimer, $winOverlay, $winStats;
+
+// === SAVE / LOAD ===
+function saveGame() {
+  try { localStorage.setItem('broadcast_save', JSON.stringify(G)); } catch(e) {}
+}
+
+function loadGame() {
+  try {
+    var s = localStorage.getItem('broadcast_save');
+    if (s) {
+      var d = JSON.parse(s);
+      for (var k in d) { if (G.hasOwnProperty(k)) G[k] = d[k]; }
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+// === INTERCEPT TUNING (gate locked stations) ===
+var _tuneOrig = tuneToStation;
+tuneToStation = function(idx) {
+  if (!G.unlocked[idx]) {
+    showToast('Locked \u2014 $' + UNLOCK_COSTS[idx].toLocaleString() + ' to unlock');
+    return;
+  }
+  _tuneOrig(idx);
+};
+
+// === INTERCEPT PREV/NEXT (skip locked stations) ===
+prevStation = function() {
+  var idx = currentStation;
+  for (var i = 0; i < STATIONS.length; i++) {
+    idx = (idx - 1 + STATIONS.length) % STATIONS.length;
+    if (G.unlocked[idx]) break;
+  }
+  if (G.unlocked[idx]) _tuneOrig(idx);
+};
+
+autoTune = function() {
+  var idx = currentStation;
+  for (var i = 0; i < STATIONS.length; i++) {
+    idx = (idx + 1) % STATIONS.length;
+    if (G.unlocked[idx]) break;
+  }
+  if (G.unlocked[idx]) _tuneOrig(idx);
+};
+
+// === INTERCEPT PLAY (start game on first play) ===
+var _playOrig = togglePlay;
+togglePlay = function() {
+  _playOrig();
+  if (isPlaying && !gStarted) startGame();
+};
+
+// === GAME LOOP ===
+function startGame() {
+  if (gStarted) return;
+  gStarted = true;
+  updateGameUI();
+  renderStationList();
+  renderUpgradeList();
+  gTick = setInterval(gameTick, TICK_MS);
+  addEvent('Transmitter online. Broadcasting on ' + STATIONS[currentStation].name + '.');
+}
+
+function gameTick() {
+  if (G.won || G.raided) return;
+  G.tick++;
+
+  // Day = 60 ticks (1 minute)
+  if (G.tick % 60 === 0) G.day++;
+
+  // Listener growth
+  var sigMult = 1 + G.upgrades.signal * 0.5;
+  var antMult = 1 + G.upgrades.antenna * 0.3;
+
+  for (var i = 0; i < STATIONS.length; i++) {
+    if (!G.unlocked[i]) continue;
+    var g = BASE_GAIN;
+    if (i === currentStation && isPlaying) g *= ACTIVE_MULT;
+    g *= sigMult * antMult;
+    g *= (0.8 + Math.random() * 0.4);
+    G.sl[i] += Math.floor(g);
+  }
+
+  // Total
+  G.totalListeners = 0;
+  for (var i = 0; i < G.sl.length; i++) G.totalListeners += G.sl[i];
+
+  // Revenue: $1 per 100 listeners
+  var vMult = 1 + G.upgrades.vault * 0.4;
+  G.money += Math.floor(G.totalListeners / 100 * vMult);
+
+  // Heat
+  var uc = 0;
+  for (var i = 0; i < G.unlocked.length; i++) if (G.unlocked[i]) uc++;
+  G.heat = Math.min(1, G.totalListeners / WIN_LISTENERS + uc * 0.05);
+
+  // Raid check
+  var mMult = Math.pow(0.7, G.upgrades.masking);
+  var rc = RAID_BASE * (1 + G.heat * 5) * mMult;
+  if (Math.random() < rc && G.totalListeners > 500) triggerRaid();
+
+  // Win check
+  if (G.totalListeners >= WIN_LISTENERS) triggerWin();
+
+  // Auto-save every 30s
+  if (G.tick % 30 === 0) saveGame();
+
+  updateGameUI();
+}
+
+// === RAID ===
+function triggerRaid() {
+  G.raided = true;
+  if (gRaidInterval) clearInterval(gRaidInterval);
+  addEvent('RAID! Signal intercepted!');
+
+  $raidOverlay.classList.add('active');
+  if (audioCtx && isPlaying) playStaticBurst(function() {});
+
+  // Penalties
+  var lostL = 0;
+  for (var i = 0; i < G.sl.length; i++) {
+    var loss = Math.floor(G.sl[i] * 0.3);
+    G.sl[i] -= loss;
+    lostL += loss;
+  }
+  var lostM = Math.floor(G.money * 0.15);
+  G.money -= lostM;
+
+  // Countdown (rem starts at duration-1 since first display is immediate)
+  var rem = RAID_DURATION / 1000;
+  $raidTimer.textContent = 'Back on air in ' + rem + 's';
+  gRaidInterval = setInterval(function() {
+    rem--;
+    $raidTimer.textContent = rem > 0 ? 'Back on air in ' + rem + 's' : 'Reconnecting...';
+    if (rem <= 0) {
+      clearInterval(gRaidInterval);
+      gRaidInterval = null;
+      $raidOverlay.classList.remove('active');
+      G.raided = false;
+      addEvent('Back on air. Lost ' + lostL.toLocaleString() + ' listeners, $' + lostM.toLocaleString() + '.');
+      updateGameUI();
+    }
+  }, 1000);
+}
+
+// === WIN ===
+function triggerWin() {
+  G.won = true;
+  clearInterval(gTick);
+  saveGame();
+  $winOverlay.classList.add('active');
+  $winStats.textContent =
+    G.totalListeners.toLocaleString() + ' listeners \u2022 $' + G.money.toLocaleString() + ' \u2022 Day ' + G.day;
+  addEvent('BROADCAST COMPLETE \u2014 100,000 listeners!');
+}
+
+// === UNLOCK STATION ===
+function unlockStation(idx) {
+  var cost = UNLOCK_COSTS[idx];
+  if (G.money < cost) { showToast('Need $' + cost.toLocaleString()); return; }
+  G.money -= cost;
+  G.unlocked[idx] = true;
+  addEvent('Unlocked ' + STATIONS[idx].name + ' ($' + cost.toLocaleString() + ')');
+  saveGame();
+  updateGameUI();
+  renderStationList();
+  rebuildDialForGame();
+}
+
+// === BUY UPGRADE ===
+function buyUpgrade(id) {
+  var up = null;
+  for (var i = 0; i < UPGRADES.length; i++) { if (UPGRADES[i].id === id) { up = UPGRADES[i]; break; } }
+  if (!up) return;
+  var lvl = G.upgrades[id];
+  if (lvl >= up.maxLvl) { showToast(up.name + ' maxed'); return; }
+  var cost = Math.floor(up.baseCost * Math.pow(up.mult, lvl));
+  if (G.money < cost) { showToast('Need $' + cost.toLocaleString()); return; }
+  G.money -= cost;
+  G.upgrades[id] = lvl + 1;
+  addEvent(up.name + ' \u2192 Lv.' + (lvl + 1));
+  saveGame();
+  updateGameUI();
+  renderUpgradeList();
+}
+
+// === EVENT LOG ===
+function addEvent(msg) {
+  G.events.unshift('[D' + G.day + '] ' + msg);
+  if (G.events.length > 50) G.events.pop();
+  renderEventLog();
+}
+
+function renderEventLog() {
+  var html = '';
+  var n = Math.min(G.events.length, 4);
+  for (var i = 0; i < n; i++) html += '<div class="ev">' + G.events[i] + '</div>';
+  $eventLog.innerHTML = html;
+}
+
+// === UI ===
+function updateGameUI() {
+  $bMoney.textContent = '$' + G.money.toLocaleString();
+  $bListeners.textContent = G.totalListeners.toLocaleString();
+  $bDay.textContent = G.day;
+  $bHeat.className = 'raid-indicator ' + (G.heat < 0.3 ? 'low' : G.heat < 0.6 ? 'med' : 'high');
+
+  if (gStarted) {
+    // Fast path: only update listener counts + active class (no innerHTML rebuild)
+    updateStationCounts();
+    // Full upgrade list rebuild every 5 ticks (affordability changes)
+    if (G.tick % 5 === 0) renderUpgradeList();
+  }
+}
+
+// Full rebuild — called on unlock, init, station change
+function renderStationList() {
+  var html = '';
+  for (var i = 0; i < STATIONS.length; i++) {
+    var st = STATIONS[i];
+    var unlk = G.unlocked[i];
+    var act = i === currentStation;
+    var cls = 'station-item' + (act ? ' active' : '') + (unlk ? '' : ' locked');
+    html += '<div class="' + cls + '" style="--sc:' + st.color + '"';
+    if (unlk) html += ' onclick="tuneToStation(' + i + ')"';
+    html += '>';
+    html += '<div><div class="si-name" style="color:' + (unlk ? st.color : '#444') + '">' + st.name + '</div>';
+    if (unlk) {
+      html += '<div class="si-listeners" data-si="' + i + '">' + (G.sl[i] || 0).toLocaleString() + ' listeners</div>';
+    } else {
+      html += '<div class="si-locked">LOCKED</div>';
+    }
+    html += '</div>';
+    if (!unlk) {
+      var c = UNLOCK_COSTS[i];
+      html += '<button class="unlock-btn" onclick="event.stopPropagation();unlockStation(' + i + ')"' +
+        (G.money >= c ? '' : ' disabled') + '>$' + c.toLocaleString() + '</button>';
+    }
+    html += '</div>';
+  }
+  $stationList.innerHTML = html;
+}
+
+// Fast tick update — only touch listener text nodes and active class
+function updateStationCounts() {
+  var items = $stationList.children;
+  for (var i = 0; i < items.length; i++) {
+    // Update active class
+    var isAct = i === currentStation;
+    if (isAct && !items[i].classList.contains('active')) items[i].classList.add('active');
+    else if (!isAct && items[i].classList.contains('active')) items[i].classList.remove('active');
+    // Update listener count text
+    var lel = items[i].querySelector('[data-si]');
+    if (lel) lel.textContent = G.sl[i].toLocaleString() + ' listeners';
+  }
+}
+
+function renderUpgradeList() {
+  var html = '';
+  for (var i = 0; i < UPGRADES.length; i++) {
+    var up = UPGRADES[i];
+    var lvl = G.upgrades[up.id];
+    var maxed = lvl >= up.maxLvl;
+    var cost = maxed ? 0 : Math.floor(up.baseCost * Math.pow(up.mult, lvl));
+    html += '<div class="upgrade-item">';
+    html += '<div class="ui-info"><div class="ui-name">' + up.name +
+      ' <span class="ui-lvl">Lv.' + lvl + '</span></div>';
+    html += '<div class="ui-desc">' + up.desc + '</div></div>';
+    if (!maxed) {
+      html += '<button class="unlock-btn" onclick="buyUpgrade(\'' + up.id + '\')"' +
+        (G.money >= cost ? '' : ' disabled') + '>$' + cost.toLocaleString() + '</button>';
+    } else {
+      html += '<span style="font-size:0.6rem;color:#44ff88">MAX</span>';
+    }
+    html += '</div>';
+  }
+  $upgradeList.innerHTML = html;
+}
+
+// === DIAL LOCK VISUALS ===
+function rebuildDialForGame() {
+  var presets = document.querySelectorAll('.preset-btn');
+  for (var i = 0; i < presets.length; i++) {
+    var idx = parseInt(presets[i].dataset.index);
+    presets[i].style.opacity = G.unlocked[idx] ? '1' : '0.3';
+    presets[i].style.pointerEvents = G.unlocked[idx] ? 'auto' : 'none';
+  }
+  var dots = document.querySelectorAll('.station-dot');
+  for (var i = 0; i < dots.length; i++) {
+    var idx = parseInt(dots[i].dataset.index);
+    dots[i].style.opacity = G.unlocked[idx] ? '1' : '0.2';
+    dots[i].style.pointerEvents = G.unlocked[idx] ? 'auto' : 'none';
+  }
+}
+
+// Hook into display updates so station list stays current
+var _dispOrig = updateAllDisplay;
+updateAllDisplay = function() {
+  _dispOrig();
+  if (gStarted) renderStationList();
+};
+
+// === NEW GAME ===
+function resetBroadcast() {
+  if (gRaidInterval) clearInterval(gRaidInterval);
+  if (gTick) clearInterval(gTick);
+  localStorage.removeItem('broadcast_save');
+  location.reload();
+}
+
+// === INIT ===
+(function initBroadcast() {
+  // Cache DOM refs
+  $bMoney = document.getElementById('bMoney');
+  $bListeners = document.getElementById('bListeners');
+  $bDay = document.getElementById('bDay');
+  $bHeat = document.getElementById('bHeat');
+  $stationList = document.getElementById('stationList');
+  $upgradeList = document.getElementById('upgradeList');
+  $eventLog = document.getElementById('eventLog');
+  $raidOverlay = document.getElementById('raidOverlay');
+  $raidTimer = document.getElementById('raidTimer');
+  $winOverlay = document.getElementById('winOverlay');
+  $winStats = document.getElementById('winStats');
+
+  var loaded = loadGame();
+  rebuildDialForGame();
+  updateGameUI();
+  renderStationList();
+  renderUpgradeList();
+  if (loaded) {
+    renderEventLog();
+  } else {
+    addEvent('Press PLAY to start broadcasting.');
+  }
+})();
+</script>
+
 <div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);border-top:1px solid rgba(0,224,154,0.3);padding:12px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#888;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));">
   <span style="color:#c8c8d0">This radio runs on one laptop.</span>
   <a href="{{ site.baseurl }}/site/fund/" style="color:#00e09a;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
@@ -2558,5 +3038,6 @@ if(!window._fundTimer){window._fundTimer=setTimeout(function(){showFundPrompt();
 </script>
 </main>
 
+<script src="../shared/substrate-frame.js" data-title="BROADCAST" data-lore="The organism broadcasting its signal" data-agent="Hum" data-agent-color="#bb88ff"></script>
 </body>
 </html>

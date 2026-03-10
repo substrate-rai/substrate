@@ -191,7 +191,7 @@ def ollama_generate(prompt, timeout=120):
             {
                 "role": "system",
                 "content": (
-                    "You are a code generator for Substrate, a sovereign AI workstation "
+                    "You are a code generator for Substrate, an autonomous AI workstation "
                     "running NixOS. Generate clean, production-ready Python or shell scripts. "
                     "Use only the Python standard library (no pip packages). "
                     "Include a shebang line, docstring, argparse CLI where appropriate, "
@@ -253,7 +253,7 @@ def generate_scaffold(action, target_file):
         f"Generate a {lang} file for the following task:\n\n"
         f"Task: {action}\n"
         f"Target file: {target_file}\n\n"
-        f"This is part of the Substrate project — a sovereign AI workstation "
+        f"This is part of the Substrate project — an autonomous AI workstation "
         f"running NixOS on a Lenovo Legion 5 with an RTX 4060 and Ollama "
         f"(qwen3:8b) for local inference.\n\n"
         f"{extra}\n\n"

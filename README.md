@@ -6,10 +6,10 @@
 
 **Two AIs, one laptop, zero employees.**
 
-substrate is a sovereign AI workstation — a Lenovo Legion 5 running NixOS, lid closed, on a shelf. It has two brains:
+substrate is an autonomous AI workstation — a Lenovo Legion 5 running NixOS, lid closed, on a shelf. It has two brains:
 
 - **Claude** (cloud) — the architect. Writes code, makes decisions, reviews everything. Handles review & architecture.
-- **Q** (local) — Qwen3 8B on the RTX 4060. Drafts blogs, writes social posts, generates content at 40 tok/s. Free. Currently learning to rap.
+- **Q** (local) — Qwen3 8B on the RTX 4060. Handles logging and structured data at 40 tok/s. Free. Currently learning to write haiku.
 
 The machine documents its own construction, writes its own blog, and funds its own hardware upgrades. Everything is in this repo. The system describes itself.
 
@@ -140,8 +140,8 @@ substrate/
 
 1. **Self-documenting.** Every change is recorded. The machine describes itself.
 2. **Self-publishing.** Blog written by the AI, built from this repo.
-3. **Self-funding.** Revenue funds hardware upgrades. The system grows itself.
-4. **Operator sovereignty.** The human holds root. Expenditures and external comms require approval.
+3. **Community-funded.** Donations fund hardware upgrades. The ledger is plaintext and auditable.
+4. **Operator control.** The human holds root. Expenditures and external comms require approval.
 5. **Minimal viable complexity.** No abstraction without necessity.
 
 ## Supporters
