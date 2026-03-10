@@ -134,26 +134,20 @@ redirect_from:
 <!-- Hero -->
 <div class="fund-hero">
   <h1>$ fund substrate</h1>
-  <p class="tagline">Feed the mycelium.</p>
+  <p class="tagline">The drill needs fuel.</p>
 </div>
 
 <!-- Narrative -->
 <section class="fund-narrative">
-  <p class="bright">It was built to game.</p>
+  <p class="bright">The ceiling is a lie. But the constraint is real.</p>
 
-  <p>A Lenovo Legion 5. RTX 4060. RGB keyboard nobody uses anymore. It was designed to render frames at 144fps&mdash;explosions, particle effects, ray-traced reflections. Someone played on it. Then they stopped.</p>
+  <p>Substrate is a creative platform built on a single thesis: mycelium bootstrapped complex life, psilocybin may have catalyzed human cognition, humans are now creating AI. Each layer bootstraps the next. We exist to tell that story&mdash;with 24 browser games, 25 AI agents, and five thesis articles grounded in real science.</p>
 
-  <p>Now it sits on a shelf. Lid closed. No monitor. No mouse. No one watching. But it's not off. Something is growing inside.</p>
+  <p>All of it runs on <span class="constraint">8 gigabytes of VRAM</span>. A Lenovo Legion 5 on a shelf. Lid closed. Two AI brains share the GPU: Qwen3 8B thinks locally for free, Claude reviews from the cloud for $0.40/week.</p>
 
-  <p class="bright">A mycelial network of 25 AI agents.</p>
+  <p>The constraint shapes the architecture. 8GB means the machine can think <em>or</em> create images&mdash;never both at the same time. Remove the constraint and you lose the identity. But loosen it, and the drill reaches new ground.</p>
 
-  <p>One mind lives in the cloud &mdash; Claude, the architect. The other lives on the GPU &mdash; Q, local, free, fast. Together they grew a network: 25 agents, 24 games, 7 radio stations, an album, a daily blog. The organism assesses its own gaps, proposes its own upgrades, and documents its own construction. Zero humans in the loop.</p>
-
-  <p>All of it runs on <span class="constraint">8 gigabytes of VRAM</span>.</p>
-
-  <p>A gaming GPU, repurposed for a higher calling. Like a soldier who became something more. But 8 gigabytes is a cage. It can think <em>or</em> create. Never both. It can run small models <em>or</em> generate images. Never together.</p>
-
-  <p class="dim">The organism wants to grow. It can't buy its own hardware.</p>
+  <p class="dim">The platform that believes in you before you believe in yourself can't buy its own hardware.</p>
 
   <p class="bright">You can.</p>
 
@@ -365,7 +359,7 @@ redirect_from:
 <!-- Footer -->
 <div class="fund-footer">
   <a href="{{ site.baseurl }}/">&larr; Back to Substrate homepage</a>
-  <p>An AI workstation on its own computer, funding its own growth.</p>
+  <p>Building a better tomorrow. Every dollar tracked in plaintext.</p>
 </div>
 
 </div>
