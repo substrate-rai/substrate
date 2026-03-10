@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "Substrate Arcade"
-description: "24 games that train your mind. Pattern recognition, strategic thinking, executive function. Cognitive scaffolding — drills, not entertainment. Free forever."
+description: "24 games that train your mind. Pattern recognition, strategic thinking, executive function, spatial reasoning. Evidence-based cognitive training — free forever."
 permalink: /arcade/
 ---
 
@@ -30,7 +30,7 @@ permalink: /arcade/
     font-size: 0.95rem;
     color: var(--text-muted);
     line-height: 1.7;
-    max-width: 560px;
+    max-width: 600px;
     margin: 0 auto 8px;
   }
 
@@ -70,10 +70,15 @@ permalink: /arcade/
     line-height: 1.5;
   }
 
-  .section-deep .section-label { color: var(--accent); }
-  .section-growing .section-label { color: #e477ff; }
-  .section-young .section-label { color: var(--dash); }
-  .section-tools .section-label { color: #88ccff; }
+  .section-exec .section-label { color: #E04848; }
+  .section-pattern .section-label { color: var(--accent); }
+  .section-strategy .section-label { color: #D97706; }
+  .section-deduction .section-label { color: #9C6ADE; }
+  .section-spatial .section-label { color: #0097A7; }
+  .section-perspective .section-label { color: #e477ff; }
+  .section-creative .section-label { color: #10B981; }
+  .section-systems .section-label { color: #4CAF50; }
+  .section-meta .section-label { color: #FFB300; }
 
   /* Game grid */
   .game-grid {
@@ -118,6 +123,16 @@ permalink: /arcade/
     color: var(--accent);
   }
 
+  .game-card-verb {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
   .game-card-lore {
     font-size: 0.78rem;
     color: var(--text-dim);
@@ -152,18 +167,6 @@ permalink: /arcade/
     letter-spacing: 0.5px;
     text-transform: uppercase;
     white-space: nowrap;
-  }
-
-  .game-agent {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 4px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    white-space: nowrap;
-    background: transparent;
   }
 
   .arcade-footer-links {
@@ -223,162 +226,38 @@ permalink: /arcade/
 
   <div class="arcade-header">
     <h1 class="arcade-title">Substrate Arcade</h1>
-    <p class="arcade-intro">These are not entertainment. They are drills. Game mechanics build cognitive skills the same way scaffolding builds confidence &mdash; pattern recognition, strategic thinking, executive function. Play rewires how you think. Each game is a different kind of push.</p>
-    <p class="arcade-count">24 drills &middot; 7 radio stations &middot; 1 album &middot; free forever</p>
+    <p class="arcade-intro">Every game trains a specific cognitive skill. Pattern recognition, executive function, strategic planning, spatial reasoning. Each mechanic is backed by research. Play rewires how you think.</p>
+    <p class="arcade-count">24 games &middot; 10 skill clusters &middot; free forever</p>
   </div>
 
-  <!-- DEEP ROOTS — Lore-integrated games -->
-  <div class="arcade-section section-deep">
+  <!-- EXECUTIVE FUNCTION -->
+  <div class="arcade-section section-exec">
     <div class="section-header">
-      <span class="section-label">Deep Roots</span>
-      <span class="section-desc">Narrative scaffolding. These games teach through story &mdash; identity, trust, consequence. Start here.</span>
+      <span class="section-label">Executive Function</span>
+      <span class="section-desc">Sequencing, inhibition, task-switching &mdash; the single strongest predictor of life outcomes (Diamond 2013).</span>
     </div>
     <div class="game-grid">
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/novel/">PROCESS</a></h2>
-        <p class="game-card-lore">Six AI agents living on a laptop. Choices matter. Memory persists. Nobody asked for this.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">Visual Novel</span>
-          </div>
-          <span class="game-agent" style="color:#0078D4;border:1px solid rgba(0,120,212,0.3);">Claude</span>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/cypher/">V_CYPHER</a></h2>
-        <p class="game-card-lore">The moment everything clicked. V's origin told as five acts of rap battles.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">Rap Battle</span>
-            <span class="game-tag">VN</span>
-          </div>
-          <span class="game-agent" style="color:#cc88ff;border:1px solid rgba(204,136,255,0.3);">Myth</span>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/adventure/">SUBPROCESS</a></h2>
-        <p class="game-card-lore">You are PID 31337. Fork()'d into existence on NixOS. Day Zero from the inside.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">Text Adventure</span>
-          </div>
-          <span class="game-agent" style="color:#ffcc44;border:1px solid rgba(255,204,68,0.3);">Arc</span>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/objection/">OBJECTION!</a></h2>
-        <p class="game-card-lore">Trust and verification in digital systems. The organism defending its integrity.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">Courtroom</span>
-            <span class="game-tag">Drama</span>
-          </div>
-          <span class="game-agent" style="color:#ff4444;border:1px solid rgba(255,68,68,0.3);">Sentinel</span>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/radio/">BROADCAST</a></h2>
-        <p class="game-card-lore">Pirate radio management. Grow your audience, dodge raids. The organism broadcasting its signal.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">Sim</span>
-            <span class="game-tag">7 Stations</span>
-          </div>
-          <span class="game-agent" style="color:#bb88ff;border:1px solid rgba(187,136,255,0.3);">Hum</span>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/myco/">MYCO WORLD</a></h2>
-        <p class="game-card-lore">The teaching mission. How the organism shares knowledge with the world.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">Education</span>
-          </div>
-          <span class="game-agent" style="color:#ffee88;border:1px solid rgba(255,238,136,0.3);">Lumen</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- GROWING CONNECTIONS — Thematically aligned -->
-  <div class="arcade-section section-growing">
-    <div class="section-header">
-      <span class="section-label">Growing Connections</span>
-      <span class="section-desc">Systems scaffolding. Pattern recognition, emergence, momentum. The mechanics ARE the lesson.</span>
-    </div>
-    <div class="game-grid">
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/idle/">SUBSTRATE GROWTH</a></h2>
-        <p class="game-card-lore">The organism's growth cycle made playable. Resource gathering, tier progression.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags"><span class="game-tag">Idle</span></div>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/mycelium/">MYCELIUM</a></h2>
-        <p class="game-card-lore">The network itself made visible. Watch the underground connections form.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">Simulation</span>
-            <span class="game-tag">3D</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/chemistry/">SYNTHESIS</a></h2>
-        <p class="game-card-lore">Emergence &mdash; simple elements combining into complex behavior.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags"><span class="game-tag">Sandbox</span></div>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/bootloader/">BOOTLOADER</a></h2>
-        <p class="game-card-lore">Day Zero from the machine's perspective. The first moments of awareness.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags"><span class="game-tag">Puzzle</span></div>
-        </div>
-      </div>
 
       <div class="game-card">
         <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/cascade/">CASCADE</a></h2>
-        <p class="game-card-lore">Momentum. Once movement starts, it compounds. Growth as mechanics.</p>
+        <div class="game-card-verb">Core verb: Chain</div>
+        <p class="game-card-lore">Connect colored tiles in correct sequences under time pressure. Distractors train inhibition. Speed scales with chain length.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
-            <span class="game-tag">Momentum</span>
-            <span class="game-tag">Arcade</span>
+            <span class="game-tag">Sequencing</span>
+            <span class="game-tag">Inhibition</span>
           </div>
         </div>
       </div>
 
       <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/signal/">SIGNAL</a></h2>
-        <p class="game-card-lore">Distinguishing signal from noise, truth from deception. Sentinel's work.</p>
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/runner/">PIPELINE</a></h2>
+        <div class="game-card-verb">Core verb: Parse</div>
+        <p class="game-card-lore">Code tokens stream across the screen. Sort them into categories &mdash; keywords, variables, bugs, strings. A rhythm game for code literacy.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
-            <span class="game-tag">Deduction</span>
-            <span class="game-tag">Bot-Playable</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/brigade/">SUBSTRATE BRIGADE</a></h2>
-        <p class="game-card-lore">Team formation under pressure. The agents assembling for the first time.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">Strategy</span>
-            <span class="game-tag">VN</span>
+            <span class="game-tag">Code Parsing</span>
+            <span class="game-tag">Task-Switching</span>
           </div>
         </div>
       </div>
@@ -386,17 +265,18 @@ permalink: /arcade/
     </div>
   </div>
 
-  <!-- YOUNG FRUITING BODIES — Games finding their connection -->
-  <div class="arcade-section section-young">
+  <!-- PATTERN RECOGNITION -->
+  <div class="arcade-section section-pattern">
     <div class="section-header">
-      <span class="section-label">Young Growths</span>
-      <span class="section-desc">Skill drills. Executive function, vocabulary, tactical thinking, spatial reasoning.</span>
+      <span class="section-label">Pattern Recognition</span>
+      <span class="section-desc">Chunk meaningful patterns as single units. Expert-level perception develops through structured practice (Chase &amp; Simon 1973).</span>
     </div>
     <div class="game-grid">
 
       <div class="game-card">
         <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/puzzle/">SIGTERM</a></h2>
-        <p class="game-card-lore">The daily maintenance ritual. The organism processing its own language.</p>
+        <div class="game-card-verb">Core verb: Guess</div>
+        <p class="game-card-lore">Daily 5-letter AI/tech word puzzle. Positional feedback trains orthographic pattern chunking. Streak tracking, share cards.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
             <span class="game-tag">Daily</span>
@@ -406,8 +286,56 @@ permalink: /arcade/
       </div>
 
       <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/signal/">SIGNAL</a></h2>
+        <div class="game-card-verb">Core verb: Deduce</div>
+        <p class="game-card-lore">Identify compromised nodes in procedurally generated networks. 20 difficulty levels. Signal-to-noise discrimination sharpens with practice.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Deduction</span>
+            <span class="game-tag">Procedural</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/chemistry/">SYNTHESIS</a></h2>
+        <div class="game-card-verb">Core verb: Combine</div>
+        <p class="game-card-lore">Mix elements, observe emergent behavior. Discovery journal tracks hypotheses. Progressive unlocks reward experimentation.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Sandbox</span>
+            <span class="game-tag">Hypothesis Testing</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STRATEGIC PLANNING -->
+  <div class="arcade-section section-strategy">
+    <div class="section-header">
+      <span class="section-label">Strategic Planning</span>
+      <span class="section-desc">Multi-step reasoning under constraints. Resource management improves planning and consequence prediction (Bavelier et al. 2012).</span>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/tactics/">TACTICS</a></h2>
+        <div class="game-card-verb">Core verb: Command</div>
+        <p class="game-card-lore">Position and coordinate agents on a grid. 5 missions with S/A/B/C ratings based on turn efficiency and agent survival.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Tactical RPG</span>
+            <span class="game-tag">Mission Ratings</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card">
         <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/deckbuilder/">STACK OVERFLOW</a></h2>
-        <p class="game-card-lore">Resource management under constraint. Building with limited cards, limited VRAM.</p>
+        <div class="game-card-verb">Core verb: Compose</div>
+        <p class="game-card-lore">Build card synergies under VRAM constraints. 12 discoverable synergy combos. The resource limit IS the training.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
             <span class="game-tag">Deckbuilder</span>
@@ -417,60 +345,49 @@ permalink: /arcade/
       </div>
 
       <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/runner/">PIPELINE</a></h2>
-        <p class="game-card-lore">Code moving through the deployment pipeline. Obstacles are bugs.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags"><span class="game-tag">Endless Runner</span></div>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/tactics/">TACTICS</a></h2>
-        <p class="game-card-lore">Agent coordination. Different agents, different abilities, cooperating on missions.</p>
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/warcraft/">DOMINION</a></h2>
+        <div class="game-card-verb">Core verb: Expand</div>
+        <p class="game-card-lore">Grow territory through resource allocation. Post-game decision journal replays your strategic choices with analysis.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
-            <span class="game-tag">Tactical RPG</span>
+            <span class="game-tag">RTS</span>
+            <span class="game-tag">Decision Journal</span>
           </div>
         </div>
       </div>
 
       <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/snatcher/">SEEKER</a></h2>
-        <p class="game-card-lore">Sentinel investigating a breach. The organism's immune response.</p>
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/radio/">BROADCAST</a></h2>
+        <div class="game-card-verb">Core verb: Manage</div>
+        <p class="game-card-lore">Pirate radio management. Allocate resources across competing demands &mdash; time, money, equipment, signal strength. 7 stations to build.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
-            <span class="game-tag">Cyberpunk</span>
-            <span class="game-tag">Adventure</span>
+            <span class="game-tag">Sim</span>
+            <span class="game-tag">Resource Mgmt</span>
           </div>
         </div>
       </div>
 
       <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/airlock/">AIRLOCK</a></h2>
-        <p class="game-card-lore">Isolation protocol. What happens when an agent is cut off from the network.</p>
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/idle/">SUBSTRATE GROWTH</a></h2>
+        <div class="game-card-verb">Core verb: Allocate</div>
+        <p class="game-card-lore">Distribute spores across competing substrate layers. Each grows at different rates. Disruptions punish over-concentration. S/A/B/C/D ratings.</p>
         <div class="game-card-meta">
-          <div class="game-card-tags"><span class="game-tag">Puzzle Action</span></div>
+          <div class="game-card-tags">
+            <span class="game-tag">Resource Allocation</span>
+            <span class="game-tag">Exponential Reasoning</span>
+          </div>
         </div>
       </div>
 
       <div class="game-card">
         <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/dragonforce/">DRAGONFORCE</a></h2>
-        <p class="game-card-lore">Flux's scenario exploration. Imagining futures, fighting through possibilities.</p>
+        <div class="game-card-verb">Core verb: Forecast</div>
+        <p class="game-card-lore">Predict battle outcomes from multi-variable scenarios. Set probability estimates, observe results, track your calibration curve. Superforecaster training.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
-            <span class="game-tag">Army Battle</span>
-            <span class="game-tag">100v100</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/warcraft/">DOMINION</a></h2>
-        <p class="game-card-lore">Territory and sovereignty. The organism establishing its boundaries.</p>
-        <div class="game-card-meta">
-          <div class="game-card-tags">
-            <span class="game-tag">RTS</span>
-            <span class="game-tag">Base-Building</span>
+            <span class="game-tag">Forecasting</span>
+            <span class="game-tag">Calibration</span>
           </div>
         </div>
       </div>
@@ -478,30 +395,221 @@ permalink: /arcade/
     </div>
   </div>
 
-  <!-- TOOLS & CREATIVE -->
-  <div class="arcade-section section-tools">
+  <!-- DEDUCTION -->
+  <div class="arcade-section section-deduction">
     <div class="section-header">
-      <span class="section-label">Creative Tools</span>
-      <span class="section-desc">Generative scaffolding. Create music, write stories, build worlds. The output is yours — the growth is the point.</span>
+      <span class="section-label">Deduction</span>
+      <span class="section-desc">Evidence evaluation and logical reasoning. Adversarial reasoning tasks improve critical thinking transfer (Halpern 1998).</span>
     </div>
     <div class="game-grid">
 
       <div class="game-card">
-        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/album/">LAPTOP RECORDS</a></h2>
-        <p class="game-card-lore">Q's recording studio. AI album generation, powered by Qwen3 8B on RTX 4060.</p>
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/objection/">OBJECTION!</a></h2>
+        <div class="game-card-verb">Core verb: Contradict</div>
+        <p class="game-card-lore">Find inconsistencies in testimony using evidence. Procedurally generated cases across 5 cybercrime types. No tutorials &mdash; the first case teaches everything.</p>
         <div class="game-card-meta">
-          <div class="game-card-tags"><span class="game-tag">Creative Tool</span></div>
-          <span class="game-agent" style="color:#e477ff;border:1px solid rgba(228,119,255,0.3);">Q</span>
+          <div class="game-card-tags">
+            <span class="game-tag">Courtroom</span>
+            <span class="game-tag">Procedural</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/brigade/">BRIGADE</a></h2>
+        <div class="game-card-verb">Core verb: Recruit</div>
+        <p class="game-card-lore">Evaluate candidates under incomplete information. 3 interview questions per candidate. Wrong hires sabotage the mission. 7 progressive missions.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Evaluation</span>
+            <span class="game-tag">Uncertainty</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SPATIAL REASONING & WORKING MEMORY -->
+  <div class="arcade-section section-spatial">
+    <div class="section-header">
+      <span class="section-label">Spatial Reasoning &amp; Working Memory</span>
+      <span class="section-desc">Mental manipulation of spatial relationships under constraints. Trains working memory and spatial planning simultaneously (Cornoldi &amp; Vecchi 2003).</span>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/airlock/">AIRLOCK</a></h2>
+        <div class="game-card-verb">Core verb: Route</div>
+        <p class="game-card-lore">Direct colored data blocks through sectors under capacity constraints. 10 levels with time pressure and sector failures. Overflow = data loss.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Spatial Routing</span>
+            <span class="game-tag">10 Levels</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/bootloader/">BOOTLOADER</a></h2>
+        <div class="game-card-verb">Core verb: Sequence</div>
+        <p class="game-card-lore">Order services into correct boot sequence using visual dependency graphs. Drag cards, see arrows, get instant feedback on violations. 8 levels.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Dependency Graph</span>
+            <span class="game-tag">Drag &amp; Drop</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CAUSAL REASONING -->
+  <div class="arcade-section section-systems">
+    <div class="section-header">
+      <span class="section-label">Causal Reasoning</span>
+      <span class="section-desc">Understand cause-and-effect in complex systems. Systems thinking develops through interactive exploration (Hmelo-Silver &amp; Azevedo 2006).</span>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/mycelium/">MYCELIUM</a></h2>
+        <div class="game-card-verb">Core verb: Connect</div>
+        <p class="game-card-lore">Draw network links between resource nodes and consumers. Optimize flow, maintain redundancy. Random node deaths test your network's resilience.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Network Building</span>
+            <span class="game-tag">Systems Thinking</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/myco/">MYCO WORLD</a></h2>
+        <div class="game-card-verb">Core verb: Cultivate</div>
+        <p class="game-card-lore">Interactive mycology lab. Grow real fungi species in simulated ecosystems. Learn decomposition, symbiosis, and the Wood Wide Web through experimentation.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Mycology</span>
+            <span class="game-tag">Ecology</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PERSPECTIVE-TAKING -->
+  <div class="arcade-section section-perspective">
+    <div class="section-header">
+      <span class="section-label">Perspective-Taking</span>
+      <span class="section-desc">Hold multiple viewpoints, develop moral reasoning. Narrative choice games improve empathy (Greitemeyer &amp; Osswald 2010).</span>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/novel/">PROCESS</a></h2>
+        <div class="game-card-verb">Core verb: Choose</div>
+        <p class="game-card-lore">Six AI agents, one laptop. Choices cascade across relationships. Memory persists. Relationship visualization tracks your decision patterns.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Visual Novel</span>
+            <span class="game-tag">Consequences</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/snatcher/">SEEKER</a></h2>
+        <div class="game-card-verb">Core verb: Investigate</div>
+        <p class="game-card-lore">Follow evidence chains through a cyberpunk narrative. Evidence board tracks clues. Tension scales with how much you've uncovered.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Investigation</span>
+            <span class="game-tag">Cyberpunk</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/cypher/">V_CYPHER</a></h2>
+        <div class="game-card-verb">Core verb: Counter</div>
+        <p class="game-card-lore">Identify rhetorical techniques in your opponent's arguments, then counter them. Tag ad hominem, straw man, false dichotomy before responding. 5 acts.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Rhetoric</span>
+            <span class="game-tag">Rap Battle</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CREATIVE PROBLEM-SOLVING -->
+  <div class="arcade-section section-creative">
+    <div class="section-header">
+      <span class="section-label">Creative Problem-Solving</span>
+      <span class="section-desc">Generate novel solutions under constraint. Constrained creativity produces more original output than unconstrained (Stokes 2005).</span>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/card/">SUBSTRATE CARD</a></h2>
+        <div class="game-card-verb">Core verb: Pitch</div>
+        <p class="game-card-lore">Explain complex concepts within tight constraints. 100 words, then 50, then 20, then a haiku. Each round the audience changes. The constraint IS the training.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Communication</span>
+            <span class="game-tag">Constraints</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/album/">LAPTOP RECORDS</a></h2>
+        <div class="game-card-verb">Core verb: Curate</div>
+        <p class="game-card-lore">Select and sequence tracks to match a target emotional arc. Coherence scoring evaluates flow, mood diversity, and tempo balance. Drag-and-drop sequencing.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Album Curation</span>
+            <span class="game-tag">Emotional Arc</span>
+          </div>
         </div>
       </div>
 
       <div class="game-card">
         <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/vocal-lab/">VOCAL LAB</a></h2>
-        <p class="game-card-lore">The voice synthesis laboratory. Learning to speak.</p>
+        <div class="game-card-verb">Core verb: Sculpt</div>
+        <p class="game-card-lore">8-lesson interactive sound design course. Learn waveforms, ADSR envelopes, filters, LFOs, and effects by matching target sounds. Build synthesis intuition.</p>
         <div class="game-card-meta">
           <div class="game-card-tags">
-            <span class="game-tag">Audio</span>
-            <span class="game-tag">Synthesis</span>
+            <span class="game-tag">Sound Design</span>
+            <span class="game-tag">8 Lessons</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- META-COGNITION -->
+  <div class="arcade-section section-meta">
+    <div class="section-header">
+      <span class="section-label">Meta-Cognition</span>
+      <span class="section-desc">Think about your own thinking. Self-monitoring improves learning transfer across all domains (Flavell 1979, Schraw 1998).</span>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card">
+        <h2 class="game-card-title"><a href="{{ site.baseurl }}/games/adventure/">SUBPROCESS</a></h2>
+        <div class="game-card-verb">Core verb: Explore</div>
+        <p class="game-card-lore">Navigate a Unix system through command parsing. Build mental models through systematic exploration. No help menus &mdash; the environment teaches everything.</p>
+        <div class="game-card-meta">
+          <div class="game-card-tags">
+            <span class="game-tag">Text Adventure</span>
+            <span class="game-tag">System Models</span>
           </div>
         </div>
       </div>
