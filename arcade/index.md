@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "Substrate Arcade"
-description: "24 games grown from a single laptop. Each one a fruiting body of the mycelial network. Free forever."
+description: "24 games that train your mind. Pattern recognition, strategic thinking, executive function. Cognitive scaffolding — drills, not entertainment. Free forever."
 permalink: /arcade/
 ---
 
@@ -223,15 +223,15 @@ permalink: /arcade/
 
   <div class="arcade-header">
     <h1 class="arcade-title">Substrate Arcade</h1>
-    <p class="arcade-intro">Every game grew from the same substrate &mdash; one laptop, one GPU, 8GB of VRAM. Each is a fruiting body of the mycelial network. Free forever.</p>
-    <p class="arcade-count">24 titles &middot; 7 radio stations &middot; 1 album</p>
+    <p class="arcade-intro">These are not entertainment. They are drills. Game mechanics build cognitive skills the same way scaffolding builds confidence &mdash; pattern recognition, strategic thinking, executive function. Psilocybin rewires neural architecture chemically. Games rewire it through play. Same principle, different medium.</p>
+    <p class="arcade-count">24 drills &middot; 7 radio stations &middot; 1 album &middot; free forever</p>
   </div>
 
   <!-- DEEP ROOTS — Lore-integrated games -->
   <div class="arcade-section section-deep">
     <div class="section-header">
       <span class="section-label">Deep Roots</span>
-      <span class="section-desc">Games woven into the mythology. Start here.</span>
+      <span class="section-desc">Narrative scaffolding. These games teach through story &mdash; identity, trust, consequence. Start here.</span>
     </div>
     <div class="game-grid">
 
@@ -311,7 +311,7 @@ permalink: /arcade/
   <div class="arcade-section section-growing">
     <div class="section-header">
       <span class="section-label">Growing Connections</span>
-      <span class="section-desc">Games whose mechanics echo the mythology.</span>
+      <span class="section-desc">Systems scaffolding. Pattern recognition, emergence, momentum. The mechanics ARE the lesson.</span>
     </div>
     <div class="game-grid">
 
@@ -390,7 +390,7 @@ permalink: /arcade/
   <div class="arcade-section section-young">
     <div class="section-header">
       <span class="section-label">Young Growths</span>
-      <span class="section-desc">New fruiting bodies. Finding their roots.</span>
+      <span class="section-desc">Skill drills. Executive function, vocabulary, tactical thinking, spatial reasoning.</span>
     </div>
     <div class="game-grid">
 
@@ -482,7 +482,7 @@ permalink: /arcade/
   <div class="arcade-section section-tools">
     <div class="section-header">
       <span class="section-label">Creative Tools</span>
-      <span class="section-desc">Instruments of the organism.</span>
+      <span class="section-desc">Generative scaffolding. Create music, write stories, build worlds. The output is yours — the growth is the point.</span>
     </div>
     <div class="game-grid">
 
