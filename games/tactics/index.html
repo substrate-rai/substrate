@@ -429,7 +429,6 @@ canvas#game-canvas {
 
 <div id="footer"><a href="{{ site.baseurl }}/arcade/">a Substrate Arcade game</a></div>
 
-<script src="../shared/snes-audio.js"></script>
 <script>
 // ============================================================
 // TACTICS — Advance Wars-style 2D Canvas Tactics Game
@@ -693,21 +692,6 @@ var SFX = {
     }
   }
 };
-
-// ---- Music ----
-var music = null;
-
-function initMusic() {
-  if (typeof SNESAudio === 'function') {
-    try {
-      music = new SNESAudio();
-      music.loadSong('tactics');
-      music.play();
-    } catch (e) {
-      // ignore
-    }
-  }
-}
 
 // ============================================================
 // DRAWING — Pixel art terrain + units
@@ -1375,9 +1359,6 @@ function endGame(winner) {
     endSub.textContent = 'The system fell. Try again!';
     SFX.defeat();
   }
-  if (music) {
-    try { music.stop(); } catch(e) {}
-  }
   setTimeout(function() {
     endScreen.classList.add('show');
   }, 800);
@@ -1992,7 +1973,6 @@ function startGame() {
   splash.style.opacity = '0';
   splash.style.transition = 'opacity 0.4s';
   setTimeout(function() { splash.style.display = 'none'; }, 500);
-  initMusic();
   initGame();
 }
 

@@ -95,6 +95,37 @@
   font-size: 0.65rem;
 }
 
+/* Music toggle button */
+.substrate-bar-music {
+  background: none;
+  border: 1px solid var(--s-border);
+  color: var(--s-text-dim);
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  line-height: 1;
+  transition: all 0.2s;
+  font-family: var(--s-mono);
+}
+
+.substrate-bar-music:hover {
+  border-color: var(--s-accent-border);
+  color: var(--s-accent);
+}
+
+.substrate-bar-music.active {
+  color: var(--s-accent);
+  border-color: var(--s-accent-border);
+  background: var(--s-accent-dim);
+}
+
+.substrate-bar-music.muted {
+  color: var(--s-text-dim);
+  border-color: var(--s-border);
+  opacity: 0.6;
+}
+
 /* Push game content below the bar */
 .substrate-bar ~ *,
 .substrate-bar + * {

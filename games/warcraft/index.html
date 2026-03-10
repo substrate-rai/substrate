@@ -82,11 +82,6 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
 #title-screen button:hover{background:linear-gradient(180deg,#5a4a30,#3a3020);box-shadow:0 0 20px rgba(255,215,0,0.2)}
 .title-controls{font-size:11px;color:#6a6a5a;margin-top:30px;text-align:center;line-height:1.8}
 
-/* Music toggle */
-#music-btn{background:none;border:1px solid #5a4a2a;color:#8a8a6a;font-family:inherit;font-size:11px;padding:2px 8px;border-radius:3px;cursor:pointer}
-#music-btn:hover{border-color:#ffd700;color:#ffd700}
-#music-btn.active{color:#00cc44;border-color:#00cc44}
-
 /* Arcade link */
 #arcade-link{position:absolute;top:42px;left:8px;z-index:25;color:#00e09a;text-decoration:none;font-size:12px;background:rgba(10,10,15,0.8);padding:3px 8px;border-radius:3px;border:1px solid rgba(0,224,154,0.2)}
 #arcade-link:hover{background:rgba(0,224,154,0.1)}
@@ -222,7 +217,6 @@ body{background:#0a0a0f;color:#c8d0e0;font-family:'IBM Plex Mono',monospace;over
   <div class="res"><div class="res-icon res-food"></div><span class="res-val" id="food-val">4/10</span></div>
   <div id="idle-alert" onclick="selectIdleWorkers()" title="Click to select idle workers">⚠ 0 IDLE</div>
   <div id="hud-right">
-    <button id="music-btn" onclick="toggleMusic()">&#9835; OFF</button>
   </div>
 </div>
 
@@ -381,7 +375,7 @@ let gold=CFG.START_GOLD,lumber=CFG.START_LUMBER,foodUsed=0,foodCap=0;
 let entities=[],selected=[],goldMines=[],trees=[];
 let buildMode=null,buildGhost=null;
 let gameStarted=false,gameTick=0;
-let musicPlaying=false,audioCtx=null,bgmGain=null;
+let audioCtx=null;
 
 // Mission state
 let currentMission=null;// current mission data object or null for sandbox
@@ -1633,8 +1627,6 @@ function handleKeys(){
 function initAudio(){
   if(audioCtx)return;
   audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  bgmGain=audioCtx.createGain();bgmGain.gain.value=0;
-  bgmGain.connect(audioCtx.destination);
 }
 
 function playSfx(type){
@@ -1767,48 +1759,11 @@ function playNoiseBurst(dur,lo,hi,startTime){
   src.start(startTime);src.stop(startTime+dur);
 }
 
-// BGM — triangle pad chord loop
-let bgmInterval=null;
-function startBGM(){
-  if(!audioCtx)initAudio();
-  bgmGain.gain.setValueAtTime(0.08,audioCtx.currentTime);
-  const chords=[[261.6,311.1,392],[261.6,311.1,392],[415.3,493.9,622.3],[466.2,554.4,659.3]];
-  let chordIdx=0;
-  function playChord(){
-    const t=audioCtx.currentTime;
-    const freqs=chords[chordIdx%chords.length];
-    freqs.forEach(f=>{
-      const o=audioCtx.createOscillator();o.type='triangle';o.frequency.value=f;
-      const g=audioCtx.createGain();
-      g.gain.setValueAtTime(0.05,t);
-      g.gain.setValueAtTime(0.05,t+1.2);
-      g.gain.linearRampToValueAtTime(0,t+1.5);
-      o.connect(g);g.connect(bgmGain);o.start(t);o.stop(t+1.5);
-    });
-    chordIdx++;
-  }
-  playChord();
-  bgmInterval=setInterval(playChord,60000/90*2);// 2 beats at 90 BPM
-}
-
-function stopBGM(){
-  if(bgmInterval){clearInterval(bgmInterval);bgmInterval=null}
-  if(bgmGain)bgmGain.gain.setValueAtTime(0,audioCtx.currentTime);
-}
-
 window.selectIdleWorkers=function(){
   const idles=entities.filter(e=>e instanceof Worker&&e.alive&&e.state==='idle');
   if(idles.length>0){selectEntities(idles);playSfx('select');
     camTarget.set(idles[0].x,0,idles[0].z);
   }
-};
-
-window.toggleMusic=function(){
-  initAudio();
-  musicPlaying=!musicPlaying;
-  const btn=document.getElementById('music-btn');
-  if(musicPlaying){startBGM();btn.textContent='♫ ON';btn.classList.add('active')}
-  else{stopBGM();btn.textContent='♫ OFF';btn.classList.remove('active')}
 };
 
 // ============================================================

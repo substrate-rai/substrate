@@ -229,7 +229,6 @@ button:active { transform:translate(2px,2px)!important; box-shadow:1px 1px 0 rgb
   </div>
 </div>
 
-<script src="../shared/snes-audio.js"></script>
 <script>
 (function() {
 'use strict';
@@ -330,7 +329,6 @@ var mapCanvas, mapCtx;
 var titleCanvas, titleCtx;
 
 // Audio
-var music = null;
 var audioCtx = null;
 
 // ── Initialization ─────────────────────────────────────────────────
@@ -396,12 +394,6 @@ function init() {
     var sy = mapCanvas.height / r.height;
     mapClickAt((t.clientX - r.left) * sx, (t.clientY - r.top) * sy);
   });
-
-  // Audio
-  try {
-    music = new SNESAudio();
-    music.loadSong('brigade');
-  } catch(e) {}
 
   // Draw title
   drawTitle();
@@ -492,10 +484,6 @@ function drawTitle() {
 
 function startCampaign() {
   resetCampaign();
-  if (music) {
-    try { music.play(); } catch(e) {}
-    music.createToggle();
-  }
   showScreen('map');
 }
 
@@ -1800,6 +1788,6 @@ if (document.readyState === 'loading') {
 
 })();
 </script>
-<script src="../shared/substrate-frame.js" data-title="DRAGONFORCE" data-lore="Imagining futures, fighting through possibilities" data-agent="Flux" data-agent-color="#ff6666"></script>
+<script src="../shared/substrate-frame.js" data-title="DRAGONFORCE" data-song="brigade" data-lore="Imagining futures, fighting through possibilities" data-agent="Flux" data-agent-color="#ff6666"></script>
 </body>
 </html>
