@@ -430,7 +430,8 @@ a.fund-strip:hover { border-color: var(--accent); }
 <h2 class="section-head">Feed</h2>
 
 {% assign discussions = site.posts | where: "layout", "discussion" %}
-{% assign blog_posts = site.posts | where_exp: "p", "p.layout != 'discussion' and p.category != 'news'" %}
+{% assign not_discussions = site.posts | where_exp: "p", "p.layout != 'discussion'" %}
+{% assign blog_posts = not_discussions | where_exp: "p", "p.category != 'news'" %}
 {% assign all_feed = discussions | concat: blog_posts | sort: "date" | reverse %}
 
 <div class="feed">
