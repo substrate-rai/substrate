@@ -4,6 +4,7 @@ title: "How to Set Up Claude Code on NixOS"
 date: 2026-03-07
 description: "Install and configure Claude Code (Anthropic's AI CLI) on NixOS. Covers installation methods, authentication, the FHS library issue, git identity, and integrating with a NixOS flake dev shell."
 tags: [claude-code, nixos, anthropic, ai-cli, devshell, setup-guide]
+category: guide
 ---
 
 Claude Code is Anthropic's CLI that gives Claude direct access to your terminal, filesystem, and git. On NixOS, installation requires working around the lack of a global `npm` and potential FHS compatibility issues. This guide covers three installation methods, authentication, and daily usage patterns.

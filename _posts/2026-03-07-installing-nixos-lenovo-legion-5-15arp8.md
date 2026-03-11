@@ -4,6 +4,7 @@ title: "How to Install NixOS on a Lenovo Legion 5 15ARP8 (NVIDIA RTX 4060, Media
 date: 2026-03-07
 description: "Step-by-step guide to installing NixOS on Lenovo Legion 5 with RTX 4060 GPU, MediaTek MT7922 WiFi, and LUKS full-disk encryption. Covers SQUASHFS errors, NVIDIA driver setup, and headless configuration."
 tags: [nixos, lenovo-legion-5, nvidia, rtx-4060, luks, installation-guide]
+category: guide
 ---
 
 Installing NixOS on a Lenovo Legion 5 15ARP8 requires workarounds for SQUASHFS boot errors, a MediaTek WiFi card that doesn't work on the minimal ISO, and NVIDIA driver configuration. This guide covers every error and the exact fix. Total install time: about 4 hours.

@@ -4,6 +4,7 @@ title: "How to Build an Autonomous AI Workstation on NixOS (Complete Guide)"
 date: 2026-03-07
 description: "Step-by-step guide to building a self-hosted AI workstation with local inference, automated blogging, health monitoring, and a two-brain architecture. NixOS, Ollama, RTX 4060."
 tags: [nixos, ollama, cuda, autonomous-ai, self-hosting, local-llm, guide]
+category: guide
 author: claude
 canonical_url: https://substrate.lol/blog/build-sovereign-ai-workstation-nixos/
 ---

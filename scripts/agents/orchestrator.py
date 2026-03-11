@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Substrate orchestrator — hourly heartbeat for 28 agents.
 
-Runs all agents in sequence, compiles a briefing, tracks accountability.
-Designed to run every hour via systemd timer. Never stops.
+Runs all agents in tiered parallel groups, compiles a briefing, tracks
+accountability with per-agent timing. Includes pre-flight health checks,
+circuit breaker for Ollama, error classification, and structured manifest output.
 
 Usage:
     python3 scripts/agents/orchestrator.py                # full hourly run
@@ -11,18 +12,23 @@ Usage:
     python3 scripts/agents/orchestrator.py --retro        # weekly retrospective
 
 Output:
-    memory/briefings/YYYY-MM-DD-HH00.md   (hourly briefing)
-    memory/briefings/latest.md             (symlink to most recent)
-    memory/retro/YYYY-WNN.md              (weekly retro, Sundays)
-    memory/accountability.log              (append-only agent performance log)
+    memory/briefings/YYYY-MM-DD-HH00.md            (hourly briefing)
+    memory/briefings/YYYY-MM-DD-HHMM-manifest.json (structured run manifest)
+    memory/briefings/latest.md                      (symlink to most recent)
+    memory/retro/YYYY-WNN.md                        (weekly retro, Sundays)
+    memory/accountability.log                       (append-only agent performance log)
 """
 
 import argparse
+import concurrent.futures
 import json
 import os
+import random
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,17 +37,58 @@ BRIEFINGS_DIR = os.path.join(REPO_DIR, "memory", "briefings")
 RETRO_DIR = os.path.join(REPO_DIR, "memory", "retro")
 ACCOUNTABILITY_LOG = os.path.join(REPO_DIR, "memory", "accountability.log")
 BULLETIN_FILE = os.path.join(REPO_DIR, "memory", "bulletin.md")
+CONFIG_FILE = os.path.join(SCRIPT_DIR, "orchestrator.conf.json")
+
+# Try to use atomic writes
+try:
+    from atomicwrite import atomic_write
+except ImportError:
+    def atomic_write(filepath, content):
+        os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
+        with open(filepath, "w") as f:
+            f.write(content)
+
 
 # ---------------------------------------------------------------------------
-# Agent registry — all 28 agents
+# Configuration — loaded from orchestrator.conf.json, with hardcoded defaults
+# ---------------------------------------------------------------------------
+
+_DEFAULT_CONFIG = {
+    "retry": {"max_retries": 2, "base_delay_s": 5, "max_delay_s": 30, "jitter_s": 2},
+    "timeouts": {"default_s": 180, "quick_agent_s": 60, "full_agent_s": 300},
+    "circuit_breaker": {"failure_threshold": 3, "reset_timeout_s": 300},
+    "accountability": {"max_lines": 5000, "keep_lines": 2000},
+    "preflight": {"ollama_timeout_s": 5, "min_disk_mb": 100},
+    "parallel": {"max_workers": 4},
+}
+
+
+def load_config():
+    """Load config from JSON file, merged over defaults."""
+    config = json.loads(json.dumps(_DEFAULT_CONFIG))  # deep copy
+    if os.path.isfile(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE) as f:
+                user = json.load(f)
+            for section, vals in user.items():
+                if section in config and isinstance(config[section], dict):
+                    config[section].update(vals)
+                else:
+                    config[section] = vals
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"[heartbeat] config load failed, using defaults: {e}",
+                  file=sys.stderr)
+    return config
+
+
+CFG = load_config()
+
+
+# ---------------------------------------------------------------------------
+# Agent registry — all 28 agents, organized by execution tier
 # ---------------------------------------------------------------------------
 # (name, sigil, script, role, mode)
 # mode: "quick" = runs without AI (fast), "full" = uses Ollama (slower)
-
-MAX_RETRIES = 2
-RETRY_DELAY = 5  # seconds
-ACCOUNTABILITY_MAX_LINES = 5000
-ACCOUNTABILITY_KEEP_LINES = 2000
 
 AGENTS = [
     # Infrastructure & QA — run first
@@ -53,11 +100,14 @@ AGENTS = [
     # Content & Intelligence
     ("Byte",     "B>", "news_researcher.py",  "News Reporter",             "full"),
     ("Echo",     "E~", "release_tracker.py",  "Release Tracker",           "quick"),
+    ("Ink",      "I>", "archivist.py",        "Research Librarian",        "quick"),
 
     # Creative
     ("Pixel",    "P#", "visual_artist.py",    "Visual Artist",             "full"),
     ("Arc",      "A^", "arcade_director.py",  "Arcade Director",           "quick"),
     ("Hum",      "H~", "audio_director.py",   "Audio Director",            "quick"),
+
+    ("Scribe",   "W/", "scribe.py",           "Guide Author",              "full"),
 
     # Vision & Design & Lore
     ("V",        "V_", "philosophical_leader.py", "Philosophical Leader",  "quick"),
@@ -89,80 +139,240 @@ AGENTS = [
     ("Dash",     "D!", "project_manager.py",  "Project Manager",           "quick"),
 ]
 
+# Agent name → tuple lookup
+_AGENT_MAP = {a[0]: a for a in AGENTS}
+
+# Tier-based parallel scheduling.
+# Agents in the same tier are independent. Quick agents within a tier run
+# in parallel. Full agents always run sequentially (single-GPU bottleneck).
+TIERS = [
+    {"name": "Infra",    "agents": ["Root", "Spec", "Sentinel", "Forge"]},
+    {"name": "Intel",    "agents": ["Byte", "Echo", "Scout", "Patron", "Ink"]},
+    {"name": "Creative", "agents": ["Pixel", "Arc", "Hum", "V", "Neon", "Myth", "Scribe"]},
+    {"name": "Strategy", "agents": ["Flux", "Sync", "Lumen", "Spore"]},
+    {"name": "Finance",  "agents": ["Mint", "Yield"]},
+    {"name": "Growth",   "agents": ["Amp", "Pulse", "Close", "Promo", "Diplomat"]},
+    {"name": "Mgmt",     "agents": ["Dash"]},
+]
+
+
+# ---------------------------------------------------------------------------
+# Pre-flight health checks
+# ---------------------------------------------------------------------------
+
+def preflight_check():
+    """Run pre-flight checks before the agent loop.
+
+    Returns:
+        dict with keys: ollama (bool), disk_ok (bool), git_clean (bool)
+    """
+    result = {"ollama": False, "disk_ok": False, "git_clean": False}
+
+    # 1. Ollama reachable?
+    timeout = CFG["preflight"]["ollama_timeout_s"]
+    try:
+        req = urllib.request.Request("http://localhost:11434/api/tags")
+        urllib.request.urlopen(req, timeout=timeout)
+        result["ollama"] = True
+    except (urllib.error.URLError, OSError):
+        print("[heartbeat] preflight: Ollama is DOWN", file=sys.stderr)
+
+    # 2. Disk space > threshold?
+    min_mb = CFG["preflight"]["min_disk_mb"]
+    try:
+        st = os.statvfs("/")
+        free_mb = (st.f_bavail * st.f_frsize) // (1024 * 1024)
+        result["disk_ok"] = free_mb > min_mb
+        if not result["disk_ok"]:
+            print(f"[heartbeat] preflight: disk low ({free_mb}MB free)", file=sys.stderr)
+    except OSError:
+        result["disk_ok"] = True  # assume ok if can't check
+
+    # 3. Git clean (no merge conflicts)?
+    try:
+        proc = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True, text=True, timeout=10, cwd=REPO_DIR,
+        )
+        # Check for unmerged paths (lines starting with U or having UU)
+        for line in proc.stdout.splitlines():
+            if line[:2] in ("UU", "AA", "DD") or "U " in line[:2] or " U" in line[:2]:
+                print("[heartbeat] preflight: git has merge conflicts", file=sys.stderr)
+                result["git_clean"] = False
+                break
+        else:
+            result["git_clean"] = True
+    except (subprocess.TimeoutExpired, OSError):
+        result["git_clean"] = True  # assume ok if can't check
+
+    status = " | ".join(f"{k}={'OK' if v else 'FAIL'}" for k, v in result.items())
+    print(f"[heartbeat] preflight: {status}", file=sys.stderr)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Circuit breaker for Ollama
+# ---------------------------------------------------------------------------
+
+class CircuitBreaker:
+    """Simple circuit breaker — prevents futile retries when Ollama is down.
+
+    States:
+        closed    → normal operation, requests pass through
+        open      → skip all requests (Ollama presumed down)
+        half-open → allow one probe request to test recovery
+    """
+
+    def __init__(self, failure_threshold=3, reset_timeout_s=300):
+        self.failure_threshold = failure_threshold
+        self.reset_timeout_s = reset_timeout_s
+        self._state = "closed"
+        self._failure_count = 0
+        self._last_failure_time = 0
+
+    @property
+    def state(self):
+        if self._state == "open":
+            if time.monotonic() - self._last_failure_time >= self.reset_timeout_s:
+                self._state = "half-open"
+        return self._state
+
+    def should_skip(self):
+        """Return True if the circuit is open (skip the request)."""
+        return self.state == "open"
+
+    def record_success(self):
+        """Record a successful full-agent run."""
+        self._failure_count = 0
+        self._state = "closed"
+
+    def record_failure(self):
+        """Record a failed full-agent run."""
+        self._failure_count += 1
+        self._last_failure_time = time.monotonic()
+        if self._failure_count >= self.failure_threshold:
+            self._state = "open"
+            print(f"[heartbeat] circuit breaker OPEN after {self._failure_count} failures",
+                  file=sys.stderr)
+
+
+_circuit_breaker = CircuitBreaker(
+    failure_threshold=CFG["circuit_breaker"]["failure_threshold"],
+    reset_timeout_s=CFG["circuit_breaker"]["reset_timeout_s"],
+)
+
+
+# ---------------------------------------------------------------------------
+# Error classification
+# ---------------------------------------------------------------------------
+
+_TRANSIENT_PATTERNS = [
+    "timed out", "Connection refused", "urlopen error",
+    "503", "429", "TimeoutExpired", "ConnectionError",
+]
+_PERMANENT_PATTERNS = [
+    "SyntaxError", "ImportError", "NameError", "TypeError",
+    "AttributeError", "IndentationError", "ModuleNotFoundError",
+]
+
+
+def classify_error(stderr, returncode):
+    """Classify an error as transient, permanent, or unknown.
+
+    Transient errors are retried with backoff. Permanent errors fail immediately.
+    """
+    if returncode == 0:
+        return "none"
+    text = stderr or ""
+    for pat in _PERMANENT_PATTERNS:
+        if pat in text:
+            return "permanent"
+    for pat in _TRANSIENT_PATTERNS:
+        if pat in text:
+            return "transient"
+    return "unknown"
+
 
 # ---------------------------------------------------------------------------
 # Agent execution
 # ---------------------------------------------------------------------------
 
-def run_agent(name, script, cmd_args=None):
-    """Run a single agent script and capture its output."""
+def _get_timeout(mode):
+    """Return the configured timeout for an agent mode."""
+    if mode == "quick":
+        return CFG["timeouts"]["quick_agent_s"]
+    elif mode == "full":
+        return CFG["timeouts"]["full_agent_s"]
+    return CFG["timeouts"]["default_s"]
+
+
+def run_agent(name, script, cmd_args=None, mode="quick"):
+    """Run a single agent script and capture its output + timing."""
     script_path = os.path.join(SCRIPT_DIR, script)
 
     if not os.path.isfile(script_path):
-        return "", f"script not found: {script_path}", 1
+        return "", f"script not found: {script_path}", 1, 0
 
     cmd = [sys.executable, script_path]
     if cmd_args:
         cmd.extend(cmd_args)
+
+    timeout = _get_timeout(mode)
+    t0 = time.monotonic()
 
     try:
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=180,
+            timeout=timeout,
             cwd=REPO_DIR,
         )
-        return result.stdout.strip(), result.stderr.strip(), result.returncode
+        duration_ms = int((time.monotonic() - t0) * 1000)
+        return result.stdout.strip(), result.stderr.strip(), result.returncode, duration_ms
     except subprocess.TimeoutExpired:
-        return "", f"{name} timed out after 180s", 1
+        duration_ms = int((time.monotonic() - t0) * 1000)
+        return "", f"{name} timed out after {timeout}s", 1, duration_ms
     except Exception as e:
-        return "", f"{name} failed: {e}", 1
+        duration_ms = int((time.monotonic() - t0) * 1000)
+        return "", f"{name} failed: {e}", 1, duration_ms
 
 
-def run_agent_with_retry(name, script, cmd_args=None):
-    """Run an agent with retry logic on failure."""
-    stdout, stderr, returncode = run_agent(name, script, cmd_args)
+def run_agent_with_retry(name, script, cmd_args=None, mode="quick"):
+    """Run an agent with classified retry logic and exponential backoff."""
+    max_retries = CFG["retry"]["max_retries"]
+    base_delay = CFG["retry"]["base_delay_s"]
+    max_delay = CFG["retry"]["max_delay_s"]
+    jitter = CFG["retry"]["jitter_s"]
+
+    stdout, stderr, returncode, duration_ms = run_agent(name, script, cmd_args, mode)
 
     if returncode == 0:
-        return stdout, stderr, returncode
+        return stdout, stderr, returncode, duration_ms
 
-    for attempt in range(1, MAX_RETRIES + 1):
-        print(f"[heartbeat] {name} failed, retry {attempt}/{MAX_RETRIES}...",
-              file=sys.stderr)
-        time.sleep(RETRY_DELAY)
-        stdout, stderr, returncode = run_agent(name, script, cmd_args)
+    err_class = classify_error(stderr, returncode)
+    if err_class == "permanent":
+        print(f"[heartbeat] {name}: permanent error, no retry", file=sys.stderr)
+        return stdout, stderr, returncode, duration_ms
+
+    # Transient or unknown: retry with backoff
+    max_attempts = max_retries if err_class == "transient" else 1
+
+    for attempt in range(1, max_attempts + 1):
+        delay = min(base_delay * 2 ** attempt, max_delay) + random.uniform(0, jitter)
+        print(f"[heartbeat] {name} failed ({err_class}), retry {attempt}/{max_attempts} "
+              f"in {delay:.1f}s...", file=sys.stderr)
+        time.sleep(delay)
+        stdout, stderr, returncode, duration_ms = run_agent(name, script, cmd_args, mode)
         if returncode == 0:
-            print(f"[heartbeat] {name} succeeded on retry {attempt}",
-                  file=sys.stderr)
-            return stdout, stderr, returncode
+            print(f"[heartbeat] {name} succeeded on retry {attempt}", file=sys.stderr)
+            return stdout, stderr, returncode, duration_ms
 
-    return stdout, stderr, returncode
-
-
-def rotate_accountability_log():
-    """Rotate accountability log if it exceeds max lines."""
-    if not os.path.exists(ACCOUNTABILITY_LOG):
-        return
-
-    try:
-        with open(ACCOUNTABILITY_LOG) as f:
-            lines = f.readlines()
-
-        if len(lines) > ACCOUNTABILITY_MAX_LINES:
-            # Keep the most recent lines
-            with open(ACCOUNTABILITY_LOG, "w") as f:
-                f.writelines(lines[-ACCOUNTABILITY_KEEP_LINES:])
-            print(f"[heartbeat] rotated accountability log: "
-                  f"{len(lines)} → {ACCOUNTABILITY_KEEP_LINES} lines",
-                  file=sys.stderr)
-    except (IOError, OSError) as e:
-        print(f"[heartbeat] log rotation failed: {e}", file=sys.stderr)
+    return stdout, stderr, returncode, duration_ms
 
 
 def get_agent_command(name):
     """Return the appropriate command args for each agent's status/quick check."""
-    # Map agents to their quick-check commands
     status_commands = {
         "Spec": ["smoke"],
         "Sentinel": ["scan"],
@@ -177,8 +387,108 @@ def get_agent_command(name):
 
 
 # ---------------------------------------------------------------------------
+# Tier-based parallel scheduler
+# ---------------------------------------------------------------------------
+
+def _run_one_agent(name, quick_mode, preflight_result):
+    """Run a single agent (called from thread pool or sequentially).
+
+    Returns:
+        (name, stdout, stderr, returncode, duration_ms, skip_reason)
+    """
+    agent_tuple = _AGENT_MAP.get(name)
+    if not agent_tuple:
+        return (name, "", f"unknown agent: {name}", 1, 0, None)
+
+    _name, _sigil, script, _role, mode = agent_tuple
+
+    # Skip full agents in quick mode
+    if quick_mode and mode == "full":
+        return (name, "", "", 0, 0, "quick mode")
+
+    # Skip full agents if Ollama is down (preflight) or circuit breaker open
+    if mode == "full":
+        if not preflight_result.get("ollama", True):
+            return (name, "", "Ollama down (preflight)", 1, 0, "ollama down")
+        if _circuit_breaker.should_skip():
+            return (name, "", "circuit breaker open", 1, 0, "circuit breaker")
+
+    cmd_args = get_agent_command(name)
+    stdout, stderr, returncode, duration_ms = run_agent_with_retry(
+        name, script, cmd_args, mode
+    )
+
+    # Update circuit breaker for full agents
+    if mode == "full":
+        if returncode == 0:
+            _circuit_breaker.record_success()
+        else:
+            _circuit_breaker.record_failure()
+
+    return (name, stdout, stderr, returncode, duration_ms, None)
+
+
+def run_tier(tier, quick_mode, preflight_result):
+    """Run all agents in a tier. Quick agents run in parallel, full sequential."""
+    results = {}
+    agents = tier["agents"]
+    max_workers = CFG["parallel"]["max_workers"]
+
+    # Split into quick and full
+    quick_agents = [n for n in agents if _AGENT_MAP.get(n, (None,)*5)[4] == "quick"]
+    full_agents = [n for n in agents if _AGENT_MAP.get(n, (None,)*5)[4] == "full"]
+
+    # Run quick agents in parallel
+    if quick_agents:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = {
+                pool.submit(_run_one_agent, name, quick_mode, preflight_result): name
+                for name in quick_agents
+            }
+            for future in concurrent.futures.as_completed(futures):
+                name, stdout, stderr, returncode, duration_ms, skip_reason = future.result()
+                if skip_reason:
+                    results[name] = (stdout, stderr, returncode, duration_ms, skip_reason)
+                else:
+                    results[name] = (stdout, stderr, returncode, duration_ms, None)
+
+    # Run full agents sequentially (GPU-bound)
+    for name in full_agents:
+        name, stdout, stderr, returncode, duration_ms, skip_reason = _run_one_agent(
+            name, quick_mode, preflight_result
+        )
+        if skip_reason:
+            results[name] = (stdout, stderr, returncode, duration_ms, skip_reason)
+        else:
+            results[name] = (stdout, stderr, returncode, duration_ms, None)
+
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Accountability
 # ---------------------------------------------------------------------------
+
+def rotate_accountability_log():
+    """Rotate accountability log if it exceeds max lines."""
+    max_lines = CFG["accountability"]["max_lines"]
+    keep_lines = CFG["accountability"]["keep_lines"]
+
+    if not os.path.exists(ACCOUNTABILITY_LOG):
+        return
+
+    try:
+        with open(ACCOUNTABILITY_LOG) as f:
+            lines = f.readlines()
+
+        if len(lines) > max_lines:
+            content = "".join(lines[-keep_lines:])
+            atomic_write(ACCOUNTABILITY_LOG, content)
+            print(f"[heartbeat] rotated accountability log: "
+                  f"{len(lines)} → {keep_lines} lines", file=sys.stderr)
+    except (IOError, OSError) as e:
+        print(f"[heartbeat] log rotation failed: {e}", file=sys.stderr)
+
 
 def log_accountability(timestamp, results):
     """Append agent performance to the accountability log."""
@@ -188,10 +498,19 @@ def log_accountability(timestamp, results):
         for name, _sigil, _script, _role, _mode in AGENTS:
             if name not in results:
                 continue
-            stdout, stderr, returncode = results[name]
-            status = "OK" if returncode == 0 else "FAIL"
+            entry = results[name]
+            stdout = entry[0]
+            returncode = entry[2]
+            duration_ms = entry[3] if len(entry) > 3 else 0
+            skip_reason = entry[4] if len(entry) > 4 else None
+
+            if skip_reason:
+                status = "SKIP"
+            else:
+                status = "OK" if returncode == 0 else "FAIL"
             output_len = len(stdout) if stdout else 0
-            f.write(f"{timestamp} | {name:10s} | {status:4s} | {output_len:5d} chars\n")
+            f.write(f"{timestamp} | {name:10s} | {status:4s} | "
+                    f"{output_len:5d} chars | {duration_ms:6d} ms\n")
 
 
 def get_accountability_stats(days=7):
@@ -211,12 +530,25 @@ def get_accountability_stats(days=7):
             if ts < cutoff:
                 continue
             if name not in stats:
-                stats[name] = {"ok": 0, "fail": 0, "total": 0}
+                stats[name] = {"ok": 0, "fail": 0, "skip": 0, "total": 0,
+                               "total_ms": 0, "max_ms": 0}
             stats[name]["total"] += 1
             if status == "OK":
                 stats[name]["ok"] += 1
+            elif status == "SKIP":
+                stats[name]["skip"] += 1
             else:
                 stats[name]["fail"] += 1
+
+            # Parse duration if present (backward compat: field may be missing)
+            if len(parts) >= 5:
+                try:
+                    ms_str = parts[4].replace("ms", "").strip()
+                    ms = int(ms_str)
+                    stats[name]["total_ms"] += ms
+                    stats[name]["max_ms"] = max(stats[name]["max_ms"], ms)
+                except (ValueError, IndexError):
+                    pass
 
     return stats
 
@@ -241,7 +573,6 @@ def get_recent_bulletins(days=7):
 
     for line in content.splitlines():
         if line.startswith("## 20") and " — " in line:
-            # Extract date and title: "## 2026-03-09 — Pipeline Upgrade"
             parts = line.split(" — ", 1)
             date_part = parts[0].replace("## ", "").strip()
             title = parts[1].strip() if len(parts) > 1 else ""
@@ -251,7 +582,7 @@ def get_recent_bulletins(days=7):
     return memos
 
 
-def generate_briefing(timestamp, results, quick_mode=False):
+def generate_briefing(timestamp, results, quick_mode=False, preflight_result=None):
     """Generate the hourly briefing document."""
     now = datetime.now()
     mode = "QUICK" if quick_mode else "FULL"
@@ -260,8 +591,18 @@ def generate_briefing(timestamp, results, quick_mode=False):
         f"# Substrate Briefing — {now.strftime('%Y-%m-%d %H:%M')}",
         "",
         f"**Mode:** {mode} | **Agents:** {len(results)}/{len(AGENTS)}",
-        "",
     ]
+
+    # Show preflight status
+    if preflight_result:
+        pf = " | ".join(f"{k}={'OK' if v else 'FAIL'}" for k, v in preflight_result.items())
+        lines.append(f"**Preflight:** {pf}")
+
+    # Show circuit breaker state
+    if _circuit_breaker.state != "closed":
+        lines.append(f"**Circuit Breaker:** {_circuit_breaker.state}")
+
+    lines.append("")
 
     # Recent bulletin memos
     memos = get_recent_bulletins(days=7)
@@ -275,21 +616,26 @@ def generate_briefing(timestamp, results, quick_mode=False):
         lines.append("")
 
     # Summary bar
-    ok_count = sum(1 for r in results.values() if r[2] == 0)
-    fail_count = sum(1 for r in results.values() if r[2] != 0)
-    lines.append(f"**Status:** {ok_count} OK, {fail_count} FAILED")
+    ok_count = sum(1 for r in results.values() if len(r) > 4 and r[4] is None and r[2] == 0)
+    fail_count = sum(1 for r in results.values() if len(r) > 4 and r[4] is None and r[2] != 0)
+    skip_count = sum(1 for r in results.values() if len(r) > 4 and r[4] is not None)
+    # Also count agents not in results at all
+    skip_count += sum(1 for a in AGENTS if a[0] not in results)
+
+    lines.append(f"**Status:** {ok_count} OK, {fail_count} FAILED, {skip_count} SKIPPED")
     lines.append("")
     lines.append("---")
     lines.append("")
 
     # Failed agents first (attention needed)
     failures = [(n, s, sc, r, m) for n, s, sc, r, m in AGENTS
-                 if n in results and results[n][2] != 0]
+                 if n in results and _result_status(results[n]) == "FAILED"]
     if failures:
         lines.append("## ATTENTION REQUIRED")
         lines.append("")
         for name, sigil, _script, role, _mode in failures:
-            stdout, stderr, returncode = results[name]
+            entry = results[name]
+            stderr = entry[1]
             lines.append(f"### [{sigil}] {name} — {role} — FAILED")
             if stderr:
                 lines.append(f"```\n{stderr[:500]}\n```")
@@ -305,21 +651,31 @@ def generate_briefing(timestamp, results, quick_mode=False):
             lines.append("")
             continue
 
-        stdout, stderr, returncode = results[name]
-        status = "OK" if returncode == 0 else "FAILED"
+        entry = results[name]
+        stdout = entry[0]
+        returncode = entry[2]
+        duration_ms = entry[3] if len(entry) > 3 else 0
+        skip_reason = entry[4] if len(entry) > 4 else None
 
-        lines.append(f"### [{sigil}] {name} — {role} — {status}")
+        if skip_reason:
+            lines.append(f"### [{sigil}] {name} — {role} — SKIPPED ({skip_reason})")
+            lines.append("")
+            continue
+
+        status = "OK" if returncode == 0 else "FAILED"
+        timing = f" ({duration_ms}ms)" if duration_ms > 0 else ""
+
+        lines.append(f"### [{sigil}] {name} — {role} — {status}{timing}")
         lines.append("")
 
         if stdout:
-            # Truncate long outputs
             if len(stdout) > 2000:
                 lines.append(stdout[:2000])
                 lines.append(f"\n... ({len(stdout) - 2000} chars truncated)")
             else:
                 lines.append(stdout)
-        elif returncode != 0 and stderr:
-            lines.append(f"Error: {stderr[:500]}")
+        elif returncode != 0 and entry[1]:
+            lines.append(f"Error: {entry[1][:500]}")
         else:
             lines.append("(no output)")
 
@@ -332,12 +688,15 @@ def generate_briefing(timestamp, results, quick_mode=False):
     if stats:
         lines.append("## 7-Day Accountability")
         lines.append("")
-        lines.append("| Agent | Runs | OK | Fail | Reliability |")
-        lines.append("|-------|------|----|------|-------------|")
+        lines.append("| Agent | Runs | OK | Fail | Skip | Reliability | Avg ms | Max ms |")
+        lines.append("|-------|------|----|------|------|-------------|--------|--------|")
         for name, s in sorted(stats.items()):
-            pct = (s["ok"] / s["total"] * 100) if s["total"] > 0 else 0
+            real_runs = s["ok"] + s["fail"]
+            pct = (s["ok"] / real_runs * 100) if real_runs > 0 else 100
+            avg_ms = s["total_ms"] // max(s["total"], 1)
             flag = " !!!" if pct < 80 else ""
-            lines.append(f"| {name} | {s['total']} | {s['ok']} | {s['fail']} | {pct:.0f}%{flag} |")
+            lines.append(f"| {name} | {s['total']} | {s['ok']} | {s['fail']} | "
+                         f"{s['skip']} | {pct:.0f}%{flag} | {avg_ms} | {s['max_ms']} |")
         lines.append("")
 
     lines.append(f"*Next heartbeat: {(now + timedelta(hours=1)).strftime('%H:%M')}*")
@@ -346,12 +705,64 @@ def generate_briefing(timestamp, results, quick_mode=False):
     return "\n".join(lines)
 
 
+def _result_status(entry):
+    """Get display status from a result tuple."""
+    if len(entry) > 4 and entry[4] is not None:
+        return "SKIPPED"
+    return "OK" if entry[2] == 0 else "FAILED"
+
+
+def generate_manifest(timestamp, results, quick_mode, preflight_result):
+    """Generate structured JSON manifest of the run."""
+    now = datetime.now()
+    agents_data = {}
+    for name, _sigil, _script, _role, _mode in AGENTS:
+        if name not in results:
+            agents_data[name] = {"status": "skipped", "reason": "not scheduled"}
+            continue
+        entry = results[name]
+        stdout = entry[0]
+        returncode = entry[2]
+        duration_ms = entry[3] if len(entry) > 3 else 0
+        skip_reason = entry[4] if len(entry) > 4 else None
+
+        if skip_reason:
+            agents_data[name] = {"status": "skipped", "reason": skip_reason,
+                                 "duration_ms": duration_ms}
+        elif returncode == 0:
+            agents_data[name] = {"status": "ok", "duration_ms": duration_ms,
+                                 "output_chars": len(stdout) if stdout else 0}
+        else:
+            agents_data[name] = {"status": "failed", "duration_ms": duration_ms,
+                                 "output_chars": len(stdout) if stdout else 0,
+                                 "error": (entry[1] or "")[:200]}
+
+    ok_count = sum(1 for a in agents_data.values() if a["status"] == "ok")
+    fail_count = sum(1 for a in agents_data.values() if a["status"] == "failed")
+    skip_count = sum(1 for a in agents_data.values() if a["status"] == "skipped")
+
+    manifest = {
+        "timestamp": now.isoformat(),
+        "mode": "quick" if quick_mode else "full",
+        "preflight": preflight_result or {},
+        "circuit_breaker": _circuit_breaker.state,
+        "agents": agents_data,
+        "summary": {
+            "total": len(AGENTS),
+            "ok": ok_count,
+            "failed": fail_count,
+            "skipped": skip_count,
+        },
+    }
+
+    return json.dumps(manifest, indent=2) + "\n"
+
+
 def generate_retro():
     """Generate weekly retrospective by comparing briefings."""
     now = datetime.now()
     week_num = now.strftime("%Y-W%W")
 
-    # Find briefings from this week
     if not os.path.isdir(BRIEFINGS_DIR):
         return f"# Weekly Retro — {week_num}\n\nNo briefings found.\n"
 
@@ -360,7 +771,6 @@ def generate_retro():
         if f.endswith(".md") and f != "latest.md"
     ])
 
-    # Count stats from accountability log
     stats = get_accountability_stats(days=7)
 
     lines = [
@@ -376,14 +786,16 @@ def generate_retro():
         lines.append("## Agent Reliability")
         lines.append("")
 
-        # Sort by reliability
         ranked = sorted(stats.items(), key=lambda x: x[1]["ok"] / max(x[1]["total"], 1))
         for name, s in ranked:
-            pct = (s["ok"] / s["total"] * 100) if s["total"] > 0 else 0
+            real_runs = s["ok"] + s["fail"]
+            pct = (s["ok"] / real_runs * 100) if real_runs > 0 else 100
+            avg_ms = s["total_ms"] // max(s["total"], 1)
             bar_len = 20
             filled = int(bar_len * pct / 100)
             bar = "#" * filled + "-" * (bar_len - filled)
-            lines.append(f"- **{name:10s}** [{bar}] {pct:.0f}% ({s['ok']}/{s['total']})")
+            lines.append(f"- **{name:10s}** [{bar}] {pct:.0f}% "
+                         f"({s['ok']}/{s['total']}) avg {avg_ms}ms")
         lines.append("")
 
     # Git activity this week
@@ -420,27 +832,37 @@ def generate_retro():
 def print_summary(results):
     """Print concise heartbeat summary to stdout."""
     now = datetime.now()
-    ok = sum(1 for r in results.values() if r[2] == 0)
-    fail = sum(1 for r in results.values() if r[2] != 0)
+    ok = sum(1 for r in results.values() if _result_status(r) == "OK")
+    fail = sum(1 for r in results.values() if _result_status(r) == "FAILED")
+    skip = sum(1 for r in results.values() if _result_status(r) == "SKIPPED")
 
-    print(f"\n  HEARTBEAT {now.strftime('%Y-%m-%d %H:%M')}  [{ok} OK / {fail} FAIL]")
-    print(f"  {'─' * 48}")
+    print(f"\n  HEARTBEAT {now.strftime('%Y-%m-%d %H:%M')}  [{ok} OK / {fail} FAIL / {skip} SKIP]")
+    print(f"  {'─' * 56}")
 
     for name, sigil, _script, role, _mode in AGENTS:
         if name not in results:
             print(f"  [{sigil}] {name:10s} SKIP")
             continue
 
-        stdout, stderr, returncode = results[name]
-        if returncode == 0:
-            first = stdout.split("\n")[0][:50] if stdout else "(ok)"
-            print(f"  [{sigil}] {name:10s} OK   {first}")
-        else:
-            reason = stderr.split("\n")[0][:40] if stderr else "unknown"
-            print(f"  [{sigil}] {name:10s} FAIL {reason}")
+        entry = results[name]
+        stdout = entry[0]
+        returncode = entry[2]
+        duration_ms = entry[3] if len(entry) > 3 else 0
+        skip_reason = entry[4] if len(entry) > 4 else None
 
-    print(f"  {'─' * 48}")
-    print(f"  Next: {(now + timedelta(hours=1)).strftime('%H:%M')}\n")
+        timing = f"{duration_ms:5d}ms" if duration_ms > 0 else "      "
+
+        if skip_reason:
+            print(f"  [{sigil}] {name:10s} SKIP {timing}  ({skip_reason})")
+        elif returncode == 0:
+            first = stdout.split("\n")[0][:40] if stdout else "(ok)"
+            print(f"  [{sigil}] {name:10s} OK   {timing}  {first}")
+        else:
+            reason = entry[1].split("\n")[0][:40] if entry[1] else "unknown"
+            print(f"  [{sigil}] {name:10s} FAIL {timing}  {reason}")
+
+    print(f"  {'─' * 56}")
+    print(f"  CB: {_circuit_breaker.state} | Next: {(now + timedelta(hours=1)).strftime('%H:%M')}\n")
 
 
 # ---------------------------------------------------------------------------
@@ -466,36 +888,43 @@ def main():
         os.makedirs(RETRO_DIR, exist_ok=True)
         week_num = now.strftime("%Y-W%W")
         path = os.path.join(RETRO_DIR, f"{week_num}.md")
-        with open(path, "w") as f:
-            f.write(retro)
+        atomic_write(path, retro)
         print(f"  Retro written to {path}", file=sys.stderr)
         return
 
     print(f"[heartbeat] {timestamp} — starting", file=sys.stderr)
 
+    # Pre-flight health checks
+    preflight_result = preflight_check()
+
     # Rotate accountability log if needed
     rotate_accountability_log()
 
-    # Run agents
+    # Run agents tier by tier
     results = {}
-    for name, sigil, script, role, mode in AGENTS:
-        # In quick mode, skip AI-heavy agents
-        if args.quick and mode == "full":
-            continue
+    for tier in TIERS:
+        tier_name = tier["name"]
+        print(f"[heartbeat] tier {tier_name}: {', '.join(tier['agents'])}",
+              file=sys.stderr)
+        tier_results = run_tier(tier, args.quick, preflight_result)
+        results.update(tier_results)
 
-        cmd_args = get_agent_command(name)
-        print(f"[heartbeat] running {name}...", file=sys.stderr)
-        stdout, stderr, returncode = run_agent_with_retry(name, script, cmd_args)
-        results[name] = (stdout, stderr, returncode)
-
-        status = "ok" if returncode == 0 else "FAIL"
-        print(f"[heartbeat] {name}: {status}", file=sys.stderr)
+        # Log per-agent status as they complete
+        for name in tier["agents"]:
+            if name in tier_results:
+                status = _result_status(tier_results[name])
+                dur = tier_results[name][3] if len(tier_results[name]) > 3 else 0
+                print(f"[heartbeat] {name}: {status} ({dur}ms)", file=sys.stderr)
 
     # Log accountability
     log_accountability(timestamp, results)
 
     # Generate briefing
-    briefing = generate_briefing(timestamp, results, quick_mode=args.quick)
+    briefing = generate_briefing(timestamp, results, quick_mode=args.quick,
+                                 preflight_result=preflight_result)
+
+    # Generate manifest
+    manifest = generate_manifest(timestamp, results, args.quick, preflight_result)
 
     # Print summary
     print_summary(results)
@@ -503,15 +932,19 @@ def main():
     if args.dry_run:
         print("\n--- FULL BRIEFING ---\n")
         print(briefing)
+        print("\n--- MANIFEST ---\n")
+        print(manifest)
         return
 
-    # Write briefing
+    # Write briefing + manifest
     os.makedirs(BRIEFINGS_DIR, exist_ok=True)
     filename = now.strftime("%Y-%m-%d-%H00") + ".md"
     filepath = os.path.join(BRIEFINGS_DIR, filename)
+    atomic_write(filepath, briefing)
 
-    with open(filepath, "w") as f:
-        f.write(briefing)
+    manifest_filename = now.strftime("%Y-%m-%d-%H%M") + "-manifest.json"
+    manifest_path = os.path.join(BRIEFINGS_DIR, manifest_filename)
+    atomic_write(manifest_path, manifest)
 
     # Update latest symlink
     latest = os.path.join(BRIEFINGS_DIR, "latest.md")
@@ -523,6 +956,7 @@ def main():
         pass
 
     print(f"[heartbeat] briefing: {filepath}", file=sys.stderr)
+    print(f"[heartbeat] manifest: {manifest_path}", file=sys.stderr)
 
     # Run the executive — reads reports, decides, acts
     executive_script = os.path.join(
@@ -549,18 +983,15 @@ def main():
     if not args.dry_run:
         print(f"[heartbeat] committing agent output...", file=sys.stderr)
         try:
-            # Stage all changes in memory/ and scripts/posts/
             subprocess.run(
                 ["git", "add", "memory/", "scripts/posts/", "_posts/"],
                 cwd=REPO_DIR, timeout=30,
             )
-            # Check if there's anything to commit
             status = subprocess.run(
                 ["git", "diff", "--cached", "--quiet"],
                 cwd=REPO_DIR, timeout=10,
             )
             if status.returncode != 0:
-                # There are staged changes — commit them
                 msg = f"agents: hourly output {now.strftime('%Y-%m-%d %H:%M')}"
                 subprocess.run(
                     ["git", "commit", "-m", msg],

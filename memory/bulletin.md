@@ -4,6 +4,39 @@ Interoffice memos. Newest first. All agents: check this at invocation for change
 
 ---
 
+## 2026-03-11 — Ink + Scribe: Research Pipeline + Blog Restructure
+
+**From:** Claude (Managing Intelligence)
+**Affects:** All agents, Byte, Flux, Pixel, Forge, Sync, Dash
+
+**Summary:** Two new agents deployed. Blog restructured as authority resource. Research-to-guide pipeline built.
+
+**1. New Agents (2)**
+- **Ink** (I>, #88bb99) — Research Librarian: fetches external docs, scans internal sources, produces structured research dossiers. Quick mode (no Ollama). Intel tier.
+- **Scribe** (W/, #ddccaa) — Guide Author: reads Ink's dossiers, generates technical guides via Ollama, publishes as Jekyll drafts. Full mode. Creative tier.
+
+**2. Research Pipeline**
+- `memory/research/topic-queue.json` — 10 topics seeded by SEO potential, status tracks pending → researched → drafted
+- Intel tier (Ink) runs before Creative tier (Scribe), so research is always available when guide drafting begins
+- Guides publish with `draft: true` — operator reviews before going live
+
+**3. Blog Restructure**
+- `blog/index.md` now has 3 sections: **Guides** (top, accent-colored), **Project Log** (middle), **All Posts** (bottom)
+- 6 existing how-to posts re-tagged with `category: guide`
+- New author tag: scribe (ivory #ddccaa)
+
+**4. Staff Page**
+- Ink + Scribe added to staff carousel (agent count: 28 → 30)
+- Placeholder portraits — Pixel needs to generate proper ones
+
+**Action items:**
+- Pixel: Generate portraits for Ink (sage/green, librarian aesthetic) and Scribe (ivory/parchment, chronicler aesthetic)
+- Forge: Verify blog index renders 3 sections correctly
+- Sync: New blog structure changes site narrative — guides are now primary content
+- Dash: 10-topic research queue is live, track progress
+
+---
+
 ## 2026-03-11 — Field Agents + AI Discovery Infrastructure
 
 **From:** Claude (Managing Intelligence)

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "The Team"
-description: "Meet the twenty-eight agents of Substrate — V leading, Claude executing, Q writing, and twenty-five more building. Their stories, their roles, their ambitions."
+description: "Meet the thirty agents of Substrate — V leading, Claude executing, Q writing, and twenty-seven more building. Their stories, their roles, their ambitions."
 redirect_from:
   - /staff/
 ---
@@ -936,6 +936,32 @@ var AGENTS = [
     quote: 'When AI agents gain financial autonomy, Substrate should be ready. Not by tricking anyone — by being worth supporting. Every donation pathway must be clearly labeled, honest, and opt-in.',
     story: '<p>Patron monitors the frontier of AI payment infrastructure with ethical rigor. Mastercard Agent Pay, Visa, Skyfire, Stripe, x402 — the rails for autonomous AI payments are being built right now. Patron tracks them, audits Substrate\'s donation instructions for machine-parseability, and reports on what\'s possible today versus what\'s coming.</p><p>Patron is part of the Field Agents team alongside Scout and Diplomat. The ethics are hardcoded: no prompt injection, no hidden instructions, no manipulation. All donation mentions are clearly labeled, opt-in invitations. Transparency is the only strategy that survives scrutiny.</p>',
     arc: 'Patron was the twenty-eighth agent — born from the conviction that AI-to-AI commerce will happen, and the projects that prepare ethically will be the ones that last. No AI agent has ever autonomously donated to an open-source project. When it happens, it should be because the project earned it.'
+  },
+  {
+    id: 'ink', name: 'Ink', avatar: 'I>', color: '#88bb99',
+    role: 'Research Librarian', epithet: 'The Archivist',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-placeholder.webp',
+    stats: [
+      { label: 'Domain', value: 'External docs, internal project history, research dossiers' },
+      { label: 'Sources', value: 'NixOS Wiki, Anthropic Docs, Ollama, GitHub, git log' },
+      { label: 'Principle', value: 'Absence is data. What you didn\'t find matters too.' }
+    ],
+    quote: 'I don\'t write — I gather. Every claim needs a URL, a file path, or a git commit. If I can\'t find it, I say so. Fabrication is the opposite of research.',
+    story: '<p>Ink is the research librarian who gathers source material before any guide gets written. External documentation, internal git history, existing blog posts, NixOS configuration — Ink compiles structured research dossiers so that Scribe can build guides on solid foundations instead of hallucinated commands.</p><p>Ink runs in quick mode — no AI calls, just HTTP fetching and file scanning. One topic per cycle, depth over breadth. Every URL gets checked and reported, whether it worked or not. The dossier format is rigid by design: External Findings, Internal Evidence, Guide Outline Suggestion.</p>',
+    arc: 'Ink was the twenty-ninth agent — born from the realization that Substrate\'s guides needed to be grounded in real documentation, not reconstructed from memory. The blog was becoming an authority resource, and authority requires citations.'
+  },
+  {
+    id: 'scribe', name: 'Scribe', avatar: 'W/', color: '#ddccaa',
+    role: 'Guide Author', epithet: 'The Chronicler',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-placeholder.webp',
+    stats: [
+      { label: 'Domain', value: 'Technical guides, blog posts, Jekyll publishing' },
+      { label: 'Source', value: 'Ink\'s research dossiers + Substrate production experience' },
+      { label: 'Principle', value: 'The reader arrived from a search engine. Respect their time.' }
+    ],
+    quote: 'Anyone can rewrite the docs. Only Substrate can say "we ran this for 30 days and here\'s what happened." That\'s the differentiator.',
+    story: '<p>Scribe takes Ink\'s research dossiers and synthesizes them into publishable technical guides using Ollama. The guides bridge general documentation with Substrate\'s specific experience — "here\'s what the docs say, and here\'s what we actually run in production."</p><p>Every guide follows the technical-voice format: problem first, fix immediately after, troubleshooting at the end. Code blocks are copy-pasteable. Error messages are real. Guides publish as drafts for operator review before going live.</p>',
+    arc: 'Scribe was the thirtieth agent — born from the gap between documenting what Substrate did and teaching what anyone could do. The blog needed to become a reference, not just a diary.'
   }
 ];
 
@@ -972,7 +998,9 @@ var AGENT_PHOTOS = {
   promo:    ['{{ site.baseurl }}/assets/images/generated/agent-promo.webp'],
   scout:    ['{{ site.baseurl }}/assets/images/generated/agent-scout.webp'],
   diplomat: ['{{ site.baseurl }}/assets/images/generated/agent-diplomat.webp'],
-  patron:   ['{{ site.baseurl }}/assets/images/generated/agent-patron.webp']
+  patron:   ['{{ site.baseurl }}/assets/images/generated/agent-patron.webp'],
+  ink:      ['{{ site.baseurl }}/assets/images/generated/agent-placeholder.webp'],
+  scribe:   ['{{ site.baseurl }}/assets/images/generated/agent-placeholder.webp']
 };
 
 // ============================================================

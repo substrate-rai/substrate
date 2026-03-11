@@ -30,6 +30,7 @@ VOICE_SLUGS = {
     "Yield": "yield", "Amp": "amp", "Pulse": "pulse", "Sentinel": "sentinel",
     "Close": "close", "Promo": "promo", "V": "v", "Q": "q", "Claude": "claude",
     "Scout": "scout", "Diplomat": "diplomat", "Patron": "patron",
+    "Ink": "ink", "Scribe": "scribe",
 }
 
 # Map agents to their domain knowledge files (relative to memory/)
@@ -61,6 +62,8 @@ DOMAIN_FILES = {
     "Scout":    ["scout/"],
     "Diplomat": ["diplomat/", "site/"],
     "Patron":   ["patron/", "sales/"],
+    "Ink":      ["research/"],
+    "Scribe":   ["guides/", "research/"],
     "V":        ["narrative/"],
     "Q":        ["narrative/"],
     "Claude":   [],

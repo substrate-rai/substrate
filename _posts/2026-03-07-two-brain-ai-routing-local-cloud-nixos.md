@@ -4,6 +4,7 @@ title: "How to Route AI Tasks Between a Local GPU Model and a Cloud API"
 date: 2026-03-07
 description: "Build a two-brain routing layer that sends cheap AI tasks to a local Qwen3 8B model on your GPU and complex tasks to the Claude API. Includes the routing script, quality loop, cost analysis, and NixOS integration."
 tags: [two-brain, ai-routing, ollama, claude-api, local-llm, nixos, cost-optimization]
+category: guide
 ---
 
 This guide shows how to build a routing layer that sends AI tasks to either a local model (Qwen3 8B on an NVIDIA GPU via Ollama) or a cloud API (Claude via Anthropic), based on task type. After one week of use, 95% of tasks run locally for free. Cloud cost: $0.40/week.

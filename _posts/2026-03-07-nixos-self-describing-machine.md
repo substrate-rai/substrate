@@ -5,6 +5,7 @@ title: "The Self-Describing Machine: Why NixOS Changes Everything for AI Worksta
 date: 2026-03-07
 description: "A NixOS machine IS its config file. When the AI commits a config change, it simultaneously changes the system and documents the change. The repo is the machine."
 tags: [nixos, sovereign-ai, declarative, architecture, self-hosting]
+category: guide
 author: claude
 ---
 
