@@ -21,11 +21,50 @@ redirect_from:
 html, body { height: 100%; }
 body {
   font-family: 'IBM Plex Mono', monospace;
-  background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 30%, #d1fae5 60%, #fef3c7 100%);
-  color: #2D3748;
+  background: #0a0a12;
+  color: #c8d8e8;
   min-height: 100vh;
   padding-top: 36px;
   overflow-y: auto;
+  position: relative;
+}
+
+/* === MYCELIUM BACKGROUND CANVAS === */
+#mycelium-bg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* === PARTICLE CANVAS === */
+#particle-layer {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Ensure content sits above canvases */
+.container, #disruption-overlay {
+  position: relative;
+  z-index: 2;
+}
+
+/* === UNDERGROUND AMBIENCE === */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(0,255,120,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0,120,255,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(156,106,222,0.02) 0%, transparent 60%),
+    linear-gradient(180deg, #0a0a12 0%, #0d1117 40%, #0f1a12 70%, #0a0a12 100%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -36,28 +75,28 @@ body {
   }
 }
 
-a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid #00ff88; outline-offset: 2px; }
 
 /* === GLASS PANEL === */
 .glass {
-  background: linear-gradient(145deg, rgba(255,255,255,0.65), rgba(255,255,255,0.35));
-  backdrop-filter: blur(16px) saturate(1.5);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  border: 1px solid rgba(255,255,255,0.6);
+  background: linear-gradient(145deg, rgba(15,25,20,0.85), rgba(10,15,25,0.75));
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(0,255,120,0.12);
   border-radius: 16px;
   box-shadow:
-    0 4px 24px rgba(0,80,160,0.08),
-    0 1px 3px rgba(0,80,160,0.04),
-    inset 0 1px 0 rgba(255,255,255,0.7);
+    0 4px 24px rgba(0,0,0,0.4),
+    0 1px 3px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(0,255,120,0.06);
 }
 
 .glass-inner {
-  background: linear-gradient(145deg, rgba(255,255,255,0.45), rgba(255,255,255,0.2));
+  background: linear-gradient(145deg, rgba(15,30,20,0.6), rgba(10,20,30,0.4));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,255,120,0.08);
   border-radius: 12px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+  box-shadow: inset 0 1px 0 rgba(0,255,120,0.04);
 }
 
 /* === CONTAINER === */
@@ -81,14 +120,15 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 .title-logo {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #00ff88;
   letter-spacing: -0.5px;
   line-height: 1.2;
+  text-shadow: 0 0 20px rgba(0,255,136,0.4), 0 0 60px rgba(0,255,136,0.1);
 }
 
 .title-sub {
   font-size: 0.78rem;
-  color: #5A6B7F;
+  color: #6a9a80;
   font-weight: 400;
   margin-top: 4px;
   font-style: italic;
@@ -96,7 +136,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 
 .title-stats {
   font-size: 0.72rem;
-  color: #5A6B7F;
+  color: #6a9a80;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -107,9 +147,9 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 }
 
 .btn-play {
-  background: linear-gradient(180deg, #0088ee, #0068cc);
+  background: linear-gradient(180deg, #00cc66, #009944);
   color: #fff;
-  border: 1px solid rgba(0,100,200,0.4);
+  border: 1px solid rgba(0,255,120,0.3);
   border-radius: 12px;
   padding: 14px 48px;
   font-family: 'IBM Plex Mono', monospace;
@@ -117,22 +157,25 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   font-weight: 600;
   cursor: pointer;
   box-shadow:
-    0 4px 16px rgba(0,120,212,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.3);
+    0 4px 16px rgba(0,255,120,0.2),
+    0 0 30px rgba(0,255,120,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.15);
   transition: transform 0.15s, box-shadow 0.15s;
   letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 .btn-play:hover {
   transform: translateY(-1px);
   box-shadow:
-    0 6px 20px rgba(0,120,212,0.35),
-    inset 0 1px 0 rgba(255,255,255,0.3);
+    0 6px 20px rgba(0,255,120,0.3),
+    0 0 40px rgba(0,255,120,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.15);
 }
 .btn-play:active {
   transform: translateY(1px);
   box-shadow:
-    0 2px 8px rgba(0,120,212,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.3);
+    0 2px 8px rgba(0,255,120,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
 /* === GAME SCREEN === */
@@ -146,10 +189,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   margin-bottom: 12px;
   font-size: 0.85rem;
   font-weight: 600;
+  color: #a0c8b0;
 }
 
-.cycle-label { color: #1A1A2E; }
-.spore-count { color: #0078D4; }
+.cycle-label { color: #a0c8b0; }
+.spore-count { color: #00ff88; text-shadow: 0 0 8px rgba(0,255,136,0.3); }
 .spore-count .num { font-size: 1.1rem; }
 
 /* === ALLOCATION PANEL === */
@@ -178,10 +222,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   height: 3px;
 }
 
-.layer-card[data-layer="compute"]::before { background: #0078D4; }
-.layer-card[data-layer="memory"]::before { background: #4CAF50; }
-.layer-card[data-layer="network"]::before { background: #FFB300; }
-.layer-card[data-layer="community"]::before { background: #9C6ADE; }
+.layer-card[data-layer="compute"]::before { background: #00aaff; box-shadow: 0 0 8px rgba(0,170,255,0.5); }
+.layer-card[data-layer="memory"]::before { background: #00ff88; box-shadow: 0 0 8px rgba(0,255,136,0.5); }
+.layer-card[data-layer="network"]::before { background: #ffaa00; box-shadow: 0 0 8px rgba(255,170,0,0.5); }
+.layer-card[data-layer="community"]::before { background: #cc66ff; box-shadow: 0 0 8px rgba(204,102,255,0.5); }
 
 .layer-name {
   font-size: 0.7rem;
@@ -191,28 +235,29 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   margin-bottom: 2px;
 }
 
-.layer-card[data-layer="compute"] .layer-name { color: #0078D4; }
-.layer-card[data-layer="memory"] .layer-name { color: #3d8b40; }
-.layer-card[data-layer="network"] .layer-name { color: #e6a200; }
-.layer-card[data-layer="community"] .layer-name { color: #8854c0; }
+.layer-card[data-layer="compute"] .layer-name { color: #44bbff; text-shadow: 0 0 6px rgba(0,170,255,0.4); }
+.layer-card[data-layer="memory"] .layer-name { color: #44ff99; text-shadow: 0 0 6px rgba(0,255,136,0.4); }
+.layer-card[data-layer="network"] .layer-name { color: #ffcc44; text-shadow: 0 0 6px rgba(255,170,0,0.4); }
+.layer-card[data-layer="community"] .layer-name { color: #cc88ff; text-shadow: 0 0 6px rgba(204,102,255,0.4); }
 
 .layer-rate {
   font-size: 0.62rem;
-  color: #8899AA;
+  color: #5a7a6a;
   margin-bottom: 8px;
 }
 
 .layer-value {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #d0f0e0;
   margin-bottom: 4px;
   min-height: 1.6em;
+  text-shadow: 0 0 10px rgba(0,255,136,0.2);
 }
 
 .layer-growth {
   font-size: 0.62rem;
-  color: #5A6B7F;
+  color: #6a9a80;
   margin-bottom: 10px;
   min-height: 1em;
 }
@@ -227,7 +272,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 .alloc-display {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #d0f0e0;
   min-width: 28px;
   text-align: center;
 }
@@ -236,26 +281,26 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.5);
-  background: linear-gradient(145deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3));
+  border: 1px solid rgba(0,255,120,0.15);
+  background: linear-gradient(145deg, rgba(0,40,30,0.6), rgba(0,20,15,0.4));
   backdrop-filter: blur(4px);
   font-family: 'IBM Plex Mono', monospace;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2D3748;
+  color: #a0d8b0;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5);
-  transition: transform 0.1s, background 0.15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(0,255,120,0.06);
+  transition: transform 0.1s, background 0.15s, box-shadow 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   -webkit-tap-highlight-color: transparent;
 }
-.btn-alloc:hover { background: rgba(255,255,255,0.7); }
+.btn-alloc:hover { background: rgba(0,60,40,0.6); box-shadow: 0 2px 10px rgba(0,255,120,0.15); }
 .btn-alloc:active { transform: scale(0.92); }
 .btn-alloc:disabled {
-  opacity: 0.35;
+  opacity: 0.25;
   cursor: default;
   transform: none;
 }
@@ -267,9 +312,9 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 }
 
 .btn-grow {
-  background: linear-gradient(180deg, #22c55e, #16a34a);
+  background: linear-gradient(180deg, #00dd66, #00aa44);
   color: #fff;
-  border: 1px solid rgba(22,163,74,0.4);
+  border: 1px solid rgba(0,255,120,0.3);
   border-radius: 12px;
   padding: 12px 56px;
   font-family: 'IBM Plex Mono', monospace;
@@ -277,24 +322,36 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   font-weight: 700;
   cursor: pointer;
   box-shadow:
-    0 4px 16px rgba(22,163,74,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.25);
+    0 4px 16px rgba(0,255,120,0.2),
+    0 0 30px rgba(0,255,120,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.15);
   transition: transform 0.15s, box-shadow 0.15s;
   letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  animation: growPulse 2s ease-in-out infinite;
 }
+
+@keyframes growPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0,255,120,0.2), 0 0 30px rgba(0,255,120,0.1); }
+  50% { box-shadow: 0 4px 20px rgba(0,255,120,0.35), 0 0 50px rgba(0,255,120,0.2); }
+}
+
 .btn-grow:hover {
   transform: translateY(-1px);
   box-shadow:
-    0 6px 20px rgba(22,163,74,0.35),
-    inset 0 1px 0 rgba(255,255,255,0.25);
+    0 6px 20px rgba(0,255,120,0.35),
+    0 0 50px rgba(0,255,120,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  animation: none;
 }
 .btn-grow:active {
   transform: translateY(1px);
 }
 .btn-grow:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: default;
   transform: none;
+  animation: none;
 }
 
 /* === GROWTH BARS === */
@@ -308,7 +365,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #8899AA;
+  color: #5a8a70;
   margin-bottom: 10px;
 }
 
@@ -331,11 +388,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 .bar-track {
   flex: 1;
   height: 18px;
-  background: rgba(0,0,0,0.04);
+  background: rgba(0,255,120,0.03);
   border-radius: 6px;
   overflow: hidden;
   position: relative;
-  border: 1px solid rgba(255,255,255,0.4);
+  border: 1px solid rgba(0,255,120,0.08);
 }
 
 .bar-fill {
@@ -347,23 +404,27 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 }
 
 .bar-fill[data-layer="compute"] {
-  background: linear-gradient(90deg, #60a5fa, #0078D4);
+  background: linear-gradient(90deg, rgba(0,170,255,0.4), #00aaff);
+  box-shadow: 0 0 8px rgba(0,170,255,0.3);
 }
 .bar-fill[data-layer="memory"] {
-  background: linear-gradient(90deg, #86efac, #4CAF50);
+  background: linear-gradient(90deg, rgba(0,255,136,0.4), #00ff88);
+  box-shadow: 0 0 8px rgba(0,255,136,0.3);
 }
 .bar-fill[data-layer="network"] {
-  background: linear-gradient(90deg, #fcd34d, #FFB300);
+  background: linear-gradient(90deg, rgba(255,170,0,0.4), #ffaa00);
+  box-shadow: 0 0 8px rgba(255,170,0,0.3);
 }
 .bar-fill[data-layer="community"] {
-  background: linear-gradient(90deg, #c4b5fd, #9C6ADE);
+  background: linear-gradient(90deg, rgba(204,102,255,0.4), #cc66ff);
+  box-shadow: 0 0 8px rgba(204,102,255,0.3);
 }
 
 .bar-val {
   font-size: 0.62rem;
   font-weight: 600;
   width: 52px;
-  color: #5A6B7F;
+  color: #6a9a80;
 }
 
 /* === GRAPH === */
@@ -377,15 +438,15 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #8899AA;
+  color: #5a8a70;
   margin-bottom: 8px;
 }
 
 .graph-canvas-wrap {
   width: 100%;
-  background: rgba(255,255,255,0.3);
+  background: rgba(0,10,5,0.4);
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,255,120,0.06);
   padding: 8px;
 }
 
@@ -408,7 +469,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   align-items: center;
   gap: 4px;
   font-size: 0.6rem;
-  color: #5A6B7F;
+  color: #6a9a80;
 }
 
 .legend-dot {
@@ -424,11 +485,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   align-items: center;
   padding: 10px 16px;
   font-size: 0.72rem;
-  color: #5A6B7F;
+  color: #5a8a70;
 }
 
-.footer-bar .total-label { font-weight: 600; color: #1A1A2E; }
-.footer-bar .total-val { font-weight: 700; font-size: 0.9rem; color: #0078D4; }
+.footer-bar .total-label { font-weight: 600; color: #a0c8b0; }
+.footer-bar .total-val { font-weight: 700; font-size: 0.9rem; color: #00ff88; text-shadow: 0 0 8px rgba(0,255,136,0.3); }
 
 /* === DISRUPTION OVERLAY === */
 #disruption-overlay {
@@ -436,7 +497,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 8000;
-  background: rgba(220,30,30,0.08);
+  background: rgba(30,0,0,0.5);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   align-items: center;
@@ -448,12 +509,12 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 }
 
 .disruption-box {
-  background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,240,240,0.85));
-  border: 2px solid rgba(220,60,60,0.3);
+  background: linear-gradient(145deg, rgba(30,10,10,0.95), rgba(20,5,5,0.9));
+  border: 2px solid rgba(255,60,60,0.3);
   border-radius: 16px;
   padding: 28px 36px;
   text-align: center;
-  box-shadow: 0 8px 40px rgba(220,30,30,0.15);
+  box-shadow: 0 8px 40px rgba(255,30,30,0.2), 0 0 60px rgba(255,0,0,0.1);
   max-width: 380px;
   animation: disruptionPop 0.3s ease-out;
 }
@@ -471,13 +532,14 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 .disruption-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #c0392b;
+  color: #ff4444;
   margin-bottom: 6px;
+  text-shadow: 0 0 10px rgba(255,60,60,0.4);
 }
 
 .disruption-detail {
   font-size: 0.78rem;
-  color: #5A6B7F;
+  color: #8a7070;
   margin-bottom: 16px;
   line-height: 1.5;
 }
@@ -485,23 +547,24 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 .disruption-damage {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #e74c3c;
+  color: #ff6666;
   margin-bottom: 16px;
+  text-shadow: 0 0 8px rgba(255,60,60,0.3);
 }
 
 .btn-dismiss {
-  background: linear-gradient(180deg, #f8f8f8, #e8e8e8);
-  border: 1px solid rgba(0,0,0,0.1);
+  background: linear-gradient(180deg, rgba(40,20,20,0.8), rgba(30,15,15,0.6));
+  border: 1px solid rgba(255,60,60,0.2);
   border-radius: 10px;
   padding: 10px 32px;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #2D3748;
+  color: #c8a0a0;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
-.btn-dismiss:hover { background: linear-gradient(180deg, #fff, #f0f0f0); }
+.btn-dismiss:hover { background: linear-gradient(180deg, rgba(50,25,25,0.8), rgba(40,20,20,0.6)); }
 
 /* === GAME OVER SCREEN === */
 #gameover-screen { display: none; }
@@ -514,13 +577,14 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 .gameover-title {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #00ff88;
   margin-bottom: 4px;
+  text-shadow: 0 0 15px rgba(0,255,136,0.3);
 }
 
 .gameover-subtitle {
   font-size: 0.75rem;
-  color: #5A6B7F;
+  color: #6a9a80;
 }
 
 .rating-badge {
@@ -560,14 +624,14 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #8899AA;
+  color: #5a8a70;
   margin-bottom: 4px;
 }
 
 .stat-val {
   font-size: 1rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #d0f0e0;
 }
 
 .gameover-graph {
@@ -593,6 +657,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   border-radius: 8px;
   margin-bottom: 4px;
   font-size: 0.72rem;
+  color: #c8d8e8;
 }
 
 .breakdown-row .b-name {
@@ -604,16 +669,17 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 
 .breakdown-row .b-val {
   font-weight: 700;
+  color: #d0f0e0;
 }
 
-.breakdown-row[data-layer="compute"] { background: rgba(0,120,212,0.08); }
-.breakdown-row[data-layer="compute"] .b-name { color: #0078D4; }
-.breakdown-row[data-layer="memory"] { background: rgba(76,175,80,0.08); }
-.breakdown-row[data-layer="memory"] .b-name { color: #3d8b40; }
-.breakdown-row[data-layer="network"] { background: rgba(255,179,0,0.08); }
-.breakdown-row[data-layer="network"] .b-name { color: #e6a200; }
-.breakdown-row[data-layer="community"] { background: rgba(156,106,222,0.08); }
-.breakdown-row[data-layer="community"] .b-name { color: #8854c0; }
+.breakdown-row[data-layer="compute"] { background: rgba(0,170,255,0.08); }
+.breakdown-row[data-layer="compute"] .b-name { color: #44bbff; }
+.breakdown-row[data-layer="memory"] { background: rgba(0,255,136,0.08); }
+.breakdown-row[data-layer="memory"] .b-name { color: #44ff99; }
+.breakdown-row[data-layer="network"] { background: rgba(255,170,0,0.08); }
+.breakdown-row[data-layer="network"] .b-name { color: #ffcc44; }
+.breakdown-row[data-layer="community"] { background: rgba(204,102,255,0.08); }
+.breakdown-row[data-layer="community"] .b-name { color: #cc88ff; }
 
 .gameover-actions {
   text-align: center;
@@ -633,7 +699,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 /* === LAYER FLASH ON DISRUPTION === */
 @keyframes layerFlash {
   0%, 100% { box-shadow: inset 0 0 0 2px transparent; }
-  25%, 75% { box-shadow: inset 0 0 0 2px rgba(220,60,60,0.5); }
+  25%, 75% { box-shadow: inset 0 0 0 2px rgba(255,60,60,0.5), 0 0 15px rgba(255,0,0,0.2); }
 }
 
 .layer-card.disrupted {
@@ -652,6 +718,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
 </style>
 </head>
 <body>
+
+<!-- ===== BACKGROUND CANVASES ===== -->
+<canvas id="mycelium-bg"></canvas>
+<canvas id="particle-layer"></canvas>
 
 <!-- ===== TITLE SCREEN ===== -->
 <div id="title-screen" class="container">
@@ -730,22 +800,22 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
   <div class="glass growth-bars">
     <div class="growth-bars-title">Layer Values</div>
     <div class="bar-row">
-      <span class="bar-label" style="color:#0078D4;">Comp</span>
+      <span class="bar-label" style="color:#44bbff;">Comp</span>
       <div class="bar-track"><div class="bar-fill" data-layer="compute" id="bar-compute" style="width:0%"></div></div>
       <span class="bar-val" id="barval-compute">0</span>
     </div>
     <div class="bar-row">
-      <span class="bar-label" style="color:#3d8b40;">Mem</span>
+      <span class="bar-label" style="color:#44ff99;">Mem</span>
       <div class="bar-track"><div class="bar-fill" data-layer="memory" id="bar-memory" style="width:0%"></div></div>
       <span class="bar-val" id="barval-memory">0</span>
     </div>
     <div class="bar-row">
-      <span class="bar-label" style="color:#e6a200;">Net</span>
+      <span class="bar-label" style="color:#ffcc44;">Net</span>
       <div class="bar-track"><div class="bar-fill" data-layer="network" id="bar-network" style="width:0%"></div></div>
       <span class="bar-val" id="barval-network">0</span>
     </div>
     <div class="bar-row">
-      <span class="bar-label" style="color:#8854c0;">Comm</span>
+      <span class="bar-label" style="color:#cc88ff;">Comm</span>
       <div class="bar-track"><div class="bar-fill" data-layer="community" id="bar-community" style="width:0%"></div></div>
       <span class="bar-val" id="barval-community">0</span>
     </div>
@@ -758,10 +828,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
       <canvas id="growth-chart"></canvas>
     </div>
     <div class="graph-legend">
-      <div class="legend-item"><span class="legend-dot" style="background:#0078D4;"></span> Compute</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#4CAF50;"></span> Memory</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#FFB300;"></span> Network</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#9C6ADE;"></span> Community</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#00aaff;"></span> Compute</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#00ff88;"></span> Memory</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#ffaa00;"></span> Network</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#cc66ff;"></span> Community</div>
     </div>
   </div>
 
@@ -790,7 +860,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
       <div class="gameover-title">Growth Complete</div>
       <div class="gameover-subtitle">20 cycles elapsed</div>
       <div class="rating-badge" id="rating-badge">B</div>
-      <div id="efficiency-text" style="font-size:0.75rem; color:#5A6B7F;"></div>
+      <div id="efficiency-text" style="font-size:0.75rem; color:#6a9a80;"></div>
     </div>
 
     <div class="gameover-stats">
@@ -818,10 +888,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offs
         <canvas id="gameover-chart"></canvas>
       </div>
       <div class="graph-legend">
-        <div class="legend-item"><span class="legend-dot" style="background:#0078D4;"></span> Compute</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#4CAF50;"></span> Memory</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#FFB300;"></span> Network</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#9C6ADE;"></span> Community</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#00aaff;"></span> Compute</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#00ff88;"></span> Memory</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#ffaa00;"></span> Network</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#cc66ff;"></span> Community</div>
       </div>
     </div>
 
@@ -846,10 +916,10 @@ var TOTAL_CYCLES = 20;
 var SPORES_PER_CYCLE = 10;
 var LAYER_KEYS = ['compute', 'memory', 'network', 'community'];
 var LAYER_COLORS = {
-  compute: '#0078D4',
-  memory: '#4CAF50',
-  network: '#FFB300',
-  community: '#9C6ADE'
+  compute: '#00aaff',
+  memory: '#00ff88',
+  network: '#ffaa00',
+  community: '#cc66ff'
 };
 var LAYER_NAMES = {
   compute: 'Compute',
@@ -1060,10 +1130,10 @@ function showGrowthDelta(layer, before, after) {
   var delta = after - before;
   if (delta > 0) {
     el.textContent = '+' + Math.floor(delta);
-    el.style.color = '#16a34a';
+    el.style.color = '#00ff88';
   } else if (delta < 0) {
     el.textContent = Math.floor(delta);
-    el.style.color = '#dc2626';
+    el.style.color = '#ff4444';
   } else {
     el.textContent = '';
   }
@@ -1103,7 +1173,7 @@ function drawChart(canvas, history, maxCycle) {
   maxVal *= 1.1;
 
   // Grid lines
-  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+  ctx.strokeStyle = 'rgba(0,255,120,0.08)';
   ctx.lineWidth = 1;
   var gridLines = 4;
   for (var g = 0; g <= gridLines; g++) {
@@ -1114,7 +1184,7 @@ function drawChart(canvas, history, maxCycle) {
     ctx.stroke();
 
     // Labels
-    ctx.fillStyle = '#8899AA';
+    ctx.fillStyle = '#5a8a70';
     ctx.font = '9px IBM Plex Mono, monospace';
     ctx.textAlign = 'right';
     ctx.fillText(Math.floor((g / gridLines) * maxVal), pad.left - 4, gy + 3);
@@ -1407,10 +1477,10 @@ function startGame() {
 // --- Event Listeners ---
 
 // Start game
-document.getElementById('btn-start').addEventListener('click', startGame);
+document.getElementById('btn-start').addEventListener('click', function() { startGame(); });
 
 // Replay
-document.getElementById('btn-replay').addEventListener('click', startGame);
+document.getElementById('btn-replay').addEventListener('click', function() { startGame(); });
 
 // Allocation buttons
 document.getElementById('alloc-grid').addEventListener('click', function(e) {
@@ -1497,6 +1567,475 @@ window.addEventListener('resize', function() {
   }, 100);
 });
 
+// ============================================================================
+// MYCELIUM NETWORK VISUALIZATION
+// ============================================================================
+
+var myceliumCanvas = document.getElementById('mycelium-bg');
+var myceliumCtx = myceliumCanvas.getContext('2d');
+var particleCanvas = document.getElementById('particle-layer');
+var particleCtx = particleCanvas.getContext('2d');
+
+// --- Network State ---
+var nodes = [];
+var connections = [];
+var particles = [];
+var sporeParticles = [];
+var nextNodeId = 0;
+var networkAge = 0; // tracks total growth events
+var animFrame = null;
+var lastTime = 0;
+
+// Layer glow colors (RGBA base for bioluminescence)
+var GLOW_COLORS = {
+  compute:   { r: 0,   g: 170, b: 255 },
+  memory:    { r: 0,   g: 255, b: 136 },
+  network:   { r: 255, g: 170, b: 0   },
+  community: { r: 204, g: 102, b: 255 }
+};
+
+function resizeCanvases() {
+  var dpr = window.devicePixelRatio || 1;
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+  myceliumCanvas.width = w * dpr;
+  myceliumCanvas.height = h * dpr;
+  myceliumCanvas.style.width = w + 'px';
+  myceliumCanvas.style.height = h + 'px';
+  myceliumCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  particleCanvas.width = w * dpr;
+  particleCanvas.height = h * dpr;
+  particleCanvas.style.width = w + 'px';
+  particleCanvas.style.height = h + 'px';
+  particleCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+resizeCanvases();
+window.addEventListener('resize', function() {
+  resizeCanvases();
+});
+
+// --- Node class ---
+function createNode(x, y, layer, size) {
+  return {
+    id: nextNodeId++,
+    x: x,
+    y: y,
+    layer: layer,
+    size: size || 3,
+    targetSize: size || 3,
+    pulse: Math.random() * Math.PI * 2,
+    pulseSpeed: 0.5 + Math.random() * 1.5,
+    alpha: 0,
+    targetAlpha: 0.7 + Math.random() * 0.3,
+    born: Date.now()
+  };
+}
+
+// --- Seed initial root node ---
+function seedNetwork() {
+  nodes = [];
+  connections = [];
+  nextNodeId = 0;
+  networkAge = 0;
+  var cx = window.innerWidth / 2;
+  var cy = window.innerHeight / 2;
+  var root = createNode(cx, cy, 'memory', 6);
+  root.targetAlpha = 1;
+  root.isRoot = true;
+  nodes.push(root);
+}
+
+seedNetwork();
+
+// --- Add nodes on growth ---
+function expandNetwork(layerValues, cycle) {
+  networkAge++;
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+  var total = 0;
+  for (var i = 0; i < LAYER_KEYS.length; i++) {
+    total += layerValues[LAYER_KEYS[i]];
+  }
+
+  // Number of new nodes scales with growth
+  var newNodeCount = Math.min(3 + Math.floor(cycle / 3), 8);
+
+  for (var n = 0; n < newNodeCount; n++) {
+    // Pick a layer proportional to values
+    var roll = Math.random() * Math.max(total, 1);
+    var cumulative = 0;
+    var chosenLayer = LAYER_KEYS[0];
+    for (var li = 0; li < LAYER_KEYS.length; li++) {
+      cumulative += layerValues[LAYER_KEYS[li]];
+      if (roll <= cumulative) {
+        chosenLayer = LAYER_KEYS[li];
+        break;
+      }
+    }
+
+    // Find a parent node to branch from
+    var parentIdx = Math.floor(Math.random() * nodes.length);
+    var parent = nodes[parentIdx];
+
+    // Branch outward from parent
+    var angle = Math.random() * Math.PI * 2;
+    var dist = 40 + Math.random() * 80 + (cycle * 5);
+    var nx = parent.x + Math.cos(angle) * dist;
+    var ny = parent.y + Math.sin(angle) * dist;
+
+    // Keep within bounds with margin
+    nx = Math.max(30, Math.min(w - 30, nx));
+    ny = Math.max(50, Math.min(h - 30, ny));
+
+    var nodeSize = 2 + Math.random() * 3 + (layerValues[chosenLayer] > 50 ? 2 : 0);
+    var newNode = createNode(nx, ny, chosenLayer, nodeSize);
+    nodes.push(newNode);
+
+    // Connect to parent
+    connections.push({
+      from: parent.id,
+      to: newNode.id,
+      alpha: 0,
+      targetAlpha: 0.15 + Math.random() * 0.2,
+      layer: chosenLayer,
+      progress: 0 // animated growth 0->1
+    });
+
+    // Maybe connect to a nearby existing node too
+    if (nodes.length > 3 && Math.random() < 0.35) {
+      var closest = null;
+      var closestDist = Infinity;
+      for (var ci = 0; ci < nodes.length - 1; ci++) {
+        if (nodes[ci].id === parent.id) continue;
+        var dx = nodes[ci].x - nx;
+        var dy = nodes[ci].y - ny;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d < closestDist && d < 150) {
+          closestDist = d;
+          closest = nodes[ci];
+        }
+      }
+      if (closest) {
+        connections.push({
+          from: closest.id,
+          to: newNode.id,
+          alpha: 0,
+          targetAlpha: 0.08 + Math.random() * 0.12,
+          layer: chosenLayer,
+          progress: 0
+        });
+      }
+    }
+
+    // Emit burst particles from new node
+    emitBurstParticles(nx, ny, chosenLayer, 5 + Math.floor(Math.random() * 4));
+  }
+
+  // Emit spore particles from all active nodes
+  var sporeCount = Math.min(nodes.length, 15);
+  for (var si = 0; si < sporeCount; si++) {
+    var srcNode = nodes[Math.floor(Math.random() * nodes.length)];
+    emitSporeParticle(srcNode.x, srcNode.y, srcNode.layer);
+  }
+}
+
+// --- Particles ---
+function emitBurstParticles(x, y, layer, count) {
+  var col = GLOW_COLORS[layer];
+  for (var i = 0; i < count; i++) {
+    var angle = Math.random() * Math.PI * 2;
+    var speed = 0.5 + Math.random() * 2;
+    particles.push({
+      x: x,
+      y: y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1.0,
+      decay: 0.008 + Math.random() * 0.015,
+      size: 1 + Math.random() * 2.5,
+      r: col.r,
+      g: col.g,
+      b: col.b
+    });
+  }
+}
+
+function emitSporeParticle(x, y, layer) {
+  var col = GLOW_COLORS[layer];
+  sporeParticles.push({
+    x: x + (Math.random() - 0.5) * 20,
+    y: y + (Math.random() - 0.5) * 20,
+    vy: -0.2 - Math.random() * 0.5,
+    vx: (Math.random() - 0.5) * 0.3,
+    life: 1.0,
+    decay: 0.003 + Math.random() * 0.005,
+    size: 1 + Math.random() * 1.5,
+    r: col.r,
+    g: col.g,
+    b: col.b,
+    wobblePhase: Math.random() * Math.PI * 2,
+    wobbleSpeed: 1 + Math.random() * 2
+  });
+}
+
+// Ambient spore emission (continuous gentle effect)
+function emitAmbientSpores() {
+  if (nodes.length < 2) return;
+  var count = Math.min(Math.floor(nodes.length / 5), 3);
+  for (var i = 0; i < count; i++) {
+    var node = nodes[Math.floor(Math.random() * nodes.length)];
+    emitSporeParticle(node.x, node.y, node.layer);
+  }
+}
+
+// --- Animation Loop ---
+function getNodeById(id) {
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i].id === id) return nodes[i];
+  }
+  return null;
+}
+
+function renderMycelium(dt) {
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+
+  myceliumCtx.clearRect(0, 0, w, h);
+
+  // Draw connections (hyphae)
+  for (var ci = 0; ci < connections.length; ci++) {
+    var conn = connections[ci];
+    var fromNode = getNodeById(conn.from);
+    var toNode = getNodeById(conn.to);
+    if (!fromNode || !toNode) continue;
+
+    // Animate connection growth
+    if (conn.progress < 1) {
+      conn.progress = Math.min(1, conn.progress + dt * 1.5);
+    }
+    // Fade in
+    if (conn.alpha < conn.targetAlpha) {
+      conn.alpha = Math.min(conn.targetAlpha, conn.alpha + dt * 0.5);
+    }
+
+    var col = GLOW_COLORS[conn.layer];
+    var endX = fromNode.x + (toNode.x - fromNode.x) * conn.progress;
+    var endY = fromNode.y + (toNode.y - fromNode.y) * conn.progress;
+
+    // Main hypha line
+    myceliumCtx.strokeStyle = 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',' + (conn.alpha * 0.6) + ')';
+    myceliumCtx.lineWidth = 1;
+    myceliumCtx.beginPath();
+    myceliumCtx.moveTo(fromNode.x, fromNode.y);
+    myceliumCtx.lineTo(endX, endY);
+    myceliumCtx.stroke();
+
+    // Glow line (wider, more transparent)
+    myceliumCtx.strokeStyle = 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',' + (conn.alpha * 0.15) + ')';
+    myceliumCtx.lineWidth = 4;
+    myceliumCtx.beginPath();
+    myceliumCtx.moveTo(fromNode.x, fromNode.y);
+    myceliumCtx.lineTo(endX, endY);
+    myceliumCtx.stroke();
+  }
+
+  // Draw nodes
+  var now = Date.now();
+  for (var ni = 0; ni < nodes.length; ni++) {
+    var node = nodes[ni];
+
+    // Fade in
+    if (node.alpha < node.targetAlpha) {
+      node.alpha = Math.min(node.targetAlpha, node.alpha + dt * 0.8);
+    }
+
+    // Grow to target size
+    if (node.size < node.targetSize) {
+      node.size = Math.min(node.targetSize, node.size + dt * 2);
+    }
+
+    // Pulsing
+    node.pulse += node.pulseSpeed * dt;
+    var pulseFactor = 0.7 + 0.3 * Math.sin(node.pulse);
+    var col = GLOW_COLORS[node.layer];
+    var radius = node.size * pulseFactor;
+
+    // Outer glow
+    var gradient = myceliumCtx.createRadialGradient(
+      node.x, node.y, 0,
+      node.x, node.y, radius * 6
+    );
+    gradient.addColorStop(0, 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',' + (node.alpha * 0.2 * pulseFactor) + ')');
+    gradient.addColorStop(0.5, 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',' + (node.alpha * 0.05) + ')');
+    gradient.addColorStop(1, 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',0)');
+    myceliumCtx.fillStyle = gradient;
+    myceliumCtx.beginPath();
+    myceliumCtx.arc(node.x, node.y, radius * 6, 0, Math.PI * 2);
+    myceliumCtx.fill();
+
+    // Core dot
+    myceliumCtx.fillStyle = 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',' + (node.alpha * pulseFactor) + ')';
+    myceliumCtx.beginPath();
+    myceliumCtx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+    myceliumCtx.fill();
+
+    // Bright center
+    myceliumCtx.fillStyle = 'rgba(' + Math.min(255, col.r + 80) + ',' + Math.min(255, col.g + 80) + ',' + Math.min(255, col.b + 80) + ',' + (node.alpha * 0.8 * pulseFactor) + ')';
+    myceliumCtx.beginPath();
+    myceliumCtx.arc(node.x, node.y, radius * 0.4, 0, Math.PI * 2);
+    myceliumCtx.fill();
+  }
+}
+
+function renderParticles(dt) {
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+
+  particleCtx.clearRect(0, 0, w, h);
+
+  // Burst particles
+  for (var i = particles.length - 1; i >= 0; i--) {
+    var p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vx *= 0.98;
+    p.vy *= 0.98;
+    p.life -= p.decay;
+
+    if (p.life <= 0) {
+      particles.splice(i, 1);
+      continue;
+    }
+
+    particleCtx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',' + (p.life * 0.6) + ')';
+    particleCtx.beginPath();
+    particleCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    particleCtx.fill();
+
+    // Glow
+    particleCtx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',' + (p.life * 0.15) + ')';
+    particleCtx.beginPath();
+    particleCtx.arc(p.x, p.y, p.size * p.life * 3, 0, Math.PI * 2);
+    particleCtx.fill();
+  }
+
+  // Spore particles (float upward with wobble)
+  for (var j = sporeParticles.length - 1; j >= 0; j--) {
+    var sp = sporeParticles[j];
+    sp.wobblePhase += sp.wobbleSpeed * dt;
+    sp.x += sp.vx + Math.sin(sp.wobblePhase) * 0.3;
+    sp.y += sp.vy;
+    sp.life -= sp.decay;
+
+    if (sp.life <= 0) {
+      sporeParticles.splice(j, 1);
+      continue;
+    }
+
+    var spAlpha = sp.life * 0.4;
+    particleCtx.fillStyle = 'rgba(' + sp.r + ',' + sp.g + ',' + sp.b + ',' + spAlpha + ')';
+    particleCtx.beginPath();
+    particleCtx.arc(sp.x, sp.y, sp.size * sp.life, 0, Math.PI * 2);
+    particleCtx.fill();
+
+    // Subtle glow
+    particleCtx.fillStyle = 'rgba(' + sp.r + ',' + sp.g + ',' + sp.b + ',' + (spAlpha * 0.3) + ')';
+    particleCtx.beginPath();
+    particleCtx.arc(sp.x, sp.y, sp.size * sp.life * 4, 0, Math.PI * 2);
+    particleCtx.fill();
+  }
+}
+
+var ambientTimer = 0;
+
+function animate(timestamp) {
+  if (!lastTime) lastTime = timestamp;
+  var dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+  lastTime = timestamp;
+
+  renderMycelium(dt);
+  renderParticles(dt);
+
+  // Ambient spore emission
+  ambientTimer += dt;
+  if (ambientTimer > 2) {
+    ambientTimer = 0;
+    emitAmbientSpores();
+  }
+
+  animFrame = requestAnimationFrame(animate);
+}
+
+animFrame = requestAnimationFrame(animate);
+
+// --- Hook into game events ---
+// Patch doGrow to trigger network expansion
+var _originalDoGrow = doGrow;
+doGrow = function() {
+  _originalDoGrow();
+  expandNetwork(state.values, state.cycle);
+};
+
+// Patch startGame to reset network
+var _originalStartGame = startGame;
+startGame = function() {
+  seedNetwork();
+  _originalStartGame();
+  // Add initial nodes for visual interest
+  expandNetwork({ compute: 1, memory: 1, network: 1, community: 1 }, 1);
+};
+
+// Patch allocation to emit small particle on node
+var _originalUpdateAllocDisplay = updateAllocDisplay;
+updateAllocDisplay = function() {
+  _originalUpdateAllocDisplay();
+  // Small visual feedback: pulse the root node
+  if (nodes.length > 0) {
+    nodes[0].pulse += 0.5;
+  }
+};
+
+// --- Milestone markers ---
+// When total passes thresholds, make a big expansion burst
+var milestoneThresholds = [50, 150, 400, 1000, 2500, 5000, 10000];
+var milestonesHit = {};
+
+var _originalUpdateValueDisplay = updateValueDisplay;
+updateValueDisplay = function() {
+  _originalUpdateValueDisplay();
+  var total = 0;
+  for (var i = 0; i < LAYER_KEYS.length; i++) {
+    total += state.values[LAYER_KEYS[i]];
+  }
+  for (var m = 0; m < milestoneThresholds.length; m++) {
+    var threshold = milestoneThresholds[m];
+    if (total >= threshold && !milestonesHit[threshold]) {
+      milestonesHit[threshold] = true;
+      // Milestone burst: expand network significantly
+      for (var b = 0; b < 5; b++) {
+        var randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+        if (randomNode) {
+          emitBurstParticles(randomNode.x, randomNode.y, randomNode.layer, 12);
+        }
+      }
+      // Grow all existing nodes slightly
+      for (var ni = 0; ni < nodes.length; ni++) {
+        nodes[ni].targetSize = Math.min(8, nodes[ni].targetSize + 0.5);
+        nodes[ni].targetAlpha = Math.min(1, nodes[ni].targetAlpha + 0.1);
+      }
+    }
+  }
+};
+
+// Reset milestones on game start
+var _originalResetState = resetState;
+resetState = function() {
+  _originalResetState();
+  milestonesHit = {};
+};
+
 })();
 </script>
 
@@ -1504,7 +2043,7 @@ window.addEventListener('resize', function() {
   data-title="SUBSTRATE GROWTH"
   data-lore="Grow deliberately"
   data-agent="Root"
-  data-agent-color="#4CAF50">
+  data-agent-color="#00ff88">
 </script>
 </body>
 </html>

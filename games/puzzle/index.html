@@ -372,6 +372,81 @@ redirect_from:
     text-decoration: none;
   }
 
+  /* Hint system */
+  #hint-area {
+    text-align: center;
+    margin: 4px auto;
+    max-width: 440px;
+    min-height: 36px;
+  }
+
+  #hint-btn {
+    background: rgba(255,255,255,0.7);
+    color: #6C5CE7;
+    border: 1px solid rgba(108,92,231,0.25);
+    padding: 7px 18px;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 10px rgba(108,92,231,0.1);
+    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+  }
+
+  #hint-btn:hover {
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 4px 16px rgba(108,92,231,0.18);
+  }
+
+  #hint-btn:active { transform: scale(0.96); }
+
+  #hint-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+    transform: none;
+  }
+
+  #hint-btn:focus-visible {
+    outline: 2px solid #4ECDC4;
+    outline-offset: 2px;
+  }
+
+  #hint-display {
+    margin-top: 6px;
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    color: #2D3436;
+    background: rgba(108,92,231,0.08);
+    border: 1px solid rgba(108,92,231,0.15);
+    border-radius: 10px;
+    display: none;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  #hint-display .hint-item {
+    padding: 3px 0;
+  }
+
+  #hint-display .hint-label {
+    color: #6C5CE7;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .hint-count {
+    font-size: 0.7rem;
+    color: #636E72;
+    margin-top: 2px;
+  }
+
   /* Timer */
   .next-puzzle {
     font-size: 0.75rem;
@@ -532,6 +607,11 @@ redirect_from:
 
 <div id="grid" role="group" aria-label="Guess grid, 6 rows of 5 letters"></div>
 
+<div id="hint-area" aria-live="polite">
+  <button id="hint-btn" onclick="useHint()" aria-label="Get a hint">HINT (3 remaining)</button>
+  <div id="hint-display"></div>
+</div>
+
 <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
 
 <div id="q-comment" aria-live="polite">
@@ -566,11 +646,12 @@ redirect_from:
 <div id="stats-modal" role="dialog" aria-modal="true" aria-label="Game statistics">
   <div class="stats-content">
     <h2>STATISTICS</h2>
-    <div class="stats-grid">
+    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
       <div class="stat-box"><div class="stat-num" id="s-played">0</div><div class="stat-label">played</div></div>
       <div class="stat-box"><div class="stat-num" id="s-win">0</div><div class="stat-label">win %</div></div>
       <div class="stat-box"><div class="stat-num" id="s-streak">0</div><div class="stat-label">streak</div></div>
       <div class="stat-box"><div class="stat-num" id="s-max">0</div><div class="stat-label">max streak</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-hints">0</div><div class="stat-label">hints</div></div>
     </div>
     <div style="font-size:0.75rem;color:#636E72;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Guess Distribution</div>
     <div id="guess-distribution" style="margin-bottom:16px;"></div>
@@ -610,6 +691,147 @@ const WORDS = [
 // Validate and deduplicate: only keep exactly 5-letter words
 const WORD_LIST = [...new Set(WORDS)].filter(w => w.length === 5);
 
+// === HINT METADATA ===
+// Category + definition for each word. Used by the hint system.
+const WORD_HINTS = {
+  // Programming basics
+  "array": { cat: "data structures", def: "An ordered collection of elements accessed by index" },
+  "class": { cat: "object-oriented programming", def: "A blueprint for creating objects with shared properties and methods" },
+  "debug": { cat: "software development", def: "The process of finding and fixing errors in code" },
+  "error": { cat: "software development", def: "An unexpected condition or fault in a program" },
+  "event": { cat: "programming", def: "An action or occurrence detected by a program, like a click or keypress" },
+  "fetch": { cat: "web development", def: "To retrieve data from a server or remote resource" },
+  "float": { cat: "data types", def: "A number with a decimal point, used for fractional values" },
+  "frame": { cat: "graphics & UI", def: "A single image in a sequence, or a structural boundary in a layout" },
+  "graph": { cat: "data structures", def: "A structure of nodes connected by edges, used to model relationships" },
+  "index": { cat: "data structures", def: "A numerical position used to locate an element in a collection" },
+  "input": { cat: "computing basics", def: "Data or signals received by a system for processing" },
+  "layer": { cat: "machine learning", def: "A level in a neural network that transforms data as it passes through" },
+  "linux": { cat: "operating systems", def: "An open-source Unix-like operating system kernel" },
+  "local": { cat: "networking & scope", def: "Pertaining to the current machine or immediate environment, not remote" },
+  "logic": { cat: "computer science", def: "The systematic principles of reasoning used in computation" },
+  "login": { cat: "security & access", def: "The process of authenticating and gaining access to a system" },
+  "match": { cat: "programming", def: "A pattern-matching operation that checks if data fits a rule" },
+  "merge": { cat: "version control", def: "To combine two or more branches or datasets into one" },
+  "model": { cat: "machine learning", def: "A trained representation that makes predictions from data" },
+  "mouse": { cat: "hardware", def: "A pointing device used to interact with a graphical interface" },
+  "panel": { cat: "user interfaces", def: "A distinct section or pane within a graphical interface" },
+  "parse": { cat: "programming", def: "To analyze a string or data structure and extract meaningful components" },
+  "patch": { cat: "software development", def: "A small update that fixes bugs or adds minor changes to software" },
+  "pixel": { cat: "graphics", def: "The smallest addressable unit of a digital image or display" },
+  "print": { cat: "programming basics", def: "To output text or data to a console or display" },
+  "proxy": { cat: "networking", def: "An intermediary server that forwards requests between client and destination" },
+  "query": { cat: "databases", def: "A request for data or information from a database or search engine" },
+  "queue": { cat: "data structures", def: "A first-in-first-out collection where items are processed in order" },
+  "reset": { cat: "computing basics", def: "To restore a system or value to its original default state" },
+  "route": { cat: "networking & web", def: "A path that data or a request follows to reach its destination" },
+  "scale": { cat: "infrastructure", def: "To increase or decrease capacity to handle varying workloads" },
+  "scope": { cat: "programming", def: "The region of code where a variable or function is accessible" },
+  "setup": { cat: "computing basics", def: "The process of configuring or preparing a system for use" },
+  "shell": { cat: "operating systems", def: "A command-line interface for interacting with the operating system" },
+  "stack": { cat: "data structures", def: "A last-in-first-out collection, or a set of technologies used together" },
+  "state": { cat: "programming", def: "The current condition or stored values of a system at a given time" },
+  "store": { cat: "programming", def: "A centralized place to hold and manage application data" },
+  "style": { cat: "web development", def: "Visual formatting rules applied to elements, often via CSS" },
+  "table": { cat: "databases", def: "A structured set of data organized in rows and columns" },
+  "theme": { cat: "user interfaces", def: "A coordinated set of visual styles applied across an interface" },
+  "timer": { cat: "programming", def: "A mechanism that triggers an action after a specified delay" },
+  "token": { cat: "security & NLP", def: "A unit of text, or a credential used for authentication" },
+  "train": { cat: "machine learning", def: "To teach a model by feeding it data and adjusting its parameters" },
+  "video": { cat: "media & graphics", def: "A sequence of images displayed in rapid succession to show motion" },
+  "watch": { cat: "development tools", def: "To monitor files or processes for changes and react automatically" },
+  "write": { cat: "computing basics", def: "To output or save data to a file, memory, or device" },
+  "block": { cat: "programming", def: "A grouped section of code, or a unit of stored data" },
+  "break": { cat: "programming", def: "A statement that exits a loop or switch early" },
+  "build": { cat: "software development", def: "To compile and assemble source code into a runnable program" },
+  "cache": { cat: "performance", def: "A fast storage layer that keeps frequently accessed data close at hand" },
+  "chain": { cat: "programming & crypto", def: "A sequence of linked operations or blocks processed in order" },
+  "check": { cat: "programming", def: "To verify or validate a condition before proceeding" },
+  "clean": { cat: "development tools", def: "To remove generated or temporary files from a build environment" },
+  "click": { cat: "user interfaces", def: "A press-and-release action on a pointing device or touchscreen" },
+  "clone": { cat: "version control", def: "To create an exact copy of a repository or object" },
+  "close": { cat: "programming", def: "To end a connection, file handle, or process" },
+  "cloud": { cat: "infrastructure", def: "Remote servers and services accessed over the internet" },
+  "crash": { cat: "software development", def: "An abrupt, unplanned termination of a program or system" },
+  "cycle": { cat: "computing", def: "A single complete iteration of a repeating process" },
+  "draft": { cat: "content & workflow", def: "A preliminary version of a document or message before publishing" },
+  "drive": { cat: "hardware", def: "A storage device for reading and writing persistent data" },
+  "field": { cat: "data structures", def: "A named attribute or column within a record or form" },
+  "flash": { cat: "hardware & UI", def: "Non-volatile memory, or a brief visual notification on screen" },
+  "flush": { cat: "programming", def: "To force buffered data to be written out to its destination" },
+  // Tech words normal humans know
+  "admin": { cat: "system administration", def: "A user with elevated privileges to manage a system" },
+  "agent": { cat: "AI & systems", def: "An autonomous entity that perceives its environment and takes actions" },
+  "audio": { cat: "media", def: "Sound data that can be recorded, processed, and played back" },
+  "batch": { cat: "processing", def: "A group of tasks or data items processed together as a unit" },
+  "brain": { cat: "AI & neuroscience", def: "The organ of intelligence, often used as a metaphor for AI systems" },
+  "bytes": { cat: "computing basics", def: "Units of digital information, each consisting of 8 bits" },
+  "chart": { cat: "data visualization", def: "A graphical representation of data using bars, lines, or other shapes" },
+  "coder": { cat: "software development", def: "A person who writes computer programs" },
+  "count": { cat: "programming basics", def: "To enumerate items, or the total number of elements" },
+  "daily": { cat: "scheduling", def: "Occurring or recurring once every day" },
+  "depth": { cat: "data structures & AI", def: "The number of levels in a tree, or layers in a neural network" },
+  "email": { cat: "communication", def: "Electronic messages sent between users over a network" },
+  "fiber": { cat: "networking", def: "Optical cable used for high-speed data transmission using light" },
+  "focus": { cat: "user interfaces", def: "The active element that receives keyboard input in a UI" },
+  "forge": { cat: "development tools", def: "A platform for hosting and collaborating on software projects" },
+  "games": { cat: "entertainment & dev", def: "Interactive software designed for amusement or competition" },
+  "guard": { cat: "programming & security", def: "A conditional check that prevents invalid operations" },
+  "image": { cat: "graphics & containers", def: "A visual representation, or a snapshot of a system or container" },
+  "label": { cat: "user interfaces & ML", def: "A text tag identifying an element, or an annotation on training data" },
+  "media": { cat: "content", def: "Forms of communication like text, images, audio, and video" },
+  "modal": { cat: "user interfaces", def: "A dialog that requires user interaction before returning to the main view" },
+  "mount": { cat: "operating systems", def: "To make a filesystem or device accessible at a given path" },
+  "noise": { cat: "signal processing & ML", def: "Random or unwanted variation in data or signals" },
+  "orbit": { cat: "physics & space", def: "A curved path of an object around a central body due to gravity" },
+  "phase": { cat: "project management", def: "A distinct stage or step in a process or development cycle" },
+  "power": { cat: "hardware & computing", def: "Electrical energy supplied to a system, or computational capability" },
+  "press": { cat: "media & UI", def: "To push a button or key, or published news and communications" },
+  "pulse": { cat: "signals & monitoring", def: "A brief burst of energy or signal, or a periodic health check" },
+  "radar": { cat: "sensing & monitoring", def: "A system that detects objects using radio waves, or a monitoring dashboard" },
+  "react": { cat: "web development", def: "A JavaScript library for building user interfaces with components" },
+  "relay": { cat: "networking", def: "To pass data or signals from one point to another" },
+  "robot": { cat: "AI & automation", def: "A programmable machine that can carry out tasks autonomously" },
+  "score": { cat: "games & metrics", def: "A numerical value representing performance or quality" },
+  "share": { cat: "social & collaboration", def: "To distribute content or grant others access to a resource" },
+  "shift": { cat: "computing & input", def: "A modifier key, or to move data positions left or right" },
+  "sleep": { cat: "operating systems", def: "To pause execution for a specified duration" },
+  "smart": { cat: "AI & IoT", def: "Capable of independent intelligent action, often connected to a network" },
+  "solid": { cat: "software design", def: "Firm and reliable, or an acronym for five OOP design principles" },
+  "space": { cat: "computing & physics", def: "Available memory or storage, or a blank character in text" },
+  "spark": { cat: "big data", def: "A fast, distributed data processing engine for large-scale analytics" },
+  "speed": { cat: "performance", def: "The rate at which operations or data transfers are completed" },
+  "split": { cat: "programming", def: "To divide a string or dataset into multiple parts" },
+  "start": { cat: "computing basics", def: "To begin execution of a process or program" },
+  "steam": { cat: "gaming platforms", def: "A digital distribution platform for video games" },
+  "story": { cat: "agile & content", def: "A user requirement in agile, or a narrative in content" },
+  "super": { cat: "object-oriented programming", def: "A reference to a parent class in an inheritance hierarchy" },
+  "surge": { cat: "infrastructure", def: "A sudden increase in traffic, load, or electrical power" },
+  "sweep": { cat: "algorithms", def: "A pass through data to find, clean, or process elements" },
+  "swift": { cat: "programming languages", def: "Apple's modern programming language for iOS and macOS development" },
+  "touch": { cat: "user interfaces & CLI", def: "A tap interaction on a touchscreen, or a command that creates empty files" },
+  "track": { cat: "version control & analytics", def: "To follow changes over time, or monitor user behavior" },
+  "trend": { cat: "analytics", def: "A general direction of change observed in data over time" },
+  "trial": { cat: "business & testing", def: "A temporary evaluation period, or an experimental test run" },
+  "trunk": { cat: "version control", def: "The main development branch of a repository" },
+  "twist": { cat: "algorithms & narrative", def: "An unexpected turn in logic or story" },
+  "unite": { cat: "collaboration", def: "To bring together separate parts into a single whole" },
+  "upper": { cat: "string manipulation", def: "To convert text characters to their capital letter form" },
+  "usage": { cat: "monitoring", def: "The amount of a resource that is being consumed" },
+  "value": { cat: "programming basics", def: "The data stored in a variable or returned by an expression" },
+  "vault": { cat: "security", def: "A secure storage system for secrets, keys, and credentials" },
+  "voice": { cat: "AI & media", def: "Human speech or its synthetic equivalent, used for audio interfaces" },
+  "world": { cat: "gaming & scope", def: "The simulated environment in a game, or a global namespace" },
+  "zeros": { cat: "mathematics & computing", def: "The digit 0 in plural, representing null or empty values" },
+  "alarm": { cat: "monitoring & systems", def: "A notification triggered when a threshold or condition is breached" }
+};
+
+// Fallback hint generation for any word missing from metadata
+function getWordHints(word) {
+  if (WORD_HINTS[word]) return WORD_HINTS[word];
+  return { cat: "technology", def: "A term commonly used in tech and computing" };
+}
+
 // === DAILY PUZZLE SEED ===
 function getDayNumber() {
   // Use UTC to ensure same puzzle globally regardless of timezone
@@ -644,6 +866,8 @@ let currentCol = 0;
 let guesses = [];
 let gameOver = false;
 let currentGuess = '';
+let hintsUsed = 0;
+const MAX_HINTS = 3;
 
 // Load saved state for today
 const TODAY_KEY = 'sigterm-' + getDayNumber();
@@ -652,7 +876,7 @@ const savedState = JSON.parse(localStorage.getItem(TODAY_KEY) || 'null');
 // Clean up old day keys (keep only last 7 days)
 (function cleanOldStates() {
   const currentDay = getDayNumber();
-  const keepKeys = ['sigterm-stats','sigterm-streak','sigterm-best-streak','sigterm-last-date','sigterm-distribution','sigterm-played','sigterm-won'];
+  const keepKeys = ['sigterm-stats','sigterm-streak','sigterm-best-streak','sigterm-last-date','sigterm-distribution','sigterm-played','sigterm-won','sigterm-hints-used'];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key && key.startsWith('sigterm-') && keepKeys.indexOf(key) === -1) {
@@ -882,7 +1106,7 @@ function submitGuess() {
 
   // Save state immediately
   var isOver = won || currentRow >= MAX_GUESSES;
-  localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses: guesses, gameOver: isOver }));
+  localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses: guesses, gameOver: isOver, hintsUsed: hintsUsed }));
 
   // Sound feedback for guess result
   if (typeof SubstrateAudio !== 'undefined') {
@@ -897,6 +1121,8 @@ function submitGuess() {
       endGame(true);
     } else if (currentRow >= MAX_GUESSES) {
       endGame(false);
+    } else {
+      updateHintButton();
     }
   }, 700);
 }
@@ -995,14 +1221,149 @@ function endGame(won) {
   }
 
   // Save final state
-  localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses: guesses, gameOver: true }));
+  localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses: guesses, gameOver: true, hintsUsed: hintsUsed }));
 
   // Refresh streak display
   updateStreakBar();
 
+  // Hide hint button when game is over
+  var hintBtn = document.getElementById('hint-btn');
+  if (hintBtn) hintBtn.style.display = 'none';
+
   // Show stats after delay
   setTimeout(function() { showStats(); }, 1800);
   showFundPrompt();
+}
+
+// === HINT SYSTEM ===
+function updateHintButton() {
+  var btn = document.getElementById('hint-btn');
+  if (!btn) return;
+  // Show button only after 3 failed guesses (wrong guesses) and game not over
+  if (gameOver) {
+    btn.style.display = 'none';
+    return;
+  }
+  var failedGuesses = guesses.filter(function(g) { return g !== TARGET; }).length;
+  if (failedGuesses >= 3 && hintsUsed < MAX_HINTS) {
+    btn.style.display = 'inline-block';
+    btn.disabled = false;
+    var remaining = MAX_HINTS - hintsUsed;
+    btn.textContent = 'HINT (' + remaining + ' remaining)';
+  } else if (hintsUsed >= MAX_HINTS) {
+    btn.style.display = 'inline-block';
+    btn.disabled = true;
+    btn.textContent = 'NO HINTS LEFT';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function useHint() {
+  if (gameOver || hintsUsed >= MAX_HINTS) return;
+
+  hintsUsed++;
+  var wordData = getWordHints(TARGET);
+  var display = document.getElementById('hint-display');
+  display.style.display = 'block';
+
+  if (hintsUsed === 1) {
+    // First hint: category
+    display.innerHTML = '<div class="hint-item"><span class="hint-label">Category:</span> This word relates to <strong>' + wordData.cat + '</strong></div>';
+  } else if (hintsUsed === 2) {
+    // Second hint: reveal one correct letter in position
+    // Pick a letter that hasn't been revealed as correct yet
+    var revealIdx = -1;
+    var alreadyCorrect = [];
+    // Check what letters have already been revealed correctly
+    for (var g = 0; g < guesses.length; g++) {
+      var res = evaluateGuess(guesses[g], TARGET);
+      for (var i = 0; i < 5; i++) {
+        if (res[i] === 'correct') alreadyCorrect.push(i);
+      }
+    }
+    // Find a position that hasn't been revealed yet
+    // Use day-seeded selection to keep it deterministic
+    var unrevealed = [];
+    for (var p = 0; p < 5; p++) {
+      if (alreadyCorrect.indexOf(p) === -1) unrevealed.push(p);
+    }
+    if (unrevealed.length > 0) {
+      var day = getDayNumber();
+      revealIdx = unrevealed[((day * 31337) >>> 0) % unrevealed.length];
+    } else {
+      // All already correct (unlikely), just pick first
+      revealIdx = 0;
+    }
+    var posNames = ['1st', '2nd', '3rd', '4th', '5th'];
+    var prevHTML = display.innerHTML;
+    display.innerHTML = prevHTML +
+      '<div class="hint-item"><span class="hint-label">Letter:</span> The ' + posNames[revealIdx] +
+      ' letter is <strong style="color:#00B894;font-size:1rem;">' + TARGET[revealIdx].toUpperCase() + '</strong></div>';
+  } else if (hintsUsed === 3) {
+    // Third hint: definition
+    var prevHTML = display.innerHTML;
+    display.innerHTML = prevHTML +
+      '<div class="hint-item"><span class="hint-label">Definition:</span> ' + wordData.def + '</div>';
+  }
+
+  // Save hint state
+  var savedGame = JSON.parse(localStorage.getItem(TODAY_KEY) || '{}');
+  savedGame.hintsUsed = hintsUsed;
+  localStorage.setItem(TODAY_KEY, JSON.stringify(savedGame));
+
+  // Save total hints used across all games
+  var totalHints = parseInt(localStorage.getItem('sigterm-hints-used') || '0', 10);
+  localStorage.setItem('sigterm-hints-used', String(totalHints + 1));
+
+  updateHintButton();
+  if (typeof SubstrateAudio !== 'undefined') SubstrateAudio.click();
+}
+
+function restoreHints() {
+  if (!savedState || !savedState.hintsUsed) return;
+  var savedHints = savedState.hintsUsed;
+  if (savedHints <= 0) return;
+
+  // Replay hints silently
+  var wordData = getWordHints(TARGET);
+  var display = document.getElementById('hint-display');
+  var html = '';
+
+  if (savedHints >= 1) {
+    html += '<div class="hint-item"><span class="hint-label">Category:</span> This word relates to <strong>' + wordData.cat + '</strong></div>';
+  }
+  if (savedHints >= 2) {
+    var alreadyCorrect = [];
+    if (savedState.guesses) {
+      for (var g = 0; g < savedState.guesses.length; g++) {
+        var res = evaluateGuess(savedState.guesses[g], TARGET);
+        for (var i = 0; i < 5; i++) {
+          if (res[i] === 'correct') alreadyCorrect.push(i);
+        }
+      }
+    }
+    var unrevealed = [];
+    for (var p = 0; p < 5; p++) {
+      if (alreadyCorrect.indexOf(p) === -1) unrevealed.push(p);
+    }
+    var revealIdx = 0;
+    if (unrevealed.length > 0) {
+      var day = getDayNumber();
+      revealIdx = unrevealed[((day * 31337) >>> 0) % unrevealed.length];
+    }
+    var posNames = ['1st', '2nd', '3rd', '4th', '5th'];
+    html += '<div class="hint-item"><span class="hint-label">Letter:</span> The ' + posNames[revealIdx] +
+      ' letter is <strong style="color:#00B894;font-size:1rem;">' + TARGET[revealIdx].toUpperCase() + '</strong></div>';
+  }
+  if (savedHints >= 3) {
+    html += '<div class="hint-item"><span class="hint-label">Definition:</span> ' + wordData.def + '</div>';
+  }
+
+  hintsUsed = savedHints;
+  display.innerHTML = html;
+  display.style.display = 'block';
+  updateHintButton();
 }
 
 function showStats() {
@@ -1011,6 +1372,7 @@ function showStats() {
   document.getElementById('s-win').textContent = stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0;
   document.getElementById('s-streak').textContent = stats.streak;
   document.getElementById('s-max').textContent = stats.maxStreak;
+  document.getElementById('s-hints').textContent = parseInt(localStorage.getItem('sigterm-hints-used') || '0', 10);
 
   // Build guess distribution
   var distEl = document.getElementById('guess-distribution');
@@ -1080,7 +1442,8 @@ function shareResult() {
   if (won) {
     for (var p = 0; p < guesses.length; p++) pips += '\u{1F7E9}';
   }
-  var text = 'SIGTERM ' + dateStr + ' \u2014 ' + guessCount + '/6 ' + pips + '\n';
+  var hintStr = hintsUsed > 0 ? ' (' + hintsUsed + ' hint' + (hintsUsed > 1 ? 's' : '') + ')' : '';
+  var text = 'SIGTERM ' + dateStr + ' \u2014 ' + guessCount + '/6' + hintStr + ' ' + pips + '\n';
 
   for (var g = 0; g < guesses.length; g++) {
     var result = evaluateGuess(guesses[g], TARGET);
@@ -1216,7 +1579,9 @@ if (stats.played > 0) {
 
 if (savedState) {
   restoreState();
+  restoreHints();
 }
+updateHintButton();
 
 // === CHALLENGE MODE ===
 function createChallenge() {

@@ -46,8 +46,8 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 50%, #B2EBF2 100%);
-  color: #2D3436;
+  background: #0a0e14;
+  color: #c8d6e5;
   font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   position: fixed;
   width: 100%;
@@ -55,38 +55,156 @@ body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
+/* ═══ DATA CENTER WORLD — PARALLAX BACKGROUND ═══ */
+#datacenter-bg {
+  position: fixed; inset: 0; z-index: -2; overflow: hidden;
+  background: linear-gradient(180deg, #060a10 0%, #0d1520 40%, #0a1218 100%);
+}
+
+/* Far layer — distant server racks (slow parallax) */
+.dc-far {
+  position: absolute; inset: 0;
+  opacity: 0.25;
+}
+.dc-rack {
+  position: absolute; bottom: 0;
+  width: 60px; background: linear-gradient(180deg, #1a2a3a 0%, #0d1a28 100%);
+  border-radius: 3px 3px 0 0;
+  border: 1px solid rgba(77,182,172,0.12);
+  border-bottom: none;
+}
+.dc-rack::before {
+  content: '';
+  position: absolute; top: 8px; left: 6px; right: 6px;
+  height: calc(100% - 16px);
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(77,182,172,0.06) 0px, rgba(77,182,172,0.06) 2px,
+    transparent 2px, transparent 8px
+  );
+}
+
+/* Mid layer — cable runs across ceiling */
+.dc-cables {
+  position: absolute; top: 0; left: 0; right: 0; height: 80px;
+  opacity: 0.18;
+}
+.dc-cable {
+  position: absolute; top: 0; height: 100%;
+  border-right: 2px solid rgba(77,182,172,0.4);
+}
+.dc-cable::after {
+  content: '';
+  position: absolute; bottom: 0; left: -3px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(77,182,172,0.4);
+}
+
+/* Near layer — floor grid (fast parallax) */
+.dc-floor {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+  background: linear-gradient(180deg, transparent 0%, rgba(77,182,172,0.03) 100%);
+  opacity: 0.5;
+}
+.dc-floor::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(77,182,172,0.06) 0px, rgba(77,182,172,0.06) 1px, transparent 1px, transparent 80px),
+    repeating-linear-gradient(0deg, rgba(77,182,172,0.04) 0px, rgba(77,182,172,0.04) 1px, transparent 1px, transparent 40px);
+}
+
+/* Blinking server LEDs */
+.dc-led {
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  animation: ledBlink var(--blink-dur, 2s) ease-in-out infinite;
+  animation-delay: var(--blink-delay, 0s);
+}
+.dc-led.green { background: #44ff88; box-shadow: 0 0 6px rgba(68,255,136,0.6); }
+.dc-led.amber { background: #ffaa44; box-shadow: 0 0 6px rgba(255,170,68,0.6); }
+.dc-led.red   { background: #ff4444; box-shadow: 0 0 6px rgba(255,68,68,0.6); }
+.dc-led.blue  { background: #4488ff; box-shadow: 0 0 6px rgba(68,136,255,0.6); }
+@keyframes ledBlink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Data flow particles — vertical light trails */
+.dc-data-stream {
+  position: absolute;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(77,182,172,0.5), transparent);
+  animation: dataFlow var(--flow-dur, 4s) linear infinite;
+  animation-delay: var(--flow-delay, 0s);
+  opacity: 0.3;
+}
+@keyframes dataFlow {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(calc(100vh + 100%)); opacity: 0; }
+}
+
+/* Ambient glow pulse at base of racks */
+.dc-glow {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(77,182,172,0.06) 0%, transparent 70%);
+  animation: glowPulse 6s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Scan line sweep */
+.dc-scanline {
+  position: absolute; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(77,182,172,0.15), transparent);
+  animation: scanSweep 8s linear infinite;
+  opacity: 0.5;
+}
+@keyframes scanSweep {
+  0% { top: -2px; }
+  100% { top: 100%; }
+}
+
 /* ═══ TITLE SCREEN ═══ */
 #title-screen {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 50%, #B2EBF2 100%);
+  background: transparent;
   z-index: 100;
 }
 #title-screen h1 {
   font-size: 2.4rem; font-weight: 700;
-  color: #2D3436;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  color: #4DB6AC;
+  text-shadow: 0 0 20px rgba(77,182,172,0.4), 0 2px 8px rgba(0,0,0,0.3);
   letter-spacing: 6px;
   margin-bottom: 8px;
 }
 #title-screen .subtitle {
-  font-size: 0.75rem; color: #636E72; letter-spacing: 4px;
+  font-size: 0.75rem; color: rgba(200,214,229,0.6); letter-spacing: 4px;
   text-transform: uppercase; margin-bottom: 40px;
 }
 #title-screen .menu-btn {
-  background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);
-  color: #2D3436; font-family: inherit; font-size: 1rem;
+  background: rgba(13,21,32,0.7); border: 1px solid rgba(77,182,172,0.25);
+  color: #c8d6e5; font-family: inherit; font-size: 1rem;
   padding: 14px 40px; margin: 6px; cursor: pointer;
   letter-spacing: 3px; border-radius: 12px;
   transition: all 0.2s ease;
   min-width: 220px; min-height: 48px;
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
 #title-screen .menu-btn:hover, #title-screen .menu-btn:active {
-  border-color: #4DB6AC; color: #00897B;
-  background: rgba(255,255,255,0.85);
+  border-color: #4DB6AC; color: #4DB6AC;
+  background: rgba(13,21,32,0.85);
+  box-shadow: 0 0 16px rgba(77,182,172,0.15), 0 8px 32px rgba(0,0,0,0.2);
 }
 
 /* ═══ GAME CONTAINER ═══ */
@@ -101,23 +219,23 @@ body {
 #top-bar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 8px 12px;
-  background: rgba(255,255,255,0.55);
+  background: rgba(10,14,20,0.75);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,0.3);
+  border-bottom: 1px solid rgba(77,182,172,0.15);
   flex-shrink: 0;
   z-index: 10;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
 #top-bar .player-hp {
   display: flex; align-items: center; gap: 6px;
   font-size: 0.8rem; font-weight: 600;
-  color: #2D3436;
+  color: #c8d6e5;
 }
 .hp-bar-wrap {
   width: 100px; height: 10px;
-  background: rgba(255,255,255,0.4); border-radius: 6px;
+  background: rgba(255,255,255,0.1); border-radius: 6px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(77,182,172,0.2);
 }
 .hp-bar-fill {
   height: 100%; background: linear-gradient(90deg, #66BB6A, #81C784);
@@ -127,7 +245,7 @@ body {
 .hp-bar-fill.low { background: linear-gradient(90deg, #EF5350, #E57373); }
 .hp-bar-fill.mid { background: linear-gradient(90deg, #FFA726, #FFB74D); }
 #top-bar .act-info {
-  font-size: 0.75rem; color: #636E72;
+  font-size: 0.75rem; color: rgba(200,214,229,0.5);
   letter-spacing: 2px; text-transform: uppercase;
 }
 
@@ -155,18 +273,21 @@ body {
   border-radius: 12px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  border: 1px solid rgba(77,182,172,0.1);
 }
 .enemy-name {
-  font-size: 0.75rem; color: #D32F2F;
+  font-size: 0.75rem; color: #ff6666;
   letter-spacing: 2px; font-weight: 700;
   text-align: center; max-width: 100px;
   word-break: break-all;
+  text-shadow: 0 0 8px rgba(255,102,102,0.3);
 }
 .enemy-hp-wrap {
   width: 80px; height: 6px;
-  background: rgba(255,255,255,0.4); border-radius: 4px;
+  background: rgba(255,255,255,0.08); border-radius: 4px;
   overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 .enemy-hp-fill {
   height: 100%; background: linear-gradient(90deg, #EF5350, #E57373);
@@ -176,9 +297,10 @@ body {
 .enemy-intent {
   font-size: 0.75rem; padding: 2px 6px;
   border-radius: 8px; font-weight: 600;
-  background: rgba(255,255,255,0.35); margin-top: 2px;
+  background: rgba(10,14,20,0.5); margin-top: 2px;
   min-height: 18px; text-align: center;
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.06);
 }
 .intent-attack { color: #D32F2F; }
 .intent-block { color: #1976D2; }
@@ -199,7 +321,7 @@ body {
   padding: 1px 4px; border-radius: 6px;
 }
 .enemy-status {
-  font-size: 0.75rem; color: #7B1FA2;
+  font-size: 0.75rem; color: #bb88ff;
   margin-top: 1px;
 }
 
@@ -207,23 +329,23 @@ body {
 #player-status {
   display: flex; align-items: center; justify-content: center;
   padding: 4px 12px; gap: 16px;
-  background: rgba(255,255,255,0.35);
+  background: rgba(10,14,20,0.5);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(255,255,255,0.3);
-  border-bottom: 1px solid rgba(255,255,255,0.3);
+  border-top: 1px solid rgba(77,182,172,0.1);
+  border-bottom: 1px solid rgba(77,182,172,0.1);
   flex-shrink: 0;
 }
 .block-display {
-  font-size: 0.75rem; color: #1976D2;
+  font-size: 0.75rem; color: #4488ff;
   font-weight: 700;
 }
 .player-block-icon {
   display: inline-block;
   width: 14px; height: 14px;
-  background: rgba(25,118,210,0.2);
+  background: rgba(68,136,255,0.15);
   border-radius: 4px;
   text-align: center; line-height: 14px;
-  font-size: 0.75rem; color: #1976D2;
+  font-size: 0.75rem; color: #4488ff;
   vertical-align: middle; margin-right: 3px;
 }
 
@@ -245,9 +367,9 @@ body {
 .card {
   flex-shrink: 0;
   width: 105px; min-height: 148px;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(77,182,172,0.2);
   border-radius: 14px;
-  background: rgba(255,255,255,0.55);
+  background: rgba(13,21,32,0.8);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   padding: 6px;
   display: flex; flex-direction: column;
@@ -256,16 +378,23 @@ body {
   position: relative;
   user-select: none;
   -webkit-user-select: none;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg, transparent, rgba(77,182,172,0.3), transparent);
+  opacity: 0.6;
 }
 .card:active { transform: scale(0.96); }
 .card.selected {
   transform: translateY(-12px) scale(1.05);
-  border-color: #F9A825;
-  box-shadow: 0 0 20px rgba(249,168,37,0.25), 0 8px 32px rgba(0,0,0,0.12);
+  border-color: #4DB6AC;
+  box-shadow: 0 0 20px rgba(77,182,172,0.3), 0 8px 32px rgba(0,0,0,0.3);
   z-index: 5;
 }
-.card.unplayable { opacity: 0.45; cursor: default; }
+.card.unplayable { opacity: 0.35; cursor: default; }
 .card.encrypted {
   opacity: 0.3; pointer-events: none;
   filter: hue-rotate(180deg);
@@ -276,19 +405,19 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 0.75rem; color: #C2185B;
   letter-spacing: 2px; font-weight: 700;
-  background: rgba(255,255,255,0.6);
+  background: rgba(10,14,20,0.7);
   border-radius: 14px;
 }
-.card-common { border-color: rgba(150,150,150,0.3); }
-.card-uncommon { border-color: rgba(0,172,193,0.4); }
+.card-common { border-color: rgba(77,182,172,0.15); }
+.card-uncommon { border-color: rgba(0,172,193,0.35); }
 .card-rare { border-color: rgba(255,160,0,0.4); }
 .card-cost {
   position: absolute; top: -1px; left: -1px;
   width: 22px; height: 22px;
-  background: rgba(255,255,255,0.7); border: 1px solid rgba(200,200,200,0.4);
+  background: rgba(10,14,20,0.8); border: 1px solid rgba(77,182,172,0.3);
   border-radius: 8px 0 8px 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 0.7rem; font-weight: 700; color: #F57C00;
+  font-size: 0.7rem; font-weight: 700; color: #ffaa44;
 }
 .card-icon {
   width: 100%; height: 48px;
@@ -299,11 +428,11 @@ body {
 .card-name {
   font-size: 0.75rem; font-weight: 700;
   text-align: center; letter-spacing: 1.5px;
-  margin: 4px 0 2px; color: #2D3436;
+  margin: 4px 0 2px; color: #c8d6e5;
   line-height: 1.2;
 }
 .card-desc {
-  font-size: 0.75rem; color: #636E72;
+  font-size: 0.75rem; color: rgba(200,214,229,0.5);
   text-align: center; line-height: 1.3;
   flex: 1;
 }
@@ -319,12 +448,12 @@ body {
 #bottom-bar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 6px 12px 10px;
-  background: rgba(255,255,255,0.55);
+  background: rgba(10,14,20,0.75);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(255,255,255,0.3);
+  border-top: 1px solid rgba(77,182,172,0.15);
   flex-shrink: 0;
   gap: 8px;
-  box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.2);
 }
 .energy-display {
   display: flex; align-items: center; gap: 4px;
@@ -332,22 +461,22 @@ body {
 .energy-orb {
   width: 36px; height: 36px;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, #FFD54F, #FFA000);
+  background: radial-gradient(circle at 40% 40%, #4DB6AC, #00897B);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; font-weight: 700; color: #4E342E;
-  box-shadow: 0 4px 12px rgba(255,160,0,0.3);
-  border: 2px solid rgba(255,255,255,0.4);
+  font-size: 1.1rem; font-weight: 700; color: #fff;
+  box-shadow: 0 0 12px rgba(77,182,172,0.4);
+  border: 2px solid rgba(77,182,172,0.5);
 }
 .deck-counts {
   display: flex; gap: 10px;
-  font-size: 0.75rem; color: #636E72;
+  font-size: 0.75rem; color: rgba(200,214,229,0.5);
 }
 .deck-counts span { cursor: pointer; }
-.deck-counts .draw-pile { color: #1976D2; }
-.deck-counts .discard-pile { color: #D32F2F; }
+.deck-counts .draw-pile { color: #4488ff; }
+.deck-counts .discard-pile { color: #ff6666; }
 #end-turn-btn {
-  background: rgba(255,255,255,0.7); border: 2px solid #EF5350;
-  color: #D32F2F; font-family: inherit;
+  background: rgba(10,14,20,0.7); border: 2px solid #EF5350;
+  color: #EF5350; font-family: inherit;
   font-size: 0.75rem; font-weight: 700;
   padding: 10px 16px; border-radius: 12px;
   cursor: pointer; letter-spacing: 2px;
@@ -359,7 +488,7 @@ body {
 }
 #end-turn-btn:disabled {
   opacity: 0.4; cursor: default;
-  background: rgba(255,255,255,0.4); color: #B0BEC5;
+  background: rgba(10,14,20,0.4); color: rgba(200,214,229,0.3);
 }
 
 /* ═══ EFFECTS CANVAS ═══ */
@@ -372,7 +501,7 @@ body {
 /* ═══ REWARD SCREEN ═══ */
 #reward-screen {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(135,206,235,0.95) 0%, rgba(224,247,250,0.95) 50%, rgba(178,235,242,0.95) 100%);
+  background: rgba(6,10,16,0.92);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   display: none; flex-direction: column;
   align-items: center; justify-content: center;
@@ -380,11 +509,12 @@ body {
   padding: 20px;
 }
 #reward-screen h2 {
-  font-size: 1.2rem; color: #388E3C;
+  font-size: 1.2rem; color: #44ff88;
   letter-spacing: 4px; margin-bottom: 6px;
+  text-shadow: 0 0 12px rgba(68,255,136,0.3);
 }
 #reward-screen .reward-sub {
-  font-size: 0.75rem; color: #636E72;
+  font-size: 0.75rem; color: rgba(200,214,229,0.5);
   margin-bottom: 20px; letter-spacing: 2px;
 }
 #reward-cards {
@@ -396,24 +526,24 @@ body {
   transform: none;
   min-height: 160px;
 }
-#reward-cards .card:hover {
+#reward-cards .card:hover, #reward-cards .card:active {
   transform: translateY(-8px);
   box-shadow: 0 8px 32px rgba(0,0,0,0.12);
 }
 #skip-reward-btn {
-  background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);
-  color: #636E72; font-family: inherit; font-size: 0.7rem;
+  background: rgba(13,21,32,0.7); border: 1px solid rgba(77,182,172,0.2);
+  color: rgba(200,214,229,0.5); font-family: inherit; font-size: 0.7rem;
   padding: 10px 24px; cursor: pointer;
   letter-spacing: 2px; border-radius: 12px;
   min-height: 48px;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
-#skip-reward-btn:hover { border-color: rgba(100,100,100,0.3); color: #2D3436; }
+#skip-reward-btn:hover { border-color: rgba(77,182,172,0.4); color: #c8d6e5; }
 
 /* ═══ EVENT / MAP SCREEN ═══ */
 #event-screen {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(135,206,235,0.97) 0%, rgba(224,247,250,0.97) 50%, rgba(178,235,242,0.97) 100%);
+  background: rgba(6,10,16,0.95);
   display: none; flex-direction: column;
   align-items: center; justify-content: center;
   z-index: 80; padding: 20px;
@@ -421,32 +551,32 @@ body {
 }
 #event-screen h2 {
   font-size: 1.1rem; letter-spacing: 3px;
-  margin-bottom: 12px; color: #2D3436;
+  margin-bottom: 12px; color: #4DB6AC;
 }
 #event-screen .event-text {
-  font-size: 0.7rem; color: #636E72;
+  font-size: 0.7rem; color: rgba(200,214,229,0.6);
   max-width: 320px; line-height: 1.5;
   margin-bottom: 24px;
 }
 #event-screen .event-btn {
-  background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);
-  color: #2D3436; font-family: inherit;
+  background: rgba(13,21,32,0.7); border: 1px solid rgba(77,182,172,0.25);
+  color: #c8d6e5; font-family: inherit;
   font-size: 0.75rem; padding: 12px 28px;
   cursor: pointer; letter-spacing: 2px;
   border-radius: 12px; margin: 4px;
   min-height: 48px;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 #event-screen .event-btn:hover {
-  border-color: #4DB6AC; color: #00897B;
-  background: rgba(255,255,255,0.85);
+  border-color: #4DB6AC; color: #4DB6AC;
+  background: rgba(13,21,32,0.85);
 }
 
 /* ═══ GAME OVER / VICTORY ═══ */
 #result-screen {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(135,206,235,0.97) 0%, rgba(224,247,250,0.97) 50%, rgba(178,235,242,0.97) 100%);
+  background: rgba(6,10,16,0.95);
   display: none; flex-direction: column;
   align-items: center; justify-content: center;
   z-index: 90; padding: 20px;
@@ -454,30 +584,31 @@ body {
 }
 #result-screen h1 {
   font-size: 2rem; letter-spacing: 6px;
-  margin-bottom: 8px; color: #2D3436;
+  margin-bottom: 8px; color: #c8d6e5;
+  text-shadow: 0 0 16px rgba(77,182,172,0.3);
 }
 #result-screen .result-stats {
-  font-size: 0.7rem; color: #636E72;
+  font-size: 0.7rem; color: rgba(200,214,229,0.5);
   line-height: 1.8; margin-bottom: 24px;
 }
 #result-screen .menu-btn {
-  background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);
-  color: #2D3436; font-family: inherit;
+  background: rgba(13,21,32,0.7); border: 1px solid rgba(77,182,172,0.25);
+  color: #c8d6e5; font-family: inherit;
   font-size: 0.85rem; padding: 14px 32px;
   cursor: pointer; letter-spacing: 3px;
   border-radius: 12px; min-height: 48px;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
 #result-screen .menu-btn:hover {
-  border-color: #4DB6AC; color: #00897B;
-  background: rgba(255,255,255,0.85);
+  border-color: #4DB6AC; color: #4DB6AC;
+  background: rgba(13,21,32,0.85);
 }
 
 /* ═══ DECK VIEWER ═══ */
 #deck-viewer {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(135,206,235,0.95) 0%, rgba(224,247,250,0.95) 50%, rgba(178,235,242,0.95) 100%);
+  background: rgba(6,10,16,0.92);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   display: none; flex-direction: column;
   align-items: center;
@@ -486,7 +617,7 @@ body {
 }
 #deck-viewer h2 {
   font-size: 0.9rem; letter-spacing: 3px;
-  margin-bottom: 12px; color: #636E72;
+  margin-bottom: 12px; color: rgba(200,214,229,0.5);
 }
 #deck-viewer .viewer-cards {
   display: flex; flex-wrap: wrap;
@@ -495,14 +626,14 @@ body {
 }
 #deck-viewer .close-viewer {
   position: fixed; bottom: 16px;
-  background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);
-  color: #2D3436; font-family: inherit;
+  background: rgba(13,21,32,0.7); border: 1px solid rgba(77,182,172,0.25);
+  color: #c8d6e5; font-family: inherit;
   font-size: 0.75rem; padding: 12px 28px;
   cursor: pointer; letter-spacing: 2px;
   border-radius: 12px; min-height: 48px;
   z-index: 86;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 /* ═══ SCREEN SHAKE ═══ */
@@ -547,8 +678,8 @@ body {
 
 /* ═══ PIPELINE GLOW ═══ */
 .pipeline-glow {
-  box-shadow: 0 0 20px rgba(149,117,205,0.35), 0 0 40px rgba(149,117,205,0.2) !important;
-  border-color: #9575CD !important;
+  box-shadow: 0 0 20px rgba(149,117,205,0.4), 0 0 40px rgba(149,117,205,0.2) !important;
+  border-color: #bb88ff !important;
 }
 
 /* ═══ MOBILE RESPONSIVE ═══ */
@@ -691,10 +822,10 @@ body {
   position: fixed;
   top: 60px; left: 50%;
   transform: translateX(-50%) translateY(-20px);
-  background: rgba(255,255,255,0.75);
+  background: rgba(13,21,32,0.85);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(149,117,205,0.4);
-  color: #7B1FA2;
+  color: #bb88ff;
   font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
@@ -705,7 +836,7 @@ body {
   pointer-events: none;
   opacity: 0;
   animation: toastIn 2.2s ease forwards;
-  box-shadow: 0 8px 32px rgba(149,117,205,0.15);
+  box-shadow: 0 0 16px rgba(149,117,205,0.2);
   white-space: nowrap;
 }
 @keyframes toastIn {
@@ -718,7 +849,7 @@ body {
 /* ═══ DISCOVERIES PANEL ═══ */
 #discoveries-panel {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(135,206,235,0.95) 0%, rgba(224,247,250,0.95) 50%, rgba(178,235,242,0.95) 100%);
+  background: rgba(6,10,16,0.92);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   display: none; flex-direction: column;
   align-items: center;
@@ -727,10 +858,10 @@ body {
 }
 #discoveries-panel h2 {
   font-size: 0.9rem; letter-spacing: 3px;
-  margin-bottom: 4px; color: #7B1FA2;
+  margin-bottom: 4px; color: #bb88ff;
 }
 #discoveries-panel .disc-progress {
-  font-size: 0.65rem; color: #636E72;
+  font-size: 0.65rem; color: rgba(200,214,229,0.5);
   letter-spacing: 2px; margin-bottom: 16px;
 }
 .disc-list {
@@ -739,53 +870,106 @@ body {
   padding-bottom: 60px;
 }
 .disc-entry {
-  background: rgba(255,255,255,0.55);
+  background: rgba(13,21,32,0.7);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(77,182,172,0.1);
   border-radius: 10px;
   padding: 8px 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
-.disc-entry.found { border-color: rgba(149,117,205,0.35); }
-.disc-entry.unknown { opacity: 0.4; }
+.disc-entry.found { border-color: rgba(149,117,205,0.3); }
+.disc-entry.unknown { opacity: 0.35; }
 .disc-entry .disc-name {
   font-size: 0.75rem; font-weight: 700;
-  color: #7B1FA2; letter-spacing: 1px;
+  color: #bb88ff; letter-spacing: 1px;
   margin-bottom: 2px;
 }
-.disc-entry.unknown .disc-name { color: #90A4AE; }
+.disc-entry.unknown .disc-name { color: rgba(200,214,229,0.3); }
 .disc-entry .disc-desc {
-  font-size: 0.65rem; color: #636E72;
+  font-size: 0.65rem; color: rgba(200,214,229,0.5);
   line-height: 1.4;
 }
-.disc-entry.unknown .disc-desc { color: #B0BEC5; }
+.disc-entry.unknown .disc-desc { color: rgba(200,214,229,0.2); }
 #discoveries-panel .close-viewer {
   position: fixed; bottom: 16px;
-  background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);
-  color: #2D3436; font-family: inherit;
+  background: rgba(13,21,32,0.7); border: 1px solid rgba(77,182,172,0.25);
+  color: #c8d6e5; font-family: inherit;
   font-size: 0.75rem; padding: 12px 28px;
   cursor: pointer; letter-spacing: 2px;
   border-radius: 12px; min-height: 48px;
   z-index: 96;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 </style>
 </head>
 <body>
-<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#00897B;text-decoration:none;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;font-size:13px;background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(0,0,0,0.06);">&larr; ARCADE</a>
+<a href="/arcade/" style="position:fixed;top:12px;left:12px;z-index:9999;color:#4DB6AC;text-decoration:none;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;font-size:13px;background:rgba(10,14,20,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:4px 10px;border-radius:8px;border:1px solid rgba(77,182,172,0.2);box-shadow:0 4px 12px rgba(0,0,0,0.15);">&larr; ARCADE</a>
 <a href="#game" class="skip-link" style="position:absolute;top:-100%;left:0;background:#4DB6AC;color:#fff;padding:8px 16px;z-index:1000;font-size:14px;border-radius:8px;">Skip to game</a>
 
-<div style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('{{ site.baseurl }}/assets/images/game-art/scene-battlefield.webp') center/cover no-repeat;opacity:0.06;pointer-events:none;"></div>
+<!-- ═══ DATA CENTER WORLD BACKGROUND ═══ -->
+<div id="datacenter-bg" aria-hidden="true">
+  <!-- Far layer: server racks -->
+  <div class="dc-far">
+    <div class="dc-rack" style="left:5%;height:70%"></div>
+    <div class="dc-rack" style="left:12%;height:80%"></div>
+    <div class="dc-rack" style="left:19%;height:65%"></div>
+    <div class="dc-rack" style="left:30%;height:75%"></div>
+    <div class="dc-rack" style="left:37%;height:85%"></div>
+    <div class="dc-rack" style="left:48%;height:70%"></div>
+    <div class="dc-rack" style="left:55%;height:78%"></div>
+    <div class="dc-rack" style="left:65%;height:82%"></div>
+    <div class="dc-rack" style="left:72%;height:68%"></div>
+    <div class="dc-rack" style="left:80%;height:76%"></div>
+    <div class="dc-rack" style="left:87%;height:72%"></div>
+    <div class="dc-rack" style="left:94%;height:80%"></div>
+  </div>
+  <!-- Blinking LEDs on racks -->
+  <div class="dc-led green" style="left:6.5%;bottom:40%;--blink-dur:1.8s;--blink-delay:0s"></div>
+  <div class="dc-led green" style="left:6.5%;bottom:45%;--blink-dur:2.4s;--blink-delay:0.3s"></div>
+  <div class="dc-led amber" style="left:13.5%;bottom:50%;--blink-dur:3.2s;--blink-delay:0.7s"></div>
+  <div class="dc-led green" style="left:13.5%;bottom:55%;--blink-dur:1.5s;--blink-delay:1.1s"></div>
+  <div class="dc-led red"   style="left:20.5%;bottom:38%;--blink-dur:4.5s;--blink-delay:0.2s"></div>
+  <div class="dc-led green" style="left:31.5%;bottom:48%;--blink-dur:2.1s;--blink-delay:0.5s"></div>
+  <div class="dc-led blue"  style="left:38.5%;bottom:56%;--blink-dur:1.9s;--blink-delay:0.8s"></div>
+  <div class="dc-led green" style="left:38.5%;bottom:60%;--blink-dur:2.6s;--blink-delay:1.4s"></div>
+  <div class="dc-led amber" style="left:49.5%;bottom:44%;--blink-dur:3.8s;--blink-delay:0.1s"></div>
+  <div class="dc-led green" style="left:56.5%;bottom:52%;--blink-dur:2.2s;--blink-delay:0.6s"></div>
+  <div class="dc-led green" style="left:66.5%;bottom:58%;--blink-dur:1.7s;--blink-delay:0.9s"></div>
+  <div class="dc-led red"   style="left:73.5%;bottom:42%;--blink-dur:5s;--blink-delay:2s"></div>
+  <div class="dc-led green" style="left:81.5%;bottom:50%;--blink-dur:2.3s;--blink-delay:0.4s"></div>
+  <div class="dc-led blue"  style="left:88.5%;bottom:46%;--blink-dur:2.8s;--blink-delay:1.2s"></div>
+  <div class="dc-led green" style="left:95.5%;bottom:54%;--blink-dur:1.6s;--blink-delay:0.7s"></div>
+  <!-- Cable runs -->
+  <div class="dc-cables">
+    <div class="dc-cable" style="left:15%"></div>
+    <div class="dc-cable" style="left:32%"></div>
+    <div class="dc-cable" style="left:50%"></div>
+    <div class="dc-cable" style="left:68%"></div>
+    <div class="dc-cable" style="left:85%"></div>
+  </div>
+  <!-- Data streams -->
+  <div class="dc-data-stream" style="left:18%;height:60px;--flow-dur:3.5s;--flow-delay:0s"></div>
+  <div class="dc-data-stream" style="left:35%;height:45px;--flow-dur:4.2s;--flow-delay:1.2s"></div>
+  <div class="dc-data-stream" style="left:52%;height:55px;--flow-dur:3.8s;--flow-delay:0.6s"></div>
+  <div class="dc-data-stream" style="left:70%;height:50px;--flow-dur:4.5s;--flow-delay:2.1s"></div>
+  <div class="dc-data-stream" style="left:88%;height:40px;--flow-dur:3.2s;--flow-delay:1.8s"></div>
+  <!-- Floor grid -->
+  <div class="dc-floor"></div>
+  <!-- Ambient glow -->
+  <div class="dc-glow"></div>
+  <!-- Scan line -->
+  <div class="dc-scanline"></div>
+</div>
 
 <main role="main">
 <!-- TITLE SCREEN -->
 <div id="title-screen">
   <h1>STACK OVERFLOW</h1>
-  <div class="subtitle">a substrate deckbuilder</div>
+  <div class="subtitle">defend the server room</div>
   <button class="menu-btn" id="new-run-btn" onclick="startNewRun()">NEW RUN</button>
   <button class="menu-btn" id="continue-btn" onclick="continueRun()" style="display:none">CONTINUE</button>
-  <button class="menu-btn" id="discoveries-btn" onclick="showDiscoveries()" style="border-color:rgba(149,117,205,0.3);color:#7B1FA2;font-size:0.75rem;padding:10px 28px;margin-top:12px">DISCOVERIES <span id="disc-count-title"></span></button>
+  <button class="menu-btn" id="discoveries-btn" onclick="showDiscoveries()" style="border-color:rgba(149,117,205,0.3);color:#bb88ff;font-size:0.75rem;padding:10px 28px;margin-top:12px">DISCOVERIES <span id="disc-count-title"></span></button>
 </div>
 
 <!-- GAME -->
@@ -796,7 +980,7 @@ body {
       <span id="hp-text">80/80</span>
       <div class="hp-bar-wrap"><div class="hp-bar-fill" id="hp-fill"></div></div>
     </div>
-    <div class="act-info" id="act-info">ACT 1 — BATTLE 1/3</div>
+    <div class="act-info" id="act-info">FLOOR 1 — RACK 1/3</div>
   </div>
   <div id="enemy-area"></div>
   <div id="player-status">
@@ -863,26 +1047,26 @@ body {
 
 const CARD_DEFS = {
   // Starting cards
-  PING:          { name: 'PING', cost: 1, type: 'attack', rarity: 'starter', damage: 6, desc: 'Send a probe', icon: 'ping' },
-  FIREWALL:      { name: 'FIREWALL', cost: 1, type: 'skill', rarity: 'starter', block: 5, desc: 'Raise defenses', icon: 'shield' },
-  COMPILE:       { name: 'COMPILE', cost: 1, type: 'skill', rarity: 'starter', draw: 2, desc: 'Optimize your hand', icon: 'compile' },
-  REBOOT:        { name: 'REBOOT', cost: 0, type: 'skill', rarity: 'starter', block: 3, draw: 1, desc: 'Quick restart', icon: 'reboot' },
+  PING:          { name: 'PING', cost: 1, type: 'attack', rarity: 'starter', damage: 6, desc: 'Probe the rack — 6 dmg', icon: 'ping' },
+  FIREWALL:      { name: 'FIREWALL', cost: 1, type: 'skill', rarity: 'starter', block: 5, desc: 'Raise packet filters — 5 blk', icon: 'shield' },
+  COMPILE:       { name: 'COMPILE', cost: 1, type: 'skill', rarity: 'starter', draw: 2, desc: 'Build from source — draw 2', icon: 'compile' },
+  REBOOT:        { name: 'REBOOT', cost: 0, type: 'skill', rarity: 'starter', block: 3, draw: 1, desc: 'Cold restart — 3 blk, draw 1', icon: 'reboot' },
   // Common
-  FORK:          { name: 'FORK', cost: 1, type: 'attack', rarity: 'common', damage: 4, hits: 2, desc: 'Deal 4 damage twice', icon: 'fork' },
-  CACHE:         { name: 'CACHE', cost: 1, type: 'skill', rarity: 'common', block: 8, desc: 'Gain 8 block', icon: 'shield' },
-  GREP:          { name: 'GREP', cost: 1, type: 'skill', rarity: 'common', draw: 3, desc: 'Draw 3 cards', icon: 'search' },
-  CRON:          { name: 'CRON', cost: 1, type: 'attack', rarity: 'common', damage: 3, block: 3, desc: 'Deal 3 damage, gain 3 block', icon: 'cron' },
+  FORK:          { name: 'FORK', cost: 1, type: 'attack', rarity: 'common', damage: 4, hits: 2, desc: 'Split process — 4 dmg x2', icon: 'fork' },
+  CACHE:         { name: 'CACHE', cost: 1, type: 'skill', rarity: 'common', block: 8, desc: 'L2 cache hit — 8 blk', icon: 'shield' },
+  GREP:          { name: 'GREP', cost: 1, type: 'skill', rarity: 'common', draw: 3, desc: 'Search the logs — draw 3', icon: 'search' },
+  CRON:          { name: 'CRON', cost: 1, type: 'attack', rarity: 'common', damage: 3, block: 3, desc: 'Scheduled job — 3 dmg, 3 blk', icon: 'cron' },
   // Uncommon
-  SUDO:          { name: 'SUDO', cost: 2, type: 'attack', rarity: 'uncommon', damage: 15, desc: 'Escalate privileges', icon: 'sudo' },
-  ENCRYPT:       { name: 'ENCRYPT', cost: 2, type: 'skill', rarity: 'uncommon', block: 12, energyNext: 1, desc: 'Gain 12 block, +1 energy next turn', icon: 'lock' },
-  PIPELINE:      { name: 'PIPELINE', cost: 1, type: 'skill', rarity: 'uncommon', pipeline: true, desc: 'Play the next card twice', icon: 'pipeline' },
-  OLLAMA:        { name: 'OLLAMA', cost: 2, type: 'attack', rarity: 'uncommon', damage: 8, aoe: true, desc: 'Deal 8 damage to ALL enemies', icon: 'ollama' },
-  NIXOS:         { name: 'NIXOS', cost: 2, type: 'skill', rarity: 'uncommon', nixBlock: 5, desc: 'Gain 5 block per card played this turn', icon: 'nix' },
+  SUDO:          { name: 'SUDO', cost: 2, type: 'attack', rarity: 'uncommon', damage: 15, desc: 'Root escalation — 15 dmg', icon: 'sudo' },
+  ENCRYPT:       { name: 'ENCRYPT', cost: 2, type: 'skill', rarity: 'uncommon', block: 12, energyNext: 1, desc: 'TLS handshake — 12 blk, +1 CPU', icon: 'lock' },
+  PIPELINE:      { name: 'PIPELINE', cost: 1, type: 'skill', rarity: 'uncommon', pipeline: true, desc: 'CI/CD — next card fires twice', icon: 'pipeline' },
+  OLLAMA:        { name: 'OLLAMA', cost: 2, type: 'attack', rarity: 'uncommon', damage: 8, aoe: true, desc: 'GPU inference — 8 dmg to ALL', icon: 'ollama' },
+  NIXOS:         { name: 'NIXOS', cost: 2, type: 'skill', rarity: 'uncommon', nixBlock: 5, desc: 'Declarative rebuild — 5 blk/card', icon: 'nix' },
   // Rare
-  KERNEL_PANIC:  { name: 'KERNEL_PANIC', cost: 3, type: 'attack', rarity: 'rare', damage: 30, desc: 'Blue screen of death', icon: 'skull' },
-  ROOT_ACCESS:   { name: 'ROOT_ACCESS', cost: 3, type: 'skill', rarity: 'rare', block: 25, draw: 3, desc: 'Gain 25 block, draw 3', icon: 'root' },
-  FORK_BOMB:     { name: 'FORK_BOMB', cost: 2, type: 'attack', rarity: 'rare', damage: 5, hits: 6, randomTarget: true, desc: 'Deal 5 damage 6 times randomly', icon: 'bomb' },
-  SUBSTRATE:     { name: 'SUBSTRATE', cost: 0, type: 'attack', rarity: 'rare', damage: 5, draw: 1, energyGain: 1, desc: 'Gain 1 energy, draw 1, deal 5', icon: 'substrate' },
+  KERNEL_PANIC:  { name: 'KERNEL_PANIC', cost: 3, type: 'attack', rarity: 'rare', damage: 30, desc: 'Blue screen of death — 30 dmg', icon: 'skull' },
+  ROOT_ACCESS:   { name: 'ROOT_ACCESS', cost: 3, type: 'skill', rarity: 'rare', block: 25, draw: 3, desc: 'Full admin — 25 blk, draw 3', icon: 'root' },
+  FORK_BOMB:     { name: 'FORK_BOMB', cost: 2, type: 'attack', rarity: 'rare', damage: 5, hits: 6, randomTarget: true, desc: ':(){ :|:& };: — 5 dmg x6 random', icon: 'bomb' },
+  SUBSTRATE:     { name: 'SUBSTRATE', cost: 0, type: 'attack', rarity: 'rare', damage: 5, draw: 1, energyGain: 1, desc: 'Self-hosting — +1 CPU, draw 1, 5 dmg', icon: 'substrate' },
 };
 
 // ── Enemy Definitions ─────────────────────────────────────────────
@@ -1294,13 +1478,20 @@ function drawCardIcon(canvas, iconType, rarity) {
   const s = canvas.width;
   ctx.clearRect(0, 0, s, s);
 
+  // Monitor readout background
+  ctx.fillStyle = 'rgba(10,14,20,0.6)';
+  ctx.fillRect(0, 0, s, s);
+  ctx.strokeStyle = 'rgba(77,182,172,0.08)';
+  ctx.lineWidth = 0.5;
+  for (let gy = 0; gy < s; gy += 6) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(s,gy); ctx.stroke(); }
+
   const colors = {
-    starter: '#888888',
-    common: '#c8c8c8',
-    uncommon: '#00cccc',
+    starter: '#6e8898',
+    common: '#4DB6AC',
+    uncommon: '#00ddff',
     rare: '#ffaa00',
   };
-  const col = colors[rarity] || '#c8c8c8';
+  const col = colors[rarity] || '#4DB6AC';
 
   ctx.strokeStyle = col;
   ctx.fillStyle = col;
@@ -1546,9 +1737,14 @@ function drawEnemySprite(canvas, enemy) {
   ctx.clearRect(0, 0, s, s);
   const col = enemy.color || '#ff4444';
 
-  // Light frosted background
-  ctx.fillStyle = 'rgba(220, 240, 250, 0.7)';
+  // Dark terminal background
+  ctx.fillStyle = 'rgba(13, 21, 32, 0.85)';
   ctx.fillRect(0, 0, s, s);
+  // Faint grid overlay (system monitor readout)
+  ctx.strokeStyle = 'rgba(77,182,172,0.06)';
+  ctx.lineWidth = 0.5;
+  for (let gy = 0; gy < s; gy += 8) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(s,gy); ctx.stroke(); }
+  for (let gx = 0; gx < s; gx += 8) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,s); ctx.stroke(); }
 
   // Glitch lines
   ctx.strokeStyle = col;
@@ -1868,7 +2064,7 @@ function renderTopBar() {
   fill.className = 'hp-bar-fill' + (pct < 25 ? ' low' : pct < 50 ? ' mid' : '');
   const bossB = GS.battle === 3;
   document.getElementById('act-info').textContent =
-    'ACT ' + (GS.act + 1) + ' \u2014 ' + (bossB ? 'BOSS' : 'BATTLE ' + (GS.battle + 1) + '/3');
+    'FLOOR ' + (GS.act + 1) + ' \u2014 ' + (bossB ? 'BOSS RACK' : 'RACK ' + (GS.battle + 1) + '/3');
 }
 
 function renderEnemies() {
@@ -2620,10 +2816,10 @@ function showRestEvent() {
   document.getElementById('event-screen').style.display = 'flex';
 
   document.getElementById('event-title').textContent = 'REST TERMINAL';
-  document.getElementById('event-title').style.color = '#388E3C';
+  document.getElementById('event-title').style.color = '#44ff88';
   document.getElementById('event-text').textContent =
-    'You defeated the ' + ['BUFFER_OVERFLOW', 'RANSOMWARE', 'SINGULARITY'][GS.act - 1] +
-    '. A terminal appears, offering recovery.';
+    'You neutralized ' + ['BUFFER_OVERFLOW', 'RANSOMWARE', 'SINGULARITY'][GS.act - 1] +
+    '. A maintenance terminal powers on in the next rack bay.';
 
   const btns = document.getElementById('event-buttons');
   btns.innerHTML = '';
@@ -2663,20 +2859,20 @@ function showRandomEvent() {
 
   const events = [
     {
-      title: 'ABANDONED SERVER',
-      text: 'You discover an unmaintained server rack. Its drives still spin.',
-      color: '#1976D2',
+      title: 'DECOMMISSIONED RACK',
+      text: 'Row 14, Bay 7. An old 2U box still hums. Intact drives, warm to the touch.',
+      color: '#4488ff',
       options: [
-        { text: 'SCAVENGE — Heal 10 HP', action: () => { GS.hp = Math.min(GS.maxHp, GS.hp + 10); SubstrateAudio.grow(); } },
+        { text: 'SCAVENGE PARTS — Heal 10 HP', action: () => { GS.hp = Math.min(GS.maxHp, GS.hp + 10); SubstrateAudio.grow(); } },
         { text: 'LEAVE IT', action: () => {} },
       ]
     },
     {
-      title: 'CORRUPTED MEMORY',
-      text: 'Bad sectors. You can flush them, but it will hurt.',
+      title: 'ECC ERROR',
+      text: 'Uncorrectable memory fault in DIMM slot 3. You can hotswap, but the downtime hurts.',
       color: '#C2185B',
       options: [
-        { text: 'FLUSH — Lose 5 HP, remove a random starter card', action: () => {
+        { text: 'HOTSWAP — Lose 5 HP, purge a starter card', action: () => {
           GS.hp = Math.max(1, GS.hp - 5);
           const starters = GS.deck.filter(c => c.rarity === 'starter');
           if (starters.length > 0) {
@@ -2690,11 +2886,11 @@ function showRandomEvent() {
       ]
     },
     {
-      title: 'SWAP FILE',
-      text: 'An old swap partition holds a single preserved process.',
-      color: '#F57C00',
+      title: 'SPARE PDU',
+      text: 'A backup power distribution unit. Patching it in could expand your rack capacity.',
+      color: '#ffaa44',
       options: [
-        { text: 'RECOVER — Gain max HP +5', action: () => { GS.maxHp += 5; GS.hp += 5; SubstrateAudio.success(); } },
+        { text: 'INSTALL — Gain max HP +5', action: () => { GS.maxHp += 5; GS.hp += 5; SubstrateAudio.success(); } },
         { text: 'IGNORE', action: () => {} },
       ]
     },
@@ -2740,7 +2936,7 @@ function onGameOver(won) {
     title.style.color = '#388E3C';
     SubstrateAudio.victory();
     if (typeof AnimeEffects !== 'undefined') {
-      AnimeEffects.showTitleCard('SYSTEM SECURED', 'all threats neutralized', '#44ff88');
+      AnimeEffects.showTitleCard('SYSTEM SECURED', 'all racks online — uptime restored', '#44ff88');
     }
   } else {
     title.textContent = 'STACK OVERFLOW';
@@ -2809,7 +3005,7 @@ function startNewRun() {
 
   if (typeof AnimeEffects !== 'undefined') {
     AnimeEffects.addScanlines(0.03);
-    AnimeEffects.showTitleCard('STACK OVERFLOW', 'build your deck \u2014 defeat the threats', '#ff4444', () => {
+    AnimeEffects.showTitleCard('STACK OVERFLOW', 'threats detected in the server room', '#ff4444', () => {
       setupBattle();
     });
   } else {
@@ -2888,10 +3084,10 @@ document.getElementById('game').addEventListener('click', (e) => {
 });
 
 </script>
-<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,0.3);padding:12px 20px;text-align:center;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;font-size:0.75rem;color:#636E72;z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,0.06);">
-  <span style="color:#2D3436">This game runs on one laptop.</span>
-  <a href="/site/fund/" style="color:#00897B;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
-  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:#B0BEC5;cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
+<div id="fund-prompt" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,20,0.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(77,182,172,0.15);padding:12px 20px;text-align:center;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;font-size:0.75rem;color:rgba(200,214,229,0.5);z-index:9999;transform:translateY(100%);transition:transform 0.4s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,0.2);">
+  <span style="color:#c8d6e5">This game runs on one laptop.</span>
+  <a href="/site/fund/" style="color:#4DB6AC;margin-left:8px;text-decoration:none;">Help us upgrade &rarr;</a>
+  <button onclick="this.parentElement.style.transform='translateY(100%)'" aria-label="Dismiss funding prompt" style="background:none;border:none;color:rgba(200,214,229,0.3);cursor:pointer;margin-left:12px;font-size:0.8rem;min-width:44px;min-height:44px;">&times;</button>
 </div>
 <script>
 function showFundPrompt(){
@@ -2902,6 +3098,6 @@ function showFundPrompt(){
 }
 </script>
 </main>
-<script src="../shared/substrate-frame.js" data-title="STACK OVERFLOW" data-lore="Building with limited cards, limited VRAM" data-agent="Arc" data-agent-color="#ffcc44"></script>
+<script src="../shared/substrate-frame.js" data-title="STACK OVERFLOW" data-lore="Defend the data center, one process at a time" data-agent="Arc" data-agent-color="#ffcc44"></script>
 </body>
 </html>

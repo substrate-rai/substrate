@@ -601,6 +601,308 @@ main {
   animation: pulse-scan 0.6s ease-out;
 }
 
+@keyframes scan-ripple {
+  0% { box-shadow: 0 0 0 0 rgba(0,120,212,0.4); }
+  40% { box-shadow: 0 0 0 10px rgba(0,120,212,0.1); }
+  100% { box-shadow: 0 0 0 16px rgba(0,120,212,0); }
+}
+
+.node-card.scan-ripple {
+  animation: scan-ripple 0.8s ease-out;
+}
+
+/* ── Instructions Panel ── */
+.how-to-play {
+  max-width: 520px;
+  width: 100%;
+  padding: 24px 28px;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.how-to-play-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.how-to-play-toggle h3 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.how-to-play-toggle .toggle-arrow {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.how-to-play.open .toggle-arrow {
+  transform: rotate(180deg);
+}
+
+.how-to-play-body {
+  display: none;
+  margin-top: 16px;
+}
+
+.how-to-play.open .how-to-play-body {
+  display: block;
+}
+
+.htp-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.htp-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.htp-icon.scan-icon { background: var(--blue-dim); color: var(--blue); }
+.htp-icon.accuse-icon { background: var(--red-dim); color: var(--red); }
+.htp-icon.analyze-icon { background: var(--green-dim); color: var(--green); }
+.htp-icon.score-icon { background: var(--purple-dim); color: var(--purple); }
+
+.htp-text {
+  flex: 1;
+}
+
+.htp-text strong {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--heading);
+  margin-bottom: 2px;
+}
+
+.htp-text span {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.htp-signals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.4);
+}
+
+.htp-signal-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.62rem;
+  color: var(--text-dim);
+}
+
+.htp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.htp-dot.green { background: var(--green); }
+.htp-dot.amber { background: var(--amber); }
+.htp-dot.red { background: var(--red); }
+.htp-dot.blue { background: var(--blue); }
+
+/* ── Tutorial Tooltip ── */
+.tutorial-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutorial-highlight {
+  position: relative;
+  z-index: 201;
+  box-shadow: 0 0 0 4px var(--blue), 0 0 0 9999px rgba(0,0,0,0.25);
+  border-radius: 12px;
+}
+
+.tutorial-tooltip {
+  position: absolute;
+  z-index: 202;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 24px var(--shadow-strong);
+  max-width: 260px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.tutorial-tooltip .tt-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--heading);
+  margin-bottom: 4px;
+}
+
+.tutorial-tooltip .tt-body {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.tutorial-tooltip .tt-step {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.tutorial-tooltip .btn-tt {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--blue);
+  color: #fff;
+  cursor: pointer;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tutorial-tooltip .btn-tt:hover { background: #0068BE; }
+
+/* ── Gameplay Tracker Bar ── */
+.tracker-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.tracker-item {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  text-align: center;
+  transition: border-color 0.3s ease;
+}
+
+.tracker-item .tracker-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.tracker-item .tracker-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.tracker-val.val-blue { color: var(--blue); }
+.tracker-val.val-red { color: var(--red); }
+.tracker-val.val-green { color: var(--green); }
+.tracker-val.val-amber { color: var(--amber); }
+
+.tracker-item.tracker-warn {
+  border-color: rgba(204,136,0,0.4);
+  background: rgba(204,136,0,0.06);
+}
+
+.tracker-item.tracker-danger {
+  border-color: rgba(208,72,72,0.4);
+  background: rgba(208,72,72,0.06);
+}
+
+/* ── Objective Banner ── */
+.objective-banner {
+  padding: 10px 20px;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  text-align: center;
+  border-radius: 10px;
+  background: var(--blue-dim);
+  border: 1px solid rgba(0,120,212,0.15);
+}
+
+.objective-banner strong {
+  color: var(--blue);
+}
+
+/* ── Win/Lose Conditions ── */
+.conditions-bar {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px;
+  flex-wrap: wrap;
+}
+
+.condition {
+  flex: 1;
+  min-width: 140px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.62rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.condition-win {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid rgba(46,158,90,0.2);
+}
+
+.condition-lose {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(208,72,72,0.2);
+}
+
+.condition .cond-icon {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+@media (max-width: 520px) {
+  .how-to-play { padding: 18px 16px; }
+  .htp-signals { grid-template-columns: 1fr; }
+  .tracker-bar { flex-direction: column; }
+  .tracker-item { min-width: unset; }
+  .conditions-bar { flex-direction: column; }
+  .condition { min-width: unset; }
+}
+
 /* ── API Section ── */
 .api-section {
   padding: 20px;
@@ -660,6 +962,59 @@ main {
       <button class="btn" onclick="resetCareer()" style="font-size:0.65rem;opacity:0.6;">Reset Career</button>
     </div>
   </div>
+
+  <!-- How to Play panel -->
+  <div class="how-to-play glass" id="how-to-play">
+    <div class="how-to-play-toggle" onclick="toggleHowToPlay()">
+      <h3>How to Play</h3>
+      <span class="toggle-arrow">&#9660;</span>
+    </div>
+    <div class="how-to-play-body">
+      <div class="htp-step">
+        <div class="htp-icon scan-icon">1</div>
+        <div class="htp-text">
+          <strong>Read the Signals</strong>
+          <span>Each node shows live metrics (latency, CPU, packet loss...). Compare values across nodes &mdash; outliers point to compromised nodes.</span>
+        </div>
+      </div>
+      <div class="htp-step">
+        <div class="htp-icon scan-icon">2</div>
+        <div class="htp-text">
+          <strong>Scan Suspicious Nodes</strong>
+          <span>Select a node, then hit <b>Scan</b>. Deep scans reveal risk level and color-code anomalies. You have limited scans &mdash; use them wisely.</span>
+        </div>
+      </div>
+      <div class="htp-step">
+        <div class="htp-icon analyze-icon">3</div>
+        <div class="htp-text">
+          <strong>Analyze the Network</strong>
+          <span>Hit <b>Analyze</b> to get a cross-node comparison of all metrics. See which dimensions have the most anomalies.</span>
+        </div>
+      </div>
+      <div class="htp-step">
+        <div class="htp-icon accuse-icon">4</div>
+        <div class="htp-text">
+          <strong>Accuse Compromised Nodes</strong>
+          <span>When you're confident, select a node and hit <b>Accuse</b>. Correct = big points. Wrong = penalty. Find all threats to win.</span>
+        </div>
+      </div>
+
+      <div class="htp-signals">
+        <div class="htp-signal-item"><div class="htp-dot green"></div> Normal value</div>
+        <div class="htp-signal-item"><div class="htp-dot amber"></div> Anomalous reading</div>
+        <div class="htp-signal-item"><div class="htp-dot red"></div> High risk / compromised</div>
+        <div class="htp-signal-item"><div class="htp-dot blue"></div> Scanned (detailed view)</div>
+      </div>
+
+      <div class="htp-step" style="margin-top:14px;margin-bottom:0;">
+        <div class="htp-icon score-icon">+</div>
+        <div class="htp-text">
+          <strong>Scoring</strong>
+          <span>+100-150 pts per correct accusation (bonus for unused scans). +25 pts per unused scan at round end. -50 pts per false accusation. Speed bonus for finishing early. Win to level up; lose to level down.</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════ GAME SCREEN ═══════ -->
@@ -682,6 +1037,43 @@ main {
   <!-- Difficulty track -->
   <div style="padding:0 20px;">
     <div class="difficulty-track" id="diff-track"></div>
+  </div>
+
+  <!-- Objective banner -->
+  <div class="objective-banner glass" id="objective-banner">
+    Identify all <strong id="obj-threats">1</strong> compromised node(s) before running out of rounds.
+  </div>
+
+  <!-- Gameplay tracker -->
+  <div class="tracker-bar" id="tracker-bar">
+    <div class="tracker-item" id="tracker-scans">
+      <div class="tracker-label">Scans Left</div>
+      <div class="tracker-val val-blue" id="tracker-scans-val">3</div>
+    </div>
+    <div class="tracker-item" id="tracker-threats">
+      <div class="tracker-label">Threats Left</div>
+      <div class="tracker-val val-red" id="tracker-threats-val">1</div>
+    </div>
+    <div class="tracker-item" id="tracker-rounds">
+      <div class="tracker-label">Rounds Left</div>
+      <div class="tracker-val val-amber" id="tracker-rounds-val">5</div>
+    </div>
+    <div class="tracker-item" id="tracker-score">
+      <div class="tracker-label">Score</div>
+      <div class="tracker-val val-green" id="tracker-score-val">0</div>
+    </div>
+  </div>
+
+  <!-- Win/Lose conditions -->
+  <div class="conditions-bar" id="conditions-bar">
+    <div class="condition condition-win">
+      <span class="cond-icon">&#10003;</span>
+      <span>Win: Find all compromised nodes</span>
+    </div>
+    <div class="condition condition-lose">
+      <span class="cond-icon">&#10007;</span>
+      <span>Lose: Run out of rounds or false accusations</span>
+    </div>
   </div>
 
   <!-- Network visualization -->
@@ -1319,6 +1711,48 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
     // Difficulty track
     renderDiffTrack();
 
+    // Update tracker bar
+    var threatsLeft = state.totalCompromised - state.found;
+    var roundsLeft = Math.max(0, state.maxRounds - state.round + 1);
+
+    document.getElementById('tracker-scans-val').textContent = state.scansLeft;
+    document.getElementById('tracker-threats-val').textContent = threatsLeft;
+    document.getElementById('tracker-rounds-val').textContent = roundsLeft;
+    document.getElementById('tracker-score-val').textContent = state.score;
+    document.getElementById('obj-threats').textContent = state.totalCompromised;
+
+    // Warning states for tracker items
+    var scanEl = document.getElementById('tracker-scans');
+    scanEl.className = 'tracker-item' + (state.scansLeft === 0 ? ' tracker-danger' : (state.scansLeft === 1 ? ' tracker-warn' : ''));
+
+    var roundEl = document.getElementById('tracker-rounds');
+    roundEl.className = 'tracker-item' + (roundsLeft <= 1 ? ' tracker-danger' : (roundsLeft <= 2 ? ' tracker-warn' : ''));
+
+    var threatEl = document.getElementById('tracker-threats');
+    threatEl.className = 'tracker-item' + (threatsLeft === 0 ? '' : '');
+
+    // Update objective banner text based on state
+    var objBanner = document.getElementById('objective-banner');
+    if (state.gameOver) {
+      if (state.found >= state.totalCompromised) {
+        objBanner.innerHTML = '<strong>Network secured!</strong> All threats identified.';
+        objBanner.style.background = 'var(--green-dim)';
+        objBanner.style.borderColor = 'rgba(46,158,90,0.2)';
+      } else {
+        objBanner.innerHTML = '<strong>Network breached.</strong> ' + threatsLeft + ' threat(s) undetected.';
+        objBanner.style.background = 'var(--red-dim)';
+        objBanner.style.borderColor = 'rgba(208,72,72,0.2)';
+      }
+    } else {
+      objBanner.style.background = '';
+      objBanner.style.borderColor = '';
+      if (threatsLeft === 0) {
+        objBanner.innerHTML = 'All threats found! <strong>Network secured.</strong>';
+      } else {
+        objBanner.innerHTML = 'Find ' + (threatsLeft === state.totalCompromised ? 'all ' : 'remaining ') + '<strong>' + threatsLeft + '</strong> compromised node' + (threatsLeft > 1 ? 's' : '') + '. <strong>' + roundsLeft + '</strong> round' + (roundsLeft !== 1 ? 's' : '') + ' left.';
+      }
+    }
+
     // Button states
     document.getElementById('btn-scan').disabled = state.selected < 0 || state.scansLeft <= 0 || state.gameOver || (state.selected >= 0 && state.nodes[state.selected].scanned);
     document.getElementById('btn-accuse').disabled = state.selected < 0 || state.gameOver || (state.selected >= 0 && state.nodes[state.selected].revealed);
@@ -1413,13 +1847,20 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
       log('SCAN ' + node.name + ': ' + result.text, 'action');
     }
 
-    // Animate the card
+    // Animate the card — pulse + ripple
+    var scanIdx = state.selected;
     var cards = document.querySelectorAll('.node-card');
-    if (cards[state.selected]) cards[state.selected].classList.add('scanning');
+    if (cards[scanIdx]) {
+      cards[scanIdx].classList.add('scanning');
+      cards[scanIdx].classList.add('scan-ripple');
+    }
     setTimeout(function() {
       var c = document.querySelectorAll('.node-card');
-      if (c[state.selected]) c[state.selected].classList.remove('scanning');
-    }, 600);
+      if (c[scanIdx]) {
+        c[scanIdx].classList.remove('scanning');
+        c[scanIdx].classList.remove('scan-ripple');
+      }
+    }, 800);
 
     checkRoundLimit();
     render();
@@ -1621,6 +2062,11 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
     setTimeout(function() {
       startCanvasAnim();
       canvasEl.addEventListener('click', handleCanvasClick);
+
+      // Show tutorial on first play
+      if (shouldShowTutorial()) {
+        setTimeout(showTutorial, 400);
+      }
     }, 50);
   }
 
@@ -1639,6 +2085,136 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
       saveCareer();
       updateTitleStats();
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // HOW TO PLAY TOGGLE
+  // ═══════════════════════════════════════════════════════════════════════
+
+  function toggleHowToPlay() {
+    var panel = document.getElementById('how-to-play');
+    panel.classList.toggle('open');
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // FIRST-TIME TUTORIAL
+  // ═══════════════════════════════════════════════════════════════════════
+
+  var TUTORIAL_KEY = 'signal_tutorial_shown_v1';
+
+  var tutorialSteps = [
+    {
+      target: '#btn-scan',
+      title: 'Scan Node',
+      body: 'Select a node from the grid or canvas, then hit Scan. This deep-scans it and color-codes its signal data. You have limited scans per round.',
+    },
+    {
+      target: '#btn-accuse',
+      title: 'Accuse Node',
+      body: 'When you think a node is compromised, select it and hit Accuse. Correct guesses earn big points. Wrong guesses cost you -50 and burn an accusation.',
+    },
+    {
+      target: '#btn-analyze',
+      title: 'Analyze Signals',
+      body: 'Compares all metrics across every node in the network. Highlights which signal dimensions have the most anomalies. Free to use, but costs a round.',
+    },
+    {
+      target: '#tracker-bar',
+      title: 'Track Your Progress',
+      body: 'Keep an eye on scans remaining, threats left to find, rounds left, and your score. Boxes turn orange and red when resources run low.',
+    },
+  ];
+
+  var currentTutStep = 0;
+  var tutOverlay = null;
+
+  function shouldShowTutorial() {
+    try { return !localStorage.getItem(TUTORIAL_KEY); } catch(e) { return false; }
+  }
+
+  function markTutorialDone() {
+    try { localStorage.setItem(TUTORIAL_KEY, '1'); } catch(e) {}
+  }
+
+  function showTutorial() {
+    if (!shouldShowTutorial()) return;
+    currentTutStep = 0;
+    showTutStep();
+  }
+
+  function showTutStep() {
+    // Clean up previous
+    cleanupTutorial();
+
+    if (currentTutStep >= tutorialSteps.length) {
+      markTutorialDone();
+      return;
+    }
+
+    var step = tutorialSteps[currentTutStep];
+    var targetEl = document.querySelector(step.target);
+    if (!targetEl) {
+      currentTutStep++;
+      showTutStep();
+      return;
+    }
+
+    // Create overlay
+    tutOverlay = document.createElement('div');
+    tutOverlay.className = 'tutorial-overlay';
+    tutOverlay.addEventListener('click', function(e) {
+      if (e.target === tutOverlay) advanceTutorial();
+    });
+    document.body.appendChild(tutOverlay);
+
+    // Highlight the target
+    targetEl.classList.add('tutorial-highlight');
+
+    // Position tooltip near target
+    var rect = targetEl.getBoundingClientRect();
+    var tooltip = document.createElement('div');
+    tooltip.className = 'tutorial-tooltip';
+    tooltip.innerHTML =
+      '<div class="tt-step">Step ' + (currentTutStep + 1) + ' of ' + tutorialSteps.length + '</div>' +
+      '<div class="tt-title">' + step.title + '</div>' +
+      '<div class="tt-body">' + step.body + '</div>' +
+      '<button class="btn-tt" onclick="advanceTutorial()">' +
+      (currentTutStep < tutorialSteps.length - 1 ? 'Next' : 'Got it') + '</button>';
+
+    // Place tooltip above or below target
+    tooltip.style.position = 'fixed';
+    tooltip.style.left = Math.max(12, Math.min(rect.left, window.innerWidth - 280)) + 'px';
+
+    if (rect.top > window.innerHeight / 2) {
+      // Place above
+      tooltip.style.bottom = (window.innerHeight - rect.top + 12) + 'px';
+    } else {
+      // Place below
+      tooltip.style.top = (rect.bottom + 12) + 'px';
+    }
+
+    document.body.appendChild(tooltip);
+  }
+
+  function advanceTutorial() {
+    currentTutStep++;
+    showTutStep();
+  }
+
+  function cleanupTutorial() {
+    // Remove overlay
+    var overlays = document.querySelectorAll('.tutorial-overlay');
+    for (var i = 0; i < overlays.length; i++) overlays[i].remove();
+
+    // Remove tooltips
+    var tooltips = document.querySelectorAll('.tutorial-tooltip');
+    for (var j = 0; j < tooltips.length; j++) tooltips[j].remove();
+
+    // Remove highlights
+    var highlights = document.querySelectorAll('.tutorial-highlight');
+    for (var k = 0; k < highlights.length; k++) highlights[k].classList.remove('tutorial-highlight');
+
+    tutOverlay = null;
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1722,6 +2298,8 @@ SIGNAL.accuse(suspiciousIndex);</code></pre>
   window.doScan = doScan;
   window.doAccuse = doAccuse;
   window.doAnalyze = doAnalyze;
+  window.toggleHowToPlay = toggleHowToPlay;
+  window.advanceTutorial = advanceTutorial;
 
   // Show title screen
   updateTitleStats();
