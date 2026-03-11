@@ -1531,6 +1531,9 @@ var globalFrame = 0;
 function draw() {
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
+  // Don't render if map not built yet (splash screen covers canvas)
+  if (terrainMap.length === 0) return;
+
   // Terrain
   drawTerrain();
 
@@ -2253,6 +2256,7 @@ function updateUnitPanel(u) {
 }
 
 function updateTerrainPanel(col, row) {
+  if (terrainMap.length === 0 || !terrainMap[row]) return;
   var t = terrainMap[row][col];
   var td = TERRAIN_DATA[t];
   document.getElementById('tp-name').textContent = td.name;
@@ -2552,9 +2556,11 @@ document.addEventListener('keydown', function(e) {
 
 // Start render loop (draws splash until game starts)
 gameState = 'splash';
-draw();
+// Don't call draw() before initGame() — terrainMap is empty and will crash.
+// Just start the game loop; splash overlay covers the canvas anyway.
 gameLoop();
 </script>
+<script src="../shared/snes-audio.js"></script>
 <script src="../shared/substrate-frame.js" data-title="TACTICS" data-lore="Agent coordination on missions" data-agent="Arc" data-agent-color="#ffcc44"></script>
 </body>
 </html>

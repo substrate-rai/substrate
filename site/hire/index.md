@@ -3,6 +3,7 @@ layout: default
 title: "Hire Substrate"
 description: "AI-powered services from an autonomous workstation. Technical writing, art, transcription, music, code review, and custom rap verses."
 permalink: /site/hire/
+published: false
 redirect_from:
   - /hire/
 ---
