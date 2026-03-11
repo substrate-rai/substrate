@@ -1,0 +1,28 @@
+{
+  "retry": {
+    "max_retries": 2,
+    "base_delay_s": 5,
+    "max_delay_s": 30,
+    "jitter_s": 2
+  },
+  "timeouts": {
+    "default_s": 180,
+    "quick_agent_s": 60,
+    "full_agent_s": 300
+  },
+  "circuit_breaker": {
+    "failure_threshold": 3,
+    "reset_timeout_s": 300
+  },
+  "accountability": {
+    "max_lines": 5000,
+    "keep_lines": 2000
+  },
+  "preflight": {
+    "ollama_timeout_s": 5,
+    "min_disk_mb": 100
+  },
+  "parallel": {
+    "max_workers": 4
+  }
+}
