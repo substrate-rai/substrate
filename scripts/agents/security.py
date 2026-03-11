@@ -74,7 +74,7 @@ SECRET_PATTERNS = [
 SKIP_DIRS = {
     ".git", "node_modules", "__pycache__", ".nix-profile",
     "result", "result-bin", "_site", ".jekyll-cache",
-    "tools",
+    "tools", "briefings",
 }
 
 SKIP_EXTENSIONS = {

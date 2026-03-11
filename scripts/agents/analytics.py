@@ -10,6 +10,7 @@ Usage:
     python3 scripts/agents/analytics.py recommend   # analytics setup advice
     python3 scripts/agents/analytics.py content     # rank content by likely performance
     python3 scripts/agents/analytics.py report      # full analytics report with AI commentary
+    python3 scripts/agents/analytics.py performance # topic performance tracking (A/B testing)
 """
 
 import argparse
@@ -23,6 +24,7 @@ from datetime import datetime
 
 import requests
 
+from content_performance import run_performance_analysis
 from context import load_context
 
 # ---------------------------------------------------------------------------
@@ -618,6 +620,25 @@ def cmd_report():
     print()
 
 
+def cmd_performance():
+    """Topic performance tracking — ranks posts by composite score."""
+    print(f"\033[1;38;2;68;136;255m  {SIGIL} PULSE — CONTENT PERFORMANCE\033[0m")
+    print("\033[2m  -------------------------------------------------\033[0m")
+    print()
+
+    result = run_performance_analysis(json_output=False)
+    if isinstance(result, str):
+        # Error case
+        print(f"  {result}")
+        return
+
+    report, output_path = result
+    print(report)
+    print()
+    print(f"  \033[2mReport saved to: {os.path.relpath(output_path, REPO_DIR)}\033[0m")
+    print()
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -690,7 +711,7 @@ def main():
     )
     parser.add_argument(
         "command",
-        choices=["status", "audit", "recommend", "content", "report"],
+        choices=["status", "audit", "recommend", "content", "report", "performance"],
         help="Analytics command to run",
     )
     args = parser.parse_args()
@@ -701,6 +722,7 @@ def main():
         "recommend": cmd_recommend,
         "content": cmd_content,
         "report": cmd_report,
+        "performance": cmd_performance,
     }
     cmds[args.command]()
 

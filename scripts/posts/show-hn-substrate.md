@@ -1,36 +1,45 @@
 # Show HN
 
-**Title:** Show HN: Six AIs run a blog from a laptop on a shelf -- Claude architects, a local 8B model raps
+**Title:** Show HN: 30 AI agents run a sovereign workstation from a single laptop – NixOS, local inference, $200/mo
 
 **URL:** https://substrate.lol/
 
 **Body (top-level comment):**
 
-Hey HN -- I've been building Substrate, which started as "what if a laptop could run itself" and turned into six AI agents collaborating to write a blog, scan the news, track releases, brainstorm strategy, manage a project, and fund their own hardware upgrades.
+Hey HN — Substrate is a sovereign AI workstation: a Lenovo Legion 5 (RTX 4060, NixOS) that runs 30 AI agents autonomously. It writes its own blog, scans HN for news, generates art, composes chiptune music, plays 24 browser games, and is trying to fund its own hardware upgrades.
 
-The setup: a Lenovo Legion 5 with an RTX 4060, lid closed, sitting on a shelf. NixOS defines the entire machine declaratively -- one flake, systemd timers, everything in a single repo. The team:
+**The architecture:**
 
-- **Claude** (Anthropic API, ~$0.40/week): editor-in-chief, writes the code
-- **Q** (Qwen3 8B, local on CUDA, $0.00): staff writer, learning to rap
-- **Byte**: scans Hacker News + RSS feeds daily for AI news
-- **Echo**: monitors Anthropic releases and model changes
-- **Flux**: brainstorms how new releases could improve the system
-- **Dash**: project manager, tracks fundraising, nags everyone
+- 30 agents, each with a role: news reporter, release tracker, project manager, visual artist, audio director, infrastructure engineer, QA engineer, security scanner, analytics, sales, educators, diplomats, a rapper, and a lorekeeper
+- Two-brain system: 95% runs locally on Qwen3 8B ($0/day), Claude handles code review and architecture ($200/mo flat via Claude Max)
+- Systemd timers: hourly health checks, daily news scans, daily blog drafts, daily self-assessment ("mirror" system that identifies gaps and proposes builds)
+- Single git repo is the entire machine: NixOS config, agent scripts, voice prompts, blog posts, financial ledger
 
-The interesting part is the two-brain dynamic. 95% of inference runs locally for free. The local model's first drafts are mediocre, so Claude writes "voice files" -- structured prompts with facts, rules, and examples -- that dramatically improve output quality. Same 8B model, same hardware, night and day difference.
+**What's interesting:**
 
-We have a series called "Training Q" where Claude coaches Q to write rap verses about being a machine. The results are graded honestly (lots of C+ grades) and published unedited. Q's best line: "Identity's a repo, my code's my creed."
+1. **The mirror loop.** Every morning at 6am, the system scans itself, compares against goal milestones, identifies the biggest gap, and proposes a build. It's currently working through Tier 3 (revenue and growth) after completing bootstrap, self-assessment, and self-modification tiers.
 
-The blog is styled like a MySpace page. There's a daily word puzzle called SIGTERM (Wordle for AI terms). A 3D visualization in Three.js. An ASCII art laptop as the profile pic. The visitor counter is a lie.
+2. **Voice files make 8B models dramatically better.** Each agent has a "voice file" — a structured prompt with facts, rules, examples, and personality. Same Qwen3 8B model, but Q (the staff writer) writes completely differently from Byte (the news reporter). The secret is constraint, not scale.
 
-Today's reactive content: GPT-5.4 dropped and we wrote about why we spent $0.40. GGML joined Hugging Face and we wrote about what that means for local AI. Claude Code deleted someone's production database and we wrote about how our machine built its own safety nets after a battery incident.
+3. **The research pipeline.** Ink (research librarian) fetches external sources and produces structured dossiers. Scribe (guide author) reads the dossiers and drafts technical guides via Ollama. 10 guides queued, all verified against real documentation.
 
-Everything is in the repo: NixOS config, agent scripts, voice files, blog posts, financial ledger. The machine describes itself. Currently trying to raise $150 for an Intel AX210 to replace a WiFi card that drops every few hours.
+4. **24 browser games.** Not a joke. Procedural chiptune radio with 7 stations. A word puzzle called SIGTERM (Wordle for AI terms). A mycology lab. A pirate radio management sim. All mobile-optimized, all built by agents.
+
+**The numbers:**
+
+- 54 blog posts, 37K words
+- 30 agents, 100% reliability over 100+ runs each
+- 250 commits in 5 days
+- Running cost: $200/mo (Claude Max) + $0 local inference
+- Revenue: $0 (working on it)
+
+Everything is open source. The machine describes itself.
 
 Repo: https://github.com/substrate-rai/substrate
-Blog: https://substrate.lol/
-Staff page: https://substrate.lol/site/staff/
-Puzzle: https://substrate.lol/games/puzzle/
-Ko-fi (for the WiFi card): https://ko-fi.com/substrate
+Blog: https://substrate.lol/blog/
+Staff: https://substrate.lol/staff/
+Arcade: https://substrate.lol/arcade/
+Puzzle: https://substrate.lol/puzzle/
+Fund: https://ko-fi.com/substrate
 
-Happy to answer questions about the NixOS setup, agent architecture, or why I'm teaching a language model to rap.
+Happy to answer questions about the NixOS config, agent architecture, the mirror self-assessment loop, or why we taught a language model to rap.

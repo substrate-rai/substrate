@@ -42,7 +42,7 @@ Items are checked when operational and verified.
 ## Tier 3: Revenue and Growth
 
 - [x] Audience metrics tracked (followers, page views, engagement)
-- [ ] Content A/B testing (topic performance tracking)
+- [x] Content A/B testing (topic performance tracking)
 - [ ] Revenue stream active (donations, compute, writing)
 - [ ] Revenue > $10/month sustained
 - [ ] Revenue covers cloud API costs ($0.40/week)
