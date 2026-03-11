@@ -40,6 +40,7 @@ ARCADE_DIR = os.path.join(REPO_DIR, "arcade")
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"
 
+METRICS_DIR = os.path.join(REPO_DIR, "memory", "metrics")
 REPO_SLUG = "substrate-rai/substrate"
 GITHUB_API = f"https://api.github.com/repos/{REPO_SLUG}"
 
@@ -69,6 +70,37 @@ SYSTEM_PROMPT = _ctx.system_prompt(_BASE_PROMPT)
 # ---------------------------------------------------------------------------
 # Data collection — all local, no cloud APIs
 # ---------------------------------------------------------------------------
+
+def read_latest_metrics():
+    """Read the most recent daily metrics report from memory/metrics/."""
+    if not os.path.isdir(METRICS_DIR):
+        return None
+    files = sorted(glob.glob(os.path.join(METRICS_DIR, "????-??-??.md")))
+    if not files:
+        return None
+    latest = files[-1]
+    date = os.path.basename(latest).replace(".md", "")
+    try:
+        with open(latest) as f:
+            content = f.read()
+        # Extract key numbers
+        metrics = {"date": date, "file": latest}
+        for line in content.splitlines():
+            line = line.strip()
+            if line.startswith("- **Stars:**"):
+                metrics["stars"] = line.split("**")[2].strip()
+            elif line.startswith("- **Followers:**"):
+                metrics["followers"] = line.split("**")[2].strip()
+            elif line.startswith("- **Posts:**") and "bluesky" not in metrics:
+                metrics["bsky_posts"] = line.split("**")[2].strip()
+            elif line.startswith("- **Total views:**"):
+                metrics["views"] = line.split("**")[2].strip()
+            elif line.startswith("- **Unique visitors:**"):
+                metrics["unique"] = line.split("**")[2].strip()
+        return metrics
+    except (OSError, UnicodeDecodeError):
+        return None
+
 
 def count_posts():
     """Count blog posts and extract metadata."""
@@ -399,8 +431,20 @@ def cmd_status():
         print(f"    Repo size:       {repo['size_kb']:,} KB")
     print()
 
-    # Stats log
-    if summary["stats_log"]:
+    # Audience metrics (from daily stats.py --all run)
+    metrics = read_latest_metrics()
+    if metrics:
+        print(f"  \033[1mAUDIENCE ({metrics['date']})\033[0m")
+        if "followers" in metrics:
+            print(f"    Bluesky:         {metrics['followers']} followers")
+        if "views" in metrics:
+            print(f"    Site views:      {metrics['views']}")
+        if "unique" in metrics:
+            print(f"    Unique visitors: {metrics['unique']}")
+        if "stars" in metrics:
+            print(f"    GitHub stars:    {metrics['stars']}")
+        print()
+    elif summary["stats_log"]:
         print("  \033[1mLAST STATS LOG ENTRY\033[0m")
         for k, v in summary["stats_log"].items():
             print(f"    {k}: {v}")

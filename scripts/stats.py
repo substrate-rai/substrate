@@ -30,6 +30,9 @@ METRICS_DIR = os.path.join(REPO_DIR, "memory", "metrics")
 REPO = "substrate-rai/substrate"
 API_BASE = f"https://api.github.com/repos/{REPO}"
 
+BLUESKY_HANDLE = "rhizent-ai.bsky.social"
+BLUESKY_API = "https://public.api.bsky.app/xrpc"
+
 GOATCOUNTER_BASE = "https://substrate.goatcounter.com"
 
 # Pages to track — paths as they appear in GoatCounter
@@ -154,6 +157,20 @@ def check_sponsors():
             "sponsors": [n.get("login") for n in sponsors.get("nodes", [])],
         }
     return None
+
+
+def get_bluesky_stats():
+    """Fetch Bluesky profile stats (public API, no auth needed)."""
+    url = f"{BLUESKY_API}/app.bsky.actor.getProfile?actor={BLUESKY_HANDLE}"
+    data = _fetch_json(url)
+    if data is None:
+        return {"error": "Bluesky API unreachable"}
+    return {
+        "handle": data.get("handle", BLUESKY_HANDLE),
+        "followers": data.get("followersCount", 0),
+        "following": data.get("followsCount", 0),
+        "posts": data.get("postsCount", 0),
+    }
 
 
 def _fetch_json(url, timeout=10, token=None):
@@ -502,6 +519,139 @@ def run_metrics(dry_run=False):
             print(f"  ** {t}")
 
 
+def run_all(dry_run=False):
+    """Run all metrics collection: GitHub + Bluesky + GoatCounter.
+
+    Produces a unified daily snapshot at memory/metrics/YYYY-MM-DD.md.
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    date_str = datetime.now().strftime("%Y-%m-%d")
+
+    print(f"[stats] {timestamp} — full metrics run", file=sys.stderr)
+
+    # 1. GitHub
+    print("  fetching GitHub stats...", file=sys.stderr)
+    repo_stats = get_repo_stats()
+    sponsor_info = check_sponsors()
+
+    # 2. Bluesky
+    print("  fetching Bluesky stats...", file=sys.stderr)
+    bsky = get_bluesky_stats()
+
+    # 3. GoatCounter
+    gc_metrics = fetch_goatcounter_metrics()
+    previous = load_previous_metrics(days_ago=1)
+    trends = compute_trends(gc_metrics, previous)
+
+    # Also compare against 7 days ago
+    week_ago = load_previous_metrics(days_ago=7)
+    week_trends = compute_trends(gc_metrics, week_ago)
+
+    # Build unified report
+    lines = [
+        f"# Daily Metrics — {date_str}",
+        f"",
+        f"Generated: {timestamp}",
+        f"",
+        f"## GitHub",
+        f"",
+    ]
+
+    if "error" in repo_stats:
+        lines.append(f"- {repo_stats['error']}")
+    else:
+        lines.append(f"- **Stars:** {repo_stats.get('stars', 0)}")
+        lines.append(f"- **Forks:** {repo_stats.get('forks', 0)}")
+        lines.append(f"- **Watchers:** {repo_stats.get('watchers', 0)}")
+        if "views_14d" in repo_stats:
+            lines.append(f"- **Views (14d):** {repo_stats['views_14d']} ({repo_stats['unique_visitors_14d']} unique)")
+            lines.append(f"- **Clones (14d):** {repo_stats['clones_14d']} ({repo_stats['unique_cloners_14d']} unique)")
+        if "top_referrers" in repo_stats:
+            lines.append(f"- **Top referrers:** {', '.join(r['site'] + ' (' + str(r['views']) + ')' for r in repo_stats['top_referrers'])}")
+
+    if sponsor_info:
+        lines.append(f"- **Sponsors:** {sponsor_info['total_sponsors']}")
+
+    lines += [
+        f"",
+        f"## Bluesky (@{bsky.get('handle', BLUESKY_HANDLE)})",
+        f"",
+    ]
+
+    if "error" in bsky:
+        lines.append(f"- {bsky['error']}")
+    else:
+        lines.append(f"- **Followers:** {bsky['followers']}")
+        lines.append(f"- **Following:** {bsky['following']}")
+        lines.append(f"- **Posts:** {bsky['posts']}")
+
+    lines += [
+        f"",
+        f"## Site Traffic (GoatCounter)",
+        f"",
+        f"- **Total views:** {gc_metrics['total_views']:,}",
+        f"- **Unique visitors:** {gc_metrics['total_unique']:,}",
+        f"- **Pages tracked:** {gc_metrics['pages_with_data']}/{gc_metrics['pages_tracked']}",
+        f"",
+        f"### Top Pages",
+        f"",
+        f"| Page | Views | Unique |",
+        f"|------|------:|-------:|",
+    ]
+
+    for page in gc_metrics["pages"]:
+        lines.append(f"| `{page['path']}` | {page['count']:,} | {page['count_unique']:,} |")
+
+    lines += ["", "## Trends", ""]
+    if trends:
+        lines.append("**vs yesterday:**")
+        for t in trends:
+            lines.append(f"- {t}")
+    if week_trends and week_ago is not None:
+        lines.append("")
+        lines.append("**vs 7 days ago:**")
+        for t in week_trends:
+            lines.append(f"- {t}")
+    if not trends and not week_trends:
+        lines.append("- No trend data available yet.")
+
+    lines.append("")
+    report = "\n".join(lines)
+
+    if dry_run:
+        print(report)
+        return
+
+    # Save to memory/metrics/
+    os.makedirs(METRICS_DIR, exist_ok=True)
+    metrics_file = os.path.join(METRICS_DIR, f"{date_str}.md")
+    with open(metrics_file, "w") as f:
+        f.write(report)
+    print(f"  saved: memory/metrics/{date_str}.md", file=sys.stderr)
+
+    # Also append to stats.log for backward compat
+    os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+    with open(LOG_FILE, "a") as f:
+        f.write(f"--- {timestamp} ---\n")
+        f.write(f"stars: {repo_stats.get('stars', '?')}\n")
+        f.write(f"forks: {repo_stats.get('forks', '?')}\n")
+        f.write(f"watchers: {repo_stats.get('watchers', '?')}\n")
+        f.write(f"bluesky_followers: {bsky.get('followers', '?')}\n")
+        f.write(f"bluesky_posts: {bsky.get('posts', '?')}\n")
+        f.write(f"goatcounter_views: {gc_metrics['total_views']}\n")
+        f.write(f"goatcounter_unique: {gc_metrics['total_unique']}\n")
+        f.write("\n")
+
+    # Print summary
+    print(f"[stats] {timestamp}")
+    print(f"  github: {repo_stats.get('stars', '?')} stars, {repo_stats.get('forks', '?')} forks")
+    print(f"  bluesky: {bsky.get('followers', '?')} followers, {bsky.get('posts', '?')} posts")
+    print(f"  site: {gc_metrics['total_views']:,} views, {gc_metrics['total_unique']:,} unique")
+    for t in trends:
+        if t.startswith("SIGNIFICANT") or t.startswith("Day-over-day"):
+            print(f"  ** {t}")
+
+
 def main():
     import argparse
 
@@ -509,10 +659,16 @@ def main():
     parser.add_argument("--dry-run", action="store_true",
                         help="print output without writing files")
     parser.add_argument("--metrics", action="store_true",
-                        help="fetch audience metrics from GoatCounter")
+                        help="fetch audience metrics from GoatCounter only")
+    parser.add_argument("--all", action="store_true",
+                        help="full daily run: GitHub + Bluesky + GoatCounter")
     args = parser.parse_args()
 
     load_env()
+
+    if args.all:
+        run_all(dry_run=args.dry_run)
+        return
 
     if args.metrics:
         run_metrics(dry_run=args.dry_run)
