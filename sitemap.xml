@@ -9,7 +9,13 @@ layout: null
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  {% for page in site.pages %}{% if page.layout and page.url != '/sitemap.xml' and page.url != '/feed.xml' and page.url != '/robots.txt' %}
+  <url>
+    <loc>{{ site.url }}{{ site.baseurl }}/ai/</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  {% for page in site.pages %}{% if page.layout and page.url != '/sitemap.xml' and page.url != '/feed.xml' and page.url != '/robots.txt' and page.url != '/ai/' %}
   <url>
     <loc>{{ page.url | prepend: site.baseurl | prepend: site.url }}</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>

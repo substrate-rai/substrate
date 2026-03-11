@@ -712,6 +712,16 @@ input[type="range"]::-moz-range-thumb {
   .title-name { font-size: 2rem; }
   .title-icon { font-size: 3rem; }
   .ecosystem-panel { min-height: 300px; }
+  .objective-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.65rem;
+    padding: 6px 10px;
+  }
+  .obj-progress-wrap { width: 70px; }
+  .how-to-play { max-width: 100%; }
+  .htp-panel { padding: 14px; }
+  .htp-steps li { font-size: 0.72rem; }
 }
 
 /* Focus visible */
@@ -719,6 +729,187 @@ button:focus-visible, input:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* ============================================================
+   HOW TO PLAY PANEL (title screen)
+   ============================================================ */
+.how-to-play {
+  margin-top: 24px;
+  max-width: 420px;
+  text-align: left;
+}
+.btn-how-to-play {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-how-to-play:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+.htp-panel {
+  display: none;
+  margin-top: 14px;
+  padding: 18px 20px;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.htp-panel.open { display: block; }
+.htp-panel h3 {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--heading);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+.htp-steps {
+  list-style: none;
+  padding: 0;
+}
+.htp-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 0.78rem;
+  color: var(--text);
+  line-height: 1.45;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.htp-steps li:last-child { border-bottom: none; }
+.htp-steps .htp-num {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.htp-steps .htp-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  width: 22px;
+  text-align: center;
+}
+
+/* ============================================================
+   OBJECTIVE TRACKER
+   ============================================================ */
+.objective-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(46, 125, 50, 0.06);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+.obj-label {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.obj-text {
+  color: var(--text);
+  flex: 1;
+}
+.obj-progress-wrap {
+  width: 100px;
+  height: 6px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.obj-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.obj-pct {
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ============================================================
+   COLONY PULSE ANIMATION (CSS keyframes for overlay effect)
+   ============================================================ */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* ============================================================
+   ACTION FEEDBACK FLASH
+   ============================================================ */
+.action-flash {
+  position: fixed;
+  pointer-events: none;
+  z-index: 180;
+  font-size: 1.4rem;
+  animation: float-up 1.2s ease-out forwards;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+@keyframes float-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  60% { opacity: 0.8; transform: translateY(-40px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-70px) scale(0.8); }
+}
+
+/* ============================================================
+   AUDIO TOGGLE
+   ============================================================ */
+.btn-audio {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 90;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-audio:hover {
+  background: rgba(255,255,255,0.8);
+  box-shadow: var(--shadow);
+}
+.btn-audio.muted { opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -735,6 +926,21 @@ button:focus-visible, input:focus-visible {
       <button class="btn-continue hidden" id="btn-continue">CONTINUE</button>
     </div>
     <div class="title-version">grow fungi &middot; build ecosystems &middot; learn mycology</div>
+
+    <div class="how-to-play">
+      <button class="btn-how-to-play" id="btn-htp">HOW TO PLAY</button>
+      <div class="htp-panel" id="htp-panel">
+        <h3>The Mycology Lab</h3>
+        <ul class="htp-steps">
+          <li><span class="htp-icon">&#x1FAB5;</span><span>Choose a <strong>substrate</strong> &mdash; oak log, straw, forest floor &mdash; each supports different species</span></li>
+          <li><span class="htp-icon">&#x1F344;</span><span>Select a <strong>species</strong> and press Inoculate to plant spores on the substrate</span></li>
+          <li><span class="htp-icon">&#x1F4A7;</span><span>Manage <strong>moisture</strong>, <strong>temperature</strong> and <strong>light</strong> &mdash; each species has optimal ranges</span></li>
+          <li><span class="htp-icon">&#x1F331;</span><span>Watch your colony grow through 4 stages: mycelium &rarr; colonization &rarr; fruiting &rarr; maturity</span></li>
+          <li><span class="htp-icon">&#x2702;</span><span>Click mature colonies to <strong>harvest</strong> fruiting bodies and earn discoveries</span></li>
+          <li><span class="htp-icon">&#x1F513;</span><span>Unlock new <strong>species</strong>, substrates and ecology concepts as you advance through 4 stages</span></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -759,6 +965,16 @@ button:focus-visible, input:focus-visible {
         <span>Ecosystem: <span class="stat-val" id="stat-health">--</span></span>
       </div>
       <span class="stage-label" id="stage-label">STAGE 1: DEAD LOG</span>
+    </div>
+
+    <!-- Objective Tracker -->
+    <div class="objective-bar" id="objective-bar">
+      <span class="obj-label">OBJECTIVE</span>
+      <span class="obj-text" id="obj-text">Grow oyster mushroom to full maturity</span>
+      <div class="obj-progress-wrap">
+        <div class="obj-progress-fill" id="obj-fill" style="width:0%"></div>
+      </div>
+      <span class="obj-pct" id="obj-pct">0%</span>
     </div>
 
     <!-- Ecosystem Canvas -->
@@ -857,6 +1073,10 @@ button:focus-visible, input:focus-visible {
   <span class="notif-text"></span>
 </div>
 
+<!-- Audio toggle -->
+<button class="btn-audio muted" id="btn-audio" title="Toggle music">&#x1F50A;</button>
+
+<script src="../shared/snes-audio.js"></script>
 <script>
 (function() {
 'use strict';
@@ -2269,6 +2489,442 @@ function drawTitleSpores() {
 initTitleSpores();
 drawTitleSpores();
 window.addEventListener('resize', initTitleSpores);
+
+// =================================================================
+// HOW TO PLAY TOGGLE
+// =================================================================
+$('btn-htp').addEventListener('click', function() {
+  var panel = $('htp-panel');
+  panel.classList.toggle('open');
+  this.textContent = panel.classList.contains('open') ? 'GOT IT' : 'HOW TO PLAY';
+});
+
+// =================================================================
+// OBJECTIVE TRACKER
+// =================================================================
+function updateObjective() {
+  var text = '';
+  var progress = 0;
+
+  if (gameState.stage === 1) {
+    var oysterColony = null;
+    gameState.colonies.forEach(function(c) { if (c.species === 'oyster' && !c.harvested) oysterColony = c; });
+    if (!oysterColony) {
+      text = 'Select Oyster Mushroom and press Inoculate';
+      progress = 0;
+    } else if (!oysterColony.mature) {
+      text = 'Grow your oyster colony to full maturity (' + Math.round(oysterColony.growth) + '/95%)';
+      progress = Math.round((oysterColony.growth / 95) * 100);
+    } else {
+      text = 'Stage complete! Click the mature colony to harvest';
+      progress = 100;
+    }
+  } else if (gameState.stage === 2) {
+    var matureSpecies = {};
+    gameState.colonies.forEach(function(c) { if (c.mature) matureSpecies[c.species] = true; });
+    var count = Object.keys(matureSpecies).length;
+    text = 'Grow 3 different species to maturity (' + count + '/3)';
+    progress = Math.round((Math.min(count, 3) / 3) * 100);
+  } else if (gameState.stage === 3) {
+    var hasNetwork = gameState.colonies.some(function(c) { return c.species === 'mycelial_network' && c.growth > 50; });
+    if (hasNetwork) {
+      text = 'Mycorrhizal network established!';
+      progress = 100;
+    } else {
+      var netColony = null;
+      gameState.colonies.forEach(function(c) { if (c.species === 'mycelial_network') netColony = c; });
+      if (netColony) {
+        text = 'Grow the mycelial network past 50% (' + Math.round(netColony.growth) + '%)';
+        progress = Math.round(netColony.growth);
+      } else {
+        text = 'Inoculate a Mycelial Network on the forest floor';
+        progress = 0;
+      }
+    }
+  } else {
+    text = 'Sandbox mode \u2014 experiment freely, fill your journal';
+    progress = Math.round((gameState.speciesDiscovered.length / 6) * 100);
+  }
+
+  $('obj-text').textContent = text;
+  $('obj-fill').style.width = Math.min(progress, 100) + '%';
+  $('obj-pct').textContent = Math.min(progress, 100) + '%';
+}
+
+// =================================================================
+// ACTION FEEDBACK (floating emoji on inoculate/harvest)
+// =================================================================
+function spawnActionFeedback(emoji, x, y) {
+  var el = document.createElement('div');
+  el.className = 'action-flash';
+  el.textContent = emoji;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(function() { el.remove(); }, 1300);
+}
+
+// =================================================================
+// AMBIENT SPORE PARTICLES (in-game)
+// =================================================================
+var ambientSpores = [];
+function initAmbientSpores() {
+  ambientSpores = [];
+  for (var i = 0; i < 25; i++) {
+    ambientSpores.push({
+      x: Math.random() * canvasW,
+      y: Math.random() * canvasH,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -0.15 - Math.random() * 0.25,
+      size: 0.8 + Math.random() * 2,
+      alpha: 0.05 + Math.random() * 0.12,
+      wobblePhase: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.01 + Math.random() * 0.02
+    });
+  }
+}
+
+function drawAmbientSpores(time) {
+  ctx.save();
+  ambientSpores.forEach(function(s) {
+    s.wobblePhase += s.wobbleSpeed;
+    s.x += s.vx + Math.sin(s.wobblePhase) * 0.3;
+    s.y += s.vy;
+    if (s.y < -10) { s.y = canvasH + 10; s.x = Math.random() * canvasW; }
+    if (s.x < -10) s.x = canvasW + 10;
+    if (s.x > canvasW + 10) s.x = -10;
+
+    var pulseAlpha = s.alpha * (0.7 + 0.3 * Math.sin(time * 0.002 + s.wobblePhase));
+    ctx.fillStyle = 'rgba(200, 230, 200, ' + pulseAlpha + ')';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+}
+
+// =================================================================
+// DAY/NIGHT CYCLE
+// =================================================================
+function getDayNightPhase() {
+  // A full day/night cycle every 60 game-days
+  var phase = (gameState.day % 60) / 60;
+  return phase; // 0 = dawn, 0.25 = noon, 0.5 = dusk, 0.75 = midnight
+}
+
+function getDayNightColors() {
+  var phase = getDayNightPhase();
+  // Convert phase to a smooth cycle
+  var sunHeight = Math.sin(phase * Math.PI * 2 - Math.PI / 2); // -1 (midnight) to 1 (noon)
+  var t = (sunHeight + 1) / 2; // 0 (midnight) to 1 (noon)
+
+  var skyR, skyG, skyB, skyAlpha;
+  if (t > 0.6) {
+    // Daytime — no tint
+    skyAlpha = 0;
+    skyR = 0; skyG = 0; skyB = 0;
+  } else if (t > 0.35) {
+    // Dawn/dusk — warm orange tint
+    var duskT = (0.6 - t) / 0.25;
+    skyR = Math.round(40 * duskT);
+    skyG = Math.round(20 * duskT);
+    skyB = Math.round(50 * duskT);
+    skyAlpha = 0.12 * duskT;
+  } else {
+    // Night — blue-dark overlay
+    var nightT = (0.35 - t) / 0.35;
+    skyR = Math.round(10 + 10 * nightT);
+    skyG = Math.round(15 + 15 * nightT);
+    skyB = Math.round(40 + 40 * nightT);
+    skyAlpha = 0.15 + 0.2 * nightT;
+  }
+
+  return { r: skyR, g: skyG, b: skyB, alpha: skyAlpha, sunHeight: t };
+}
+
+// =================================================================
+// AUDIO INTEGRATION
+// =================================================================
+var audioEngine = null;
+var audioPlaying = false;
+
+function initAudio() {
+  if (typeof SNESAudio !== 'undefined' && !audioEngine) {
+    try {
+      audioEngine = new SNESAudio();
+      audioEngine.loadSong('myco');
+    } catch(e) {}
+  }
+}
+
+function toggleAudio() {
+  initAudio();
+  if (!audioEngine) return;
+  var btn = $('btn-audio');
+  if (audioPlaying) {
+    audioEngine.stop();
+    audioPlaying = false;
+    btn.classList.add('muted');
+    btn.textContent = '\u{1F507}';
+  } else {
+    audioEngine.play();
+    audioPlaying = true;
+    btn.classList.remove('muted');
+    btn.textContent = '\u{1F50A}';
+  }
+}
+
+$('btn-audio').addEventListener('click', toggleAudio);
+
+// =================================================================
+// PATCH: Enhanced draw + game loop with new features
+// =================================================================
+
+// Store reference to original drawEcosystem
+var _origDrawEcosystem = drawEcosystem;
+
+// Override drawEcosystem with enhanced version
+drawEcosystem = function() {
+  ctx.clearRect(0, 0, canvasW, canvasH);
+
+  // Day/night colors
+  var dnc = getDayNightColors();
+
+  // Background gradient based on stage (original code reproduced with day/night tint)
+  var bgGrad;
+  if (gameState.stage === 1) {
+    bgGrad = ctx.createLinearGradient(0, 0, 0, canvasH);
+    bgGrad.addColorStop(0, '#A8D5BA');
+    bgGrad.addColorStop(0.5, '#8FBC8F');
+    bgGrad.addColorStop(1, '#6B4226');
+  } else if (gameState.stage === 2) {
+    bgGrad = ctx.createLinearGradient(0, 0, 0, canvasH);
+    bgGrad.addColorStop(0, '#7CB68E');
+    bgGrad.addColorStop(0.3, '#5A9E6F');
+    bgGrad.addColorStop(0.6, '#4A7C59');
+    bgGrad.addColorStop(1, '#3E2723');
+  } else {
+    bgGrad = ctx.createLinearGradient(0, 0, 0, canvasH);
+    bgGrad.addColorStop(0, '#558B6E');
+    bgGrad.addColorStop(0.2, '#4A7C59');
+    bgGrad.addColorStop(0.5, '#3B6B48');
+    bgGrad.addColorStop(0.8, '#2E4A2E');
+    bgGrad.addColorStop(1, '#1A1A10');
+  }
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // Day/night overlay
+  if (dnc.alpha > 0.01) {
+    ctx.fillStyle = 'rgba(' + dnc.r + ',' + dnc.g + ',' + dnc.b + ',' + dnc.alpha + ')';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+  }
+
+  // Dusk/dawn sky color band at top
+  if (dnc.sunHeight > 0.35 && dnc.sunHeight < 0.65) {
+    // Near sunrise/sunset — warm gradient at top
+    var warmT = 1 - Math.abs(dnc.sunHeight - 0.5) / 0.15;
+    if (warmT > 0) {
+      var skyGrad = ctx.createLinearGradient(0, 0, 0, canvasH * 0.3);
+      skyGrad.addColorStop(0, 'rgba(255, 140, 50, ' + (0.08 * warmT) + ')');
+      skyGrad.addColorStop(1, 'rgba(255, 100, 50, 0)');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, canvasW, canvasH * 0.3);
+    }
+  }
+
+  // Stars at night
+  if (dnc.sunHeight < 0.3) {
+    var starAlpha = (0.3 - dnc.sunHeight) / 0.3;
+    ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.4 * starAlpha) + ')';
+    for (var si = 0; si < 15; si++) {
+      var sx = ((si * 173 + 59) % 100) / 100 * canvasW;
+      var sy = ((si * 83 + 37) % 30) / 100 * canvasH;
+      var ssize = ((si * 7) % 3) + 0.5;
+      ctx.beginPath();
+      ctx.arc(sx, sy, ssize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Lighting overlay based on light slider
+  var lightOpacity = Math.max(0, 0.35 - gameState.light / 300);
+  ctx.fillStyle = 'rgba(0, 20, 10, ' + lightOpacity + ')';
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // Draw sunbeams if light > 60 and daytime
+  if (gameState.light > 60 && dnc.sunHeight > 0.4) {
+    ctx.save();
+    ctx.globalAlpha = (gameState.light - 60) / 200 * Math.min(1, (dnc.sunHeight - 0.4) / 0.3);
+    for (var beam = 0; beam < 3; beam++) {
+      var bx = canvasW * (0.2 + beam * 0.3);
+      var bGrad = ctx.createLinearGradient(bx, 0, bx + 40, canvasH);
+      bGrad.addColorStop(0, 'rgba(255, 255, 200, 0.3)');
+      bGrad.addColorStop(1, 'rgba(255, 255, 200, 0)');
+      ctx.fillStyle = bGrad;
+      ctx.beginPath();
+      ctx.moveTo(bx - 20, 0);
+      ctx.lineTo(bx + 60, canvasH);
+      ctx.lineTo(bx - 60, canvasH);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Draw substrate elements
+  drawSubstrates();
+
+  // Draw trees in stage 3+
+  if (gameState.stage >= 3) {
+    drawTrees();
+  }
+
+  // Draw colonies with pulsing glow
+  var now = performance.now();
+  gameState.colonies.forEach(function(colony) {
+    if (!colony.harvested) {
+      drawColonyEnhanced(colony, now);
+    }
+  });
+
+  // Moisture particles
+  if (gameState.moisture > 70) {
+    drawMoistureParticles();
+  }
+
+  // Ambient spores
+  if (ambientSpores.length === 0) initAmbientSpores();
+  drawAmbientSpores(now);
+};
+
+// Enhanced colony drawing with pulsing glow
+function drawColonyEnhanced(colony, time) {
+  var sp = SPECIES[colony.species];
+  if (!sp) return;
+
+  var cx = colony.x * canvasW;
+  var cy = colony.y * canvasH;
+  var rad = colony.myceliumRadius;
+
+  // Pulsing glow for growing colonies
+  if (colony.growth > 5 && colony.growth < 100 && colony.health > 30) {
+    ctx.save();
+    var pulseT = Math.sin(time * 0.003 + colony.id * 137) * 0.5 + 0.5;
+    var glowRad = rad * (1.2 + pulseT * 0.3);
+    var pr = parseInt(sp.color.substr(1,2), 16);
+    var pg = parseInt(sp.color.substr(3,2), 16);
+    var pb = parseInt(sp.color.substr(5,2), 16);
+    var pulseGlow = ctx.createRadialGradient(cx, cy, rad * 0.3, cx, cy, glowRad);
+    var glowAlpha = 0.06 + pulseT * 0.08;
+    pulseGlow.addColorStop(0, 'rgba(' + pr + ',' + pg + ',' + pb + ',' + glowAlpha + ')');
+    pulseGlow.addColorStop(1, 'rgba(' + pr + ',' + pg + ',' + pb + ',0)');
+    ctx.fillStyle = pulseGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, glowRad, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Call original colony drawing
+  drawColony(colony);
+
+  // Growth shimmer for colonies actively growing
+  if (colony.growth > 10 && colony.growth < 95 && colony.health > 50 && gameState.timeSpeed > 0) {
+    ctx.save();
+    var shimmerCount = Math.floor(colony.growth / 20) + 1;
+    for (var si = 0; si < shimmerCount; si++) {
+      var sAngle = (time * 0.001 + si * 2.1 + colony.id) % (Math.PI * 2);
+      var sDist = rad * (0.3 + 0.5 * ((time * 0.0005 + si * 0.7) % 1));
+      var sx = cx + Math.cos(sAngle) * sDist;
+      var sy = cy + Math.sin(sAngle) * sDist * 0.7;
+      ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.15 + 0.1 * Math.sin(time * 0.005 + si)) + ')';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+// =================================================================
+// PATCH: Game loop with objective updates
+// =================================================================
+var _origGameLoop = gameLoop;
+var _loopFrame = 0;
+
+gameLoop = function(timestamp) {
+  resizeCanvas();
+  drawEcosystem();
+
+  if (gameState.timeSpeed > 0) {
+    tickAccumulator += 16.67 * gameState.timeSpeed;
+    if (tickAccumulator >= TICK_INTERVAL) {
+      tickAccumulator -= TICK_INTERVAL;
+      simulationTick();
+      updateObjective();
+    }
+  }
+
+  // Update objective less frequently for smooth display
+  _loopFrame++;
+  if (_loopFrame % 30 === 0) updateObjective();
+
+  requestAnimationFrame(gameLoop);
+};
+
+// =================================================================
+// PATCH: Inoculate button action feedback
+// =================================================================
+var _origInoculateHandler = $('btn-inoculate').onclick;
+$('btn-inoculate').addEventListener('click', function(e) {
+  if (gameState.selectedSpecies) {
+    var sp = SPECIES[gameState.selectedSpecies];
+    if (sp && sp.substrates.indexOf(gameState.selectedSubstrate) !== -1) {
+      var rect = this.getBoundingClientRect();
+      spawnActionFeedback('\u{1F33F}', rect.left + rect.width / 2, rect.top);
+      // Start music on first inoculate if not playing
+      if (!audioPlaying && audioEngine) {
+        audioEngine.play();
+        audioPlaying = true;
+        $('btn-audio').classList.remove('muted');
+        $('btn-audio').textContent = '\u{1F50A}';
+      }
+    }
+  }
+});
+
+// =================================================================
+// PATCH: Harvest click action feedback
+// =================================================================
+var _origCanvasClick = canvasWrap.onclick;
+canvasWrap.addEventListener('click', function(e) {
+  var rect = canvasWrap.getBoundingClientRect();
+  var mx = (e.clientX - rect.left) / canvasW;
+  var my = (e.clientY - rect.top) / canvasH;
+
+  gameState.colonies.forEach(function(colony) {
+    if (colony.harvested || !colony.mature) return;
+    var dist = Math.sqrt(Math.pow(mx - colony.x, 2) + Math.pow(my - colony.y, 2));
+    if (dist < 0.08) {
+      spawnActionFeedback('\u{2728}', e.clientX, e.clientY - 20);
+    }
+  });
+});
+
+// =================================================================
+// PATCH: Enhanced start functions to init new features
+// =================================================================
+btnNewGame.addEventListener('click', function() {
+  initAmbientSpores();
+  updateObjective();
+  initAudio();
+});
+btnContinue.addEventListener('click', function() {
+  initAmbientSpores();
+  updateObjective();
+  initAudio();
+});
 
 })();
 </script>

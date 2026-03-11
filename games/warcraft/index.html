@@ -207,6 +207,120 @@ body{background:linear-gradient(135deg,#e3f0fb 0%,#d4e8f7 30%,#c8e0f0 60%,#daeaf
 #journal-indicator{position:absolute;bottom:168px;right:8px;z-index:22;background:rgba(255,255,255,0.6);backdrop-filter:blur(8px);border:1px solid rgba(0,120,212,0.15);border-radius:8px;padding:4px 10px;font-size:10px;color:#5A6B7F;cursor:pointer;transition:all 0.2s;box-shadow:0 1px 4px rgba(0,60,120,0.05)}
 #journal-indicator:hover{background:rgba(255,255,255,0.85);color:#0078D4}
 #journal-indicator .ji-count{font-weight:700;color:#0078D4;margin-left:4px}
+
+/* ============================================================
+   MOBILE RESPONSIVE OVERRIDES
+   ============================================================ */
+@media(max-width:768px){
+  /* HUD top bar — taller, bigger touch targets */
+  #hud{height:48px;padding:0 10px;gap:10px;font-size:12px;flex-wrap:nowrap;overflow-x:auto}
+  .res{gap:4px;flex-shrink:0}
+  .res-icon{width:14px;height:14px}
+  .res-val{min-width:32px;font-size:13px}
+  #idle-alert{font-size:12px;padding:4px 10px;min-height:36px;display:flex;align-items:center}
+
+  /* Bottom panel — shorter, responsive */
+  #bottom-panel{height:120px}
+  #minimap-frame{width:100px;height:120px}
+  #minimap-canvas{width:100px;height:120px}
+  #sel-info{padding:6px 8px;gap:8px}
+  #sel-portrait{width:48px;height:48px}
+  #sel-name{font-size:12px}
+  #sel-status{font-size:10px}
+  #sel-hp-bar{height:6px}
+
+  /* Command panel — bigger touch targets */
+  #cmd-panel{width:140px;gap:2px;padding:4px}
+  .cmd-btn{min-height:34px;min-width:34px;padding:3px;border-radius:5px;font-size:10px}
+  .cmd-btn .cmd-key{font-size:8px}
+  .cmd-btn .cmd-label{font-size:8px}
+  .cmd-btn .cmd-cost{font-size:7px}
+
+  /* Arcade link */
+  #arcade-link{top:52px;left:6px;font-size:11px;padding:4px 8px;min-height:36px;display:flex;align-items:center}
+
+  /* Notifications */
+  #notifications{top:54px;right:8px}
+  .notif{font-size:10px;padding:4px 8px}
+
+  /* Objective HUD */
+  #objective-hud{top:54px;max-width:85vw;padding:6px 10px}
+  #obj-title{font-size:10px}
+  #obj-timer{font-size:16px}
+  .obj-item{font-size:10px}
+
+  /* Journal indicator */
+  #journal-indicator{bottom:128px;right:6px;font-size:9px;padding:3px 8px;min-height:32px}
+
+  /* Build tooltip */
+  #build-tooltip{font-size:10px;padding:6px 10px}
+
+  /* Title screen */
+  #title-screen h1{font-size:28px;letter-spacing:2px}
+  #title-screen .subtitle{font-size:12px;margin-bottom:24px}
+  #title-screen button{font-size:14px;padding:14px 32px;min-height:48px}
+  .title-controls{font-size:10px;padding:10px 14px;max-width:90vw;line-height:1.6}
+  #campaign-list{width:90vw;max-width:400px}
+  .mission-card{padding:12px 14px;min-height:60px}
+  .mission-card .mc-title{font-size:14px}
+  .mission-card .mc-brief{font-size:10px}
+  .mission-card .mc-stars{top:10px;right:12px}
+  #sandbox-btn{padding:10px 20px;min-height:44px;font-size:14px}
+
+  /* Briefing overlay */
+  #briefing-overlay{padding:24px 16px}
+  #briefing-overlay .bo-title{font-size:22px}
+  #briefing-overlay .bo-text{font-size:13px;max-width:90vw}
+  #briefing-overlay button{min-height:48px;font-size:14px;padding:12px 28px}
+
+  /* Victory/defeat screens */
+  #victory-screen h2,#defeat-screen h2{font-size:24px}
+  #victory-screen .vs-rating{font-size:28px}
+  #victory-screen .vs-stats{font-size:11px}
+  #victory-screen .vs-btns,#defeat-screen .ds-btns{flex-wrap:wrap;justify-content:center;gap:8px}
+  #victory-screen button,#defeat-screen button{min-height:44px;font-size:12px;padding:8px 16px}
+  #defeat-screen .ds-reason{font-size:13px;max-width:90vw}
+  #defeat-screen .ds-progress{font-size:11px}
+
+  /* Journal overlay */
+  #journal-overlay{padding:20px 12px}
+  #journal-overlay h2{font-size:20px}
+  .journal-grid{flex-direction:column;gap:12px}
+  .journal-sidebar{width:100%}
+  .journal-btns{flex-wrap:wrap;justify-content:center}
+  .journal-btns button{min-height:44px}
+  .jt-entry{font-size:10px;padding:6px 10px}
+
+  /* Event bar */
+  #event-bar{font-size:12px;padding:8px 14px}
+
+  /* Multi-selection icons */
+  .sel-multi-icon{width:36px;height:36px}
+}
+
+@media(max-width:480px){
+  #hud{height:44px;padding:0 8px;gap:8px;font-size:11px}
+  #bottom-panel{height:100px}
+  #minimap-frame{width:80px;height:100px}
+  #cmd-panel{width:120px}
+  .cmd-btn{min-height:28px}
+  #sel-portrait{width:40px;height:40px}
+  #objective-hud{left:8px;right:8px;transform:none;max-width:100%}
+  #title-screen h1{font-size:22px}
+  .title-controls{font-size:9px}
+  #campaign-list{width:95vw}
+  .mission-card .mc-title{font-size:13px}
+}
+
+@media(max-height:500px){
+  /* Landscape phone */
+  #bottom-panel{height:90px}
+  #minimap-frame{width:90px;height:90px}
+  #hud{height:36px}
+  #arcade-link{top:40px}
+  #notifications{top:40px}
+  #objective-hud{top:40px}
+}
 </style>
 <link rel="stylesheet" href="../shared/substrate-frame.css">
 </head>
@@ -217,12 +331,19 @@ body{background:linear-gradient(135deg,#e3f0fb 0%,#d4e8f7 30%,#c8e0f0 60%,#daeaf
   <div class="subtitle">a base-building RTS &middot; substrate arcade</div>
   <div id="campaign-list"></div>
   <button id="sandbox-btn" onclick="startSandbox()">SANDBOX MODE</button>
-  <div class="title-controls">
+  <div class="title-controls" id="desktop-controls">
     WASD / Arrow keys — scroll &nbsp;&middot;&nbsp; Mouse wheel — zoom<br>
     Left click — select &nbsp;&middot;&nbsp; Right click — command &nbsp;&middot;&nbsp; Drag — box select<br>
-    F/B/L/K/T — build &nbsp;&middot;&nbsp; Q — train worker &nbsp;&middot;&nbsp; ESC — cancel<br>
-    <span style="color:#5a5a4a">Mobile: drag — pan &nbsp;&middot;&nbsp; pinch — zoom &nbsp;&middot;&nbsp; tap — select &nbsp;&middot;&nbsp; double-tap — command</span>
+    F/B/L/K/T — build &nbsp;&middot;&nbsp; Q — train worker &nbsp;&middot;&nbsp; ESC — cancel
   </div>
+  <div class="title-controls" id="mobile-controls" style="display:none">
+    Drag — pan map &nbsp;&middot;&nbsp; Pinch — zoom<br>
+    Tap — select unit/building<br>
+    Tap ground — move selected workers<br>
+    Double-tap — command (harvest/build)<br>
+    Use buttons below for build commands
+  </div>
+  <script>if('ontouchstart' in window||window.innerWidth<768){document.getElementById('mobile-controls').style.display='block';document.getElementById('desktop-controls').style.display='none';}</script>
 </div>
 
 <div id="briefing-overlay">
@@ -499,11 +620,12 @@ window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 // THREE.JS SCENE
 // ============================================================
 const canvas=document.getElementById('game-canvas');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+const isMobile=('ontouchstart' in window)||window.innerWidth<768;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:!isMobile});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,isMobile?1.5:2));
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.shadowMap.type=isMobile?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.1;
 
@@ -532,7 +654,7 @@ scene.add(ambLight);
 const sunLight=new THREE.DirectionalLight(0xffeedd,1.2);
 sunLight.position.set(30,40,20);
 sunLight.castShadow=true;
-sunLight.shadow.mapSize.set(2048,2048);
+sunLight.shadow.mapSize.set(isMobile?1024:2048,isMobile?1024:2048);
 sunLight.shadow.camera.left=-50;sunLight.shadow.camera.right=50;
 sunLight.shadow.camera.top=50;sunLight.shadow.camera.bottom=-50;
 sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=100;
@@ -829,7 +951,7 @@ function createTrees(rng){
   rng=rng||Math.random.bind(Math);
   const trunkGeo=new THREE.CylinderGeometry(0.1,0.15,1.2,6);
   const canopyGeo=new THREE.SphereGeometry(0.6,6,6);
-  const numTrees=200;
+  const numTrees=isMobile?120:200;
   const trunkMesh=new THREE.InstancedMesh(trunkGeo,makeToon(0x654321),numTrees);
   const canopyMesh=new THREE.InstancedMesh(canopyGeo,makeToon(0x2a6a2a),numTrees);
   trunkMesh.castShadow=true;canopyMesh.castShadow=true;
@@ -1356,9 +1478,13 @@ canvas.addEventListener('wheel',e=>{
 });
 
 // ============================================================
-// TOUCH CONTROLS (Mobile)
+// TOUCH CONTROLS (Mobile) — improved for responsiveness
 // ============================================================
-let touchState={start:null,lastTap:0,pinchDist:0,isPanning:false,moved:false};
+let touchState={start:null,lastTap:0,lastTapPos:null,pinchDist:0,isPanning:false,moved:false,panAccumX:0,panAccumZ:0};
+const TOUCH_TAP_THRESHOLD=12;// pixels moved before it's a pan
+const TOUCH_TAP_TIMEOUT=400;// ms max for a tap
+const TOUCH_DOUBLE_TAP_GAP=350;// ms between taps
+const TOUCH_DOUBLE_TAP_DIST=40;// pixels max distance between taps
 
 // Prevent iOS Safari gestures (double-tap zoom, pinch zoom on page)
 document.addEventListener('gesturestart',e=>e.preventDefault());
@@ -1382,6 +1508,10 @@ canvas.addEventListener('touchstart',e=>{
     touchState.start={x:t[0].clientX,y:t[0].clientY,time:Date.now()};
     touchState.moved=false;
     touchState.isPanning=false;
+    // Update build ghost position on touch for mobile
+    if(buildMode){
+      updateBuildGhost({clientX:t[0].clientX,clientY:t[0].clientY});
+    }
   }
 },{passive:false});
 
@@ -1390,11 +1520,11 @@ canvas.addEventListener('touchmove',e=>{
   if(!gameStarted)return;
   const t=e.touches;
   if(t.length===2){
-    // Pinch zoom
+    // Pinch zoom — smoother with smaller multiplier
     const dist=getTouchDist(t[0],t[1]);
     if(touchState.pinchDist>0){
-      const delta=(touchState.pinchDist-dist)*0.08;
-      camDist=Math.max(CFG.CAM_ZOOM_MIN,Math.min(CFG.CAM_ZOOM_MAX,camDist+delta));
+      const ratio=touchState.pinchDist/dist;
+      camDist=Math.max(CFG.CAM_ZOOM_MIN,Math.min(CFG.CAM_ZOOM_MAX,camDist*ratio));
     }
     touchState.pinchDist=dist;
     touchState.isPanning=false;
@@ -1402,19 +1532,27 @@ canvas.addEventListener('touchmove',e=>{
   }else if(t.length===1&&touchState.start){
     const dx=t[0].clientX-touchState.start.x;
     const dy=t[0].clientY-touchState.start.y;
-    if(Math.abs(dx)>5||Math.abs(dy)>5){
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist>TOUCH_TAP_THRESHOLD){
       touchState.isPanning=true;
       touchState.moved=true;
-      // Pan camera — map screen delta to world movement
-      const panSpeed=camDist*0.015;
-      const fwd=new THREE.Vector3(-Math.cos(camAngle),0,-Math.sin(camAngle));
-      const right=new THREE.Vector3(-Math.sin(camAngle),0,Math.cos(camAngle));
-      camTarget.add(right.clone().multiplyScalar(-dx*panSpeed));
-      camTarget.add(fwd.clone().multiplyScalar(dy*panSpeed));
-      // Clamp
-      const limit=CFG.MAP_SIZE*CFG.TILE_SIZE;
-      camTarget.x=Math.max(0,Math.min(limit,camTarget.x));
-      camTarget.z=Math.max(0,Math.min(limit,camTarget.z));
+      if(buildMode){
+        // In build mode, drag moves the ghost instead of panning
+        updateBuildGhost({clientX:t[0].clientX,clientY:t[0].clientY});
+      }else{
+        // Pan camera — smooth incremental delta
+        const panSpeed=camDist*0.012;
+        const fwd=new THREE.Vector3(-Math.cos(camAngle),0,-Math.sin(camAngle));
+        const right=new THREE.Vector3(-Math.sin(camAngle),0,Math.cos(camAngle));
+        const moveDx=t[0].clientX-touchState.start.x;
+        const moveDz=t[0].clientY-touchState.start.y;
+        camTarget.add(right.clone().multiplyScalar(-moveDx*panSpeed));
+        camTarget.add(fwd.clone().multiplyScalar(moveDz*panSpeed));
+        // Clamp
+        const limit=CFG.MAP_SIZE*CFG.TILE_SIZE;
+        camTarget.x=Math.max(0,Math.min(limit,camTarget.x));
+        camTarget.z=Math.max(0,Math.min(limit,camTarget.z));
+      }
       touchState.start={x:t[0].clientX,y:t[0].clientY,time:touchState.start.time};
     }
   }
@@ -1423,32 +1561,60 @@ canvas.addEventListener('touchmove',e=>{
 canvas.addEventListener('touchend',e=>{
   e.preventDefault();
   if(!gameStarted)return;
-  if(touchState.moved||e.touches.length>0){
+  if(e.touches.length>0){
+    // Still have fingers down — reset for remaining touches
+    if(e.touches.length===1){
+      touchState.start={x:e.touches[0].clientX,y:e.touches[0].clientY,time:Date.now()};
+      touchState.moved=false;
+    }
+    touchState.pinchDist=0;
+    return;
+  }
+  if(touchState.moved){
     touchState.start=null;touchState.pinchDist=0;
     return;
   }
   // Quick tap — no drag happened
   if(!touchState.start)return;
   const elapsed=Date.now()-touchState.start.time;
-  if(elapsed>300){touchState.start=null;return}// long press, ignore
+  if(elapsed>TOUCH_TAP_TIMEOUT){touchState.start=null;return}// long press, ignore
   const now=Date.now();
-  const isDoubleTap=(now-touchState.lastTap)<350;
-  touchState.lastTap=now;
+  const tapX=touchState.start.x,tapY=touchState.start.y;
 
-  const wp=screenToWorld(touchState.start.x,touchState.start.y);
+  // Better double-tap detection: check both time and position
+  let isDoubleTap=false;
+  if(touchState.lastTapPos&&(now-touchState.lastTap)<TOUCH_DOUBLE_TAP_GAP){
+    const tapDist=Math.sqrt(
+      (tapX-touchState.lastTapPos.x)**2+
+      (tapY-touchState.lastTapPos.y)**2
+    );
+    if(tapDist<TOUCH_DOUBLE_TAP_DIST)isDoubleTap=true;
+  }
+  touchState.lastTap=now;
+  touchState.lastTapPos={x:tapX,y:tapY};
+
+  const wp=screenToWorld(tapX,tapY);
   if(!wp){touchState.start=null;return}
 
-  if(isDoubleTap&&selected.length>0){
-    // Double-tap = command (right-click)
+  if(buildMode){
+    // In build mode, tap places the building
+    updateBuildGhost({clientX:tapX,clientY:tapY});
+    placeBuild({clientX:tapX,clientY:tapY});
+  }else if(isDoubleTap&&selected.length>0){
+    // Double-tap = command (right-click equivalent)
     commandSelected(wp);
   }else{
-    // Single tap = select
-    if(buildMode){
-      placeBuild({clientX:touchState.start.x,clientY:touchState.start.y});
-    }else{
-      const ent=findEntityAt(wp);
-      if(ent){selectEntities([ent]);playSfx('select')}
-      else selectEntities([]);
+    // Single tap = select (or context-command on resource)
+    const ent=findEntityAt(wp);
+    if(ent){selectEntities([ent]);playSfx('select')}
+    else{
+      // If workers selected and tapping empty ground, treat as move command
+      const hasWorkers=selected.some(s=>s instanceof Worker);
+      if(hasWorkers&&selected.length>0){
+        commandSelected(wp);
+      }else{
+        selectEntities([]);
+      }
     }
   }
   touchState.start=null;

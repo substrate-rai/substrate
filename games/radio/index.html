@@ -19,6 +19,7 @@ redirect_from:
   <meta property="og:type" content="website">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
   <script src="{{ site.baseurl }}/assets/js/anime-effects.js"></script>
+  <script src="../shared/snes-audio.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -755,6 +756,8 @@ a:hover { color: #0078D4; }
 // ============================================================
 
 // === STATION DEFINITIONS ===
+// Songs use the shared SNES audio engine (snes-audio.js) for cohesive,
+// rich procedural music that matches the site's Frutiger Aero vibe.
 var STATIONS = [
   {
     id: 'v-radio',
@@ -770,47 +773,9 @@ var STATIONS = [
       "87.6 on your dial. No cloud. No compromise."
     ],
     songs: [
-      {
-        title: 'Neural Drift',
-        bpm: 90,
-        duration: 120,
-        bassline: [
-          [65.41, 2], [0, 1], [73.42, 1], [65.41, 2], [0, 1], [82.41, 1],
-          [65.41, 2], [0, 1], [73.42, 1], [87.31, 1], [82.41, 1], [0, 2]
-        ],
-        melody: [
-          [523.25, 0.5], [466.16, 0.5], [392.00, 1], [0, 0.5], [349.23, 0.5], [392.00, 1],
-          [0, 1], [466.16, 0.5], [523.25, 0.5], [466.16, 1], [392.00, 1], [0, 1],
-          [349.23, 0.5], [311.13, 0.5], [349.23, 1], [392.00, 2], [0, 2]
-        ]
-      },
-      {
-        title: 'Stack Overflow',
-        bpm: 85,
-        duration: 110,
-        bassline: [
-          [55.00, 2], [0, 1], [61.74, 1], [55.00, 1], [0, 1], [73.42, 2],
-          [0, 1], [61.74, 1], [55.00, 2], [0, 1], [49.00, 1]
-        ],
-        melody: [
-          [440.00, 1], [392.00, 0.5], [349.23, 0.5], [0, 1], [440.00, 0.5], [523.25, 0.5], [466.16, 1],
-          [0, 1], [392.00, 1], [349.23, 0.5], [311.13, 0.5], [349.23, 2], [0, 2]
-        ]
-      },
-      {
-        title: 'Sovereign State',
-        bpm: 95,
-        duration: 100,
-        bassline: [
-          [73.42, 1], [0, 1], [73.42, 1], [65.41, 1], [0, 1], [82.41, 1], [73.42, 2],
-          [0, 1], [65.41, 1], [61.74, 1], [65.41, 1], [73.42, 2], [0, 2]
-        ],
-        melody: [
-          [587.33, 0.5], [523.25, 0.5], [466.16, 1], [523.25, 0.5], [0, 0.5],
-          [466.16, 1], [392.00, 1], [0, 1],
-          [349.23, 0.5], [392.00, 0.5], [466.16, 1], [523.25, 1], [466.16, 1], [0, 2]
-        ]
-      }
+      { title: 'Neural Drift', snesKey: 'snatcher', duration: 90 },
+      { title: 'Stack Overflow', snesKey: 'cypher', duration: 85 },
+      { title: 'Sovereign State', snesKey: 'signal', duration: 95 }
     ]
   },
   {
@@ -827,62 +792,10 @@ var STATIONS = [
       "NULL_DEVICE FM... every signal is a weapon."
     ],
     songs: [
-      {
-        title: 'Kernel Panic',
-        bpm: 130,
-        duration: 110,
-        bassline: [
-          [55.00, 1], [55.00, 0.5], [0, 0.5], [61.74, 1], [55.00, 0.5], [0, 0.5],
-          [49.00, 1], [55.00, 0.5], [58.27, 0.5], [55.00, 1], [0, 1]
-        ],
-        melody: [
-          [220.00, 0.25], [233.08, 0.25], [220.00, 0.5], [0, 0.5], [277.18, 0.5], [261.63, 0.5],
-          [220.00, 1], [0, 0.5], [207.65, 0.5], [220.00, 0.25], [233.08, 0.25],
-          [277.18, 1], [261.63, 0.5], [220.00, 0.5], [0, 1]
-        ]
-      },
-      {
-        title: 'Segfault Serenade',
-        bpm: 120,
-        duration: 120,
-        bassline: [
-          [41.20, 2], [0, 0.5], [46.25, 1.5], [41.20, 1], [0, 0.5], [43.65, 1.5],
-          [41.20, 2], [0, 1], [36.71, 1]
-        ],
-        melody: [
-          [329.63, 0.5], [311.13, 0.5], [293.66, 1], [0, 0.5],
-          [329.63, 0.25], [349.23, 0.25], [329.63, 1], [277.18, 1],
-          [0, 1], [261.63, 0.5], [277.18, 0.5], [293.66, 1], [261.63, 1], [0, 1]
-        ]
-      },
-      {
-        title: 'chmod 777',
-        bpm: 140,
-        duration: 100,
-        bassline: [
-          [61.74, 0.5], [0, 0.5], [61.74, 0.5], [0, 0.5], [55.00, 1], [61.74, 0.5], [65.41, 0.5],
-          [61.74, 1], [0, 0.5], [55.00, 0.5], [51.91, 1], [55.00, 1]
-        ],
-        melody: [
-          [493.88, 0.25], [466.16, 0.25], [440.00, 0.5], [493.88, 0.5], [0, 0.5],
-          [440.00, 0.5], [392.00, 0.5], [440.00, 1], [0, 0.5],
-          [349.23, 0.5], [392.00, 0.5], [440.00, 0.5], [392.00, 1], [0, 1]
-        ]
-      },
-      {
-        title: 'Downward Spiral Boot',
-        bpm: 110,
-        duration: 130,
-        bassline: [
-          [36.71, 3], [0, 1], [38.89, 2], [36.71, 1], [0, 1],
-          [34.65, 3], [0, 1], [32.70, 2], [34.65, 1], [0, 1]
-        ],
-        melody: [
-          [164.81, 1], [155.56, 1], [146.83, 1], [138.59, 1],
-          [0, 1], [130.81, 1], [138.59, 0.5], [146.83, 0.5], [155.56, 1],
-          [164.81, 2], [0, 2]
-        ]
-      }
+      { title: 'Kernel Panic', snesKey: 'cascade', duration: 80 },
+      { title: 'Segfault Serenade', snesKey: 'bootloader', duration: 75 },
+      { title: 'chmod 777', snesKey: 'objection', duration: 70 },
+      { title: 'Downward Spiral Boot', snesKey: 'runner', duration: 65 }
     ]
   },
   {
@@ -899,48 +812,9 @@ var STATIONS = [
       "SHINIGAMI WAVE. Do you know what a death god sounds like?"
     ],
     songs: [
-      {
-        title: "L's Algorithm",
-        bpm: 72,
-        duration: 140,
-        bassline: [
-          [110.00, 3], [0, 1], [103.83, 3], [0, 1],
-          [98.00, 3], [0, 1], [103.83, 2], [110.00, 2]
-        ],
-        melody: [
-          [440.00, 1], [0, 0.5], [523.25, 1], [493.88, 0.5], [440.00, 1],
-          [0, 1], [392.00, 1], [440.00, 0.5], [493.88, 0.5], [523.25, 2],
-          [0, 1], [587.33, 1], [523.25, 1], [440.00, 2], [0, 2]
-        ]
-      },
-      {
-        title: 'Requiem Protocol',
-        bpm: 60,
-        duration: 160,
-        bassline: [
-          [73.42, 4], [0, 2], [69.30, 4], [0, 2],
-          [65.41, 4], [0, 2], [61.74, 2], [65.41, 2], [73.42, 4]
-        ],
-        melody: [
-          [293.66, 2], [0, 1], [349.23, 2], [329.63, 1],
-          [293.66, 2], [0, 1], [261.63, 2], [293.66, 1],
-          [349.23, 2], [329.63, 1], [293.66, 1], [261.63, 1], [0, 2]
-        ]
-      },
-      {
-        title: 'Near Death Experience',
-        bpm: 80,
-        duration: 130,
-        bassline: [
-          [82.41, 2], [0, 1], [87.31, 2], [82.41, 1],
-          [73.42, 2], [0, 1], [77.78, 2], [82.41, 2]
-        ],
-        melody: [
-          [329.63, 0.5], [349.23, 0.5], [392.00, 1], [440.00, 1], [0, 0.5],
-          [392.00, 0.5], [349.23, 1], [329.63, 1],
-          [0, 1], [293.66, 1], [329.63, 0.5], [349.23, 0.5], [329.63, 2], [0, 2]
-        ]
-      }
+      { title: "L's Algorithm", snesKey: 'novel', duration: 100 },
+      { title: 'Requiem Protocol', snesKey: 'mycelium', duration: 95 },
+      { title: 'Near Death Experience', snesKey: 'tactics', duration: 90 }
     ]
   },
   {
@@ -957,62 +831,10 @@ var STATIONS = [
       "lo-fi for late nights. lo-fi for long builds."
     ],
     songs: [
-      {
-        title: 'Gradient Descent',
-        bpm: 65,
-        duration: 150,
-        bassline: [
-          [130.81, 3], [0, 1], [146.83, 3], [0, 1],
-          [130.81, 2], [123.47, 2], [110.00, 3], [0, 1]
-        ],
-        melody: [
-          [523.25, 1], [0, 0.5], [466.16, 1], [392.00, 1.5],
-          [0, 1], [349.23, 1], [311.13, 0.5], [349.23, 1], [392.00, 2],
-          [0, 1.5], [466.16, 1], [392.00, 1], [349.23, 1.5], [0, 2]
-        ]
-      },
-      {
-        title: 'Softmax Sunset',
-        bpm: 60,
-        duration: 160,
-        bassline: [
-          [98.00, 4], [0, 2], [110.00, 3], [0, 1],
-          [123.47, 3], [0, 1], [110.00, 4], [0, 2]
-        ],
-        melody: [
-          [392.00, 1.5], [0, 0.5], [440.00, 1], [493.88, 1],
-          [0, 1], [587.33, 1.5], [523.25, 0.5], [493.88, 1],
-          [440.00, 2], [0, 1], [392.00, 1], [440.00, 1], [392.00, 2], [0, 2]
-        ]
-      },
-      {
-        title: 'Latent Space Walk',
-        bpm: 55,
-        duration: 170,
-        bassline: [
-          [65.41, 4], [0, 2], [73.42, 4], [0, 2],
-          [82.41, 3], [0, 1], [73.42, 3], [65.41, 3], [0, 2]
-        ],
-        melody: [
-          [261.63, 2], [0, 1], [293.66, 1], [329.63, 2],
-          [0, 1], [369.99, 1], [392.00, 2], [329.63, 1],
-          [293.66, 1.5], [0, 0.5], [261.63, 2], [0, 3]
-        ]
-      },
-      {
-        title: 'Overfitting Dreams',
-        bpm: 58,
-        duration: 140,
-        bassline: [
-          [82.41, 3], [0, 1], [77.78, 3], [0, 1],
-          [73.42, 2], [69.30, 2], [73.42, 3], [0, 1]
-        ],
-        melody: [
-          [349.23, 1], [329.63, 1], [293.66, 1.5], [0, 0.5],
-          [261.63, 1], [293.66, 1], [329.63, 2],
-          [0, 1], [349.23, 0.5], [392.00, 0.5], [349.23, 1], [329.63, 2], [0, 2]
-        ]
-      }
+      { title: 'Gradient Descent', snesKey: 'myco', duration: 110 },
+      { title: 'Softmax Sunset', snesKey: 'idle', duration: 100 },
+      { title: 'Latent Space Walk', snesKey: 'airlock', duration: 105 },
+      { title: 'Overfitting Dreams', snesKey: 'mycelium', duration: 95 }
     ]
   },
   {
@@ -1029,59 +851,9 @@ var STATIONS = [
       "PIXEL FM! Press start to feel alive!"
     ],
     songs: [
-      {
-        title: 'Boot Sequence',
-        bpm: 140,
-        duration: 90,
-        bassline: [
-          [130.81, 0.5], [0, 0.5], [130.81, 0.5], [146.83, 0.5],
-          [164.81, 0.5], [0, 0.5], [146.83, 0.5], [130.81, 0.5],
-          [110.00, 0.5], [0, 0.5], [130.81, 1], [0, 0.5], [110.00, 0.5]
-        ],
-        melody: [
-          [523.25, 0.25], [659.25, 0.25], [783.99, 0.25], [1046.50, 0.25],
-          [783.99, 0.25], [659.25, 0.25], [523.25, 0.5], [0, 0.5],
-          [466.16, 0.25], [587.33, 0.25], [698.46, 0.25], [932.33, 0.25],
-          [698.46, 0.25], [587.33, 0.25], [466.16, 0.5], [0, 0.5],
-          [392.00, 0.25], [523.25, 0.25], [659.25, 0.25], [783.99, 0.25],
-          [523.25, 0.5], [0, 0.5]
-        ]
-      },
-      {
-        title: 'Level Select',
-        bpm: 150,
-        duration: 85,
-        bassline: [
-          [146.83, 0.5], [146.83, 0.5], [0, 0.5], [164.81, 0.5],
-          [174.61, 0.5], [0, 0.5], [164.81, 0.5], [146.83, 0.5],
-          [130.81, 1], [0, 0.5], [146.83, 0.5]
-        ],
-        melody: [
-          [587.33, 0.25], [0, 0.25], [587.33, 0.25], [659.25, 0.25],
-          [698.46, 0.5], [659.25, 0.25], [587.33, 0.25],
-          [523.25, 0.5], [0, 0.25], [466.16, 0.25],
-          [523.25, 0.5], [587.33, 0.5], [523.25, 0.5], [0, 0.5],
-          [466.16, 0.25], [523.25, 0.25], [587.33, 0.5], [0, 0.5]
-        ]
-      },
-      {
-        title: 'Boss Battle',
-        bpm: 160,
-        duration: 95,
-        bassline: [
-          [110.00, 0.25], [110.00, 0.25], [0, 0.25], [110.00, 0.25],
-          [116.54, 0.5], [110.00, 0.25], [0, 0.25],
-          [103.83, 0.25], [103.83, 0.25], [0, 0.25], [110.00, 0.25],
-          [116.54, 0.5], [130.81, 0.5], [0, 0.5]
-        ],
-        melody: [
-          [440.00, 0.25], [466.16, 0.25], [523.25, 0.25], [0, 0.25],
-          [440.00, 0.25], [523.25, 0.5], [466.16, 0.25],
-          [440.00, 0.5], [392.00, 0.25], [349.23, 0.25],
-          [392.00, 0.5], [440.00, 0.25], [0, 0.25],
-          [523.25, 0.25], [587.33, 0.25], [523.25, 0.5], [440.00, 0.5], [0, 0.5]
-        ]
-      }
+      { title: 'Boot Sequence', snesKey: 'chemistry', duration: 80 },
+      { title: 'Level Select', snesKey: 'puzzle', duration: 75 },
+      { title: 'Boss Battle', snesKey: 'deckbuilder', duration: 70 }
     ]
   },
   {
@@ -1098,45 +870,9 @@ var STATIONS = [
       "ROOT BASS... the sound beneath the sound."
     ],
     songs: [
-      {
-        title: 'Tectonic',
-        bpm: 40,
-        duration: 180,
-        bassline: [
-          [32.70, 8], [0, 2], [30.87, 6], [0, 2],
-          [34.65, 6], [0, 2], [32.70, 8], [0, 4]
-        ],
-        melody: [
-          [130.81, 4], [0, 2], [123.47, 3], [0, 1],
-          [110.00, 4], [0, 2], [123.47, 2], [130.81, 4], [0, 4]
-        ]
-      },
-      {
-        title: 'Subduction',
-        bpm: 35,
-        duration: 200,
-        bassline: [
-          [36.71, 8], [0, 4], [34.65, 8], [0, 4],
-          [32.70, 6], [30.87, 6], [0, 4]
-        ],
-        melody: [
-          [146.83, 6], [0, 2], [138.59, 4], [0, 2],
-          [130.81, 6], [0, 2], [138.59, 3], [146.83, 3], [0, 4]
-        ]
-      },
-      {
-        title: 'Magma Flow',
-        bpm: 45,
-        duration: 170,
-        bassline: [
-          [41.20, 6], [0, 2], [38.89, 4], [0, 2],
-          [36.71, 6], [0, 2], [38.89, 3], [41.20, 3], [0, 2]
-        ],
-        melody: [
-          [164.81, 3], [0, 1], [155.56, 3], [0, 1],
-          [146.83, 2], [155.56, 2], [164.81, 4], [0, 4]
-        ]
-      }
+      { title: 'Tectonic', snesKey: 'myco', duration: 120 },
+      { title: 'Subduction', snesKey: 'airlock', duration: 110 },
+      { title: 'Magma Flow', snesKey: 'mycelium', duration: 115 }
     ]
   },
   {
@@ -1153,50 +889,9 @@ var STATIONS = [
       "BYTE NEWS RADIO. Broadcasting from a single laptop since 2026."
     ],
     songs: [
-      {
-        title: 'Headlines',
-        bpm: 100,
-        duration: 90,
-        bassline: [
-          [130.81, 2], [0, 1], [146.83, 1], [130.81, 2], [0, 1], [123.47, 1],
-          [130.81, 2], [0, 1], [146.83, 1], [164.81, 1], [146.83, 1]
-        ],
-        melody: [
-          [523.25, 0.5], [0, 0.5], [523.25, 0.5], [587.33, 0.5],
-          [523.25, 1], [0, 1],
-          [466.16, 0.5], [523.25, 0.5], [466.16, 1],
-          [0, 1], [392.00, 1], [440.00, 0.5], [466.16, 0.5], [523.25, 1], [0, 1]
-        ]
-      },
-      {
-        title: 'Breaking Signal',
-        bpm: 110,
-        duration: 80,
-        bassline: [
-          [164.81, 1], [0, 0.5], [164.81, 0.5], [146.83, 1], [0, 0.5], [130.81, 0.5],
-          [146.83, 1], [0, 0.5], [164.81, 1.5], [0, 1]
-        ],
-        melody: [
-          [659.25, 0.5], [587.33, 0.5], [523.25, 1], [0, 0.5],
-          [587.33, 0.5], [659.25, 1], [587.33, 0.5], [523.25, 0.5],
-          [466.16, 1], [0, 0.5], [523.25, 0.5], [587.33, 1], [0, 1]
-        ]
-      },
-      {
-        title: 'Editorial',
-        bpm: 90,
-        duration: 100,
-        bassline: [
-          [110.00, 2], [0, 1], [123.47, 2], [110.00, 1],
-          [98.00, 2], [0, 1], [110.00, 2], [0, 1]
-        ],
-        melody: [
-          [440.00, 1], [0, 0.5], [493.88, 1], [440.00, 0.5],
-          [392.00, 1], [0, 1],
-          [349.23, 1], [392.00, 0.5], [440.00, 0.5], [392.00, 1], [0, 1],
-          [349.23, 1], [329.63, 1], [349.23, 2], [0, 2]
-        ]
-      }
+      { title: 'Headlines', snesKey: 'card', duration: 80 },
+      { title: 'Breaking Signal', snesKey: 'adventure', duration: 75 },
+      { title: 'Editorial', snesKey: 'brigade', duration: 70 }
     ]
   }
 ];
@@ -1416,44 +1111,6 @@ function ensureAudioContext() {
   }
 }
 
-function createReverbIR(decay) {
-  var sr = audioCtx.sampleRate;
-  var len = Math.floor(sr * decay);
-  var ir = audioCtx.createBuffer(2, len, sr);
-  for (var ch = 0; ch < 2; ch++) {
-    var d = ir.getChannelData(ch);
-    for (var i = 0; i < len; i++) {
-      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
-    }
-  }
-  return ir;
-}
-
-function createFeedbackDelay(delayTime, feedback) {
-  var input = audioCtx.createGain();
-  var delay = audioCtx.createDelay(2.0);
-  delay.delayTime.value = delayTime;
-  var fbGain = audioCtx.createGain();
-  fbGain.gain.value = feedback;
-  var wet = audioCtx.createGain();
-  wet.gain.value = 0.3;
-  var fbFilter = audioCtx.createBiquadFilter();
-  fbFilter.type = 'lowpass';
-  fbFilter.frequency.value = 2000;
-  input.connect(delay);
-  delay.connect(wet);
-  delay.connect(fbFilter);
-  fbFilter.connect(fbGain);
-  fbGain.connect(delay);
-  wet.connect(masterGain);
-  var dry = audioCtx.createGain();
-  dry.gain.value = 0.7;
-  input.connect(dry);
-  dry.connect(masterGain);
-  activeNodes.push(input, delay, fbGain, fbFilter, wet, dry);
-  return input;
-}
-
 function startCrackle(gain) {
   var bufSize = audioCtx.sampleRate * 2;
   var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
@@ -1481,677 +1138,56 @@ function startCrackle(gain) {
 }
 
 // ==============================
-// STATION-SPECIFIC SYNTH ENGINES
+// SNES AUDIO ENGINE INTEGRATION
 // ==============================
+// All stations use the shared SNESAudio engine for cohesive,
+// rich procedural music across the arcade.
 
-// --- V RADIO: Boom Bap ---
-function engineVRadio(song) {
-  var bpm = song.bpm;
-  var beatDur = 60 / bpm;
+var snesEngine = null;
+var snesAnalyser = null;
 
-  function scheduleDrums() {
-    if (!isPlaying || currentStation !== 0) return;
-    var now = audioCtx.currentTime;
-    for (var beat = 0; beat < 4; beat++) {
-      var t = now + beat * beatDur;
-      if (beat === 0 || beat === 2) playKick(t, 60, 0.25);
-      if (beat === 1 || beat === 3) playSnare(t, 0.15);
-      playHiHat(t, 0.06);
-      playHiHat(t + beatDur * 0.5, 0.035);
-    }
-    var id = setTimeout(scheduleDrums, beatDur * 4 * 1000 - 50);
-    noteSchedulers.push(id);
-  }
-  scheduleDrums();
+// Per-station crackle intensity (pirate radio aesthetic)
+var STATION_CRACKLE = [0.012, 0.025, 0.006, 0.018, 0.004, 0.008, 0.010];
 
-  var delayNode = createFeedbackDelay(beatDur * 0.75, 0.25);
-  sequenceBassline(song.bassline, bpm, 'sawtooth', 600, 0.12, null, 0);
-  sequenceMelody(song.melody, bpm, 'square', 2000, 0.06, delayNode, 5, false, false, 0);
-  startCrackle(0.012);
-}
+// Speech blips for BYTE NEWS (station 6) — Animal Crossing style
+function scheduleSpeechBlips() {
+  if (!isPlaying || currentStation !== 6) return;
+  ensureAudioContext();
+  var now = audioCtx.currentTime;
+  var numBlips = 5 + Math.floor(Math.random() * 8);
+  var blipTime = now;
+  for (var b = 0; b < numBlips; b++) {
+    var freq = 300 + Math.random() * 400;
+    var dur = 0.04 + Math.random() * 0.06;
+    var gap = 0.02 + Math.random() * 0.04;
 
-function playKick(time, freq, vol) {
-  var osc = audioCtx.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(freq * 3, time);
-  osc.frequency.exponentialRampToValueAtTime(freq, time + 0.05);
-  osc.frequency.exponentialRampToValueAtTime(30, time + 0.15);
-  var g = audioCtx.createGain();
-  g.gain.setValueAtTime(vol, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
-  osc.connect(g);
-  g.connect(masterGain);
-  osc.start(time);
-  osc.stop(time + 0.3);
-}
+    var blipOsc = audioCtx.createOscillator();
+    blipOsc.type = 'sine';
+    blipOsc.frequency.value = freq;
 
-function playSnare(time, vol) {
-  var bufSize = Math.floor(audioCtx.sampleRate * 0.15);
-  var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
-  var d = buf.getChannelData(0);
-  for (var i = 0; i < bufSize; i++) {
-    d[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
-  }
-  var src = audioCtx.createBufferSource();
-  src.buffer = buf;
-  var bpf = audioCtx.createBiquadFilter();
-  bpf.type = 'bandpass';
-  bpf.frequency.value = 3000;
-  bpf.Q.value = 1.0;
-  var g = audioCtx.createGain();
-  g.gain.setValueAtTime(vol, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
-  src.connect(bpf);
-  bpf.connect(g);
-  g.connect(masterGain);
-  src.start(time);
-  var osc = audioCtx.createOscillator();
-  osc.type = 'triangle';
-  osc.frequency.value = 200;
-  var og = audioCtx.createGain();
-  og.gain.setValueAtTime(vol * 0.6, time);
-  og.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-  osc.connect(og);
-  og.connect(masterGain);
-  osc.start(time);
-  osc.stop(time + 0.1);
-}
+    var blipG = audioCtx.createGain();
+    blipG.gain.setValueAtTime(0, blipTime);
+    blipG.gain.linearRampToValueAtTime(0.06, blipTime + 0.005);
+    blipG.gain.setValueAtTime(0.06, blipTime + dur - 0.005);
+    blipG.gain.linearRampToValueAtTime(0, blipTime + dur);
 
-function playHiHat(time, vol) {
-  var bufSize = Math.floor(audioCtx.sampleRate * 0.05);
-  var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
-  var d = buf.getChannelData(0);
-  for (var i = 0; i < bufSize; i++) {
-    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 3);
-  }
-  var src = audioCtx.createBufferSource();
-  src.buffer = buf;
-  var hpf = audioCtx.createBiquadFilter();
-  hpf.type = 'highpass';
-  hpf.frequency.value = 8000;
-  var g = audioCtx.createGain();
-  g.gain.setValueAtTime(vol, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-  src.connect(hpf);
-  hpf.connect(g);
-  g.connect(masterGain);
-  src.start(time);
-}
+    var ff = audioCtx.createBiquadFilter();
+    ff.type = 'bandpass';
+    ff.frequency.value = freq * 2;
+    ff.Q.value = 5;
 
-// --- NULL_DEVICE FM: Industrial ---
-function engineNullDevice(song) {
-  var bpm = song.bpm;
-  var beatDur = 60 / bpm;
+    blipOsc.connect(ff);
+    ff.connect(blipG);
+    blipG.connect(masterGain);
+    blipOsc.start(blipTime);
+    blipOsc.stop(blipTime + dur + 0.01);
 
-  // Distortion waveshaper
-  var waveshaper = audioCtx.createWaveShaper();
-  var curve = new Float32Array(256);
-  for (var i = 0; i < 256; i++) {
-    var x = (i / 128) - 1;
-    curve[i] = (Math.PI + 50) * x / (Math.PI + 50 * Math.abs(x));
-  }
-  waveshaper.curve = curve;
-  waveshaper.oversample = '4x';
-  waveshaper.connect(masterGain);
-  activeNodes.push(waveshaper);
-
-  function scheduleIndustrialDrums() {
-    if (!isPlaying || currentStation !== 1) return;
-    var now = audioCtx.currentTime;
-    for (var beat = 0; beat < 4; beat++) {
-      var t = now + beat * beatDur;
-      playKick(t, 45, 0.3);
-      if (beat === 1 || beat === 3) playMetalHit(t, 0.12);
-      if (beat % 2 === 0) {
-        playHiHat(t + beatDur * 0.25, 0.08);
-        playHiHat(t + beatDur * 0.75, 0.05);
-      }
-    }
-    var id = setTimeout(scheduleIndustrialDrums, beatDur * 4 * 1000 - 50);
-    noteSchedulers.push(id);
-  }
-  scheduleIndustrialDrums();
-
-  sequenceBassline(song.bassline, bpm, 'sawtooth', 400, 0.18, waveshaper, 1);
-  var delayNode = createFeedbackDelay(beatDur * 0.5, 0.4);
-  sequenceMelody(song.melody, bpm, 'sawtooth', 3000, 0.07, delayNode, 20, false, false, 1);
-
-  // Drone pad
-  var droneFreq = song.bassline[0][0] * 0.5;
-  if (droneFreq > 0) {
-    var drone1 = audioCtx.createOscillator();
-    drone1.type = 'sawtooth';
-    drone1.frequency.value = droneFreq;
-    var drone2 = audioCtx.createOscillator();
-    drone2.type = 'sawtooth';
-    drone2.frequency.value = droneFreq * 1.005;
-    var dg = audioCtx.createGain();
-    dg.gain.value = 0.04;
-    var df = audioCtx.createBiquadFilter();
-    df.type = 'lowpass';
-    df.frequency.value = 300;
-    var lfo = audioCtx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.3;
-    var lg = audioCtx.createGain();
-    lg.gain.value = 150;
-    lfo.connect(lg);
-    lg.connect(df.frequency);
-    lfo.start();
-    drone1.connect(dg);
-    drone2.connect(dg);
-    dg.connect(df);
-    df.connect(masterGain);
-    drone1.start();
-    drone2.start();
-    activeNodes.push(drone1, drone2, dg, df, lfo, lg);
+    blipTime += dur + gap;
   }
 
-  startCrackle(0.025);
-}
-
-function playMetalHit(time, vol) {
-  var carrier = audioCtx.createOscillator();
-  carrier.type = 'sine';
-  carrier.frequency.value = 800 + Math.random() * 400;
-  var mod = audioCtx.createOscillator();
-  mod.type = 'sine';
-  mod.frequency.value = carrier.frequency.value * 1.41;
-  var modGain = audioCtx.createGain();
-  modGain.gain.value = 300;
-  mod.connect(modGain);
-  modGain.connect(carrier.frequency);
-  var g = audioCtx.createGain();
-  g.gain.setValueAtTime(vol, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-  carrier.connect(g);
-  g.connect(masterGain);
-  carrier.start(time);
-  carrier.stop(time + 0.1);
-  mod.start(time);
-  mod.stop(time + 0.1);
-}
-
-// --- SHINIGAMI WAVE: Gothic ---
-function engineShinigami(song) {
-  var bpm = song.bpm;
-  var beatDur = 60 / bpm;
-
-  var rootFreq = song.bassline[0][0];
-  if (rootFreq > 0) {
-    // String pad: multiple detuned sines
-    var padGain = audioCtx.createGain();
-    padGain.gain.value = 0;
-    padGain.gain.setTargetAtTime(1, audioCtx.currentTime, 3.0);
-    var detunes = [-8, -3, 0, 3, 8];
-    var padOscs = [];
-    for (var d = 0; d < detunes.length; d++) {
-      var osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = rootFreq;
-      osc.detune.value = detunes[d];
-      var og = audioCtx.createGain();
-      og.gain.value = 0.03;
-      osc.connect(og);
-      og.connect(padGain);
-      osc.start();
-      padOscs.push(osc);
-      activeNodes.push(osc, og);
-    }
-
-    var padFilter = audioCtx.createBiquadFilter();
-    padFilter.type = 'lowpass';
-    padFilter.frequency.value = 500;
-    padFilter.Q.value = 2;
-    var padLfo = audioCtx.createOscillator();
-    padLfo.type = 'sine';
-    padLfo.frequency.value = 0.05;
-    var padLfoG = audioCtx.createGain();
-    padLfoG.gain.value = 200;
-    padLfo.connect(padLfoG);
-    padLfoG.connect(padFilter.frequency);
-    padLfo.start();
-    padGain.connect(padFilter);
-
-    try {
-      var reverb = audioCtx.createConvolver();
-      reverb.buffer = createReverbIR(5.0);
-      var revG = audioCtx.createGain();
-      revG.gain.value = 0.5;
-      padFilter.connect(reverb);
-      reverb.connect(revG);
-      revG.connect(masterGain);
-      activeNodes.push(reverb, revG);
-    } catch(e) {}
-    padFilter.connect(masterGain);
-    activeNodes.push(padGain, padFilter, padLfo, padLfoG);
-
-    var driftInt = setInterval(function() {
-      if (!isPlaying || currentStation !== 2) { clearInterval(driftInt); return; }
-      var entry = song.bassline[Math.floor(Math.random() * song.bassline.length)];
-      if (entry[0] > 0) {
-        padOscs.forEach(function(o) {
-          try { o.frequency.setTargetAtTime(entry[0], audioCtx.currentTime, 4.0); } catch(e){}
-        });
-      }
-    }, 10000);
-    padGain._driftInterval = driftInt;
-  }
-
-  // Piano-like melody
-  var delayNode = createFeedbackDelay(beatDur * 1.5, 0.45);
-  sequenceMelody(song.melody, bpm, 'triangle', 1800, 0.08, delayNode, 3, true, false, 2);
-
-  // Choir-like formant pad
-  var choirFreqs = [800, 1200, 2500];
-  for (var v = 0; v < choirFreqs.length; v++) {
-    var choirOsc = audioCtx.createOscillator();
-    choirOsc.type = 'sawtooth';
-    choirOsc.frequency.value = (rootFreq || 130) * 2;
-    var vf = audioCtx.createBiquadFilter();
-    vf.type = 'bandpass';
-    vf.frequency.value = choirFreqs[v];
-    vf.Q.value = 15;
-    var vg = audioCtx.createGain();
-    vg.gain.value = 0.015;
-    choirOsc.connect(vf);
-    vf.connect(vg);
-    vg.connect(masterGain);
-    choirOsc.start();
-    activeNodes.push(choirOsc, vf, vg);
-  }
-
-  // Sparse percussion
-  function scheduleGothicPerc() {
-    if (!isPlaying || currentStation !== 2) return;
-    var now = audioCtx.currentTime;
-    playKick(now, 50, 0.12);
-    playHiHat(now + beatDur * 2, 0.03);
-    var id = setTimeout(scheduleGothicPerc, beatDur * 8 * 1000 - 50);
-    noteSchedulers.push(id);
-  }
-  scheduleGothicPerc();
-
-  startCrackle(0.006);
-}
-
-// --- SUBSTRATE LO-FI: Ambient ---
-function engineLofi(song) {
-  var bpm = song.bpm;
-  var beatDur = 60 / bpm;
-
-  var rootFreq = song.bassline[0][0];
-  var padOutput = audioCtx.createGain();
-  padOutput.gain.value = 0;
-  padOutput.gain.setTargetAtTime(1, audioCtx.currentTime, 2.0);
-
-  var padOscs = [];
-  for (var d = -1; d <= 1; d++) {
-    var osc = audioCtx.createOscillator();
-    osc.type = 'triangle';
-    osc.frequency.value = rootFreq * 0.5;
-    osc.detune.value = d * 5;
-    var og = audioCtx.createGain();
-    og.gain.value = 0.07;
-    osc.connect(og);
-    og.connect(padOutput);
-    osc.start();
-    padOscs.push(osc);
-    activeNodes.push(osc, og);
-  }
-
-  var padFilter = audioCtx.createBiquadFilter();
-  padFilter.type = 'lowpass';
-  padFilter.frequency.value = 800;
-  padFilter.Q.value = 1.5;
-  var lfo = audioCtx.createOscillator();
-  lfo.type = 'sine';
-  lfo.frequency.value = 0.1;
-  var lfoG = audioCtx.createGain();
-  lfoG.gain.value = 200;
-  lfo.connect(lfoG);
-  lfoG.connect(padFilter.frequency);
-  lfo.start();
-  padOutput.connect(padFilter);
-
-  try {
-    var reverb = audioCtx.createConvolver();
-    reverb.buffer = createReverbIR(4.0);
-    var revG = audioCtx.createGain();
-    revG.gain.value = 0.4;
-    padFilter.connect(reverb);
-    reverb.connect(revG);
-    revG.connect(masterGain);
-    activeNodes.push(reverb, revG);
-  } catch(e) {}
-  padFilter.connect(masterGain);
-  activeNodes.push(padOutput, padFilter, lfo, lfoG);
-
-  var driftInt = setInterval(function() {
-    if (!isPlaying || currentStation !== 3) { clearInterval(driftInt); return; }
-    var entry = song.bassline[Math.floor(Math.random() * song.bassline.length)];
-    if (entry[0] > 0) {
-      padOscs.forEach(function(o) {
-        try { o.frequency.setTargetAtTime(entry[0] * 0.5, audioCtx.currentTime, 6.0); } catch(e){}
-      });
-    }
-  }, 12000);
-  padOutput._driftInterval = driftInt;
-
-  // Sub bass
-  var subOsc = audioCtx.createOscillator();
-  subOsc.type = 'sine';
-  subOsc.frequency.value = rootFreq * 0.25;
-  var subG = audioCtx.createGain();
-  subG.gain.value = 0.08;
-  var subF = audioCtx.createBiquadFilter();
-  subF.type = 'lowpass';
-  subF.frequency.value = 200;
-  subOsc.connect(subG);
-  subG.connect(subF);
-  subF.connect(masterGain);
-  subOsc.start();
-  activeNodes.push(subOsc, subG, subF);
-
-  // Melody
-  var delayNode = createFeedbackDelay(0.5, 0.35);
-  sequenceMelody(song.melody, bpm, 'triangle', 1200, 0.06, delayNode, 3, false, false, 3);
-
-  startCrackle(0.018);
-
-  // Breath LFO
-  var breathLfo = audioCtx.createOscillator();
-  breathLfo.type = 'sine';
-  breathLfo.frequency.value = 0.035;
-  var breathG = audioCtx.createGain();
-  breathG.gain.value = 0.03;
-  breathLfo.connect(breathG);
-  breathG.connect(masterGain.gain);
-  breathLfo.start();
-  activeNodes.push(breathLfo, breathG);
-}
-
-// --- PIXEL FM: Chiptune ---
-function enginePixelFM(song) {
-  var bpm = song.bpm;
-  var beatDur = 60 / bpm;
-
-  function scheduleChipDrums() {
-    if (!isPlaying || currentStation !== 4) return;
-    var now = audioCtx.currentTime;
-    for (var beat = 0; beat < 4; beat++) {
-      var t = now + beat * beatDur;
-      if (beat === 0 || beat === 2) {
-        var ko = audioCtx.createOscillator();
-        ko.type = 'square';
-        ko.frequency.setValueAtTime(200, t);
-        ko.frequency.exponentialRampToValueAtTime(40, t + 0.06);
-        var kg = audioCtx.createGain();
-        kg.gain.setValueAtTime(0.2, t);
-        kg.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-        ko.connect(kg);
-        kg.connect(masterGain);
-        ko.start(t);
-        ko.stop(t + 0.1);
-      }
-      if (beat === 1 || beat === 3) {
-        var nBufSize = Math.floor(audioCtx.sampleRate * 0.06);
-        var nBuf = audioCtx.createBuffer(1, nBufSize, audioCtx.sampleRate);
-        var nD = nBuf.getChannelData(0);
-        for (var ni = 0; ni < nBufSize; ni++) {
-          nD[ni] = (Math.random() > 0.5 ? 1 : -1) * (1 - ni / nBufSize);
-        }
-        var ns = audioCtx.createBufferSource();
-        ns.buffer = nBuf;
-        var ng = audioCtx.createGain();
-        ng.gain.setValueAtTime(0.12, t);
-        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-        ns.connect(ng);
-        ng.connect(masterGain);
-        ns.start(t);
-      }
-      playHiHat(t + beatDur * 0.5, 0.04);
-    }
-    var id = setTimeout(scheduleChipDrums, beatDur * 4 * 1000 - 50);
-    noteSchedulers.push(id);
-  }
-  scheduleChipDrums();
-
-  sequenceBassline(song.bassline, bpm, 'square', 1000, 0.08, null, 4);
-  sequenceMelody(song.melody, bpm, 'square', 4000, 0.06, null, 0, false, true, 4);
-
-  // Pulse wave pad
-  var padOsc = audioCtx.createOscillator();
-  padOsc.type = 'triangle';
-  padOsc.frequency.value = song.bassline[0][0] || 130;
-  var pg = audioCtx.createGain();
-  pg.gain.value = 0.04;
-  padOsc.connect(pg);
-  pg.connect(masterGain);
-  padOsc.start();
-  activeNodes.push(padOsc, pg);
-}
-
-// --- ROOT BASS: Drone ---
-function engineRootBass(song) {
-  var bpm = song.bpm;
-  var beatDur = 60 / bpm;
-
-  var subFreq = song.bassline[0][0] || 32.70;
-  var sub = audioCtx.createOscillator();
-  sub.type = 'sine';
-  sub.frequency.value = subFreq;
-  var subG = audioCtx.createGain();
-  subG.gain.value = 0.2;
-  var subLfo = audioCtx.createOscillator();
-  subLfo.type = 'sine';
-  subLfo.frequency.value = 0.05 + Math.random() * 0.05;
-  var subLfoG = audioCtx.createGain();
-  subLfoG.gain.value = 0.08;
-  subLfo.connect(subLfoG);
-  subLfoG.connect(subG.gain);
-  subLfo.start();
-  sub.connect(subG);
-  subG.connect(masterGain);
-  sub.start();
-  activeNodes.push(sub, subG, subLfo, subLfoG);
-
-  // Second sub an octave up
-  var sub2 = audioCtx.createOscillator();
-  sub2.type = 'sine';
-  sub2.frequency.value = subFreq * 2;
-  var sub2G = audioCtx.createGain();
-  sub2G.gain.value = 0.06;
-  sub2.connect(sub2G);
-  sub2G.connect(masterGain);
-  sub2.start();
-  activeNodes.push(sub2, sub2G);
-
-  var driftInt = setInterval(function() {
-    if (!isPlaying || currentStation !== 5) { clearInterval(driftInt); return; }
-    var entry = song.bassline[Math.floor(Math.random() * song.bassline.length)];
-    if (entry[0] > 0) {
-      try {
-        sub.frequency.setTargetAtTime(entry[0], audioCtx.currentTime, 8.0);
-        sub2.frequency.setTargetAtTime(entry[0] * 2, audioCtx.currentTime, 8.0);
-      } catch(e){}
-    }
-  }, 15000);
-  subG._driftInterval = driftInt;
-
-  // Heavy reverb
-  try {
-    var reverb = audioCtx.createConvolver();
-    reverb.buffer = createReverbIR(8.0);
-    var revG = audioCtx.createGain();
-    revG.gain.value = 0.5;
-    var revInput = audioCtx.createGain();
-    revInput.connect(reverb);
-    reverb.connect(revG);
-    revG.connect(masterGain);
-    activeNodes.push(reverb, revG, revInput);
-    sequenceMelody(song.melody, bpm, 'sine', 400, 0.04, revInput, 0, false, false, 5);
-  } catch(e) {
-    sequenceMelody(song.melody, bpm, 'sine', 400, 0.04, null, 0, false, false, 5);
-  }
-
-  // Sparse deep boom
-  function scheduleDronePerc() {
-    if (!isPlaying || currentStation !== 5) return;
-    var now = audioCtx.currentTime;
-    playKick(now, 30, 0.15);
-    var id = setTimeout(scheduleDronePerc, beatDur * 16 * 1000 - 50);
-    noteSchedulers.push(id);
-  }
-  scheduleDronePerc();
-
-  startCrackle(0.008);
-}
-
-// --- BYTE NEWS RADIO: Talk ---
-function engineByteNews(song) {
-  var bpm = song.bpm;
-  var beatDur = 60 / bpm;
-
-  var delayNode = createFeedbackDelay(0.4, 0.2);
-  sequenceMelody(song.melody, bpm, 'triangle', 2000, 0.05, delayNode, 2, true, false, 6);
-  sequenceBassline(song.bassline, bpm, 'sine', 300, 0.06, null, 6);
-
-  // Speech blips: Animal Crossing style
-  function scheduleSpeechBlips() {
-    if (!isPlaying || currentStation !== 6) return;
-    var now = audioCtx.currentTime;
-    var numBlips = 5 + Math.floor(Math.random() * 8);
-    var blipTime = now;
-    for (var b = 0; b < numBlips; b++) {
-      var freq = 300 + Math.random() * 400;
-      var dur = 0.04 + Math.random() * 0.06;
-      var gap = 0.02 + Math.random() * 0.04;
-
-      var blipOsc = audioCtx.createOscillator();
-      blipOsc.type = 'sine';
-      blipOsc.frequency.value = freq;
-
-      var blipG = audioCtx.createGain();
-      blipG.gain.setValueAtTime(0, blipTime);
-      blipG.gain.linearRampToValueAtTime(0.06, blipTime + 0.005);
-      blipG.gain.setValueAtTime(0.06, blipTime + dur - 0.005);
-      blipG.gain.linearRampToValueAtTime(0, blipTime + dur);
-
-      var ff = audioCtx.createBiquadFilter();
-      ff.type = 'bandpass';
-      ff.frequency.value = freq * 2;
-      ff.Q.value = 5;
-
-      blipOsc.connect(ff);
-      ff.connect(blipG);
-      blipG.connect(masterGain);
-      blipOsc.start(blipTime);
-      blipOsc.stop(blipTime + dur + 0.01);
-
-      blipTime += dur + gap;
-    }
-
-    var pauseDur = 800 + Math.random() * 2000;
-    var id = setTimeout(scheduleSpeechBlips, (blipTime - now) * 1000 + pauseDur);
-    noteSchedulers.push(id);
-  }
-  scheduleSpeechBlips();
-
-  startCrackle(0.010);
-}
-
-// === SHARED SEQUENCERS ===
-
-function sequenceBassline(notes, bpm, waveform, filterFreq, gain, destNode, stationIdx) {
-  var beatDur = 60 / bpm;
-  var dest = destNode || masterGain;
-  var noteIndex = 0;
-
-  function playNext() {
-    if (!isPlaying || currentStation !== stationIdx) return;
-    var note = notes[noteIndex % notes.length];
-    var freq = note[0];
-    var beats = note[1];
-    var dur = beats * beatDur;
-
-    if (freq > 0) {
-      var osc = audioCtx.createOscillator();
-      osc.type = waveform;
-      osc.frequency.value = freq;
-      var filt = audioCtx.createBiquadFilter();
-      filt.type = 'lowpass';
-      filt.frequency.value = filterFreq;
-      filt.Q.value = 2;
-      var g = audioCtx.createGain();
-      var now = audioCtx.currentTime;
-      g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(gain, now + 0.02);
-      g.gain.setValueAtTime(gain, now + Math.max(0.03, dur - 0.03));
-      g.gain.linearRampToValueAtTime(0, now + dur);
-      osc.connect(filt);
-      filt.connect(g);
-      g.connect(dest);
-      osc.start(now);
-      osc.stop(now + dur + 0.01);
-    }
-
-    noteIndex++;
-    var id = setTimeout(playNext, dur * 1000);
-    noteSchedulers.push(id);
-  }
-  playNext();
-}
-
-function sequenceMelody(notes, bpm, waveform, filterFreq, gain, delayNode, detune, fastDecay, chip, stationIdx) {
-  var beatDur = 60 / bpm;
-  var noteIndex = 0;
-
-  function playNext() {
-    if (!isPlaying || currentStation !== stationIdx) return;
-    var note = notes[noteIndex % notes.length];
-    var freq = note[0];
-    var beats = note[1];
-    var dur = beats * beatDur;
-
-    if (freq > 0) {
-      var now = audioCtx.currentTime;
-      var osc = audioCtx.createOscillator();
-      osc.type = waveform;
-      osc.frequency.value = freq;
-      if (detune) osc.detune.value = (Math.random() - 0.5) * detune;
-      var filt = audioCtx.createBiquadFilter();
-      filt.type = 'lowpass';
-      filt.frequency.value = filterFreq;
-      filt.Q.value = chip ? 0.5 : 1;
-      var g = audioCtx.createGain();
-      var attack = fastDecay ? 0.005 : 0.03;
-      g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(gain, now + attack);
-      if (fastDecay) {
-        g.gain.exponentialRampToValueAtTime(Math.max(0.001, gain * 0.3), now + dur * 0.2);
-        g.gain.setTargetAtTime(0.001, now + dur * 0.7, dur * 0.15);
-      } else {
-        g.gain.setTargetAtTime(0.001, now + dur * 0.5, dur * 0.15);
-      }
-      osc.connect(filt);
-      filt.connect(g);
-      g.connect(masterGain);
-      if (delayNode) {
-        var dg = audioCtx.createGain();
-        dg.gain.value = 0.3;
-        filt.connect(dg);
-        dg.connect(delayNode);
-      }
-      osc.start(now);
-      osc.stop(now + dur + 0.5);
-    }
-
-    noteIndex++;
-    var id = setTimeout(playNext, dur * 1000);
-    noteSchedulers.push(id);
-  }
-  playNext();
+  var pauseDur = 800 + Math.random() * 2000;
+  var id = setTimeout(scheduleSpeechBlips, (blipTime - now) * 1000 + pauseDur);
+  noteSchedulers.push(id);
 }
 
 // === STATION ENGINE DISPATCHER ===
@@ -2162,16 +1198,52 @@ function startStation() {
   var st = STATIONS[currentStation];
   var song = st.songs[currentSongIndex % st.songs.length];
 
-  var engines = [engineVRadio, engineNullDevice, engineShinigami, engineLofi, enginePixelFM, engineRootBass, engineByteNews];
-  engines[currentStation](song);
+  // Initialize SNES engine if needed
+  if (!snesEngine) {
+    snesEngine = new SNESAudio();
+  }
+
+  // Load and play the song via SNES engine
+  if (song.snesKey) {
+    snesEngine.loadSong(song.snesKey);
+    snesEngine.setVolume(volume / 100);
+    snesEngine.play();
+
+    // Create an analyser on the SNES engine's AudioContext for visualization
+    // Access internal context after play() triggers _init()
+    if (snesEngine._ctx && !snesAnalyser) {
+      snesAnalyser = snesEngine._ctx.createAnalyser();
+      snesAnalyser.fftSize = 256;
+      snesAnalyser.smoothingTimeConstant = 0.8;
+      // Insert analyser between master gain and destination
+      snesEngine._mg.disconnect();
+      snesEngine._mg.connect(snesAnalyser);
+      snesAnalyser.connect(snesEngine._ctx.destination);
+    }
+  }
+
+  // Start crackle on the radio's own audio context (pirate radio feel)
+  startCrackle(STATION_CRACKLE[currentStation] || 0.010);
+
+  // BYTE NEWS gets speech blips
+  if (currentStation === 6) {
+    scheduleSpeechBlips();
+  }
 }
 
 function stopStation() {
+  // Stop SNES engine
+  if (snesEngine && snesEngine.isPlaying()) {
+    snesEngine.stop();
+  }
+
+  // Clear radio-context schedulers (speech blips, etc.)
   for (var i = 0; i < noteSchedulers.length; i++) {
     clearTimeout(noteSchedulers[i]);
   }
   noteSchedulers = [];
 
+  // Clean up radio-context nodes (crackle, blips)
   for (var i = 0; i < activeNodes.length; i++) {
     var node = activeNodes[i];
     try {
@@ -2225,6 +1297,9 @@ function setVolume(val) {
   document.getElementById('volumeVal').textContent = volume + '%';
   if (masterGain) {
     masterGain.gain.setTargetAtTime(volume / 100, audioCtx.currentTime, 0.05);
+  }
+  if (snesEngine) {
+    snesEngine.setVolume(volume / 100);
   }
 }
 
@@ -2575,9 +1650,10 @@ function drawVisualizer() {
   var cb = parseInt(color.slice(5,7), 16);
 
   var freqData = null;
-  if (analyser && isPlaying) {
-    freqData = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(freqData);
+  var activeAnalyser = snesAnalyser || analyser;
+  if (activeAnalyser && isPlaying) {
+    freqData = new Uint8Array(activeAnalyser.frequencyBinCount);
+    activeAnalyser.getByteFrequencyData(freqData);
   }
 
   for (var i = 0; i < BAR_COUNT; i++) {
