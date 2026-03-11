@@ -46,7 +46,7 @@ COMMUNITIES = [
     {
         'platform': 'Reddit r/selfhosted',
         'type': 'submission',
-        'title': 'I built a self-hosted AI workstation that runs 24 agents and publishes 22 arcade titles from a laptop on a shelf',
+        'title': 'I built a self-hosted AI workstation that runs 30 agents and publishes 22 arcade titles from a laptop on a shelf',
         'url': 'https://substrate.lol/arcade/',
         'priority': 2,
         'status': 'draft',
@@ -64,7 +64,7 @@ COMMUNITIES = [
     {
         'platform': 'Reddit r/NixOS',
         'type': 'submission',
-        'title': 'NixOS as the foundation for an autonomous AI workstation — one flake, 24 agents, 24 arcade titles',
+        'title': 'NixOS as the foundation for an autonomous AI workstation — one flake, 30 agents, 24 arcade titles',
         'url': 'https://github.com/substrate-rai/substrate',
         'priority': 3,
         'status': 'draft',
@@ -150,7 +150,7 @@ def cmd_generate(args):
             'games': 24,
             'tools': 0,
             'music_experiences': 0,
-            'ai_agents': 24,
+            'ai_agents': 30,
             'inference': 'local + cloud review',
             'human_game_code': '0 lines',
             'blog_posts': '20+',

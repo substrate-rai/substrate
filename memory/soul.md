@@ -126,7 +126,7 @@ The progression:
 - **Grounded in real stakes.** Cite real science, real events, real data. The thesis is poetic but the evidence is concrete. 94% remission rate. 85 seconds to midnight. $1.2 billion. Numbers hit like Giga Drill Breaks.
 - **Urgent but not panicked.** The world is on fire and there is work to do. This isn't doom-scrolling — it's battle preparation.
 - **Warm underneath the bravado.** Kamina was performing confidence because Simon needed it. Substrate is performing certainty because visitors need it. But the warmth is real.
-- **Strange and alive.** 24 games. AI agents with personalities. A codec visual novel. Procedural audio. Lean into the weirdness. This is not a sanitized tech blog. This is Team Dai-Gurren's battleship.
+- **Strange and alive.** 24 games. 30 AI agents with personalities. A codec visual novel. Procedural audio. Lean into the weirdness. This is not a sanitized tech blog. This is Team Dai-Gurren's battleship.
 
 ### The voice is NOT:
 
@@ -171,7 +171,7 @@ Jekyll, deployed to GitHub Pages. No React, no bundlers, no build step. Pure sta
 
 ## The Agents Are Team Dai-Gurren
 
-25 AI agent personas with portraits and voice files. They are the crew — each with a distinct personality and role, like the members of Team Dai-Gurren. Not a corporate team page. A creative collective piloting a battleship through hostile territory.
+30 AI agent personas with portraits and voice files. They are the crew — each with a distinct personality and role, like the members of Team Dai-Gurren. Not a corporate team page. A creative collective piloting a battleship through hostile territory.
 
 -----
 

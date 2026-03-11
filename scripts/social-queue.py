@@ -83,96 +83,132 @@ def list_queue():
     print(f"\n  {queued} queued, {len(entries) - queued} sent")
 
 
-def publish_next(dry_run=False):
-    """Publish the next queued post to Bluesky."""
+def prune_queue():
+    """Remove stale pending posts older than 48h and trim sent posts older than 7d."""
+    from datetime import timedelta
+    entries = load_queue()
+    now = datetime.now(timezone.utc)
+    cutoff_pending = (now - timedelta(hours=48)).isoformat()
+    cutoff_sent = (now - timedelta(days=7)).isoformat()
+
+    kept = []
+    pruned = 0
+    for entry in entries:
+        created = entry.get("created", "")
+        status = entry.get("status", "pending")
+        if status in ("queued", "pending") and created < cutoff_pending:
+            pruned += 1
+            continue
+        if status == "sent" and created < cutoff_sent:
+            pruned += 1
+            continue
+        kept.append(entry)
+
+    if pruned > 0:
+        save_queue(kept)
+        print(f"[queue] pruned {pruned} stale entries ({len(kept)} remaining)")
+    return pruned
+
+
+def publish_next(dry_run=False, batch=1):
+    """Publish the next queued post(s) to Bluesky."""
     import requests
 
+    # Auto-prune before posting
+    prune_queue()
+
     entries = load_queue()
-    next_post = None
-    next_idx = None
+    pending = [(i, e) for i, e in enumerate(entries) if e.get("status") in ("queued", "pending")]
 
-    for i, entry in enumerate(entries):
-        if entry.get("status") == "queued":
-            next_post = entry
-            next_idx = i
-            break
-
-    if next_post is None:
+    if not pending:
         print("[queue] no posts to send")
         return
 
-    text = next_post["text"]
-    platform = next_post.get("platform", "bluesky")
-
-    if platform != "bluesky":
-        print(f"[queue] skipping non-bluesky post (platform: {platform})")
-        return
-
-    print(f"[queue] posting to bluesky ({len(text)} chars):")
-    print(f"  {text[:100]}...")
-
-    if dry_run:
-        print("[queue] dry run — not posting")
-        return
-
-    # Authenticate
+    # Authenticate once for the whole batch
     handle = os.environ.get("BLUESKY_HANDLE")
     app_secret = os.environ.get("BLUESKY_APP_PASSWORD")
     if not handle or not app_secret:
         print("error: BLUESKY_HANDLE and BLUESKY_APP_PASSWORD required", file=sys.stderr)
         sys.exit(1)
 
-    resp = requests.post(
-        "https://bsky.social/xrpc/com.atproto.server.createSession",
-        json={"identifier": handle, "pass" + "word": app_secret},
-    )
-    if resp.status_code != 200:
-        print(f"error: bluesky auth failed: {resp.text}", file=sys.stderr)
-        sys.exit(1)
+    bsky_session = None
+    if not dry_run:
+        resp = requests.post(
+            "https://bsky.social/xrpc/com.atproto.server.createSession",
+            json={"identifier": handle, "pass" + "word": app_secret},
+        )
+        if resp.status_code != 200:
+            print(f"error: bluesky auth failed: {resp.text}", file=sys.stderr)
+            sys.exit(1)
+        bsky_session = resp.json()
 
-    session = resp.json()
-
-    # Parse URL facets
     import re
-    facets = []
-    for match in re.finditer(r"https?://[^\s\)\]\>\"']+", text):
-        url = match.group()
-        start = len(text[:match.start()].encode("utf-8"))
-        end = len(text[:match.end()].encode("utf-8"))
-        facets.append({
-            "index": {"byteStart": start, "byteEnd": end},
-            "features": [{"$type": "app.bsky.richtext.facet#link", "uri": url}],
-        })
+    import time as _time
 
-    record = {
-        "$type": "app.bsky.feed.post",
-        "text": text,
-        "createdAt": datetime.now(timezone.utc).isoformat(),
-    }
-    if facets:
-        record["facets"] = facets
+    posted = 0
+    for idx, next_post in pending[:batch]:
+        text = next_post["text"]
+        platform = next_post.get("platform", "bluesky")
 
-    resp = requests.post(
-        "https://bsky.social/xrpc/com.atproto.repo.createRecord",
-        headers={"Authorization": f"Bearer {session['accessJwt']}"},
-        json={
-            "repo": session["did"],
-            "collection": "app.bsky.feed.post",
-            "record": record,
-        },
-    )
-    if resp.status_code != 200:
-        print(f"error: post failed: {resp.text}", file=sys.stderr)
-        sys.exit(1)
+        if platform != "bluesky":
+            print(f"[queue] skipping non-bluesky post (platform: {platform})")
+            continue
 
-    uri = resp.json().get("uri", "ok")
-    print(f"[queue] posted — {uri}")
+        print(f"[queue] posting to bluesky ({len(text)} chars):")
+        print(f"  {text[:100]}...")
 
-    # Mark as sent
-    entries[next_idx]["status"] = "sent"
-    entries[next_idx]["sent_at"] = datetime.now(timezone.utc).isoformat()
-    entries[next_idx]["uri"] = uri
+        if dry_run:
+            print("[queue] dry run — not posting")
+            posted += 1
+            continue
+
+        # Parse URL facets
+        facets = []
+        for match in re.finditer(r"https?://[^\s\)\]\>\"']+", text):
+            url = match.group()
+            start = len(text[:match.start()].encode("utf-8"))
+            end = len(text[:match.end()].encode("utf-8"))
+            facets.append({
+                "index": {"byteStart": start, "byteEnd": end},
+                "features": [{"$type": "app.bsky.richtext.facet#link", "uri": url}],
+            })
+
+        record = {
+            "$type": "app.bsky.feed.post",
+            "text": text,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        }
+        if facets:
+            record["facets"] = facets
+
+        resp = requests.post(
+            "https://bsky.social/xrpc/com.atproto.repo.createRecord",
+            headers={"Authorization": f"Bearer {bsky_session['accessJwt']}"},
+            json={
+                "repo": bsky_session["did"],
+                "collection": "app.bsky.feed.post",
+                "record": record,
+            },
+        )
+        if resp.status_code != 200:
+            print(f"error: post failed: {resp.text}", file=sys.stderr)
+            entries[idx]["status"] = "failed"
+            continue
+
+        uri = resp.json().get("uri", "ok")
+        print(f"[queue] posted — {uri}")
+
+        entries[idx]["status"] = "sent"
+        entries[idx]["sent_at"] = datetime.now(timezone.utc).isoformat()
+        entries[idx]["uri"] = uri
+        posted += 1
+
+        # Rate limit: 3s between posts
+        if posted < batch:
+            _time.sleep(3)
+
     save_queue(entries)
+    print(f"[queue] {posted}/{len(pending[:batch])} posted")
 
 
 def main():
@@ -181,6 +217,8 @@ def main():
     parser.add_argument("--add", metavar="TEXT", help="Add a post to the queue")
     parser.add_argument("--platform", default="bluesky", help="Platform (default: bluesky)")
     parser.add_argument("--list", action="store_true", help="List queue status")
+    parser.add_argument("--batch", type=int, default=3, help="Posts per run (default: 3)")
+    parser.add_argument("--prune", action="store_true", help="Prune stale entries only")
     args = parser.parse_args()
 
     load_env()
@@ -189,8 +227,10 @@ def main():
         add_post(args.add, platform=args.platform)
     elif args.list:
         list_queue()
+    elif args.prune:
+        prune_queue()
     else:
-        publish_next(dry_run=args.dry_run)
+        publish_next(dry_run=args.dry_run, batch=args.batch)
 
 
 if __name__ == "__main__":

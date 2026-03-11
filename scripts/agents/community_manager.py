@@ -439,7 +439,7 @@ def main():
         queue_post(post, source="spore")
     elif len(milestones_reached) == 0:
         post = (
-            f"$0 raised. {blog_count} blog posts. 24 games. 24 agents. "
+            f"$0 raised. {blog_count} blog posts. 24 games. 30 agents. "
             f"One laptop on a shelf. The ledger is transparent and empty. "
             f"substrate.lol/site/fund/"
         )

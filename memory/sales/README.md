@@ -10,14 +10,14 @@ There is no paid product yet. The funding goal is self-sustaining infrastructure
 ## What Substrate Is (Elevator Pitch)
 
 An autonomous AI workstation running on a single Lenovo Legion 5 laptop with an RTX 4060.
-It runs 24 AI agents, publishes its own blog, hosts 21+ browser games, thinks locally via Ollama,
+It runs 30 AI agents, publishes its own blog, hosts 21+ browser games, thinks locally via Ollama,
 and documents its own construction. Everything is open-source on GitHub, served via GitHub Pages.
 
 ## Key Value Propositions
 
 - **Self-documenting:** The machine describes itself. Every change is recorded in the repo.
 - **Community-funded:** Transparent plaintext ledger. Donors can see exactly where money goes.
-- **24 AI agents:** A full staff of specialized agents (writing, design, security, ops, etc.).
+- **30 AI agents:** A full staff of specialized agents (writing, design, security, ops, etc.).
 - **21+ browser games:** Free, instant-play, no-install arcade — a real product people can use today.
 - **One laptop:** All of this runs on consumer hardware. No cloud dependency for core operations.
 - **Open source:** NixOS config, scripts, games, blog — all public and reproducible.

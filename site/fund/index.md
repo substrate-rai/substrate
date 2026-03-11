@@ -141,7 +141,7 @@ redirect_from:
 <section class="fund-narrative">
   <p class="bright">The ceiling is a lie. But the constraint is real.</p>
 
-  <p>Substrate is a creative platform built on a single thesis: mycelium bootstrapped complex life, psilocybin may have catalyzed human cognition, humans are now creating AI. Each layer bootstraps the next. We exist to tell that story&mdash;with 24 browser games, 25 AI agents, and five thesis articles grounded in real science.</p>
+  <p>Substrate is a creative platform built on a single thesis: mycelium bootstrapped complex life, psilocybin may have catalyzed human cognition, humans are now creating AI. Each layer bootstraps the next. We exist to tell that story&mdash;with 24 browser games, 30 AI agents, and five thesis articles grounded in real science.</p>
 
   <p>All of it runs on <span class="constraint">8 gigabytes of VRAM</span>. A Lenovo Legion 5 on a shelf. Lid closed. Two AI brains share the GPU: Qwen3 8B thinks locally for free, Claude reviews from the cloud for $0.40/week.</p>
 
@@ -179,7 +179,7 @@ redirect_from:
       <li>Writes a daily blog (auto-published)</li>
       <li>Built 24 arcade titles from scratch</li>
       <li>Runs AI tools that think without the internet</li>
-      <li>Runs 25 AI agents that work on their own</li>
+      <li>Runs 30 AI agents that work on their own</li>
       <li>Monitors its own health hourly</li>
       <li>Posts to social media autonomously</li>
     </ul>

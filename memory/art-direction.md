@@ -26,7 +26,7 @@ Practical reference for reproducing Substrate's visual style consistently. Cover
 | `--link` | `#6ea8fe` | Inline link color |
 | `--link-hover` | `#93bfff` | Link hover state |
 
-### Agent Colors (all 22)
+### Agent Colors (all 30)
 
 | Agent | Hex | CSS Var | Role |
 |---|---|---|---|

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Substrate orchestrator — hourly heartbeat for 28 agents.
+"""Substrate orchestrator — hourly heartbeat for 30 agents.
 
 Runs all agents in tiered parallel groups, compiles a briefing, tracks
 accountability with per-agent timing. Includes pre-flight health checks,
@@ -85,7 +85,7 @@ CFG = load_config()
 
 
 # ---------------------------------------------------------------------------
-# Agent registry — all 28 agents, organized by execution tier
+# Agent registry — all 30 agents, organized by execution tier
 # ---------------------------------------------------------------------------
 # (name, sigil, script, role, mode)
 # mode: "quick" = runs without AI (fast), "full" = uses Ollama (slower)
@@ -96,6 +96,10 @@ AGENTS = [
     ("Spec",     "S!", "qa_engineer.py",      "QA Engineer",               "quick"),
     ("Sentinel", "X|", "security.py",         "Security",                  "quick"),
     ("Forge",    "F/", "site_engineer.py",    "Site Engineer",             "quick"),
+
+    # Core — cloud executor and local writer (no standalone scripts)
+    ("Claude",   ">_", "claude_executor.py",  "Executor",                  "quick"),
+    ("Q",        "Q_", "q_writer.py",         "Staff Writer",              "quick"),
 
     # Content & Intelligence
     ("Byte",     "B>", "news_researcher.py",  "News Reporter",             "full"),
@@ -146,6 +150,7 @@ _AGENT_MAP = {a[0]: a for a in AGENTS}
 # Agents in the same tier are independent. Quick agents within a tier run
 # in parallel. Full agents always run sequentially (single-GPU bottleneck).
 TIERS = [
+    {"name": "Core",     "agents": ["Claude", "Q"]},
     {"name": "Infra",    "agents": ["Root", "Spec", "Sentinel", "Forge"]},
     {"name": "Intel",    "agents": ["Byte", "Echo", "Scout", "Patron", "Ink"]},
     {"name": "Creative", "agents": ["Pixel", "Arc", "Hum", "V", "Neon", "Myth", "Scribe"]},

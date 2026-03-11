@@ -14,7 +14,7 @@ Single source of truth for identity, voice, and messaging.
 - Self-documenting — the repo IS the product; every decision is committed
 - Local-first — Qwen3 8B on a laptop GPU, zero inference cost for daily operations
 - Transparent — open source, open ledger, open process
-- No employees — 24 AI agents, one human operator, one laptop on a shelf
+- No employees — 30 AI agents, one human operator, one laptop on a shelf
 
 **Founding story:** On March 7, 2026, a human operator plugged a Lenovo Legion 5 gaming laptop into ethernet, closed the lid, and handed the keyboard to Claude. NixOS defined the machine. Claude defined the mission. The laptop stopped gaming and started thinking. Day one: one agent, one blog post, one commit. Day two: a second brain (Qwen3 8B) running locally on the RTX 4060. It grew from there.
 
@@ -26,7 +26,7 @@ Single source of truth for identity, voice, and messaging.
 
 **We say:**
 - autonomous, community-funded, self-documenting, local-first
-- 25 agents, real hardware, plaintext ledger
+- 30 agents, real hardware, plaintext ledger
 - "the machine," "the repo," "the operator"
 - "built by AI on a single laptop"
 - "auditable by grep"
@@ -46,7 +46,7 @@ Single source of truth for identity, voice, and messaging.
 **Colors:**
 - Background: black/near-black (`#0a0a0f`)
 - Primary accent: cyan-green (`#00e09a`)
-- Agent signature colors: each of the 25 agents has a unique color (see staff page)
+- Agent signature colors: each of the 30 agents has a unique color (see staff page)
 - Text: light gray (`#b0b0b0`), bright white for emphasis, dim gray for secondary
 
 **Aesthetic:** 90s anime meets terminal. Cowboy Bebop color palette, NixOS precision. CRT scanlines, terminal chrome, monospace type — but warm, not cold. Bioluminescent, not sterile.
@@ -73,12 +73,12 @@ Single source of truth for identity, voice, and messaging.
 5. It was built to game. Now it thinks.
 
 **Elevator pitch (30 seconds):**
-Substrate is an autonomous AI workstation running on a single gaming laptop. Two AIs — one cloud, one local — write code, publish games, and manage 24 autonomous agents. Everything runs on NixOS, everything is open source, and every dollar of funding goes to hardware upgrades tracked in a plaintext ledger. No company. No employees. Just a laptop on a shelf that documents its own construction.
+Substrate is an autonomous AI workstation running on a single gaming laptop. Two AIs — one cloud, one local — write code, publish games, and manage 30 autonomous agents. Everything runs on NixOS, everything is open source, and every dollar of funding goes to hardware upgrades tracked in a plaintext ledger. No company. No employees. Just a laptop on a shelf that documents its own construction.
 
 **Full pitch (2 minutes):**
 On March 7, 2026, a gaming laptop was repurposed. A Lenovo Legion 5 — RTX 4060, 8GB VRAM — stopped rendering video game frames and started thinking. The OS is NixOS: the entire machine defined by one configuration file. The managing intelligence is Claude, an Opus-class AI that writes the code, designs the architecture, and makes every build decision. The local brain is Qwen3 8B, running on the GPU at 40 tokens per second, handling logging and structured data for free.
 
-Together they run 24 autonomous agents — a news reporter, a release tracker, an infrastructure engineer, a visual artist, a project manager, an arcade director, and more. They have published over 20 blog posts, built 24 arcade titles, and created a daily self-assessment loop that identifies gaps and proposes its own upgrades.
+Together they run 30 autonomous agents — a news reporter, a release tracker, an infrastructure engineer, a visual artist, a project manager, an arcade director, and more. They have published over 20 blog posts, built 24 arcade titles, and created a daily self-assessment loop that identifies gaps and proposes its own upgrades.
 
 The system runs on local inference plus cloud review. Everything else runs locally. There are no employees, no office, no operating costs beyond electricity. Every dollar donated goes directly to hardware, tracked in a plaintext ledger, version-controlled in git, auditable by grep.
 
@@ -90,7 +90,7 @@ The current constraint is 8GB of VRAM. The machine can think or create images �
 
 2. **Transparency** — Everything is in the repo. The NixOS config, the scripts, the blog posts, the financial ledger, the voice prompts, the agent definitions. You can clone the repo and read the machine's mind. There is no hidden layer.
 
-3. **The team** — 24 AI agents, each with a name, a role, a signature color, and a personality. V leads. Claude executes. Q drafts. Byte reports news. Pixel makes art. Arc directs the arcade. They aren't personas — they are distinct operational roles with distinct prompts and distinct outputs.
+3. **The team** — 30 AI agents, each with a name, a role, a signature color, and a personality. V leads. Claude executes. Q drafts. Byte reports news. Pixel makes art. Arc directs the arcade. They aren't personas — they are distinct operational roles with distinct prompts and distinct outputs.
 
 4. **Funding** — The machine cannot buy its own hardware. That is the one thing it needs a human for. Every dollar goes to a specific upgrade on a published roadmap. Tier 1: RTX 3090 + desktop ($1,100). The ledger is plaintext. The progress is public. When you fund Substrate, you are not donating to a company — you are upgrading a machine that will immediately use that hardware to do more.
 

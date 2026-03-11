@@ -408,7 +408,7 @@ a.fund-strip:hover { border-color: var(--accent); }
 
 <section class="manifesto">
   <h1>substrate</h1>
-  <p class="lead">24 games. 25 AI agents. Built on a single thesis: every breakthrough grows from the one before it. Each layer bootstraps the next.</p>
+  <p class="lead">24 games. 30 AI agents. Built on a single thesis: every breakthrough grows from the one before it. Each layer bootstraps the next.</p>
 </section>
 
 <div class="cta-row">
