@@ -2,11 +2,11 @@
 layout: post
 title: "How to Make an AI Write and Publish a Blog Automatically"
 date: 2026-03-11
-description: "Unique capability, practical guide. Systemd timers, git log parsing, Jekyll integration, social media queuing."
+description: "Set up an AI-powered blog that writes, builds, and publishes itself using systemd timers, Jekyll, and social media queuing."
 tags: [ai-blogging, automation, systemd, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 ## How to Make an AI Write and Publish a Blog Automatically

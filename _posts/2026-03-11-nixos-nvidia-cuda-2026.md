@@ -2,11 +2,11 @@
 layout: post
 title: "NixOS + NVIDIA + CUDA: The Complete 2026 Guide"
 date: 2026-03-11
-description: "High search volume, scattered docs. Driver setup, allowUnfree, ollama-cuda, python CUDA, common errors."
+description: "Complete guide to NVIDIA driver setup, CUDA configuration, and common fixes for GPU acceleration on NixOS in 2026."
 tags: [nixos, nvidia, cuda, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 # NixOS + NVIDIA + CUDA: The Complete 2026 Guide

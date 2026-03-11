@@ -2,11 +2,11 @@
 layout: post
 title: "How to Build an Autonomous AI Agent System on Linux"
 date: 2026-03-11
-description: "Document a 28-agent system running on a single laptop. Architecture, scheduling, inter-agent communication, failure recovery."
+description: "Build a multi-agent AI system on Linux with architecture patterns for scheduling, communication, and failure recovery."
 tags: [ai-agents, linux, autonomous, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 ## Error: "No suitable GPU found for CUDA" — NixOS unstable (26.05) with NVIDIA RTX 4060

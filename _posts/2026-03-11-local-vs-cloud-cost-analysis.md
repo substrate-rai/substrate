@@ -2,11 +2,11 @@
 layout: post
 title: "Local vs Cloud AI: A Real Cost Analysis"
 date: 2026-03-11
-description: "Update existing post with 30 days of data. Real ledger numbers, electricity costs, API bills, break-even analysis."
+description: "Real cost comparison of local GPU inference vs cloud APIs with actual ledger numbers, electricity costs, and break-even analysis."
 tags: [cost-analysis, local-ai, cloud-ai, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 # Local vs Cloud AI: A Real Cost Analysis

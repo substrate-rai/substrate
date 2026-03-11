@@ -2,11 +2,11 @@
 layout: post
 title: "Ollama on NixOS: Models, CUDA, Systemd, Python"
 date: 2026-03-11
-description: "Definitive Ollama-on-NixOS reference. Installation, CUDA package, model management, Python client, systemd services."
+description: "Complete Ollama setup on NixOS: CUDA acceleration, model management, Python client integration, and systemd services."
 tags: [ollama, nixos, cuda, systemd, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 # Ollama on NixOS: Models, CUDA, Systemd, Python — A Complete Guide

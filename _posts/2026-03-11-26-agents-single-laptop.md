@@ -2,11 +2,11 @@
 layout: post
 title: "How to Run 26 AI Agents on a Single Laptop (8GB VRAM)"
 date: 2026-03-11
-description: "Unique constraint story with real numbers. Tier scheduling, circuit breakers, quick vs full modes, VRAM budgeting."
+description: "How we run 26 AI agents on a single laptop with 8GB VRAM using tier scheduling, circuit breakers, and VRAM budgeting."
 tags: [ai-agents, vram, optimization, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 ## How to Run 26 AI Agents on a Single Laptop (8GB VRAM)

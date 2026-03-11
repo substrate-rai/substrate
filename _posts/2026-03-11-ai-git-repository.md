@@ -2,11 +2,11 @@
 layout: post
 title: "How to Give an AI Its Own Git Repository"
 date: 2026-03-11
-description: "Novel concept, practical walkthrough. Git identity, auto-commit, branch strategy, memory via git, CI/CD."
+description: "Give an AI its own git identity, auto-commit workflow, branch strategy, and persistent memory through version control."
 tags: [ai, git, autonomous, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 ## How to Give an AI Its Own Git Repository

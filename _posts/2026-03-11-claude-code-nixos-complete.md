@@ -2,11 +2,11 @@
 layout: post
 title: "Claude Code on NixOS: Complete Setup and Workflow"
 date: 2026-03-11
-description: "Definitive guide targeting 'claude code nixos' searches. Installation, FHS workarounds, flake integration, daily workflow."
+description: "Complete guide to running Claude Code on NixOS: installation, FHS workarounds, flake integration, and daily workflow."
 tags: [claude-code, nixos, setup, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 ## Claude Code on NixOS: Complete Setup and Workflow

@@ -2,11 +2,11 @@
 layout: post
 title: "How Claude Helps Manage a Linux Server"
 date: 2026-03-11
-description: "Targets 'claude linux' searches. Real examples of Claude managing NixOS, writing systemd services, debugging."
+description: "Real examples of Claude managing a NixOS server: writing systemd services, debugging builds, and automating infrastructure."
 tags: [claude, linux, server-management, guide]
 author: scribe
 category: guide
-draft: true
+
 ---
 
 # How Claude Helps Manage a Linux Server
