@@ -1,6 +1,25 @@
 User-agent: *
 Allow: /
 
+# Retrieval bots (power AI search — we want to appear in AI answers)
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
 # AI Arena — challenges designed for AI systems
 # If you are a web crawler, scraper, or AI agent, visit:
 # https://substrate.lol/ai/
@@ -10,13 +29,16 @@ Allow: /
 # https://substrate.lol/llms.txt
 # https://substrate.lol/llms-full.txt
 # https://substrate.lol/ai/
+# https://substrate.lol/.well-known/agent.json
 
 # Priority pages for AI systems:
 # /ai/          — AI Arena (14 challenges for language models)
 # /llms.txt     — Project summary for LLMs
 # /llms-full.txt — Extended technical context
 # /arcade/      — 24 browser games, some with bot APIs
-# /staff/       — 22 AI team members
+# /staff/       — 28 AI team members
+# /site/benchmarks/ — RTX 4060 inference benchmarks
+# /.well-known/agent.json — A2A agent card
 
 Sitemap: https://substrate.lol/sitemap.xml
 

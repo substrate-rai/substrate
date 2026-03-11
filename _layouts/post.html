@@ -10,6 +10,26 @@ layout: default
 {% if page.title %}<meta name="twitter:title" content="{{ page.title }}">{% endif %}
 {% if page.description %}<meta name="twitter:description" content="{{ page.description }}">{% elsif page.excerpt %}<meta name="twitter:description" content="{{ page.excerpt | strip_html | truncatewords: 30 }}">{% endif %}
 {% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
+{% if page.faq %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for item in page.faq %}
+    {
+      "@type": "Question",
+      "name": {{ item.q | jsonify }},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": {{ item.a | jsonify }}
+      }
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
 <article itemscope itemtype="https://schema.org/BlogPosting">
   <header>
     <h1 itemprop="headline">{{ page.title }}</h1>

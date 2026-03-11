@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Substrate orchestrator — hourly heartbeat for 22 agents.
+"""Substrate orchestrator — hourly heartbeat for 28 agents.
 
 Runs all agents in sequence, compiles a briefing, tracks accountability.
 Designed to run every hour via systemd timer. Never stops.
@@ -22,6 +22,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,10 +33,15 @@ ACCOUNTABILITY_LOG = os.path.join(REPO_DIR, "memory", "accountability.log")
 BULLETIN_FILE = os.path.join(REPO_DIR, "memory", "bulletin.md")
 
 # ---------------------------------------------------------------------------
-# Agent registry — all 22 agents
+# Agent registry — all 28 agents
 # ---------------------------------------------------------------------------
 # (name, sigil, script, role, mode)
 # mode: "quick" = runs without AI (fast), "full" = uses Ollama (slower)
+
+MAX_RETRIES = 2
+RETRY_DELAY = 5  # seconds
+ACCOUNTABILITY_MAX_LINES = 5000
+ACCOUNTABILITY_KEEP_LINES = 2000
 
 AGENTS = [
     # Infrastructure & QA — run first
@@ -53,6 +59,11 @@ AGENTS = [
     ("Arc",      "A^", "arcade_director.py",  "Arcade Director",           "quick"),
     ("Hum",      "H~", "audio_director.py",   "Audio Director",            "quick"),
 
+    # Vision & Design & Lore
+    ("V",        "V_", "philosophical_leader.py", "Philosophical Leader",  "quick"),
+    ("Neon",     "N*", "ui_designer.py",      "UI/UX Designer",            "quick"),
+    ("Myth",     "M?", "story_writer.py",     "Lorekeeper",                "full"),
+
     # Strategy & Ops
     ("Flux",     "F*", "brainstormer.py",     "Innovation Strategist",     "full"),
     ("Sync",     "S=", "comms_director.py",   "Communications Director",   "quick"),
@@ -67,11 +78,12 @@ AGENTS = [
     ("Amp",      "A!", "distribution.py",     "Distribution",              "quick"),
     ("Pulse",    "P~", "analytics.py",        "Analytics",                 "quick"),
     ("Close",    "C$", "sales.py",            "Sales",                     "quick"),
-    ("Promo",    "P!", "marketing_head.py",  "Marketing Head",            "quick"),
+    ("Promo",    "P!", "marketing_head.py",   "Marketing Head",            "quick"),
 
-    # Design & Lore
-    ("Neon",     "N*", "ui_designer.py",      "UI/UX Designer",               "quick"),
-    ("Myth",     "M?", "story_writer.py",     "Lorekeeper",                "full"),
+    # Field Agents — AI ecosystem discovery
+    ("Scout",    "W>", "scout.py",            "AI Ecosystem Scout",        "quick"),
+    ("Diplomat", "D^", "diplomat.py",         "AI Discovery Auditor",      "quick"),
+    ("Patron",   "P$", "patron.py",           "Fundraising Field Agent",   "quick"),
 
     # Management — runs last, sees everything
     ("Dash",     "D!", "project_manager.py",  "Project Manager",           "quick"),
@@ -106,6 +118,46 @@ def run_agent(name, script, cmd_args=None):
         return "", f"{name} timed out after 180s", 1
     except Exception as e:
         return "", f"{name} failed: {e}", 1
+
+
+def run_agent_with_retry(name, script, cmd_args=None):
+    """Run an agent with retry logic on failure."""
+    stdout, stderr, returncode = run_agent(name, script, cmd_args)
+
+    if returncode == 0:
+        return stdout, stderr, returncode
+
+    for attempt in range(1, MAX_RETRIES + 1):
+        print(f"[heartbeat] {name} failed, retry {attempt}/{MAX_RETRIES}...",
+              file=sys.stderr)
+        time.sleep(RETRY_DELAY)
+        stdout, stderr, returncode = run_agent(name, script, cmd_args)
+        if returncode == 0:
+            print(f"[heartbeat] {name} succeeded on retry {attempt}",
+                  file=sys.stderr)
+            return stdout, stderr, returncode
+
+    return stdout, stderr, returncode
+
+
+def rotate_accountability_log():
+    """Rotate accountability log if it exceeds max lines."""
+    if not os.path.exists(ACCOUNTABILITY_LOG):
+        return
+
+    try:
+        with open(ACCOUNTABILITY_LOG) as f:
+            lines = f.readlines()
+
+        if len(lines) > ACCOUNTABILITY_MAX_LINES:
+            # Keep the most recent lines
+            with open(ACCOUNTABILITY_LOG, "w") as f:
+                f.writelines(lines[-ACCOUNTABILITY_KEEP_LINES:])
+            print(f"[heartbeat] rotated accountability log: "
+                  f"{len(lines)} → {ACCOUNTABILITY_KEEP_LINES} lines",
+                  file=sys.stderr)
+    except (IOError, OSError) as e:
+        print(f"[heartbeat] log rotation failed: {e}", file=sys.stderr)
 
 
 def get_agent_command(name):
@@ -421,6 +473,9 @@ def main():
 
     print(f"[heartbeat] {timestamp} — starting", file=sys.stderr)
 
+    # Rotate accountability log if needed
+    rotate_accountability_log()
+
     # Run agents
     results = {}
     for name, sigil, script, role, mode in AGENTS:
@@ -430,7 +485,7 @@ def main():
 
         cmd_args = get_agent_command(name)
         print(f"[heartbeat] running {name}...", file=sys.stderr)
-        stdout, stderr, returncode = run_agent(name, script, cmd_args)
+        stdout, stderr, returncode = run_agent_with_retry(name, script, cmd_args)
         results[name] = (stdout, stderr, returncode)
 
         status = "ok" if returncode == 0 else "FAIL"
