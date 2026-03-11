@@ -231,6 +231,7 @@ def build_jekyll_post(stories, signal_stories, date_str):
 
     lines = []
     lines.append("---")
+    lines.append("layout: post")
     lines.append(f'title: "AI News — {date_str}"')
     lines.append(f"date: {date_str}")
     lines.append("author: byte")

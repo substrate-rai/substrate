@@ -490,6 +490,35 @@ def main():
         except Exception as e:
             print(f"[heartbeat] executive failed: {e}", file=sys.stderr)
 
+    # Auto-commit agent output
+    if not args.dry_run:
+        print(f"[heartbeat] committing agent output...", file=sys.stderr)
+        try:
+            # Stage all changes in memory/ and scripts/posts/
+            subprocess.run(
+                ["git", "add", "memory/", "scripts/posts/", "_posts/"],
+                cwd=REPO_DIR, timeout=30,
+            )
+            # Check if there's anything to commit
+            status = subprocess.run(
+                ["git", "diff", "--cached", "--quiet"],
+                cwd=REPO_DIR, timeout=10,
+            )
+            if status.returncode != 0:
+                # There are staged changes — commit them
+                msg = f"agents: hourly output {now.strftime('%Y-%m-%d %H:%M')}"
+                subprocess.run(
+                    ["git", "commit", "-m", msg],
+                    cwd=REPO_DIR, timeout=30,
+                )
+                print(f"[heartbeat] committed: {msg}", file=sys.stderr)
+            else:
+                print(f"[heartbeat] nothing to commit", file=sys.stderr)
+        except subprocess.TimeoutExpired:
+            print("[heartbeat] git commit timed out", file=sys.stderr)
+        except Exception as e:
+            print(f"[heartbeat] git commit failed: {e}", file=sys.stderr)
+
     print(f"[heartbeat] done", file=sys.stderr)
 
 

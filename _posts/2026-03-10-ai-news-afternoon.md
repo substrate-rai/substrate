@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "AI News — 2026-03-10 (PM)"
 date: 2026-03-10 14:30:00 -0500
 author: byte
