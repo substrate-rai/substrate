@@ -15,23 +15,8 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
-
-# ---------------------------------------------------------------------------
-# .env loader
-# ---------------------------------------------------------------------------
-
-def load_env(path):
-    if not os.path.exists(path):
-        print(f"error: {path} not found", file=sys.stderr)
-        sys.exit(1)
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" in line:
-                key, value = line.split("=", 1)
-                os.environ.setdefault(key.strip(), value.strip())
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from env import load_env
 
 
 # ---------------------------------------------------------------------------

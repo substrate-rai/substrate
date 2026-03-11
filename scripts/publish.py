@@ -22,29 +22,14 @@ from datetime import datetime, timezone
 
 import requests
 
+from env import load_env
+
 # -----------------------------------------------------------------------------
 # Config
 # -----------------------------------------------------------------------------
 
 PLATFORMS = ["bluesky", "x", "linkedin", "instagram"]
 CHAR_LIMITS = {"bluesky": 300, "x": 280}
-
-# -----------------------------------------------------------------------------
-# .env loader (no external dependency)
-# -----------------------------------------------------------------------------
-
-def load_env(path=".env"):
-    if not os.path.exists(path):
-        print(f"error: {path} not found. Copy .env.example to .env and fill in credentials.", file=sys.stderr)
-        sys.exit(1)
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" in line:
-                key, value = line.split("=", 1)
-                os.environ.setdefault(key.strip(), value.strip())
 
 # -----------------------------------------------------------------------------
 # Markdown parser

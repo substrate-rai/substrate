@@ -34,6 +34,8 @@ import os
 import subprocess
 import sys
 
+from env import load_env
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(SCRIPT_DIR)
 
@@ -62,25 +64,6 @@ HAIKU_SYSTEM_PROMPT = (
     "complete observation. Servers are weather, code is water, errors are seasons. "
     "Output only haiku, one per concept. No commentary. No prose."
 )
-
-
-# ---------------------------------------------------------------------------
-# .env loader (same as publish.py — no external dependency)
-# ---------------------------------------------------------------------------
-
-def load_env(path=None):
-    if path is None:
-        path = os.path.join(REPO_DIR, ".env")
-    if not os.path.exists(path):
-        return
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" in line:
-                key, value = line.split("=", 1)
-                os.environ.setdefault(key.strip(), value.strip())
 
 
 # ---------------------------------------------------------------------------

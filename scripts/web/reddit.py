@@ -36,26 +36,8 @@ import urllib.parse
 import urllib.request
 
 
-# ---------------------------------------------------------------------------
-# .env loader
-# ---------------------------------------------------------------------------
-
-def load_env(path=None):
-    candidates = [path] if path else [
-        os.path.join(os.getcwd(), ".env"),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".env"),
-    ]
-    for p in candidates:
-        if p and os.path.exists(p):
-            with open(p) as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith("#"):
-                        continue
-                    if "=" in line:
-                        key, value = line.split("=", 1)
-                        os.environ.setdefault(key.strip(), value.strip())
-            return
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from env import load_env
 
 
 # ---------------------------------------------------------------------------

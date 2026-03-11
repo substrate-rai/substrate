@@ -34,28 +34,8 @@ BOT_USERNAME = "substrate"
 MAX_EMBED_DESC = 4096
 MAX_CONTENT = 2000
 
-# -----------------------------------------------------------------------------
-# .env loader (stdlib)
-# -----------------------------------------------------------------------------
-
-def load_env(path=None):
-    """Load .env file into os.environ. Searches common locations."""
-    candidates = [path] if path else [
-        os.path.join(os.getcwd(), ".env"),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".env"),
-    ]
-    for p in candidates:
-        if p and os.path.exists(p):
-            with open(p) as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith("#"):
-                        continue
-                    if "=" in line:
-                        key, value = line.split("=", 1)
-                        os.environ.setdefault(key.strip(), value.strip())
-            return True
-    return False
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from env import load_env
 
 # -----------------------------------------------------------------------------
 # Discord webhook API

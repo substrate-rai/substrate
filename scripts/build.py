@@ -27,6 +27,8 @@ import urllib.error
 from datetime import datetime
 from pathlib import Path
 
+from env import load_env
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -43,6 +45,7 @@ INCIDENTS_FILE = REPO_ROOT / "memory" / "incidents.md"
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "qwen3:8b"
+CLOUD_MODEL = "claude-sonnet-4-20250514"
 
 
 # ---------------------------------------------------------------------------
@@ -142,6 +145,78 @@ def parse_all_gaps(report_path):
 
 
 # ---------------------------------------------------------------------------
+# Goal update — mark milestones complete in goal.md
+# ---------------------------------------------------------------------------
+
+def update_goal(milestone):
+    """Mark a milestone as complete in memory/goal.md.
+
+    Finds the line matching '- [ ] <milestone>' and changes it to '- [x] <milestone>'.
+    Returns (updated, message).
+    """
+    if not GOAL_FILE.exists():
+        return False, "goal.md not found"
+
+    content = GOAL_FILE.read_text()
+    # Escape regex special chars in milestone text
+    escaped = re.escape(milestone)
+    pattern = rf"^(- \[) \] ({escaped})$"
+    new_content, count = re.subn(pattern, r"\1x] \2", content, flags=re.MULTILINE)
+
+    if count == 0:
+        return False, f"milestone not found in goal.md: {milestone}"
+
+    GOAL_FILE.write_text(new_content)
+    return True, f"marked complete in goal.md: {milestone}"
+
+
+# ---------------------------------------------------------------------------
+# Cloud review — use Claude to review generated code
+# ---------------------------------------------------------------------------
+
+def cloud_review(code, target_file, action):
+    """Review generated code via Claude API. Returns improved code or None on failure."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        return None
+
+    try:
+        import anthropic
+    except ImportError:
+        print("[build] anthropic SDK not available, skipping cloud review", file=sys.stderr)
+        return None
+
+    prompt = (
+        f"Review and improve this generated code for the Substrate project "
+        f"(an autonomous AI workstation on NixOS).\n\n"
+        f"Target file: {target_file}\n"
+        f"Task: {action}\n\n"
+        f"Fix bugs, remove hallucinated imports, ensure it uses only the Python "
+        f"standard library (plus requests if needed). Keep the same structure "
+        f"and purpose. Output ONLY the improved file content — no markdown fences, "
+        f"no explanation.\n\n"
+        f"--- CODE ---\n{code}\n--- END CODE ---"
+    )
+
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model=CLOUD_MODEL,
+            max_tokens=4096,
+            system=(
+                "You are a code reviewer for Substrate, an autonomous AI workstation. "
+                "Fix bugs and improve code quality. Output ONLY the file content."
+            ),
+            messages=[{"role": "user", "content": prompt}],
+        )
+        result = message.content[0].text.strip()
+        return strip_markdown_fences(result)
+    except Exception as e:
+        print(f"[build] cloud review failed: {e}", file=sys.stderr)
+        return None
+
+
+# ---------------------------------------------------------------------------
 # File existence checks
 # ---------------------------------------------------------------------------
 
@@ -227,7 +302,11 @@ def ollama_generate(prompt, timeout=120):
 
 
 def generate_scaffold(action, target_file):
-    """Generate a script scaffold for the given action and target file."""
+    """Generate a script scaffold via local model, then optionally review with Claude.
+
+    Two-brain pattern: Qwen3 drafts (free, fast), Claude reviews (paid, quality).
+    Falls back to local-only if cloud review is unavailable.
+    """
     ext = Path(target_file).suffix
 
     if ext == ".py":
@@ -260,7 +339,19 @@ def generate_scaffold(action, target_file):
         f"Output ONLY the file content. No markdown fences. No explanation."
     )
 
-    return ollama_generate(prompt)
+    local_result = ollama_generate(prompt)
+    if local_result is None:
+        return None
+
+    # Two-brain: review with Claude if available
+    print(f"[build] reviewing with cloud brain...", file=sys.stderr)
+    reviewed = cloud_review(local_result, target_file, action)
+    if reviewed is not None:
+        print(f"[build] cloud review applied", file=sys.stderr)
+        return reviewed
+
+    print(f"[build] cloud review unavailable, using local draft", file=sys.stderr)
+    return local_result
 
 
 # ---------------------------------------------------------------------------
@@ -507,6 +598,22 @@ def execute_build(build, nix_ok=False):
 
     print(f"[build] committed: {commit_msg}", file=sys.stderr)
     log_build("OK", milestone, created, commit_msg)
+
+    # Close the loop: mark milestone complete in goal.md
+    updated, update_msg = update_goal(milestone)
+    if updated:
+        print(f"[build] {update_msg}", file=sys.stderr)
+        goal_commit_ok, goal_commit_out = git_add_commit(
+            [str(GOAL_FILE.relative_to(REPO_ROOT))],
+            f"goal: mark complete — {milestone.lower()}"[:72],
+        )
+        if goal_commit_ok:
+            print(f"[build] goal.md update committed", file=sys.stderr)
+        else:
+            print(f"[build] goal.md commit failed: {goal_commit_out}", file=sys.stderr)
+    else:
+        print(f"[build] goal update skipped: {update_msg}", file=sys.stderr)
+
     return True, f"built and committed: {', '.join(created)}"
 
 
@@ -579,6 +686,9 @@ def main():
         help="path to a specific mirror report (default: latest)"
     )
     args = parser.parse_args()
+
+    # Load .env for cloud brain API key
+    load_env()
 
     # Find mirror report
     if args.report:

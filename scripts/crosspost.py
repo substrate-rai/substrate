@@ -14,24 +14,11 @@ import os
 import re
 import sys
 
+from env import load_env
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(SCRIPT_DIR)
 SITE_URL = "https://substrate.lol"
-
-
-def load_env(path=None):
-    if path is None:
-        path = os.path.join(REPO_DIR, ".env")
-    if not os.path.exists(path):
-        return
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" in line:
-                key, value = line.split("=", 1)
-                os.environ.setdefault(key.strip(), value.strip())
 
 
 def parse_frontmatter(filepath):
