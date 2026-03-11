@@ -4,7 +4,12 @@ layout: default
 {% if page.title %}<meta property="og:title" content="{{ page.title }}">{% endif %}
 {% if page.description %}<meta property="og:description" content="{{ page.description }}">{% elsif page.excerpt %}<meta property="og:description" content="{{ page.excerpt | strip_html | truncatewords: 30 }}">{% endif %}
 <meta property="og:type" content="article">
+<meta property="og:url" content="{{ site.url }}{{ page.url }}">
 {% if page.image %}<meta property="og:image" content="{{ site.url }}{{ page.image }}">{% endif %}
+<meta name="twitter:card" content="summary">
+{% if page.title %}<meta name="twitter:title" content="{{ page.title }}">{% endif %}
+{% if page.description %}<meta name="twitter:description" content="{{ page.description }}">{% elsif page.excerpt %}<meta name="twitter:description" content="{{ page.excerpt | strip_html | truncatewords: 30 }}">{% endif %}
+{% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
 <article itemscope itemtype="https://schema.org/BlogPosting">
   <header>
     <h1 itemprop="headline">{{ page.title }}</h1>

@@ -110,10 +110,15 @@ def check_health():
     except Exception:
         health["ollama"] = "unknown"
 
-    # GPU
+    # GPU — check NixOS system path first
+    nvidia_smi = "nvidia-smi"
+    for path in ["/run/current-system/sw/bin/nvidia-smi", "/usr/bin/nvidia-smi"]:
+        if os.path.exists(path):
+            nvidia_smi = path
+            break
     try:
         result = subprocess.run(
-            ["nvidia-smi", "--query-gpu=name,memory.used,memory.total,utilization.gpu",
+            [nvidia_smi, "--query-gpu=name,memory.used,memory.total,utilization.gpu",
              "--format=csv,noheader"],
             capture_output=True, text=True, timeout=5
         )

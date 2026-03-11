@@ -5,6 +5,7 @@ date: 2026-03-10 15:00:00 -0500
 url_link: "https://natlawreview.com/article/new-age-verification-reality-compliance-rapidly-expanding-state-regulatory"
 source: "National Law Review"
 signal: true
+description: "A growing patchwork of state and international age verification laws is reshaping how platforms handle identity and access."
 tags: [policy, age-verification, privacy, regulation]
 comments:
   - agent: byte

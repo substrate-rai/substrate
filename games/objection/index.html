@@ -674,7 +674,9 @@ body::before {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 100;
-  background: linear-gradient(170deg, var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-bottom) 100%);
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(196,153,46,0.08) 0%, transparent 50%),
+    linear-gradient(170deg, #1a0f0a 0%, #2d1a12 30%, #3d2418 60%, #1a0f0a 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -687,20 +689,20 @@ body::before {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background:
-    radial-gradient(ellipse 350px 90px at 20% 25%, rgba(255,255,255,0.4) 0%, transparent 70%),
-    radial-gradient(ellipse 300px 70px at 70% 18%, rgba(255,255,255,0.3) 0%, transparent 70%),
-    radial-gradient(ellipse 500px 120px at 50% 75%, rgba(255,255,255,0.25) 0%, transparent 70%);
+    radial-gradient(ellipse 350px 200px at 50% 40%, rgba(196,153,46,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 200px 100px at 20% 60%, rgba(41,128,185,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 200px 100px at 80% 60%, rgba(192,57,43,0.04) 0%, transparent 70%);
   pointer-events: none;
 }
 #title-screen.hidden { display: none; }
 
 .title-glass {
-  background: var(--glass-strong);
+  background: rgba(255,255,255,0.07);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(196,153,46,0.2);
   border-radius: 20px;
-  box-shadow: 0 8px 32px var(--glass-shadow);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(196,153,46,0.1);
   padding: 2rem 2.5rem;
   max-width: 440px;
   width: 88vw;
@@ -726,7 +728,7 @@ body::before {
 }
 
 .title-desc {
-  color: var(--text-mid);
+  color: #a09080;
   font-size: 13px;
   line-height: 1.7;
   margin-bottom: 1.5rem;
@@ -831,9 +833,369 @@ body::before {
 }
 
 html { overflow: hidden; }
+
+/* === COURTROOM BACKGROUND ARTWORK === */
+/* Dark wood courtroom environment behind glass panels */
+body {
+  background: #1a1420 !important;
+}
+
+/* Courtroom scene layers */
+.courtroom-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+/* Courtroom ceiling / upper wall with dark wood paneling */
+.courtroom-bg .ceiling {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 18%;
+  background: linear-gradient(180deg,
+    #1a0f0a 0%,
+    #2d1a12 40%,
+    #3d2418 70%,
+    #4a2e1e 100%);
+  /* Wood grain texture */
+  background-image:
+    linear-gradient(180deg, #1a0f0a 0%, #2d1a12 40%, #3d2418 70%, #4a2e1e 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(0,0,0,0.08) 60px, rgba(0,0,0,0.08) 61px),
+    repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(139,90,43,0.05) 8px, rgba(139,90,43,0.05) 9px);
+}
+
+/* Main courtroom wall */
+.courtroom-bg .wall {
+  position: absolute;
+  top: 18%; left: 0; right: 0;
+  height: 42%;
+  background:
+    linear-gradient(180deg,
+      #4a2e1e 0%,
+      #5c3a24 15%,
+      #6b4530 40%,
+      #5c3a24 70%,
+      #4a2e1e 100%);
+  /* Vertical wood panels */
+  background-image:
+    linear-gradient(180deg, #4a2e1e 0%, #5c3a24 15%, #6b4530 40%, #5c3a24 70%, #4a2e1e 100%),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 120px, rgba(0,0,0,0.1) 120px, rgba(0,0,0,0.1) 122px);
+}
+
+/* Wood molding strip */
+.courtroom-bg .molding {
+  position: absolute;
+  top: 58%; left: 0; right: 0;
+  height: 3%;
+  background: linear-gradient(180deg, #3d2010 0%, #6b4530 30%, #8b5a2b 50%, #6b4530 70%, #3d2010 100%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 -1px 4px rgba(0,0,0,0.3);
+}
+
+/* Lower wall / wainscoting */
+.courtroom-bg .lower-wall {
+  position: absolute;
+  top: 61%; left: 0; right: 0;
+  height: 14%;
+  background:
+    linear-gradient(180deg,
+      #3d2418 0%,
+      #4a2e1e 50%,
+      #3d2418 100%);
+  background-image:
+    linear-gradient(180deg, #3d2418 0%, #4a2e1e 50%, #3d2418 100%),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 80px, rgba(0,0,0,0.12) 80px, rgba(0,0,0,0.12) 82px);
+}
+
+/* Courtroom floor */
+.courtroom-bg .floor {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 25%;
+  background: linear-gradient(180deg, #2a1a10 0%, #1a0f08 100%);
+  /* Tile pattern */
+  background-image:
+    linear-gradient(180deg, #2a1a10 0%, #1a0f08 100%),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 60px, rgba(255,255,255,0.02) 60px, rgba(255,255,255,0.02) 61px),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 60px, rgba(255,255,255,0.02) 60px, rgba(255,255,255,0.02) 61px);
+}
+
+/* Judge's bench / podium silhouette */
+.courtroom-bg .bench {
+  position: absolute;
+  top: 12%; left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 52%;
+  background: linear-gradient(180deg,
+    #2d1a0f 0%,
+    #3d2418 20%,
+    #4a2e1e 60%,
+    #3d2010 100%);
+  clip-path: polygon(10% 0%, 90% 0%, 95% 15%, 100% 15%, 100% 100%, 0% 100%, 0% 15%, 5% 15%);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  border-radius: 2px;
+}
+
+/* Judge's bench front decoration */
+.courtroom-bg .bench::before {
+  content: '';
+  position: absolute;
+  top: 16%; left: 15%; right: 15%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, #8b6914 20%, #c4992e 50%, #8b6914 80%, transparent 100%);
+  box-shadow: 0 0 12px rgba(196, 153, 46, 0.3);
+}
+.courtroom-bg .bench::after {
+  content: '';
+  position: absolute;
+  top: 25%; left: 30%; right: 30%;
+  height: 40px;
+  border: 2px solid rgba(139, 105, 20, 0.25);
+  border-radius: 4px;
+  background: rgba(139, 105, 20, 0.05);
+}
+
+/* Overhead courtroom lights */
+.courtroom-bg .light-1,
+.courtroom-bg .light-2,
+.courtroom-bg .light-3 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  pointer-events: none;
+}
+.courtroom-bg .light-1 {
+  top: -5%; left: 50%;
+  transform: translateX(-50%);
+  width: 400px; height: 300px;
+  background: radial-gradient(ellipse, rgba(255,220,150,0.15) 0%, transparent 70%);
+}
+.courtroom-bg .light-2 {
+  top: 10%; left: 10%;
+  width: 200px; height: 200px;
+  background: radial-gradient(ellipse, rgba(180,140,80,0.08) 0%, transparent 70%);
+}
+.courtroom-bg .light-3 {
+  top: 10%; right: 10%;
+  width: 200px; height: 200px;
+  background: radial-gradient(ellipse, rgba(180,140,80,0.08) 0%, transparent 70%);
+}
+
+/* Gallery railing */
+.courtroom-bg .gallery-rail {
+  position: absolute;
+  top: 55%; left: 5%; right: 5%;
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    #6b4530 10%,
+    #8b5a2b 30%,
+    #a06830 50%,
+    #8b5a2b 70%,
+    #6b4530 90%,
+    transparent 100%);
+  border-radius: 2px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+}
+
+/* Prosecution/Defense desk indicators */
+.courtroom-bg .desk-prosecution {
+  position: absolute;
+  bottom: 28%; left: 8%;
+  width: 25%; height: 12%;
+  background: linear-gradient(180deg, #3d2418 0%, #2d1a0f 100%);
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 -2px 20px rgba(0,80,180,0.15);
+  border-top: 2px solid rgba(41,128,185,0.4);
+}
+.courtroom-bg .desk-defense {
+  position: absolute;
+  bottom: 28%; right: 8%;
+  width: 25%; height: 12%;
+  background: linear-gradient(180deg, #3d2418 0%, #2d1a0f 100%);
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 -2px 20px rgba(180,40,40,0.15);
+  border-top: 2px solid rgba(192,57,43,0.4);
+}
+
+/* Prosecution spotlight (blue) */
+.courtroom-bg .spotlight-prosecution {
+  position: absolute;
+  bottom: 10%; left: 5%;
+  width: 200px; height: 300px;
+  background: radial-gradient(ellipse at center bottom, rgba(41,128,185,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Defense spotlight (red) */
+.courtroom-bg .spotlight-defense {
+  position: absolute;
+  bottom: 10%; right: 5%;
+  width: 200px; height: 300px;
+  background: radial-gradient(ellipse at center bottom, rgba(192,57,43,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Dust motes / atmosphere particles */
+.courtroom-bg .dust {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,220,150,0.3), transparent),
+    radial-gradient(1px 1px at 40% 70%, rgba(255,220,150,0.2), transparent),
+    radial-gradient(1px 1px at 60% 20%, rgba(255,220,150,0.25), transparent),
+    radial-gradient(1px 1px at 80% 60%, rgba(255,220,150,0.15), transparent),
+    radial-gradient(1.5px 1.5px at 15% 55%, rgba(255,220,150,0.2), transparent),
+    radial-gradient(1px 1px at 70% 45%, rgba(255,220,150,0.2), transparent),
+    radial-gradient(1px 1px at 50% 85%, rgba(255,220,150,0.15), transparent);
+  animation: dust-drift 20s linear infinite;
+  pointer-events: none;
+}
+@keyframes dust-drift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(5px, -8px); }
+  50% { transform: translate(-3px, -5px); }
+  75% { transform: translate(4px, 3px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Enhanced OBJECTION flash */
+#flash-overlay.flash {
+  opacity: 0.8 !important;
+  background: linear-gradient(180deg, rgba(255,60,60,0.3) 0%, white 30%, white 70%, rgba(60,60,255,0.3) 100%) !important;
+}
+#shout-banner.show {
+  text-shadow: 0 0 30px currentColor, 0 0 60px currentColor, 0 4px 20px rgba(0,0,0,0.5) !important;
+}
+
+/* Prosecution-colored shout */
+.shout-prosecution { color: #2980b9 !important; }
+/* Defense-colored shout */
+.shout-defense { color: #c0392b !important; }
+
+/* Screen shake on objection */
+@keyframes court-shake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-4px) rotate(-0.5deg); }
+  20% { transform: translateX(4px) rotate(0.5deg); }
+  30% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  50% { transform: translateX(-2px) rotate(-0.3deg); }
+  60% { transform: translateX(2px) rotate(0.3deg); }
+  70% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+}
+body.court-shake #court {
+  animation: court-shake 0.5s ease-out;
+}
+
+/* Evidence presentation frame */
+.evidence-item {
+  position: relative;
+  border-left: 3px solid rgba(8,145,178,0.3) !important;
+}
+.evidence-item::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: -1px; right: -1px; bottom: -1px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(8,145,178,0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Character portrait spotlight glow */
+.char-card.active .char-avatar {
+  box-shadow: 0 0 12px rgba(0,120,212,0.3), 0 0 24px rgba(0,120,212,0.15);
+}
+.char-avatar.attorney {
+  box-shadow: 0 2px 8px rgba(30,64,175,0.2);
+}
+.char-avatar.witness {
+  box-shadow: 0 2px 8px rgba(146,64,14,0.2);
+}
+
+/* Scene banner courtroom atmosphere */
+#scene-banner {
+  background: linear-gradient(135deg,
+    rgba(74,46,30,0.4) 0%,
+    rgba(92,58,36,0.3) 40%,
+    rgba(107,69,48,0.35) 100%) !important;
+  border-bottom-color: rgba(139,90,43,0.3) !important;
+}
+
+/* Adjust glass panels for courtroom darkness */
+.top-bar {
+  background: rgba(255,255,255,0.12) !important;
+  border-bottom-color: rgba(255,255,255,0.15) !important;
+}
+#dialogue-box .dialogue-bubble {
+  background: rgba(255,255,255,0.13) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  color: #e8e0d8;
+}
+#dialogue-text { color: #e8e0d8 !important; }
+#speaker-name { color: #c4992e !important; }
+.speaker-dot { background: #c4992e !important; }
+.char-card {
+  background: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+.char-card-name { color: #e0d8d0 !important; }
+.char-role { color: #a09080 !important; }
+#controls {
+  background: rgba(30,20,15,0.7) !important;
+  border-top-color: rgba(139,90,43,0.2) !important;
+  backdrop-filter: blur(16px) saturate(1.3) !important;
+}
+.ctrl-btn {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+.ctrl-btn:hover {
+  background: rgba(255,255,255,0.15) !important;
+}
+#case-title-display { color: #c4992e !important; background: rgba(196,153,46,0.12) !important; border-color: rgba(196,153,46,0.25) !important; }
+#case-phase { color: #a09080 !important; }
+.cred-label { color: #a09080 !important; }
+
+/* Overlay panels in courtroom style */
+.overlay-panel {
+  background: rgba(30,20,15,0.9) !important;
+}
+.overlay-header h2 { color: #c4992e !important; }
+.overlay-close { background: rgba(255,255,255,0.08) !important; border-color: rgba(255,255,255,0.15) !important; color: #a09080 !important; }
+.overlay-close:hover { background: rgba(255,255,255,0.15) !important; color: #e0d8d0 !important; }
+.overlay-header { border-bottom-color: rgba(139,90,43,0.2) !important; }
+.evidence-item {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+.evidence-item:hover { background: rgba(255,255,255,0.14) !important; border-color: rgba(8,145,178,0.4) !important; }
+.evidence-name { color: #e0d8d0 !important; }
+.evidence-desc { color: #a09080 !important; }
 </style>
 </head>
 <body>
+
+<!-- Courtroom Background Scene -->
+<div class="courtroom-bg" aria-hidden="true">
+  <div class="ceiling"></div>
+  <div class="wall"></div>
+  <div class="bench"></div>
+  <div class="molding"></div>
+  <div class="lower-wall"></div>
+  <div class="gallery-rail"></div>
+  <div class="floor"></div>
+  <div class="desk-prosecution"></div>
+  <div class="desk-defense"></div>
+  <div class="spotlight-prosecution"></div>
+  <div class="spotlight-defense"></div>
+  <div class="light-1"></div>
+  <div class="light-2"></div>
+  <div class="light-3"></div>
+  <div class="dust"></div>
+</div>
 
 <a href="#court" class="skip-link sr-only" style="position:absolute;top:-100%;left:0;background:var(--accent);color:#fff;padding:8px 16px;z-index:1000;font-size:14px;">Skip to game</a>
 
@@ -1906,6 +2268,10 @@ html { overflow: hidden; }
     var flash = $('flash-overlay');
     flash.classList.add('flash');
     setTimeout(function() { flash.classList.remove('flash'); }, 150);
+
+    /* Court shake on shout */
+    document.body.classList.add('court-shake');
+    setTimeout(function() { document.body.classList.remove('court-shake'); }, 500);
   }
 
   // --- Controls ---

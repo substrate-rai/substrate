@@ -80,8 +80,15 @@ def check_gpu():
         "processes": [],
     }
 
+    # NixOS: nvidia-smi may not be in restricted systemd PATH
+    nvidia_smi = "nvidia-smi"
+    for path in ["/run/current-system/sw/bin/nvidia-smi", "/usr/bin/nvidia-smi"]:
+        if os.path.exists(path):
+            nvidia_smi = path
+            break
+
     stdout, stderr, rc = run_cmd([
-        "nvidia-smi",
+        nvidia_smi,
         "--query-gpu=name,memory.used,memory.total,temperature.gpu,utilization.gpu,power.draw",
         "--format=csv,noheader,nounits"
     ])
@@ -116,7 +123,7 @@ def check_gpu():
 
     # Get GPU processes
     proc_stdout, _, proc_rc = run_cmd([
-        "nvidia-smi", "--query-compute-apps=pid,name,used_memory",
+        nvidia_smi, "--query-compute-apps=pid,name,used_memory",
         "--format=csv,noheader,nounits"
     ])
     if proc_rc == 0 and proc_stdout:

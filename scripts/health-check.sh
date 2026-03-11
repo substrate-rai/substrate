@@ -23,9 +23,11 @@ alert() {
 {
     echo "--- $TIMESTAMP ---"
 
-    # GPU
-    if command -v nvidia-smi &>/dev/null; then
-        gpu_info=$(nvidia-smi --query-gpu=temperature.gpu,memory.used,memory.total,utilization.gpu \
+    # GPU — check NixOS system path first
+    NVIDIA_SMI="nvidia-smi"
+    [[ -x /run/current-system/sw/bin/nvidia-smi ]] && NVIDIA_SMI="/run/current-system/sw/bin/nvidia-smi"
+    if command -v "$NVIDIA_SMI" &>/dev/null; then
+        gpu_info=$("$NVIDIA_SMI" --query-gpu=temperature.gpu,memory.used,memory.total,utilization.gpu \
             --format=csv,noheader,nounits 2>/dev/null) || gpu_info="error"
         if [[ "$gpu_info" != "error" ]]; then
             IFS=', ' read -r temp mem_used mem_total util <<< "$gpu_info"

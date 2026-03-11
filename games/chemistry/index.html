@@ -385,6 +385,33 @@ body {
   color: #5A6B7F;
 }
 
+#sfx-mute-btn {
+  display: inline-block;
+  background: rgba(0, 180, 100, 0.08);
+  border: 1px solid rgba(0, 180, 100, 0.25);
+  color: #00b464;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: 10px;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+#sfx-mute-btn:hover {
+  background: rgba(0, 180, 100, 0.15);
+  border-color: rgba(0, 180, 100, 0.4);
+}
+
+#sfx-mute-btn.muted {
+  background: rgba(150, 150, 150, 0.08);
+  border-color: rgba(150, 150, 150, 0.25);
+  color: #8899AA;
+}
+
 /* === SCORE & DISCOVERY PANEL (bottom right) === */
 #score-panel {
   padding: 16px;
@@ -715,6 +742,7 @@ body {
   <div style="margin-top: 10px;">
     <button id="react-btn" disabled>REACT</button>
     <button id="clear-btn">CLEAR</button>
+    <button id="sfx-mute-btn" aria-label="Toggle sound effects" title="Toggle sound effects">SFX ON</button>
   </div>
 </div>
 
@@ -906,6 +934,7 @@ function buildElementShelf() {
 
     // Click to add to next empty beaker
     card.addEventListener('click', function() {
+      SFX.select();
       if (!beakerA) {
         setBeaker('a', sym);
       } else if (!beakerB) {
@@ -929,6 +958,8 @@ function setBeaker(slot, sym) {
 
   var beaker = document.getElementById('beaker-' + slot);
   if (!beaker) return;
+
+  SFX.bubble();
 
   if (slot === 'a') beakerA = sym;
   else beakerB = sym;
@@ -1009,6 +1040,7 @@ function setupDropZones() {
       beaker.classList.remove('drop-target');
       var sym = e.dataTransfer.getData('text/plain');
       if (ELEMENTS[sym]) {
+        SFX.select();
         setBeaker(slot, sym);
         updateReactButton();
       }
@@ -1063,12 +1095,15 @@ function doReaction() {
         var bonus = streak * 5;
         score += bonus;
         showToast('STREAK x' + streak + '! +' + bonus + ' bonus!');
+        SFX.ping();
       }
 
+      SFX.discover();
       saveState();
       addDiscoveryEntry(key, compound);
     } else {
       // Already discovered — small consolation points
+      SFX.success();
       score += Math.floor(compound.points / 5);
       saveState();
     }
@@ -1110,6 +1145,7 @@ function doReaction() {
     spawnBubbles(resultBeaker);
   } else {
     // No known compound
+    SFX.fail();
     streak = 0;
     arrow.style.visibility = 'visible';
 
@@ -1247,6 +1283,7 @@ function buildPeriodicTable() {
         cell.setAttribute('data-symbol', sym);
         cell.addEventListener('click', (function(s) {
           return function() {
+            SFX.select();
             if (!beakerA) setBeaker('a', s);
             else if (!beakerB) setBeaker('b', s);
             updateReactButton();
@@ -1286,6 +1323,15 @@ function init() {
   // Clear button
   document.getElementById('clear-btn').addEventListener('click', clearAll);
 
+  // SFX mute button
+  var sfxBtn = document.getElementById('sfx-mute-btn');
+  sfxBtn.addEventListener('click', function() {
+    var muted = SFX.toggleMute();
+    sfxBtn.textContent = muted ? 'SFX OFF' : 'SFX ON';
+    sfxBtn.classList.toggle('muted', muted);
+    if (!muted) SFX.ping();
+  });
+
   // Keyboard shortcuts
   document.addEventListener('keydown', function(e) {
     if (e.code === 'Enter' || e.code === 'Space') {
@@ -1302,11 +1348,102 @@ function init() {
   // Mastery check
   if (Object.keys(discovered).length >= TOTAL_COMPOUNDS) {
     showToast('MASTER CHEMIST! All compounds discovered!');
+    SFX.discover();
   }
 }
 
 // Add noble metal entries to periodic table
 // (Ag, Au are period 5/6 so we handle them separately — they are still in AVAILABLE_ELEMENTS for the shelf)
+
+// === SOUND EFFECTS ENGINE ===
+// Procedural SFX via Web Audio API. Shares a single AudioContext.
+var SFX = (function() {
+  var ctx = null;
+  var masterGain = null;
+  var muted = false;
+
+  function getCtx() {
+    if (!ctx) {
+      try {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = ctx.createGain();
+        masterGain.gain.value = 0.35;
+        masterGain.connect(ctx.destination);
+      } catch(e) { return null; }
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  function tone(freq, type, duration, startTime, gainVal, freqEnd) {
+    var c = getCtx();
+    if (!c || muted) return;
+    var t = startTime || c.currentTime;
+    var osc = c.createOscillator();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t);
+    if (freqEnd !== undefined) {
+      osc.frequency.linearRampToValueAtTime(freqEnd, t + duration);
+    }
+    var env = c.createGain();
+    var v = gainVal || 0.3;
+    env.gain.setValueAtTime(v, t);
+    env.gain.linearRampToValueAtTime(0.001, t + duration);
+    osc.connect(env);
+    env.connect(masterGain);
+    osc.start(t);
+    osc.stop(t + duration + 0.01);
+  }
+
+  return {
+    // Element selected: short click/blip (800Hz square, 0.05s)
+    select: function() {
+      tone(800, 'square', 0.05, null, 0.12);
+    },
+    // Element added to beaker: liquid bubble sound (ascending sine sweep)
+    bubble: function() {
+      var c = getCtx();
+      if (!c || muted) return;
+      var t = c.currentTime;
+      // Three quick ascending bubbles
+      tone(300, 'sine', 0.08, t, 0.15, 500);
+      tone(400, 'sine', 0.07, t + 0.06, 0.12, 650);
+      tone(500, 'sine', 0.06, t + 0.11, 0.10, 800);
+    },
+    // Reaction success: ascending C-E-G arpeggio (0.3s)
+    success: function() {
+      var c = getCtx();
+      if (!c || muted) return;
+      var t = c.currentTime;
+      tone(523.25, 'sine', 0.12, t, 0.2);       // C5
+      tone(659.25, 'sine', 0.12, t + 0.1, 0.18); // E5
+      tone(783.99, 'sine', 0.15, t + 0.2, 0.22); // G5
+    },
+    // Reaction failure: descending tone (200->100Hz sawtooth, 0.2s)
+    fail: function() {
+      tone(200, 'sawtooth', 0.2, null, 0.12, 100);
+    },
+    // New compound discovered: victory fanfare (C5-E5-G5-C6, 0.5s)
+    discover: function() {
+      var c = getCtx();
+      if (!c || muted) return;
+      var t = c.currentTime;
+      tone(523.25, 'square', 0.12, t, 0.15);        // C5
+      tone(659.25, 'square', 0.12, t + 0.12, 0.15);  // E5
+      tone(783.99, 'square', 0.12, t + 0.24, 0.15);  // G5
+      tone(1046.50, 'sine', 0.25, t + 0.36, 0.20);   // C6
+    },
+    // Hint / streak: soft ping (sine 600Hz, 0.1s)
+    ping: function() {
+      tone(600, 'sine', 0.1, null, 0.12);
+    },
+    toggleMute: function() {
+      muted = !muted;
+      return muted;
+    },
+    isMuted: function() { return muted; }
+  };
+})();
 
 init();
 

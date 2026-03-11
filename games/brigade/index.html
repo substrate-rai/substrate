@@ -19,33 +19,33 @@ redirect_from:
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg: #E8F4F8;
-  --bg-gradient: linear-gradient(180deg, #dceef8 0%, #E8F4F8 30%, #f0f8fc 100%);
-  --sky-top: #b8d8f0;
-  --sky-bottom: #e4f2fa;
-  --glass: rgba(255,255,255,0.55);
-  --glass-border: rgba(255,255,255,0.7);
-  --glass-strong: rgba(255,255,255,0.72);
-  --glass-subtle: rgba(255,255,255,0.35);
-  --text: #2D3748;
-  --text-muted: #5A6B7F;
-  --text-dim: #8899AA;
-  --heading: #1A1A2E;
-  --accent: #0078D4;
-  --accent-light: rgba(0,120,212,0.12);
-  --accent-border: rgba(0,120,212,0.3);
-  --success: #10B981;
-  --success-bg: rgba(16,185,129,0.1);
-  --success-border: rgba(16,185,129,0.3);
-  --danger: #EF4444;
-  --danger-bg: rgba(239,68,68,0.1);
-  --danger-border: rgba(239,68,68,0.3);
+  --bg: #0a0f0a;
+  --bg-gradient: linear-gradient(180deg, #0a0f0a 0%, #0f1a10 30%, #0a0f0a 100%);
+  --sky-top: #0f1a14;
+  --sky-bottom: #0a0f0a;
+  --glass: rgba(10,30,20,0.5);
+  --glass-border: rgba(0,200,100,0.12);
+  --glass-strong: rgba(10,30,20,0.65);
+  --glass-subtle: rgba(10,30,20,0.35);
+  --text: #a0ddb0;
+  --text-muted: #7aaa8a;
+  --text-dim: rgba(0,200,100,0.4);
+  --heading: #c0e8d0;
+  --accent: #44cc88;
+  --accent-light: rgba(0,200,100,0.1);
+  --accent-border: rgba(0,200,100,0.25);
+  --success: #4aff8a;
+  --success-bg: rgba(0,200,100,0.1);
+  --success-border: rgba(0,200,100,0.25);
+  --danger: #ff5544;
+  --danger-bg: rgba(200,60,60,0.1);
+  --danger-border: rgba(200,60,60,0.25);
   --warning: #F59E0B;
   --warning-bg: rgba(245,158,11,0.1);
-  --warning-border: rgba(245,158,11,0.3);
-  --shadow-soft: 0 2px 16px rgba(0,60,120,0.08);
-  --shadow-glass: 0 4px 24px rgba(0,60,120,0.06);
-  --shadow-card: 0 2px 12px rgba(0,60,120,0.05);
+  --warning-border: rgba(245,158,11,0.2);
+  --shadow-soft: 0 2px 16px rgba(0,0,0,0.3);
+  --shadow-glass: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
   --radius: 12px;
   --radius-sm: 8px;
   --mono: 'IBM Plex Mono', monospace;
@@ -53,8 +53,7 @@ redirect_from:
 }
 
 body {
-  background: var(--bg);
-  background-image: var(--bg-gradient);
+  background: #0a0f0a;
   color: var(--text);
   font-family: var(--sans);
   min-height: 100vh;
@@ -62,16 +61,7 @@ body {
   overscroll-behavior: none;
 }
 
-/* Decorative sky background */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 300px;
-  background: linear-gradient(180deg, var(--sky-top) 0%, transparent 100%);
-  pointer-events: none;
-  z-index: -1;
-}
+/* Battlefield environment - no body::before, using .battlefield-bg instead */
 
 #brigade-app {
   max-width: 720px;
@@ -336,7 +326,7 @@ body::before {
   color: var(--success);
 }
 .badge-rejected {
-  background: rgba(0,0,0,0.06);
+  background: rgba(200,60,60,0.1);
   color: var(--text-dim);
 }
 .cand-stats {
@@ -355,7 +345,7 @@ body::before {
   font-weight: 600;
   font-family: var(--mono);
   background: var(--glass-subtle);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,200,100,0.1);
   color: var(--text-muted);
 }
 .stat-pill.revealed {
@@ -430,7 +420,7 @@ body::before {
   padding: 12px 16px;
   background: var(--glass-subtle);
   backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,200,100,0.1);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-family: var(--sans);
@@ -442,7 +432,7 @@ body::before {
   min-height: 44px;
 }
 .question-btn:hover {
-  background: rgba(255,255,255,0.65);
+  background: rgba(0,200,100,0.08);
   border-color: var(--accent-border);
 }
 .question-btn:focus-visible {
@@ -499,17 +489,17 @@ body::before {
 .reference-panel.positive {
   background: var(--success-bg);
   border: 1px solid var(--success-border);
-  color: #065f46;
+  color: #4aff8a;
 }
 .reference-panel.negative {
   background: var(--danger-bg);
   border: 1px solid var(--danger-border);
-  color: #991b1b;
+  color: #ff6666;
 }
 .reference-panel.mixed {
   background: var(--warning-bg);
   border: 1px solid var(--warning-border);
-  color: #92400e;
+  color: #f0c050;
 }
 .ref-source {
   font-family: var(--mono);
@@ -565,7 +555,7 @@ body::before {
   font-size: 0.78rem;
   font-family: var(--mono);
   color: var(--text-dim);
-  border: 1px dashed rgba(0,0,0,0.15);
+  border: 1px dashed rgba(0,200,100,0.15);
 }
 
 /* MISSION RESULTS */
@@ -741,24 +731,327 @@ body::before {
   }
 }
 
-/* Decorative floating orbs */
-.orb {
+/* === BATTLEFIELD BACKGROUND ARTWORK === */
+.battlefield-bg {
   position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
+  top: 0; left: 0; right: 0; bottom: 0;
   z-index: -1;
-  filter: blur(60px);
-  opacity: 0.3;
+  overflow: hidden;
 }
-.orb-1 { width: 300px; height: 300px; background: #87CEEB; top: -50px; right: -80px; }
-.orb-2 { width: 200px; height: 200px; background: #98D8C8; bottom: 100px; left: -60px; }
-.orb-3 { width: 250px; height: 250px; background: #B0C4DE; top: 40%; right: -100px; }
+
+/* Night sky with stars */
+.battlefield-bg .sky {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 45%;
+  background: linear-gradient(180deg,
+    #0a0f14 0%,
+    #0f1a24 20%,
+    #142430 45%,
+    #1a3040 70%,
+    #2a4a3a 100%);
+}
+.battlefield-bg .stars {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 35%;
+  background-image:
+    radial-gradient(1px 1px at 10% 10%, rgba(200,220,255,0.6), transparent),
+    radial-gradient(1px 1px at 25% 5%, rgba(200,220,255,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 45% 15%, rgba(200,220,255,0.7), transparent),
+    radial-gradient(1px 1px at 65% 8%, rgba(200,220,255,0.5), transparent),
+    radial-gradient(1px 1px at 80% 18%, rgba(200,220,255,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 90% 3%, rgba(200,220,255,0.6), transparent),
+    radial-gradient(1px 1px at 35% 25%, rgba(200,220,255,0.3), transparent),
+    radial-gradient(1px 1px at 55% 22%, rgba(200,220,255,0.5), transparent),
+    radial-gradient(1px 1px at 15% 28%, rgba(200,220,255,0.4), transparent),
+    radial-gradient(1px 1px at 72% 12%, rgba(200,220,255,0.5), transparent);
+  pointer-events: none;
+}
+
+/* Distant mountains silhouette */
+.battlefield-bg .mountains-far {
+  position: absolute;
+  top: 30%; left: 0; right: 0;
+  height: 20%;
+  background: linear-gradient(180deg, transparent 0%, #0f1a14 100%);
+  clip-path: polygon(
+    0% 100%, 0% 80%, 5% 60%, 10% 70%, 15% 45%, 20% 55%,
+    25% 35%, 30% 50%, 35% 30%, 40% 45%, 45% 25%, 50% 40%,
+    55% 20%, 60% 35%, 65% 30%, 70% 45%, 75% 25%, 80% 40%,
+    85% 50%, 90% 35%, 95% 55%, 100% 45%, 100% 100%
+  );
+  opacity: 0.7;
+}
+
+/* Closer mountain range */
+.battlefield-bg .mountains-near {
+  position: absolute;
+  top: 38%; left: 0; right: 0;
+  height: 18%;
+  background: linear-gradient(180deg, #0f1a14 0%, #142818 100%);
+  clip-path: polygon(
+    0% 100%, 0% 70%, 3% 55%, 8% 65%, 12% 40%, 18% 55%,
+    22% 35%, 28% 50%, 33% 30%, 38% 45%, 42% 55%, 48% 35%,
+    52% 50%, 58% 40%, 62% 55%, 68% 30%, 72% 50%, 78% 40%,
+    82% 55%, 88% 45%, 92% 60%, 96% 50%, 100% 65%, 100% 100%
+  );
+}
+
+/* Rolling hills / terrain */
+.battlefield-bg .hills {
+  position: absolute;
+  top: 48%; left: 0; right: 0;
+  height: 25%;
+  background: linear-gradient(180deg, #142818 0%, #1a3020 40%, #1e3824 100%);
+  clip-path: polygon(
+    0% 100%, 0% 50%, 5% 40%, 15% 50%, 25% 35%, 35% 45%,
+    45% 30%, 55% 40%, 65% 35%, 75% 45%, 85% 30%, 95% 42%,
+    100% 38%, 100% 100%
+  );
+}
+
+/* Ground / deployment area */
+.battlefield-bg .ground {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(180deg,
+    #1a3020 0%,
+    #1e3424 20%,
+    #1a2e1e 50%,
+    #162818 80%,
+    #0f1a10 100%);
+}
+
+/* Tactical grid overlay */
+.battlefield-bg .grid-overlay {
+  position: absolute;
+  top: 50%; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(0,200,100,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,100,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  transform: perspective(500px) rotateX(30deg);
+  transform-origin: top center;
+  pointer-events: none;
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.3) 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.3) 100%);
+}
+
+/* Smoke / fog layers */
+.battlefield-bg .smoke-1 {
+  position: absolute;
+  top: 35%; left: -10%; right: -10%;
+  height: 30%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(60,80,60,0.15) 20%,
+    rgba(80,100,80,0.1) 50%,
+    rgba(60,80,60,0.15) 80%,
+    transparent 100%);
+  filter: blur(20px);
+  animation: smoke-drift-1 25s ease-in-out infinite;
+  pointer-events: none;
+}
+.battlefield-bg .smoke-2 {
+  position: absolute;
+  top: 45%; left: -5%; right: -5%;
+  height: 20%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(80,100,70,0.1) 30%,
+    rgba(60,80,60,0.12) 60%,
+    transparent 100%);
+  filter: blur(30px);
+  animation: smoke-drift-2 30s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes smoke-drift-1 {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  50% { transform: translateX(30px) scaleY(1.1); }
+}
+@keyframes smoke-drift-2 {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-20px); }
+}
+
+/* Horizon glow (dawn/dusk amber) */
+.battlefield-bg .horizon-glow {
+  position: absolute;
+  top: 35%; left: 0; right: 0;
+  height: 20%;
+  background: radial-gradient(ellipse 100% 60% at 50% 50%,
+    rgba(200,160,60,0.06) 0%,
+    rgba(180,120,40,0.03) 40%,
+    transparent 70%);
+  pointer-events: none;
+}
+
+/* Command post radar / minimap */
+.battlefield-bg .radar {
+  position: fixed;
+  bottom: 16px; right: 16px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(0,20,10,0.6);
+  border: 1px solid rgba(0,200,100,0.2);
+  box-shadow: 0 0 20px rgba(0,200,100,0.05), inset 0 0 15px rgba(0,200,100,0.03);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.battlefield-bg .radar::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 50%; height: 2px;
+  background: linear-gradient(90deg, rgba(0,200,100,0.4), transparent);
+  transform-origin: left center;
+  animation: radar-sweep 4s linear infinite;
+}
+.battlefield-bg .radar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,200,100,0.05) 31%, transparent 32%),
+    radial-gradient(circle at 50% 50%, transparent 60%, rgba(0,200,100,0.04) 61%, transparent 62%),
+    /* Radar blips */
+    radial-gradient(2px 2px at 35% 40%, rgba(0,200,100,0.6), transparent),
+    radial-gradient(2px 2px at 60% 55%, rgba(0,200,100,0.5), transparent),
+    radial-gradient(2px 2px at 45% 70%, rgba(0,200,100,0.4), transparent),
+    radial-gradient(3px 3px at 50% 50%, rgba(0,200,100,0.8), transparent);
+}
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Adapt glass panels for military/dark theme */
+#brigade-app {
+  position: relative;
+  z-index: 1;
+}
+
+.glass {
+  background: rgba(10,30,20,0.5) !important;
+  border-color: rgba(0,200,100,0.12) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(0,200,100,0.05) !important;
+}
+.glass-strong {
+  background: rgba(10,30,20,0.65) !important;
+  border-color: rgba(0,200,100,0.15) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,200,100,0.08) !important;
+}
+.glass-subtle {
+  background: rgba(10,30,20,0.35) !important;
+  border-color: rgba(0,200,100,0.08) !important;
+}
+
+/* Military green/amber text colors */
+.title-logo { color: #4aff8a !important; text-shadow: 0 0 20px rgba(0,200,100,0.3); }
+.title-sub { color: rgba(0,200,100,0.5) !important; }
+.title-premise { color: #7aaa8a !important; }
+.title-premise strong { color: #a0ddb0 !important; }
+.title-stats { color: rgba(0,200,100,0.4) !important; }
+.briefing-label { color: rgba(0,200,100,0.5) !important; }
+.briefing-title { color: #a0ddb0 !important; }
+.briefing-desc { color: #7aaa8a !important; }
+
+/* Button military styling */
+.btn {
+  background: rgba(10,30,20,0.6) !important;
+  border: 1px solid rgba(0,200,100,0.2) !important;
+  color: #a0ddb0 !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
+}
+.btn:hover {
+  background: rgba(10,40,25,0.7) !important;
+  box-shadow: 0 4px 16px rgba(0,200,100,0.1) !important;
+  border-color: rgba(0,200,100,0.35) !important;
+}
+.btn-accent {
+  background: linear-gradient(135deg, rgba(0,120,50,0.6), rgba(0,100,40,0.7)) !important;
+  color: #fff !important;
+  border-color: rgba(0,200,100,0.3) !important;
+}
+.btn-accent:hover { background: linear-gradient(135deg, rgba(0,140,60,0.7), rgba(0,120,50,0.8)) !important; }
+.btn-success {
+  background: rgba(0,120,50,0.3) !important;
+  color: #4aff8a !important;
+  border-color: rgba(0,200,100,0.3) !important;
+}
+.btn-danger {
+  background: rgba(120,30,30,0.3) !important;
+  color: #ff6666 !important;
+  border-color: rgba(200,60,60,0.3) !important;
+}
+
+/* Candidate cards military theme */
+.candidate-card {
+  border-color: rgba(0,200,100,0.1) !important;
+}
+.candidate-card:hover {
+  background: rgba(0,200,100,0.06) !important;
+  border-color: rgba(0,200,100,0.2) !important;
+  box-shadow: 0 4px 20px rgba(0,200,100,0.08) !important;
+}
+.candidate-card.selected {
+  border-color: rgba(0,200,100,0.3) !important;
+  background: rgba(0,200,100,0.06) !important;
+}
+.candidate-card.recruited {
+  border-color: rgba(0,200,100,0.4) !important;
+  background: rgba(0,200,100,0.08) !important;
+}
+
+/* Requirement tags */
+.req-tag.needed {
+  background: rgba(0,120,212,0.1) !important;
+  color: #44aaff !important;
+  border-color: rgba(0,120,212,0.25) !important;
+}
+.req-tag.filled {
+  background: rgba(0,200,100,0.1) !important;
+  color: #4aff8a !important;
+  border-color: rgba(0,200,100,0.25) !important;
+}
+
+/* General text colors for dark theme */
+body { color: #a0b8a8 !important; }
+h1, h2, h3, h4, h5, h6 { color: #c0e8d0 !important; }
+strong { color: #c0e8d0; }
+
+/* Remove old orbs since we have the battlefield now */
+.orb { display: none; }
+
+/* Particle/explosion effects canvas overlay (for JS integration) */
+.explosion-particles {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
 </style>
 </head>
 <body>
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
+
+<!-- Battlefield Background Scene -->
+<div class="battlefield-bg" aria-hidden="true">
+  <div class="sky"></div>
+  <div class="stars"></div>
+  <div class="mountains-far"></div>
+  <div class="mountains-near"></div>
+  <div class="horizon-glow"></div>
+  <div class="hills"></div>
+  <div class="ground"></div>
+  <div class="grid-overlay"></div>
+  <div class="smoke-1"></div>
+  <div class="smoke-2"></div>
+  <div class="radar"></div>
+</div>
 
 <a href="#main-content" class="skip-link">Skip to content</a>
 

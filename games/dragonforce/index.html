@@ -20,23 +20,23 @@ redirect_from:
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;
   font-family:'Inter','Segoe UI',system-ui,sans-serif;
-  background:linear-gradient(135deg,#e8f4f8 0%,#d1ecf1 30%,#c3e6f0 60%,#b8dde8 100%);
-  color:#1a2a3a;-webkit-user-select:none;user-select:none;}
+  background:#0a0508;
+  color:#e0d0c0;-webkit-user-select:none;user-select:none;}
 
-/* ── Frutiger Aero Glass ──────────────────────────────────────── */
+/* ── Frutiger Aero Glass (Dark Fantasy) ───────────────────────── */
 .glass{
-  background:rgba(255,255,255,0.55);
+  background:rgba(20,10,8,0.55);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,0.7);
+  border:1px solid rgba(231,76,60,0.12);
   border-radius:16px;
-  box-shadow:0 8px 32px rgba(0,80,120,0.1),inset 0 1px 0 rgba(255,255,255,0.6);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(231,76,60,0.05);
 }
 .glass-strong{
-  background:rgba(255,255,255,0.72);
+  background:rgba(20,10,8,0.72);
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border:1px solid rgba(255,255,255,0.8);
+  border:1px solid rgba(231,76,60,0.15);
   border-radius:16px;
-  box-shadow:0 8px 32px rgba(0,80,120,0.12),inset 0 1px 0 rgba(255,255,255,0.8);
+  box-shadow:0 8px 32px rgba(0,0,0,0.5),inset 0 1px 0 rgba(231,76,60,0.08);
 }
 
 /* ── Layout ───────────────────────────────────────────────────── */
@@ -232,9 +232,362 @@ html,body{width:100%;height:100%;overflow:hidden;
   .slider-side{text-align:center!important;min-width:auto;}
   #confidence-slider{width:100%;}
 }
+
+/* === DARK FANTASY VOLCANIC BACKGROUND === */
+.fantasy-bg{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:-1;overflow:hidden;
+}
+
+/* Stormy sky */
+.fantasy-bg .sky{
+  position:absolute;top:0;left:0;right:0;height:50%;
+  background:linear-gradient(180deg,
+    #05020a 0%,
+    #0f0818 15%,
+    #1a0c24 30%,
+    #2a1030 50%,
+    #3d1420 70%,
+    #4a1818 100%);
+}
+
+/* Storm clouds */
+.fantasy-bg .clouds-1{
+  position:absolute;top:5%;left:-10%;right:-10%;height:25%;
+  background:
+    radial-gradient(ellipse 300px 80px at 15% 50%, rgba(60,20,40,0.6) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 100px at 45% 40%, rgba(50,15,30,0.7) 0%, transparent 70%),
+    radial-gradient(ellipse 350px 90px at 75% 55%, rgba(60,20,40,0.5) 0%, transparent 70%),
+    radial-gradient(ellipse 250px 70px at 30% 65%, rgba(70,25,35,0.4) 0%, transparent 70%),
+    radial-gradient(ellipse 450px 110px at 60% 35%, rgba(40,10,25,0.6) 0%, transparent 70%);
+  animation:cloud-crawl 40s linear infinite;
+  pointer-events:none;
+}
+.fantasy-bg .clouds-2{
+  position:absolute;top:10%;left:-5%;right:-5%;height:20%;
+  background:
+    radial-gradient(ellipse 350px 70px at 25% 45%, rgba(80,20,30,0.4) 0%, transparent 70%),
+    radial-gradient(ellipse 280px 60px at 55% 55%, rgba(70,15,25,0.5) 0%, transparent 70%),
+    radial-gradient(ellipse 320px 80px at 80% 40%, rgba(60,20,35,0.35) 0%, transparent 70%);
+  animation:cloud-crawl 55s linear infinite reverse;
+  pointer-events:none;
+}
+@keyframes cloud-crawl{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(60px);}
+}
+
+/* Lightning flashes */
+.fantasy-bg .lightning{
+  position:absolute;top:0;left:0;right:0;height:50%;
+  background:transparent;
+  pointer-events:none;
+  animation:lightning-flash 8s ease-in-out infinite;
+}
+@keyframes lightning-flash{
+  0%,92%,96%,100%{background:transparent;}
+  93%{background:rgba(200,180,255,0.03);}
+  94%{background:transparent;}
+  95%{background:rgba(200,180,255,0.06);}
+  95.5%{background:transparent;}
+}
+
+/* Volcanic mountains */
+.fantasy-bg .volcano-range{
+  position:absolute;top:30%;left:0;right:0;height:35%;
+  background:linear-gradient(180deg,transparent 0%,#1a0808 100%);
+  clip-path:polygon(
+    0% 100%, 0% 80%, 5% 70%, 10% 75%, 15% 60%,
+    20% 65%, 25% 50%, 30% 55%, 35% 40%, 38% 25%,
+    40% 20%, 42% 25%, 45% 40%, 50% 50%, 55% 55%,
+    60% 45%, 62% 30%, 64% 20%, 66% 30%, 68% 40%,
+    72% 50%, 78% 55%, 82% 48%, 86% 55%, 90% 60%,
+    95% 65%, 100% 70%, 100% 100%
+  );
+}
+
+/* Lava glow at volcano peaks */
+.fantasy-bg .lava-glow-1{
+  position:absolute;top:25%;left:36%;
+  width:60px;height:80px;
+  background:radial-gradient(ellipse at 50% 80%,
+    rgba(255,80,20,0.25) 0%,
+    rgba(255,40,10,0.1) 40%,
+    transparent 70%);
+  filter:blur(8px);
+  animation:lava-pulse 3s ease-in-out infinite;
+  pointer-events:none;
+}
+.fantasy-bg .lava-glow-2{
+  position:absolute;top:28%;left:61%;
+  width:50px;height:70px;
+  background:radial-gradient(ellipse at 50% 80%,
+    rgba(255,100,30,0.2) 0%,
+    rgba(255,50,15,0.08) 40%,
+    transparent 70%);
+  filter:blur(6px);
+  animation:lava-pulse 4s ease-in-out infinite 1.5s;
+  pointer-events:none;
+}
+@keyframes lava-pulse{
+  0%,100%{opacity:0.6;transform:scaleY(1);}
+  50%{opacity:1;transform:scaleY(1.2);}
+}
+
+/* Dark rocky terrain */
+.fantasy-bg .terrain{
+  position:absolute;top:55%;left:0;right:0;height:20%;
+  background:linear-gradient(180deg,
+    #1a0808 0%,
+    #1e0c0c 30%,
+    #200e0e 60%,
+    #1a0a0a 100%);
+  clip-path:polygon(
+    0% 100%, 0% 30%, 5% 35%, 10% 25%, 15% 30%, 20% 20%,
+    25% 28%, 30% 18%, 35% 25%, 40% 15%, 45% 22%, 50% 18%,
+    55% 25%, 60% 15%, 65% 22%, 70% 12%, 75% 20%, 80% 25%,
+    85% 18%, 90% 28%, 95% 22%, 100% 30%, 100% 100%
+  );
+}
+
+/* Scorched ground */
+.fantasy-bg .scorched-ground{
+  position:absolute;bottom:0;left:0;right:0;height:35%;
+  background:linear-gradient(180deg,
+    #200e0e 0%,
+    #1a0a08 30%,
+    #140808 60%,
+    #0a0404 100%);
+}
+
+/* Lava cracks in ground */
+.fantasy-bg .lava-cracks{
+  position:absolute;bottom:5%;left:0;right:0;height:25%;
+  background-image:
+    linear-gradient(45deg, transparent 48%, rgba(255,60,20,0.08) 49%, rgba(255,60,20,0.08) 51%, transparent 52%),
+    linear-gradient(-30deg, transparent 48%, rgba(255,80,20,0.06) 49%, rgba(255,80,20,0.06) 51%, transparent 52%),
+    linear-gradient(70deg, transparent 47%, rgba(255,50,10,0.05) 48%, rgba(255,50,10,0.05) 52%, transparent 53%);
+  background-size: 200px 200px, 150px 150px, 180px 180px;
+  pointer-events:none;
+  animation:lava-cracks-glow 4s ease-in-out infinite;
+}
+@keyframes lava-cracks-glow{
+  0%,100%{opacity:0.5;}
+  50%{opacity:1;}
+}
+
+/* Fire ember particles */
+.fantasy-bg .embers{
+  position:absolute;top:30%;left:0;right:0;bottom:0;
+  pointer-events:none;
+}
+.ember{
+  position:absolute;
+  width:3px;height:3px;
+  background:radial-gradient(circle,#ff6020 0%,#ff4010 60%,transparent 100%);
+  border-radius:50%;
+  box-shadow:0 0 4px rgba(255,80,20,0.5);
+  animation:ember-rise linear infinite;
+  pointer-events:none;
+}
+.ember:nth-child(1){left:15%;animation-duration:6s;animation-delay:0s;opacity:0.7;}
+.ember:nth-child(2){left:25%;animation-duration:8s;animation-delay:1s;opacity:0.5;width:2px;height:2px;}
+.ember:nth-child(3){left:38%;animation-duration:5s;animation-delay:0.5s;opacity:0.8;}
+.ember:nth-child(4){left:50%;animation-duration:7s;animation-delay:2s;opacity:0.6;width:2px;height:2px;}
+.ember:nth-child(5){left:62%;animation-duration:6.5s;animation-delay:1.5s;opacity:0.7;}
+.ember:nth-child(6){left:75%;animation-duration:9s;animation-delay:0.8s;opacity:0.4;width:2px;height:2px;}
+.ember:nth-child(7){left:85%;animation-duration:5.5s;animation-delay:3s;opacity:0.6;}
+.ember:nth-child(8){left:42%;animation-duration:7.5s;animation-delay:2.5s;opacity:0.5;width:4px;height:4px;}
+.ember:nth-child(9){left:70%;animation-duration:6s;animation-delay:4s;opacity:0.6;width:2px;height:2px;}
+.ember:nth-child(10){left:10%;animation-duration:8.5s;animation-delay:1.2s;opacity:0.3;}
+@keyframes ember-rise{
+  0%{transform:translateY(0) translateX(0);opacity:0;}
+  10%{opacity:1;}
+  80%{opacity:0.6;}
+  100%{transform:translateY(-300px) translateX(30px);opacity:0;}
+}
+
+/* Dragon silhouette in background */
+.fantasy-bg .dragon-silhouette{
+  position:absolute;top:8%;right:10%;
+  width:200px;height:120px;
+  background:none;
+  opacity:0.06;
+  pointer-events:none;
+}
+.fantasy-bg .dragon-silhouette::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  /* Dragon shape via clip-path */
+  background:#ff4020;
+  clip-path:polygon(
+    20% 80%, 10% 70%, 5% 50%, 0% 30%, 5% 20%, 15% 10%, 25% 5%,
+    35% 0%, 40% 5%, 45% 15%, 50% 20%, 55% 15%, 60% 10%, 65% 5%,
+    70% 0%, 78% 5%, 85% 15%, 90% 25%, 95% 30%, 100% 40%,
+    95% 50%, 88% 55%, 80% 50%, 75% 55%, 70% 65%, 65% 70%,
+    55% 75%, 45% 80%, 35% 85%, 25% 85%
+  );
+  filter:blur(2px);
+}
+
+/* Second dragon on left */
+.fantasy-bg .dragon-silhouette-2{
+  position:absolute;top:15%;left:5%;
+  width:150px;height:90px;
+  opacity:0.04;
+  pointer-events:none;
+  transform:scaleX(-1);
+}
+.fantasy-bg .dragon-silhouette-2::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:#ff6040;
+  clip-path:polygon(
+    20% 80%, 10% 70%, 5% 50%, 0% 30%, 5% 20%, 15% 10%, 25% 5%,
+    35% 0%, 40% 5%, 45% 15%, 50% 20%, 55% 15%, 60% 10%, 65% 5%,
+    70% 0%, 78% 5%, 85% 15%, 90% 25%, 95% 30%, 100% 40%,
+    95% 50%, 88% 55%, 80% 50%, 75% 55%, 70% 65%, 65% 70%,
+    55% 75%, 45% 80%, 35% 85%, 25% 85%
+  );
+  filter:blur(2px);
+}
+
+/* Screen shake on big hits */
+@keyframes epic-shake{
+  0%,100%{transform:translateX(0) translateY(0);}
+  10%{transform:translateX(-6px) translateY(2px) rotate(-0.5deg);}
+  20%{transform:translateX(6px) translateY(-3px) rotate(0.5deg);}
+  30%{transform:translateX(-5px) translateY(1px);}
+  40%{transform:translateX(4px) translateY(-2px) rotate(-0.3deg);}
+  50%{transform:translateX(-3px) translateY(2px) rotate(0.3deg);}
+  60%{transform:translateX(3px) translateY(-1px);}
+  70%{transform:translateX(-2px) translateY(1px);}
+  80%{transform:translateX(1px);}
+}
+body.epic-shake #game-wrap{
+  animation:epic-shake 0.6s ease-out;
+}
+
+/* Energy meter glow effect */
+.slider-row input[type="range"]{
+  box-shadow:0 0 10px rgba(231,76,60,0.2);
+}
+
+/* Adapt text colors for dark theme */
+#title-screen h1{
+  background:linear-gradient(135deg,#ff4020,#ff6040,#ffaa20) !important;
+  -webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;
+  background-clip:text !important;
+  text-shadow:none;filter:drop-shadow(0 0 20px rgba(255,80,40,0.3));
+}
+#title-screen .tagline{color:#8a6a5a !important;}
+.title-stat .label{color:#7a5a4a !important;}
+.title-stat .value{color:#e0c0a0 !important;}
+.slider-label{color:#e0c0a0 !important;}
+.slider-side.left{color:#4a9aff !important;}
+.slider-side.right{color:#ff5040 !important;}
+.confidence-readout{color:#e0c0a0 !important;}
+.decisive-row span{color:#8a6a5a !important;}
+.toggle-btn{background:rgba(255,255,255,0.05) !important;color:#8a6a5a !important;border-color:rgba(255,255,255,0.1) !important;}
+.toggle-btn.active{background:linear-gradient(135deg,#c0392b,#e74c3c) !important;color:#fff !important;border-color:transparent !important;}
+.battle-info{color:#8a6a5a !important;}
+.battle-info strong{color:#e0c0a0 !important;}
+.battle-log{color:#6a5040 !important;}
+.result-title{color:#e0c0a0 !important;}
+.result-title.correct{color:#4aff8a !important;}
+.result-title.wrong{color:#ff4040 !important;}
+.result-subtitle{color:#8a6a5a !important;}
+.rc-label{color:#7a5a4a !important;}
+.rc-value{color:#e0c0a0 !important;}
+.campaign-title{
+  background:linear-gradient(135deg,#ff4020,#ff6040,#ffaa20) !important;
+  -webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;
+  background-clip:text !important;
+}
+.campaign-subtitle{color:#8a6a5a !important;}
+.camp-stat .cs-label{color:#7a5a4a !important;}
+.camp-stat .cs-value{color:#e0c0a0 !important;}
+.calibration-chart-wrap h3{color:#e0c0a0 !important;}
+.bias-report h3{color:#e0c0a0 !important;}
+.bias-item{color:#8a6a5a !important;}
+.bias-item strong{color:#e0c0a0 !important;}
+.hidden-warning{background:rgba(243,156,18,0.1) !important;color:#d4a030 !important;border-color:rgba(243,156,18,0.2) !important;}
+.footer-bar{color:#5a4030 !important;}
+
+/* Battle canvas wrapper */
+.battle-canvas-wrap{
+  border-color:rgba(231,76,60,0.15) !important;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5) !important;
+}
+.skip-btn{
+  background:rgba(20,10,8,0.6) !important;
+  border-color:rgba(255,255,255,0.1) !important;
+  color:#8a6a5a !important;
+}
+.skip-btn:hover{background:rgba(30,15,12,0.8) !important;color:#e0c0a0 !important;}
+
+/* Btn-fire epic glow */
+.btn-fire{
+  background:linear-gradient(135deg,#c0392b,#e74c3c) !important;
+  box-shadow:0 4px 15px rgba(231,76,60,0.4),0 0 30px rgba(231,76,60,0.15) !important;
+}
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 4px 15px rgba(231,76,60,0.4),0 0 30px rgba(231,76,60,0.15);}
+  50%{box-shadow:0 4px 25px rgba(231,76,60,0.7),0 0 50px rgba(231,76,60,0.25);}
+}
+.btn-primary{
+  background:linear-gradient(135deg,#2980b9,#3498db) !important;
+  box-shadow:0 4px 15px rgba(52,152,219,0.3) !important;
+}
+.btn-secondary{
+  background:rgba(255,255,255,0.05) !important;
+  color:#a08070 !important;
+  border-color:rgba(255,255,255,0.1) !important;
+}
+
+/* Terrain badges dark theme */
+.terrain-plains{background:rgba(129,199,132,0.1) !important;color:#66bb6a !important;}
+.terrain-hills{background:rgba(141,110,99,0.15) !important;color:#a1887f !important;}
+.terrain-forest{background:rgba(76,175,80,0.1) !important;color:#66bb6a !important;}
+.terrain-river{background:rgba(79,195,247,0.1) !important;color:#4fc3f7 !important;}
+
+/* Army card names in dark theme */
+.army-card h2{text-shadow:0 0 10px currentColor;}
+.army-card .stat-label{color:#7a5a4a !important;}
+.army-card .stat-value{color:#e0c0a0 !important;}
+.army-card .stars{color:#f39c12 !important;text-shadow:0 0 6px rgba(243,156,18,0.4);}
 </style>
 </head>
 <body>
+
+<!-- Dark Fantasy Volcanic Background -->
+<div class="fantasy-bg" aria-hidden="true">
+  <div class="sky"></div>
+  <div class="clouds-1"></div>
+  <div class="clouds-2"></div>
+  <div class="lightning"></div>
+  <div class="volcano-range"></div>
+  <div class="lava-glow-1"></div>
+  <div class="lava-glow-2"></div>
+  <div class="terrain"></div>
+  <div class="scorched-ground"></div>
+  <div class="lava-cracks"></div>
+  <div class="dragon-silhouette"></div>
+  <div class="dragon-silhouette-2"></div>
+  <div class="embers">
+    <div class="ember"></div>
+    <div class="ember"></div>
+    <div class="ember"></div>
+    <div class="ember"></div>
+    <div class="ember"></div>
+    <div class="ember"></div>
+    <div class="ember"></div>
+    <div class="ember"></div>
+    <div class="ember"></div>
+    <div class="ember"></div>
+  </div>
+</div>
+
 <div id="game-wrap">
 
 <!-- ═══ TITLE SCREEN ═══════════════════════════════════════════ -->
@@ -377,6 +730,8 @@ function sfxClash(){
   const d = buf.getChannelData(0);
   for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.06*Math.exp(-i/(d.length*0.3));
   const s = audioCtx.createBufferSource(); s.buffer=buf; s.connect(audioCtx.destination); s.start();
+  /* Epic screen shake on clash */
+  if(Math.random()<0.3){document.body.classList.add('epic-shake');setTimeout(()=>document.body.classList.remove('epic-shake'),600);}
 }
 function sfxVictory(){
   [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'triangle',0.07),i*120));
