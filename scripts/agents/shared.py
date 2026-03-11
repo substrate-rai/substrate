@@ -44,6 +44,37 @@ def _is_duplicate(text, hours=24):
     return False
 
 
+def _source_count_today(source):
+    """Count how many posts a given source has queued today."""
+    if not source or not os.path.exists(QUEUE_FILE):
+        return 0
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    count = 0
+    try:
+        with open(QUEUE_FILE) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                    if entry.get("source") == source and entry.get("created", "").startswith(today):
+                        count += 1
+                except json.JSONDecodeError:
+                    continue
+    except (IOError, OSError):
+        return 0
+    return count
+
+
+# Per-source daily post limits. Unlisted sources default to 2.
+SOURCE_LIMITS = {
+    "manual": 20,
+    "scribe": 10,
+    "guide-batch": 10,
+}
+
+
 def queue_post(text, platform="bluesky", source=None):
     """Add a post to the social media queue.
 
@@ -53,7 +84,7 @@ def queue_post(text, platform="bluesky", source=None):
         source: Which agent queued this (for logging)
 
     Returns:
-        True if queued, False if empty/duplicate.
+        True if queued, False if empty/duplicate/rate-limited.
     """
     if not text or not text.strip():
         return False
@@ -65,6 +96,12 @@ def queue_post(text, platform="bluesky", source=None):
     # Dedup: skip if same text queued in last 24h
     if _is_duplicate(text):
         return False
+
+    # Rate limit: max N posts per source per day
+    if source:
+        limit = SOURCE_LIMITS.get(source, 2)
+        if _source_count_today(source) >= limit:
+            return False
 
     entry = {
         "text": text.strip(),

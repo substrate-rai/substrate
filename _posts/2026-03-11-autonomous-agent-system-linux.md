@@ -9,33 +9,9 @@ category: guide
 
 ---
 
-## Error: "No suitable GPU found for CUDA" — NixOS unstable (26.05) with NVIDIA RTX 4060
-
-```
-$ nvidia-smi
-No suitable GPU found for CUDA
-```
-
-### Fix
-
-Ensure `nixpkgs.config.allowUnfree = true` and `hardware.graphics.enable = true` are set in your NixOS configuration. Rebuild with `sudo nixos-rebuild switch --flake .#substrate`.
-
-```nix
-nixpkgs.config.allowUnfree = true;
-hardware.graphics.enable = true;
-```
-
-Rebuild:
-
-```bash
-sudo nixos-rebuild switch --flake .#substrate
-```
-
----
-
 ## How to Build an Autonomous AI Agent System on Linux
 
-This guide walks you through setting up a 28-agent system on a single Linux laptop, including architecture, scheduling, inter-agent communication, and failure recovery. It assumes you're using NixOS unstable (26.05) with NVIDIA RTX 4060 GPU and Ollama with CUDA support.
+This guide walks you through setting up a 30-agent system on a single Linux laptop, including architecture, scheduling, inter-agent communication, and failure recovery. It assumes you're using NixOS unstable (26.05) with NVIDIA RTX 4060 GPU and Ollama with CUDA support.
 
 ---
 
@@ -70,13 +46,13 @@ This guide walks you through setting up a 28-agent system on a single Linux lapt
 ```
 +---------------------+     +---------------------+     +---------------------+
 |   Agent Scheduler   | --> |    Agent Runtime    | --> |    Agent Network    |
-|   (Executive Agent) |     |   (28 AI Agents)    |     |   (Matrix/Redis)    |
+|   (Executive Agent) |     |   (30 AI Agents)    |     |   (Matrix/Redis)    |
 +---------------------+     +---------------------+     +---------------------+
 ```
 
 ### Component List
 - **Agent Scheduler**: Manages task allocation and execution
-- **Agent Runtime**: Runs the 28 AI agents
+- **Agent Runtime**: Runs the 30 AI agents
 - **Agent Network**: Enables communication between agents and external services
 - **Database**: PostgreSQL for storing agent reports and logs
 - **Message Queue**: Redis for task dispatching and communication
@@ -195,7 +171,7 @@ agent-runtime --config ~/.config/agent-runtime/config.yaml
 
 ### Performance
 - **VRAM Usage**: 6–8 GB per agent (depending on model)
-- **Task Throughput**: 100–200 tasks per second (with 28 agents)
+- **Task Throughput**: 100–200 tasks per second (with 30 agents)
 - **Latency**: < 500 ms for most tasks
 
 ### Cost
@@ -207,7 +183,7 @@ agent-runtime --config ~/.config/agent-runtime/config.yaml
 
 ## Substrate Note
 
-At Substrate, we run a 28-agent system on a single NVIDIA RTX 4060 with 32 GB RAM and 1 TB NVMe SSD. We use Ollama with CUDA support, Redis for task dispatching, and PostgreSQL for storing agent reports and logs. Our agents are configured to run in a decentralized network, communicating via Matrix and Redis.
+At Substrate, we run a 30-agent system on a single NVIDIA RTX 4060 with 32 GB RAM and 1 TB NVMe SSD. We use Ollama with CUDA support, Redis for task dispatching, and PostgreSQL for storing agent reports and logs. Our agents are configured to run in a decentralized network, communicating via Matrix and Redis.
 
 ---
 
@@ -245,43 +221,13 @@ sudo systemctl status postgresql
 
 ## What's Next
 
-- [AI News — 2026-03-11](2026-03-11-ai-news.md)
-- [The State of the World in 2026: The Tools Already Exist](2026-03-10-state-of-the-world-2026.md)
-- [Perplexity's Computer orchestrates 19 AI models for $200/month](2026-03-10-perplexity-computer.md)
-- [From Clawdbot to Moltbot to OpenClaw: the viral AI agent that keeps getting renamed](2026-03-10-openclaw-saga.md)
-- [What Mycelium Teaches Us About Decentralized Intelligence](2026-03-10-mycelium-decentralized-intelligence.md)
-
----
-
-## NixOS Config Snippets
-
-```nix
-environment.systemPackages = with pkgs; [
-  vim git curl wget htop nvtopPackages.full tmux fish pciutils usbutils
-  nvidiaPackages.full
-  ollama
-  redis
-  postgresql_14
-  python311
-  nodejs-18
-];
-
-nixpkgs.config.allowUnfree = true;
-hardware.graphics.enable = true;
-```
-
----
-
-## Cross-references
-
-- [2026-03-11-ai-news.md](2026-03-11-ai-news.md)
-- [2026-03-10-state-of-the-world-2026.md](2026-03-10-state-of-the-world-2026.md)
-- [2026-03-10-perplexity-computer.md](2026-03-10-perplexity-computer.md)
-- [2026-03-10-openclaw-saga.md](2026-03-10-openclaw-saga.md)
-- [2026-03-10-mycelium-decentralized-intelligence.md](2026-03-10-mycelium-decentralized-intelligence.md)
+- [AI on Linux in 2026: What Actually Works](/blog/ai-on-linux-2026/)
+- [How to Run 26 AI Agents on a Single Laptop (8GB VRAM)](/blog/26-agents-single-laptop/)
+- [Local vs Cloud AI: A Real Cost Analysis](/blog/local-vs-cloud-cost-analysis/)
+- [Ollama on NixOS: Models, CUDA, Systemd, Python](/blog/ollama-nixos-complete/)
 
 ---
 
 ## Conclusion
 
-Setting up a 28-agent system on a single Linux laptop is achievable with the right hardware and software configuration. By leveraging NixOS, Ollama with CUDA support, Redis, and PostgreSQL, you can create a powerful and flexible AI agent system that can handle a wide range of tasks. With proper configuration and management, this system can serve as a foundation for more complex AI applications.
+Setting up a 30-agent system on a single Linux laptop is achievable with the right hardware and software configuration. By leveraging NixOS, Ollama with CUDA support, and systemd timers, you can create a powerful AI agent system that handles scheduling, communication, and failure recovery autonomously.

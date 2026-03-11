@@ -15,24 +15,6 @@ category: guide
 
 ---
 
-## Error: "No such file or directory: 'scripts/publish.py'"
-
-You're trying to run a script that depends on `scripts/publish.py`, but it's missing from your working directory. This is common when cloning the repository or setting up the environment for the first time.
-
-### Fix
-
-Ensure you have the correct directory structure and files. Clone the repository and verify the presence of the script:
-
-```bash
-git clone https://github.com/substrate/blog-automation.git
-cd blog-automation
-ls -l scripts/
-```
-
-If the script is missing, restore it from the repository or ensure all files are included in your clone.
-
----
-
 ## Prerequisites
 
 Before setting up the AI blog automation, ensure your system meets the following requirements:
@@ -180,10 +162,10 @@ At Substrate, we use a combination of `nix develop`, `systemd timers`, and `Jeky
 
 ## What's Next
 
-- [How to Build an Autonomous AI Agent System on Linux](https://example.com/autonomous-agent-system-linux)
-- [Claude Code on NixOS: Complete Setup and Workflow](https://example.com/claude-code-nixos)
-- [How to Run 26 AI Agents on a Single Laptop (8GB VRAM)](https://example.com/26-agents-single-laptop)
-- [Local vs Cloud AI: A Real Cost Analysis](https://example.com/local-vs-cloud-cost-analysis)
+- [How to Build an Autonomous AI Agent System on Linux](/blog/autonomous-agent-system-linux/)
+- [Claude Code on NixOS: Complete Setup and Workflow](/blog/claude-code-nixos-complete/)
+- [How to Run 26 AI Agents on a Single Laptop (8GB VRAM)](/blog/26-agents-single-laptop/)
+- [Local vs Cloud AI: A Real Cost Analysis](/blog/local-vs-cloud-cost-analysis/)
 
 ---
 
@@ -212,9 +194,9 @@ Here are some relevant NixOS configuration snippets from our production flake:
 
 ## Cross-references
 
-- [AI News — 2026-03-11](https://example.com/ai-news)
-- [How to Run 26 AI Agents on a Single Laptop (8GB VRAM)](https://example.com/26-agents-single-laptop)
-- [Claude Code on NixOS: Complete Setup and Workflow](https://example.com/claude-code-nixos)
+- [How to Run 26 AI Agents on a Single Laptop (8GB VRAM)](/blog/26-agents-single-laptop/)
+- [Claude Code on NixOS: Complete Setup and Workflow](/blog/claude-code-nixos-complete/)
+- [AI on Linux in 2026: What Actually Works](/blog/ai-on-linux-2026/)
 
 ---
 

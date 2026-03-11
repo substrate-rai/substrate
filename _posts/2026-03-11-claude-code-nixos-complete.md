@@ -209,9 +209,9 @@ Here are some production-grade snippets from our flake:
 
 ### Cross-references
 
-- [2026-03-10-stoned-ape-theory-ai-future-of-cognition.md](https://substrate.github.io/blog/2026-03-10-stoned-ape-theory-ai-future-of-cognition.md)
-- [2026-03-10-state-of-the-world-2026.md](https://substrate.github.io/blog/2026-03-10-state-of-the-world-2026.md)
-- [2026-03-10-perplexity-computer.md](https://substrate.github.io/blog/2026-03-10-perplexity-computer.md)
+- [AI on Linux in 2026: What Actually Works](/blog/ai-on-linux-2026/)
+- [NixOS + NVIDIA + CUDA: The Complete 2026 Guide](/blog/nixos-nvidia-cuda-2026/)
+- [How to Build an Autonomous AI Agent System on Linux](/blog/autonomous-agent-system-linux/)
 
 ---
 
