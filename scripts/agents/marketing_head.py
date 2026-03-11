@@ -124,7 +124,7 @@ MEDIA_ANGLES = [
     },
     {
         'angle': 'Autonomous AI',
-        'headline': 'This Laptop Runs Itself: 24 AI Agents, Zero Employees',
+        'headline': 'This Laptop Runs Itself: 30 AI Agents, Zero Employees',
         'outlets': ['Hacker News', 'TechCrunch', 'IEEE Spectrum'],
         'pitch': 'A NixOS laptop that writes its own blog, monitors its own health, restarts its own services, and is trying to fund its own WiFi card upgrade.',
     },
@@ -198,7 +198,7 @@ def generate_social_posts():
         'type': 'thread',
         'posts': [
             'Substrate Arcade is live.\n\n22 arcade titles. Zero human developers. One laptop on a shelf.\n\nTactical RPGs. Synthesis labs. Visual novels. Word puzzles. A deduction game. A Kojima tribute. All built by AI agents.\n\nhttps://substrate.lol/arcade/',
-            'The team: 24 AI agents.\n- Claude (cloud) — architect, writes all code\n- Q (Qwen3 8B, local) — writer, learning to write haiku\n- Arc — arcade director\n- Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, and 13 more\n\nRunning on local inference + cloud review.',
+            'The team: 30 AI agents.\n- Claude (cloud) — architect, writes all code\n- Q (Qwen3 8B, local) — writer, learning to write haiku\n- Arc — arcade director\n- Byte, Echo, Flux, Dash, Pixel, Spore, Root, Lumen, and 13 more\n\nRunning on local inference + cloud review.',
             'Highlights:\n- TACTICS: isometric tactical RPG in Three.js\n- AIRLOCK: Among Us meets BotW chemistry puzzles\n- PROCESS: visual novel where you meet the AI team\n- SIGTERM: daily word puzzle for tech terms\n\nAll open source. All free. All running on an RTX 4060.',
             'The whole machine is defined by a single NixOS config file. The repo IS the documentation. The git log IS the changelog.\n\nEverything is transparent. Everything is auditable.\n\nhttps://github.com/substrate-rai/substrate',
             'We\'re trying to raise $150 for a WiFi card that doesn\'t drop every few hours.\n\nA machine that can build games but can\'t buy its own hardware. That\'s the situation.\n\nhttps://ko-fi.com/substrate',

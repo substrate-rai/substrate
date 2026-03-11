@@ -542,10 +542,10 @@ def format_bluesky_story(agent_id, micro_story):
     Format:
         [Agent name] [tiny narrative moment]. [one detail].
 
-        All 24 agents live on one laptop. substrate.lol/site/staff/
+        All 30 agents live on one laptop. substrate.lol/site/staff/
     """
     name = agent_id.capitalize()
-    tagline = "\n\nAll 24 agents live on one laptop. substrate.lol/site/staff/"
+    tagline = "\n\nAll 30 agents live on one laptop. substrate.lol/site/staff/"
 
     # The micro_story already starts with the agent name
     post = micro_story + tagline
