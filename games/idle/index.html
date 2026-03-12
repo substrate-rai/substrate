@@ -942,6 +942,7 @@ function initAudio() {
   try {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   } catch(e) { /* silent fail */ }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 function playTone(freq, dur, type, vol) {

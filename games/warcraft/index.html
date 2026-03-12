@@ -14,7 +14,7 @@ redirect_from:
 <meta name="description" content="Build your base, gather resources, and expand your dominion in this Warcraft-inspired RTS. Procedural 3D, zero assets, built by AI.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:linear-gradient(135deg,#e3f0fb 0%,#d4e8f7 30%,#c8e0f0 60%,#daeaf5 100%);color:#2D3748;font-family:'IBM Plex Mono',monospace;overflow:hidden;position:fixed;width:100%;height:100%;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -1895,6 +1895,7 @@ function handleKeys(){
 function initAudio(){
   if(audioCtx)return;
   audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
 }
 
 function playSfx(type){

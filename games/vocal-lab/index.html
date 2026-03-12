@@ -604,8 +604,9 @@ let isPlayerPlaying = false;
 let isTargetPlaying = false;
 
 function ensureAudioContext() {
-  if (actx) return;
+  if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
   actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
   masterGain = actx.createGain();
   masterGain.gain.value = 0.35;
   masterGain.connect(actx.destination);

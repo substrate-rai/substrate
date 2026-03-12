@@ -660,6 +660,7 @@ main {
   function initAudio() {
     if (audioCtx) return;
     try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   }
 
   function playTone(freq, duration, type, volume) {

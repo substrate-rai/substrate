@@ -10,6 +10,9 @@ redirect_from:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>SEEKER — A Kojima Tribute</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 @media (prefers-reduced-motion: reduce) {
@@ -20,7 +23,7 @@ redirect_from:
   }
 }
 a:focus-visible, button:focus-visible { outline: 2px solid #0078D4; outline-offset: 2px; }
-html,body{width:100%;height:100%;overflow:hidden;background:linear-gradient(170deg,#d0e8f5 0%,#e8f0f8 30%,#f0f4f0 70%,#dde8d8 100%);font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#2D3748;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:linear-gradient(170deg,#d0e8f5 0%,#e8f0f8 30%,#f0f4f0 70%,#dde8d8 100%);font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#2D3748;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
 #game{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column}
 #scene-area{flex:1;position:relative;overflow:hidden}
 canvas{position:absolute;top:0;left:0;width:100%;height:100%}
@@ -32,11 +35,11 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 #continue-indicator.visible{opacity:1;animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 #action-bar{display:flex;gap:8px;padding:8px 16px 12px;background:rgba(255,255,255,0.5);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,0.4);z-index:10;flex-wrap:wrap;justify-content:center}
-.action-btn{background:rgba(255,255,255,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(0,120,212,0.25);color:#0078D4;padding:12px 20px;font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;font-size:14px;font-weight:500;cursor:pointer;min-width:80px;text-align:center;transition:all 0.2s;min-height:48px;display:flex;align-items:center;justify-content:center;flex:1;max-width:160px;border-radius:8px;box-shadow:0 2px 8px rgba(0,60,120,0.08)}
+.action-btn{background:rgba(255,255,255,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(0,120,212,0.25);color:#0078D4;padding:12px 20px;font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:14px;font-weight:500;cursor:pointer;min-width:80px;text-align:center;transition:all 0.2s;min-height:48px;display:flex;align-items:center;justify-content:center;flex:1;max-width:160px;border-radius:8px;box-shadow:0 2px 8px rgba(0,60,120,0.08)}
 .action-btn:hover,.action-btn:active{background:rgba(0,120,212,0.12);border-color:rgba(0,120,212,0.4);box-shadow:0 4px 12px rgba(0,60,120,0.12)}
 .action-btn.highlight{border-color:rgba(200,60,40,0.4);color:#c83030;background:rgba(200,60,40,0.08);animation:pulse-red 2s infinite}
 @keyframes pulse-red{0%,100%{box-shadow:0 2px 8px rgba(200,60,40,0.1)}50%{box-shadow:0 4px 16px rgba(200,60,40,0.25)}}
-.choice-btn{background:rgba(255,255,255,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,0.08);color:#3a4a5c;padding:12px 16px;font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;font-size:14px;cursor:pointer;text-align:left;transition:all 0.2s;min-height:48px;width:100%;max-width:500px;margin:4px auto;display:block;border-radius:8px;box-shadow:0 1px 4px rgba(0,40,80,0.06)}
+.choice-btn{background:rgba(255,255,255,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,0.08);color:#3a4a5c;padding:12px 16px;font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:14px;cursor:pointer;text-align:left;transition:all 0.2s;min-height:48px;width:100%;max-width:500px;margin:4px auto;display:block;border-radius:8px;box-shadow:0 1px 4px rgba(0,40,80,0.06)}
 .choice-btn:hover,.choice-btn:active{border-color:rgba(0,120,212,0.3);color:#0078D4;background:rgba(255,255,255,0.75);box-shadow:0 2px 10px rgba(0,60,120,0.1)}
 #title-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(170deg,#c0ddef 0%,#e0ecf5 40%,#f2f6f0 100%);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}
 #title-screen .title-card-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.18;z-index:0}
