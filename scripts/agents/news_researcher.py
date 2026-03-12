@@ -389,8 +389,8 @@ def main():
     with open(report_path, "w") as f:
         f.write(report)
 
-    # 4b. Write _data/news.json for live news section
-    write_news_json(relevant, signal_top, today)
+    # 4b. _data/news.json is now owned by news_aggregator.py (hourly timer)
+    # with agent commentary — do NOT overwrite it here.
 
     # 4c. Publish as Jekyll post
     if relevant:
@@ -430,7 +430,7 @@ def main():
     print()
     # Auto-commit output files
     try:
-        git_files = [report_path, os.path.join(DATA_DIR, "news.json")]
+        git_files = [report_path]
         if relevant:
             git_files.append(post_path)
         subprocess.run(
