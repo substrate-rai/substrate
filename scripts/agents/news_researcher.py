@@ -28,15 +28,28 @@ from shared import queue_post
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 NEWS_DIR = os.path.join(REPO_ROOT, "memory", "news")
 POSTS_DIR = os.path.join(REPO_ROOT, "_posts")
+DATA_DIR = os.path.join(REPO_ROOT, "_data")
 
 HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
 HN_ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
 
 # RSS/Atom feeds to scan for broader LLM coverage
 RSS_FEEDS = {
-    "Anthropic": "https://www.anthropic.com/feed.xml",
+    # Tier 1: Major AI labs
+    "Anthropic": "https://www.anthropic.com/rss.xml",
     "OpenAI": "https://openai.com/blog/rss.xml",
     "Hugging Face": "https://huggingface.co/blog/feed.xml",
+    # Tier 2: Research
+    "arXiv cs.AI": "https://rss.arxiv.org/rss/cs.AI",
+    "arXiv cs.CL": "https://rss.arxiv.org/rss/cs.CL",
+    "arXiv cs.LG": "https://rss.arxiv.org/rss/cs.LG",
+    # Tier 3: Community
+    "r/LocalLLaMA": "https://www.reddit.com/r/LocalLLaMA/.rss",
+    "r/MachineLearning": "https://www.reddit.com/r/MachineLearning/.rss",
+    # Tier 4: Industry press
+    "IEEE Spectrum AI": "https://spectrum.ieee.org/feeds/feed.rss",
+    "InfoQ AI/ML": "https://feed.infoq.com/ai-ml-data-eng/",
+    "TechCrunch AI": "https://techcrunch.com/category/artificial-intelligence/feed/",
 }
 
 # How many top stories to scan
@@ -351,6 +364,64 @@ def generate_hot_take(stories):
 
 
 # ---------------------------------------------------------------------------
+# _data/news.json output (consumed by Jekyll templates between builds)
+# ---------------------------------------------------------------------------
+
+def write_news_json(stories, signal_stories, date_str):
+    """Write structured news data to _data/news.json for the live news section."""
+    entries = []
+    seen = set()
+
+    # Signal stories first
+    for item in signal_stories:
+        title = item.get("title", "Untitled")
+        if title in seen:
+            continue
+        seen.add(title)
+        entries.append({
+            "title": title,
+            "url": item.get("url", ""),
+            "hn_url": f"https://news.ycombinator.com/item?id={item.get('id', '')}" if item.get("id") else "",
+            "points": item.get("score", 0),
+            "comments": item.get("descendants", 0),
+            "source": item.get("_source", "HN"),
+            "signal": True,
+            "relevance": item.get("_relevance", 0),
+        })
+
+    # Remaining stories
+    for item in stories:
+        title = item.get("title", "Untitled")
+        if title in seen:
+            continue
+        seen.add(title)
+        entries.append({
+            "title": title,
+            "url": item.get("url", ""),
+            "hn_url": f"https://news.ycombinator.com/item?id={item.get('id', '')}" if item.get("id") else "",
+            "points": item.get("score", 0),
+            "comments": item.get("descendants", 0),
+            "source": item.get("_source", "HN"),
+            "signal": False,
+            "relevance": item.get("_relevance", 0),
+        })
+
+    data = {
+        "updated": datetime.now(timezone.utc).isoformat(),
+        "date": date_str,
+        "total": len(entries),
+        "signal_count": len(signal_stories),
+        "stories": entries[:30],  # Cap at 30 for page weight
+    }
+
+    os.makedirs(DATA_DIR, exist_ok=True)
+    path = os.path.join(DATA_DIR, "news.json")
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+    print(f"  [data] Wrote {len(entries)} stories to {path}", file=sys.stderr)
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -439,7 +510,10 @@ def main():
     with open(report_path, "w") as f:
         f.write(report)
 
-    # 4b. Publish as Jekyll post
+    # 4b. Write _data/news.json for live news section
+    write_news_json(relevant, signal_top, today)
+
+    # 4c. Publish as Jekyll post
     if relevant:
         post_path = publish_jekyll_post(relevant, signal_top, today)
         print(f"Jekyll post: {post_path}")

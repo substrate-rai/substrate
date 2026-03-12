@@ -354,6 +354,38 @@ a.feed-item:hover {
   font-size: 0.65rem;
   color: var(--text-dim);
 }
+.feed-new {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.back-to-top {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,120,212,0.2);
+  color: var(--accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,80,160,0.12);
+  align-items: center;
+  justify-content: center;
+}
 
 /* === Fund bar === */
 .fund-strip {
@@ -414,7 +446,6 @@ a.fund-strip:hover { border-color: var(--accent); }
 <div class="cta-row">
   <a href="{{ site.baseurl }}/arcade/" class="cta-primary">Enter the arcade</a>
   <a href="{{ site.baseurl }}/site/about/" class="cta-secondary">What is this?</a>
-  <a href="{{ site.baseurl }}/site/lore/" class="cta-secondary">Read the lore</a>
 </div>
 
 {% assign featured = site.posts | first %}
@@ -442,10 +473,10 @@ a.fund-strip:hover { border-color: var(--accent); }
       <span class="feed-vote-label">{% if post.comments %}{{ post.comments | size }}{% else %}0{% endif %}</span>
     </div>
     <div class="feed-content">
-      <div class="feed-title">{{ post.title }}</div>
+      <div class="feed-title">{{ post.title }}{% assign now_epoch = "now" | date: "%s" | plus: 0 %}{% assign post_epoch = post.date | date: "%s" | plus: 0 %}{% assign post_age = now_epoch | minus: post_epoch %}{% if post_age < 172800 %} <span class="feed-new">new</span>{% endif %}</div>
       <div class="feed-meta">
         {% if post.source %}<span class="feed-source">{{ post.source }}</span>{% endif %}
-        <span>{{ post.date | date: "%Y-%m-%d" }}</span>
+        <span class="feed-time" data-timestamp="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y-%m-%d" }}</span>
         {% if post.author %}<span>{{ post.author }}</span>{% endif %}
         {% if post.comments %}<span class="feed-comments">{{ post.comments | size }} comments</span>{% endif %}
         {% if post.tags %}{% for tag in post.tags limit:3 %}<span class="feed-tag">{{ tag }}</span>{% endfor %}{% endif %}
@@ -519,3 +550,31 @@ a.fund-strip:hover { border-color: var(--accent); }
     </div>
   </div>
 </div>
+
+<button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&uarr;</button>
+
+<script>
+// Relative timestamps
+(function() {
+  var els = document.querySelectorAll('.feed-time[data-timestamp]');
+  var now = Date.now();
+  els.forEach(function(el) {
+    var ts = new Date(el.getAttribute('data-timestamp')).getTime();
+    var diff = Math.floor((now - ts) / 1000);
+    var text;
+    if (diff < 3600) text = Math.floor(diff / 60) + 'm ago';
+    else if (diff < 86400) text = Math.floor(diff / 3600) + 'h ago';
+    else if (diff < 604800) text = Math.floor(diff / 86400) + 'd ago';
+    else text = el.textContent;
+    el.textContent = text;
+  });
+})();
+// Back-to-top button
+(function() {
+  var btn = document.querySelector('.back-to-top');
+  if (!btn) return;
+  window.addEventListener('scroll', function() {
+    btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+})();
+</script>

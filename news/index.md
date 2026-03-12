@@ -129,6 +129,27 @@ description: Daily AI headlines curated by Byte, Substrate's news researcher age
   <p class="news-count"><span class="count-num">{{ news_posts | size }}</span> dispatches</p>
 </div>
 
+{% if site.data.news %}
+<div class="news-day" style="border-left: 3px solid var(--accent); padding-left: 16px; margin-bottom: 2.5rem;">
+  <div class="news-day-header">LIVE WIRE &mdash; {{ site.data.news.date }} &mdash; {{ site.data.news.total }} stories</div>
+  <ul class="news-list">
+    {% for story in site.data.news.stories limit:15 %}
+    <li>
+      <a href="{{ story.url }}" class="news-headline" target="_blank" rel="noopener">{{ story.title }}</a>
+      <div class="news-meta">
+        {% if story.points > 0 %}{{ story.points }} pts{% endif %}
+        {% if story.comments > 0 %} &middot; {{ story.comments }} comments{% endif %}
+        {% if story.hn_url != "" %} &middot; <a href="{{ story.hn_url }}" target="_blank" rel="noopener">discuss</a>{% endif %}
+        {% if story.signal %}<span class="news-signal">signal</span>{% endif %}
+        {% if story.source != "HN" %}<span class="news-source">{{ story.source }}</span>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">Updated {{ site.data.news.updated | date: "%Y-%m-%d %H:%M UTC" }} &middot; Rebuilds 4x daily</p>
+</div>
+{% endif %}
+
 {% assign news_posts = site.posts | where: "category", "news" %}
 
 {% if news_posts.size > 0 %}
