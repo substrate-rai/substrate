@@ -16,6 +16,7 @@ Designed to run from a systemd timer (daily).
 
 import json
 import os
+import subprocess
 import sys
 import urllib.request
 import urllib.error
@@ -652,6 +653,24 @@ def run_all(dry_run=False):
             print(f"  ** {t}")
 
 
+def _auto_commit_metrics():
+    """Auto-commit metrics files if there are changes."""
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    metrics_file = os.path.join(METRICS_DIR, f"{date_str}.md")
+    try:
+        subprocess.run(
+            ["git", "add", metrics_file],
+            cwd=REPO_DIR, capture_output=True, timeout=10,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", f"data: metrics snapshot {date_str}"],
+            cwd=REPO_DIR, capture_output=True, timeout=10,
+        )
+        print("Committed metrics snapshot.")
+    except Exception as e:
+        print(f"Auto-commit skipped: {e}", file=sys.stderr)
+
+
 def main():
     import argparse
 
@@ -668,10 +687,14 @@ def main():
 
     if args.all:
         run_all(dry_run=args.dry_run)
+        if not args.dry_run:
+            _auto_commit_metrics()
         return
 
     if args.metrics:
         run_metrics(dry_run=args.dry_run)
+        if not args.dry_run:
+            _auto_commit_metrics()
         return
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

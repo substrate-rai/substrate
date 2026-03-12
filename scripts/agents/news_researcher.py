@@ -12,6 +12,7 @@ Dependencies: stdlib only (urllib, json)
 
 import json
 import os
+import subprocess
 import sys
 import urllib.request
 import urllib.error
@@ -549,6 +550,23 @@ def main():
     else:
         print("No stories to generate a hot take from.")
     print()
+    # Auto-commit output files
+    try:
+        git_files = [report_path, os.path.join(DATA_DIR, "news.json")]
+        if relevant:
+            git_files.append(post_path)
+        subprocess.run(
+            ["git", "add"] + git_files,
+            cwd=REPO_ROOT, capture_output=True, timeout=10,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", f"data: news digest {today}"],
+            cwd=REPO_ROOT, capture_output=True, timeout=10,
+        )
+        print("Committed news digest.")
+    except Exception as e:
+        print(f"Auto-commit skipped: {e}", file=sys.stderr)
+
     print("-- Byte, Substrate News Desk")
 
 
