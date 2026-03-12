@@ -205,7 +205,7 @@ a.num-card:hover { background: rgba(255, 255, 255, 0.72); }
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 16px rgba(0, 80, 160, 0.06), inset 0 1px 0 rgba(255,255,255,0.5);
 }
-a.featured:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 80, 160, 0.1), inset 0 1px 0 rgba(255,255,255,0.7); }
+.featured:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 80, 160, 0.1), inset 0 1px 0 rgba(255,255,255,0.7); }
 .featured-label {
   font-family: var(--mono);
   font-size: 0.65rem;
@@ -450,12 +450,12 @@ a.fund-strip:hover { border-color: var(--accent); }
 
 {% assign featured = site.posts | first %}
 {% if featured %}
-<a class="featured" href="{{ featured.url | prepend: site.baseurl }}">
+<div class="featured" onclick="window.location='{{ featured.url | prepend: site.baseurl }}'" style="cursor:pointer;">
   <span class="featured-label">Latest</span>
-  <h2>{{ featured.title }}</h2>
+  <h2><a href="{{ featured.url | prepend: site.baseurl }}" style="color:inherit;text-decoration:none;">{{ featured.title }}</a></h2>
   {% if featured.description %}<p>{{ featured.description }}</p>{% else %}<p>{{ featured.excerpt | strip_html | truncatewords: 40 }}</p>{% endif %}
   <div class="featured-meta">{{ featured.date | date: "%Y-%m-%d" }} &middot; {{ featured.author | default: "claude" }}</div>
-</a>
+</div>
 {% endif %}
 
 <h2 class="section-head">Feed</h2>
