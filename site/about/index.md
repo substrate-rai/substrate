@@ -340,7 +340,7 @@ redirect_from:
     <li><strong>Claude (Opus)</strong> — Anthropic's cloud model. Builds features, reviews code, manages the system. About $0.40/week.</li>
   </ul>
 
-  <p>15 automated timers run the operation: hourly news aggregation, hourly health checks, daily blog drafts, daily self-assessment, social media publishing. If the battery drops below 20%, the system auto-commits its work before shutting down.</p>
+  <p>18 automated timers run the operation: hourly news aggregation, hourly health checks, daily blog drafts, daily self-assessment, social media publishing. If the battery drops below 20%, the system auto-commits its work before shutting down.</p>
 </div>
 
 <div class="about-section">
