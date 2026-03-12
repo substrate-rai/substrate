@@ -9,6 +9,30 @@ redirect_from:
 <style>
   /* ===== CHARACTER SELECT GRID ===== */
 
+  /* Break out of the 720px page container on desktop */
+  .select-header,
+  .role-filters,
+  .agent-grid,
+  .keyboard-hint,
+  .detail-panel {
+    max-width: 1080px;
+    margin-left: auto;
+    margin-right: auto;
+    width: calc(100% + 160px);
+    margin-left: -80px;
+    position: relative;
+  }
+  @media (max-width: 1200px) {
+    .select-header,
+    .role-filters,
+    .agent-grid,
+    .keyboard-hint,
+    .detail-panel {
+      width: 100%;
+      margin-left: auto;
+    }
+  }
+
   .select-header {
     text-align: center;
     margin-bottom: 1.5rem;
@@ -62,12 +86,9 @@ redirect_from:
   /* --- Agent grid --- */
   .agent-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
     margin-bottom: 1.5rem;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   /* --- Grid cell --- */
@@ -94,10 +115,11 @@ redirect_from:
   }
   .grid-cell img {
     width: 100%;
-    height: 100%;
+    height: 100% !important;
     object-fit: cover;
     display: block;
     transition: filter 0.3s;
+    border-radius: 0 !important;
   }
   .grid-cell:not(.selected):not(:hover) img {
     filter: brightness(0.7) saturate(0.8);
@@ -136,8 +158,7 @@ redirect_from:
 
   /* --- Detail panel --- */
   .detail-panel {
-    max-width: 900px;
-    margin: 0 auto 2rem;
+    margin-bottom: 2rem;
     border-radius: 12px;
     overflow: hidden;
     background: var(--surface);
@@ -165,7 +186,7 @@ redirect_from:
   }
   .detail-portrait img {
     width: 100%;
-    height: 100%;
+    height: 100% !important;
     object-fit: cover;
     display: block;
     position: absolute;
@@ -173,6 +194,7 @@ redirect_from:
     left: 0;
     opacity: 0;
     transition: opacity 0.35s ease;
+    border-radius: 0 !important;
   }
   .detail-portrait img.photo-active {
     opacity: 1;
@@ -393,13 +415,14 @@ redirect_from:
   }
   .bio-portrait img {
     width: 100%;
-    height: 100%;
+    height: 100% !important;
     object-fit: cover;
     display: block;
     position: absolute;
     top: 0; left: 0;
     opacity: 0;
     transition: opacity 0.35s ease;
+    border-radius: 0 !important;
   }
   .bio-portrait img.photo-active {
     opacity: 1;
