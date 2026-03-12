@@ -22,8 +22,6 @@ import os
 import re
 import subprocess
 import sys
-import urllib.request
-import urllib.error
 from datetime import datetime
 from pathlib import Path
 
@@ -31,18 +29,15 @@ from pathlib import Path
 # Paths
 # ---------------------------------------------------------------------------
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
 MIRROR_DIR = REPO_ROOT / "memory" / "mirror"
 GOAL_FILE = REPO_ROOT / "memory" / "goal.md"
 BUILDS_LOG = REPO_ROOT / "memory" / "builds.log"
 INCIDENTS_FILE = REPO_ROOT / "memory" / "incidents.md"
 
-# ---------------------------------------------------------------------------
-# Ollama config
-# ---------------------------------------------------------------------------
-
-OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL = "qwen3:8b"
+sys.path.insert(0, str(SCRIPT_DIR / "agents"))
+from ollama_client import chat, OllamaError
 
 
 # ---------------------------------------------------------------------------
@@ -180,48 +175,26 @@ def safety_check(files, nix_ok=False):
 # Ollama scaffold generation
 # ---------------------------------------------------------------------------
 
+_BUILD_SYSTEM_PROMPT = (
+    "You are a code generator for Substrate, an autonomous AI workstation "
+    "running NixOS. Generate clean, production-ready Python or shell scripts. "
+    "Use only the Python standard library (no pip packages). "
+    "Include a shebang line, docstring, argparse CLI where appropriate, "
+    "and clear section comments. Output ONLY the file content — no "
+    "markdown fences, no explanation."
+)
+
+
 def ollama_generate(prompt, timeout=120):
-    """Call Ollama chat API (qwen3:8b) and return the response text.
-
-    Uses standard library only (urllib).
-    """
-    payload = {
-        "model": MODEL,
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "You are a code generator for Substrate, an autonomous AI workstation "
-                    "running NixOS. Generate clean, production-ready Python or shell scripts. "
-                    "Use only the Python standard library (no pip packages). "
-                    "Include a shebang line, docstring, argparse CLI where appropriate, "
-                    "and clear section comments. Output ONLY the file content — no "
-                    "markdown fences, no explanation."
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-        "stream": False,
-        "think": False,
-        "options": {"think": False},
-    }
-
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        OLLAMA_URL,
-        data=data,
-        headers={"Content-Type": "application/json"},
-    )
-
+    """Call Ollama chat API (qwen3:8b) and return the response text."""
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
-            content = body.get("message", {}).get("content", "")
-            return content.strip()
-    except urllib.error.URLError as e:
-        print(f"error: cannot reach ollama: {e}", file=sys.stderr)
-        return None
-    except Exception as e:
+        result = chat(
+            [{"role": "user", "content": prompt}],
+            system=_BUILD_SYSTEM_PROMPT,
+            timeout=timeout,
+        )
+        return result.strip() if result else None
+    except OllamaError as e:
         print(f"error: ollama request failed: {e}", file=sys.stderr)
         return None
 

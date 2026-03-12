@@ -38,6 +38,9 @@ OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "assets" / "generat
 AUDIO_DIR = Path(__file__).resolve().parent.parent.parent / "assets" / "audio"
 UPLOAD_DIR = Path(tempfile.gettempdir()) / "ml-ui-uploads"
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
+from ollama import unload_models as _unload_models
+
 # Track running tasks
 _task_lock = threading.Lock()
 _current_task = None  # {"type": str, "started": float, "status": str}
@@ -47,19 +50,7 @@ _task_history = []    # last 10 completed tasks
 def unload_ollama():
     """Unload all Ollama models to free VRAM."""
     try:
-        req = urllib.request.Request("http://localhost:11434/api/ps")
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read())
-            for m in data.get("models", []):
-                name = m.get("name", "unknown")
-                body = json.dumps({"model": name, "keep_alive": 0}).encode()
-                req2 = urllib.request.Request(
-                    "http://localhost:11434/api/generate",
-                    data=body,
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
-                )
-                urllib.request.urlopen(req2, timeout=30)
+        _unload_models()
     except Exception:
         pass
 

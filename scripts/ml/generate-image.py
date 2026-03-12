@@ -49,6 +49,9 @@ LEGACY_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors"
 SCRIPT_DIR = Path(__file__).parent
 OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "assets" / "images" / "generated"
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
+from ollama import unload_models
+
 # Master prompt template — character block gets inserted at {character_block}
 MASTER_TEMPLATE = (
     "masterpiece, best quality, 1boy, {character_block}, "
@@ -102,28 +105,11 @@ def has_upscaler():
 def unload_ollama_models():
     """Ask Ollama to unload all models to free VRAM."""
     try:
-        req = urllib.request.Request(
-            "http://localhost:11434/api/ps",
-            headers={"Content-Type": "application/json"},
-        )
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read())
-            models = data.get("models", [])
-            if not models:
-                print("ollama: no models loaded, VRAM is free")
-                return
-            for m in models:
-                name = m.get("name", "unknown")
-                print(f"ollama: unloading {name}...")
-                body = json.dumps({"model": name, "keep_alive": 0}).encode()
-                req2 = urllib.request.Request(
-                    "http://localhost:11434/api/generate",
-                    data=body,
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
-                )
-                urllib.request.urlopen(req2, timeout=30)
-                print(f"ollama: {name} unloaded")
+        unloaded = unload_models()
+        if not unloaded:
+            print("ollama: no models loaded, VRAM is free")
+        for name in unloaded:
+            print(f"ollama: unloaded {name}")
     except Exception as e:
         print(f"ollama: could not reach ({e}), assuming VRAM is free")
 

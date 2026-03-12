@@ -11,30 +11,19 @@ Usage:
 """
 
 import argparse
-import json
 import os
 import sys
-import urllib.request
 from pathlib import Path
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
+from ollama import unload_models
 
 
 def unload_ollama():
     """Unload Ollama models to free VRAM."""
     try:
-        req = urllib.request.Request("http://localhost:11434/api/ps")
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read())
-            for m in data.get("models", []):
-                name = m.get("name", "unknown")
-                print(f"ollama: unloading {name}...")
-                body = json.dumps({"model": name, "keep_alive": 0}).encode()
-                req2 = urllib.request.Request(
-                    "http://localhost:11434/api/generate",
-                    data=body,
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
-                )
-                urllib.request.urlopen(req2, timeout=30)
+        for name in unload_models():
+            print(f"ollama: unloading {name}...")
     except Exception:
         pass
 

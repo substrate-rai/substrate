@@ -39,8 +39,6 @@ STATS_LOG = os.path.join(REPO_DIR, "memory", "stats.log")
 SITE_DIR = os.path.join(REPO_DIR, "site")
 LAYOUTS_DIR = os.path.join(REPO_DIR, "_layouts")
 ARCADE_DIR = os.path.join(REPO_DIR, "arcade")
-OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL = "qwen3:8b"
 
 METRICS_DIR = os.path.join(REPO_DIR, "memory", "metrics")
 REPO_SLUG = "substrate-rai/substrate"
@@ -340,27 +338,16 @@ def get_content_summary():
 
 def ask_local(prompt, context=""):
     """Query the local Qwen3 model. Returns response text."""
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    from ollama_client import chat, OllamaError
+    messages = []
     if context:
-        messages.append({"role": "user", "content": f"Analytics data:\n{context}"})
-        messages.append({"role": "assistant", "content": "Understood. I have the data."})
+        messages.append({"role": "user", "content": f"Context:\n{context}"})
+        messages.append({"role": "assistant", "content": "Understood. I have the context."})
     messages.append({"role": "user", "content": prompt})
-
     try:
-        resp = requests.post(OLLAMA_URL, json={
-            "model": MODEL,
-            "messages": messages,
-            "stream": False,
-            "think": False,
-        }, timeout=120)
-    except requests.ConnectionError:
-        return "[error: ollama not reachable at localhost:11434]"
-
-    if resp.status_code != 200:
-        return f"[error: ollama returned {resp.status_code}]"
-
-    data = resp.json()
-    return data.get("message", {}).get("content", "[no response]")
+        return chat(messages, system=SYSTEM_PROMPT)
+    except OllamaError as e:
+        return f"[error: {e}]"
 
 
 # ---------------------------------------------------------------------------

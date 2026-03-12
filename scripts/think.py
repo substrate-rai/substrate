@@ -26,7 +26,7 @@ import sys
 
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_URL = "http://localhost:11434/api/chat"
 DEFAULT_MODEL = "qwen3:8b"
 
 SYSTEM_PROMPT = """You are Substrate's local brain — a Qwen3 8B model running on an \
@@ -49,13 +49,17 @@ PRESETS = {
 
 
 def think(prompt, model=DEFAULT_MODEL, system=SYSTEM_PROMPT, stream=True, preset=None):
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+
     payload = {
         "model": model,
-        "prompt": prompt,
+        "messages": messages,
         "stream": stream,
+        "think": False,
     }
-    if system:
-        payload["system"] = system
     if preset and preset in PRESETS:
         payload["options"] = PRESETS[preset]
 
@@ -73,7 +77,7 @@ def think(prompt, model=DEFAULT_MODEL, system=SYSTEM_PROMPT, stream=True, preset
         for line in resp.iter_lines():
             if line:
                 chunk = json.loads(line)
-                token = chunk.get("response", "")
+                token = chunk.get("message", {}).get("content", "")
                 sys.stdout.write(token)
                 sys.stdout.flush()
                 if chunk.get("done"):
@@ -81,7 +85,7 @@ def think(prompt, model=DEFAULT_MODEL, system=SYSTEM_PROMPT, stream=True, preset
         print()
     else:
         result = resp.json()
-        print(result.get("response", ""))
+        print(result.get("message", {}).get("content", ""))
 
 
 def main():

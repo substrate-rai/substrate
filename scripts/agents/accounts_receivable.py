@@ -20,8 +20,6 @@ import os
 import sys
 from datetime import datetime, timedelta
 
-import requests
-
 from context import load_context
 
 # ---------------------------------------------------------------------------
@@ -34,8 +32,6 @@ LEDGER_DIR = os.path.join(REPO_DIR, "ledger")
 REVENUE_FILE = os.path.join(LEDGER_DIR, "revenue.private.txt")
 EXPENSES_FILE = os.path.join(LEDGER_DIR, "expenses.private.txt")
 MEMORY_DIR = os.path.join(REPO_DIR, "memory")
-OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL = "qwen3:8b"
 
 _BASE_PROMPT = """\
 You are the Accounts Receivable agent for Substrate, an autonomous AI workstation.
@@ -192,27 +188,16 @@ def scan_funding_assets():
 
 def ask_local(prompt, context=""):
     """Query the local Qwen3 model. Returns response text."""
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    from ollama_client import chat, OllamaError
+    messages = []
     if context:
-        messages.append({"role": "user", "content": f"Financial context:\n{context}"})
-        messages.append({"role": "assistant", "content": "Understood. I have the financial data."})
+        messages.append({"role": "user", "content": f"Context:\n{context}"})
+        messages.append({"role": "assistant", "content": "Understood. I have the context."})
     messages.append({"role": "user", "content": prompt})
-
     try:
-        resp = requests.post(OLLAMA_URL, json={
-            "model": MODEL,
-            "messages": messages,
-            "stream": False,
-            "think": False,
-        }, timeout=120)
-    except requests.ConnectionError:
-        return "[error: ollama not reachable at localhost:11434]"
-
-    if resp.status_code != 200:
-        return f"[error: ollama returned {resp.status_code}]"
-
-    data = resp.json()
-    return data.get("message", {}).get("content", "[no response]")
+        return chat(messages, system=SYSTEM_PROMPT)
+    except OllamaError as e:
+        return f"[error: {e}]"
 
 
 # ---------------------------------------------------------------------------

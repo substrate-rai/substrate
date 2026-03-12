@@ -23,6 +23,9 @@ import time
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
+from ollama import unload_models, load_model
+
 SCRIPT_DIR = Path(__file__).parent
 
 
@@ -72,39 +75,23 @@ def get_ollama_status():
 
 def unload_ollama():
     """Unload all Ollama models."""
-    models = get_ollama_status()
-    if models is None:
-        print("  ollama: not running")
-        return
-    if not models:
-        print("  ollama: no models loaded")
-        return
-    for m in models:
-        name = m.get("name", "unknown")
-        print(f"  ollama: unloading {name}...")
-        body = json.dumps({"model": name, "keep_alive": 0}).encode()
-        req = urllib.request.Request(
-            "http://localhost:11434/api/generate",
-            data=body,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        urllib.request.urlopen(req, timeout=30)
-    print("  ollama: all models unloaded")
+    try:
+        unloaded = unload_models()
+        if not unloaded:
+            print("  ollama: no models loaded")
+        else:
+            for name in unloaded:
+                print(f"  ollama: unloaded {name}")
+            print("  ollama: all models unloaded")
+    except Exception as e:
+        print(f"  ollama: unload failed ({e})")
 
 
 def reload_ollama(model="qwen3:8b"):
     """Warm-load an Ollama model back into VRAM."""
     print(f"  ollama: reloading {model}...")
     try:
-        body = json.dumps({"model": model}).encode()
-        req = urllib.request.Request(
-            "http://localhost:11434/api/generate",
-            data=body,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        urllib.request.urlopen(req, timeout=60)
+        load_model(model)
         print(f"  ollama: {model} loaded")
     except Exception as e:
         print(f"  ollama: reload failed ({e})")

@@ -9,26 +9,47 @@ Usage:
 
 Endpoints:
     POST /api/generate        — Text generation via Qwen3 8B
-    POST /api/image/describe  — Describe available model capabilities
-    GET  /api/status           — Health check
-    GET  /api/models           — List models (proxied from Ollama)
+    POST /api/chat            — Chat completion (messages array)
+    POST /api/embed           — Text embeddings via nomic-embed-text
+    POST /api/search          — RAG semantic search over repo docs
+    POST /api/describe        — Image description via vision model
+    GET  /api/status          — Health check
+    GET  /api/models          — List models (proxied from Ollama)
 
 Examples:
     curl -X POST http://localhost:8080/api/generate \\
          -H 'Content-Type: application/json' \\
          -d '{"prompt": "What is NixOS?", "max_tokens": 200}'
 
+    curl -X POST http://localhost:8080/api/chat \\
+         -H 'Content-Type: application/json' \\
+         -d '{"messages": [{"role": "user", "content": "Hello"}]}'
+
+    curl -X POST http://localhost:8080/api/embed \\
+         -H 'Content-Type: application/json' \\
+         -d '{"text": "semantic search query"}'
+
+    curl -X POST http://localhost:8080/api/search \\
+         -H 'Content-Type: application/json' \\
+         -d '{"query": "how does the radio work"}'
+
     curl http://localhost:8080/api/status
     curl http://localhost:8080/api/models
 """
 
 import argparse
+import base64
 import json
+import os
+import sys
 import time
 import threading
 import urllib.request
 import urllib.error
 from http.server import HTTPServer, BaseHTTPRequestHandler
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(SCRIPT_DIR, "agents"))
 
 OLLAMA_BASE = "http://localhost:11434"
 DEFAULT_MODEL = "qwen3:8b"
@@ -174,6 +195,14 @@ class SubstrateHandler(BaseHTTPRequestHandler):
 
         if self.path == "/api/generate":
             self._handle_generate()
+        elif self.path == "/api/chat":
+            self._handle_chat()
+        elif self.path == "/api/embed":
+            self._handle_embed()
+        elif self.path == "/api/search":
+            self._handle_search()
+        elif self.path == "/api/describe":
+            self._handle_describe()
         elif self.path == "/api/image/describe":
             self._handle_image_describe()
         else:
@@ -269,6 +298,145 @@ class SubstrateHandler(BaseHTTPRequestHandler):
             "response": response_text,
             "model": DEFAULT_MODEL,
             "tokens": eval_count,
+        })
+
+    def _handle_chat(self):
+        body = self._read_body()
+        if body is None:
+            return
+
+        messages = body.get("messages", [])
+        if not messages:
+            self._send_json({"error": "Missing or empty 'messages' array"}, 400)
+            return
+
+        model = body.get("model", DEFAULT_MODEL)
+        max_tokens = body.get("max_tokens", 1024)
+
+        payload = json.dumps({
+            "model": model,
+            "messages": messages,
+            "stream": False,
+            "think": False,
+            "options": {"num_predict": max_tokens},
+        }).encode("utf-8")
+
+        try:
+            status, data = _ollama_request("/api/chat", data=payload,
+                                           method="POST", timeout=120)
+        except ConnectionError as exc:
+            self._send_json({"error": "Ollama not reachable", "detail": str(exc)}, 503)
+            return
+
+        if status != 200:
+            self._send_json({"error": f"Ollama returned {status}",
+                             "detail": data.get("error", str(data))}, 502)
+            return
+
+        message = data.get("message", {})
+        self._send_json({
+            "response": message.get("content", ""),
+            "model": model,
+            "tokens": data.get("eval_count", 0),
+        })
+
+    def _handle_embed(self):
+        body = self._read_body()
+        if body is None:
+            return
+
+        text = body.get("text", "")
+        texts = body.get("texts", [])
+        if not text and not texts:
+            self._send_json({"error": "Provide 'text' (string) or 'texts' (array)"}, 400)
+            return
+
+        embed_input = texts if texts else [text]
+
+        payload = json.dumps({
+            "model": "nomic-embed-text",
+            "input": embed_input,
+        }).encode("utf-8")
+
+        try:
+            status, data = _ollama_request("/api/embed", data=payload,
+                                           method="POST", timeout=60)
+        except ConnectionError as exc:
+            self._send_json({"error": "Ollama not reachable", "detail": str(exc)}, 503)
+            return
+
+        if status != 200:
+            self._send_json({"error": f"Ollama returned {status}",
+                             "detail": data.get("error", str(data))}, 502)
+            return
+
+        self._send_json({
+            "embeddings": data.get("embeddings", []),
+            "model": "nomic-embed-text",
+        })
+
+    def _handle_search(self):
+        body = self._read_body()
+        if body is None:
+            return
+
+        query = body.get("query", "").strip()
+        if not query:
+            self._send_json({"error": "Missing or empty 'query' field"}, 400)
+            return
+
+        top_k = body.get("top", 3)
+
+        try:
+            from rag import search, OllamaError as RagError
+            results = search(query, top_k=top_k)
+            # Strip embeddings from response
+            for r in results:
+                r.pop("embedding", None)
+            self._send_json({"query": query, "results": results})
+        except Exception as exc:
+            self._send_json({"error": f"Search failed: {exc}"}, 500)
+
+    def _handle_describe(self):
+        body = self._read_body()
+        if body is None:
+            return
+
+        image_b64 = body.get("image", "")
+        prompt = body.get("prompt", "Describe this image")
+        model = body.get("model", "gemma3:4b")
+
+        if not image_b64:
+            self._send_json({"error": "Missing 'image' field (base64-encoded)"}, 400)
+            return
+
+        payload = json.dumps({
+            "model": model,
+            "messages": [{
+                "role": "user",
+                "content": prompt,
+                "images": [image_b64],
+            }],
+            "stream": False,
+            "options": {"keep_alive": 0},
+        }).encode("utf-8")
+
+        try:
+            status, data = _ollama_request("/api/chat", data=payload,
+                                           method="POST", timeout=120)
+        except ConnectionError as exc:
+            self._send_json({"error": "Ollama not reachable", "detail": str(exc)}, 503)
+            return
+
+        if status != 200:
+            self._send_json({"error": f"Ollama returned {status}",
+                             "detail": data.get("error", str(data))}, 502)
+            return
+
+        message = data.get("message", {})
+        self._send_json({
+            "description": message.get("content", ""),
+            "model": model,
         })
 
 

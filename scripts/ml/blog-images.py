@@ -17,6 +17,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
+from ollama import unload_models
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 POSTS_DIR = REPO_ROOT / "_posts"
 IMAGES_DIR = REPO_ROOT / "assets" / "images" / "blog"
@@ -192,33 +195,12 @@ def generate_image(prompt, output_path, seed=None):
 
 def unload_ollama_models():
     """Ask Ollama to unload all models to free VRAM."""
-    import json
-    import urllib.request
-    import urllib.error
-
     try:
-        req = urllib.request.Request(
-            "http://localhost:11434/api/ps",
-            headers={"Content-Type": "application/json"},
-        )
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read())
-            models = data.get("models", [])
-            if not models:
-                print("ollama: no models loaded, VRAM is free")
-                return
-            for m in models:
-                name = m.get("name", "unknown")
-                print(f"ollama: unloading {name}...")
-                body = json.dumps({"model": name, "keep_alive": 0}).encode()
-                req2 = urllib.request.Request(
-                    "http://localhost:11434/api/generate",
-                    data=body,
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
-                )
-                urllib.request.urlopen(req2, timeout=30)
-                print(f"ollama: {name} unloaded")
+        unloaded = unload_models()
+        if not unloaded:
+            print("ollama: no models loaded, VRAM is free")
+        for name in unloaded:
+            print(f"ollama: unloaded {name}")
     except Exception as e:
         print(f"ollama: could not reach ({e}), assuming VRAM is free")
 

@@ -75,6 +75,11 @@
   services.ollama = {
     enable = true;
     package = pkgs.ollama-cuda;
+    environmentVariables = {
+      OLLAMA_KEEP_ALIVE = "-1";          # primary model stays loaded (no cold starts)
+      OLLAMA_NUM_PARALLEL = "2";          # handle 2 concurrent requests
+      OLLAMA_MAX_LOADED_MODELS = "2";     # room for embedding model alongside Qwen3
+    };
   };
 
   # Nix settings

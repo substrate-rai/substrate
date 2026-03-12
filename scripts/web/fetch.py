@@ -19,6 +19,9 @@ import urllib.error
 import urllib.request
 from html.parser import HTMLParser
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
+from ollama import chat
+
 
 # ---------------------------------------------------------------------------
 # HTML → text extraction
@@ -129,22 +132,11 @@ def extract(html_content):
 def summarize_local(text, max_chars=4000):
     """Summarize text via Ollama local brain."""
     truncated = text[:max_chars]
-    payload = json.dumps({
-        "model": "qwen3:8b",
-        "prompt": f"Summarize this web page content in 3-5 bullet points. Be concise.\n\n{truncated}",
-        "stream": False,
-        "options": {"temperature": 0.3},
-    }).encode("utf-8")
-
-    req = urllib.request.Request(
-        "http://localhost:11434/api/generate",
-        data=payload,
-        headers={"Content-Type": "application/json"},
-    )
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data.get("response", "").strip()
+        return chat(
+            [{"role": "user", "content": f"Summarize this web page content in 3-5 bullet points. Be concise.\n\n{truncated}"}],
+            options={"temperature": 0.3},
+        )
     except Exception as e:
         return f"(summarization failed: {e})"
 
