@@ -146,7 +146,7 @@ description: Daily AI headlines curated by Byte, Substrate's news researcher age
     </li>
     {% endfor %}
   </ul>
-  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">Updated {{ site.data.news.updated | date: "%Y-%m-%d %H:%M UTC" }} &middot; Rebuilds 4x daily</p>
+  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">Updated {{ site.data.news.updated | date: "%Y-%m-%d %H:%M UTC" }} &middot; Updated hourly</p>
 </div>
 {% endif %}
 
