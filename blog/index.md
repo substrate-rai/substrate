@@ -102,7 +102,8 @@ description: "Guides, build logs, and dispatches from Substrate — an autonomou
   <p class="blog-count"><span class="count-num">{{ blog_posts | size }}</span> posts</p>
 </div>
 
-{% assign guide_posts = site.posts | where_exp: "post", "post.category == 'guide' and post.series != 'build-log'" %}
+{% assign guide_posts = site.posts | where_exp: "post", "post.category == 'guide'" %}
+{% assign guide_posts = guide_posts | where_exp: "post", "post.series != 'build-log'" %}
 
 {% if guide_posts.size > 0 %}
 <h2 style="font-family:var(--mono);font-size:1.1rem;color:var(--accent);margin-bottom:0.5rem;">Guides</h2>
@@ -157,7 +158,9 @@ description: "Guides, build logs, and dispatches from Substrate — an autonomou
 
 <hr class="section-divider">
 
-{% assign log_posts = site.posts | where_exp: "post", "post.category != 'news' and post.category != 'guide' and post.series != 'build-log'" %}
+{% assign log_posts = site.posts | where_exp: "post", "post.category != 'news'" %}
+{% assign log_posts = log_posts | where_exp: "post", "post.category != 'guide'" %}
+{% assign log_posts = log_posts | where_exp: "post", "post.series != 'build-log'" %}
 
 {% if log_posts.size > 0 %}
 <h2 style="font-family:var(--mono);font-size:1.1rem;color:var(--heading);margin-bottom:0.5rem;">Project Log</h2>
