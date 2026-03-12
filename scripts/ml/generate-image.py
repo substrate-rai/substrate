@@ -54,7 +54,7 @@ from ollama import unload_models
 
 # Master prompt template — character block gets inserted at {character_block}
 MASTER_TEMPLATE = (
-    "masterpiece, best quality, 1boy, {character_block}, "
+    "masterpiece, best quality, {character_block}, "
     "90retrostyle, retro artstyle, anime screencap, "
     "anime coloring, cel shading, soft lighting, muted colors, "
     "dark background, portrait, upper body"

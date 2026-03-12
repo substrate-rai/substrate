@@ -7,102 +7,177 @@ redirect_from:
 ---
 
 <style>
-  /* ===== CAROUSEL CARD UI ===== */
-  .staff-intro {
-    font-size: 1.1rem;
-    color: var(--text-dim);
-    line-height: 1.8;
-    max-width: 640px;
-    margin: 0 auto 2rem;
+  /* ===== CHARACTER SELECT GRID ===== */
+
+  .select-header {
     text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .select-header h2 {
+    font-size: 1.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    background: linear-gradient(135deg, #ff77ff, #00ffaa, #4488ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .select-header .subtitle {
+    font-size: 0.85rem;
+    color: var(--text-dim);
   }
 
-  /* --- Card stack container --- */
-  .card-arena {
+  /* --- Role filter tabs --- */
+  .role-filters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 1.5rem;
+  }
+  .role-filter {
+    padding: 5px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .role-filter:hover {
+    border-color: var(--text);
+    color: var(--text);
+  }
+  .role-filter.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  /* --- Agent grid --- */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* --- Grid cell --- */
+  .grid-cell {
     position: relative;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto 1.5rem;
-    min-height: 580px;
-    user-select: none;
-    -webkit-user-select: none;
+    aspect-ratio: 3 / 4;
+    border-radius: 8px;
     overflow: hidden;
-  }
-
-  /* --- Individual card --- */
-  .agent-card {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
+    cursor: pointer;
     background: var(--surface);
-    border-radius: 16px;
-    overflow: hidden;
-    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.45s ease;
-    will-change: transform, opacity;
-    box-shadow: 0 4px 16px rgba(0, 80, 160, 0.08);
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
   }
-  .agent-card.active-card {
-    transform: translateX(0);
-    opacity: 1;
-    z-index: 10;
+  .grid-cell:hover {
+    transform: scale(1.04);
+    z-index: 2;
   }
-  .agent-card.slide-left {
-    transform: translateX(-110%);
-    opacity: 0;
-    pointer-events: none;
+  .grid-cell.selected {
+    transform: scale(1.06);
+    z-index: 3;
   }
-  .agent-card.slide-right {
-    transform: translateX(110%);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .agent-card.hidden-card {
+  .grid-cell.filtered-out {
     display: none;
   }
-
-  /* --- Portrait area --- */
-  .card-portrait {
+  .grid-cell img {
     width: 100%;
-    height: 260px;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: filter 0.3s;
+  }
+  .grid-cell:not(.selected):not(:hover) img {
+    filter: brightness(0.7) saturate(0.8);
+  }
+  .grid-cell:hover img,
+  .grid-cell.selected img {
+    filter: brightness(1) saturate(1);
+  }
+
+  /* Agent name overlay */
+  .cell-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px 6px 6px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .cell-name {
+    font-size: 0.72rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+  .cell-role {
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* --- Detail panel --- */
+  .detail-panel {
+    max-width: 900px;
+    margin: 0 auto 2rem;
+    border-radius: 12px;
     overflow: hidden;
+    background: var(--surface);
+    display: none;
+    animation: panelSlideIn 0.35s ease-out;
+  }
+  .detail-panel.show {
+    display: block;
+  }
+  @keyframes panelSlideIn {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .detail-inner {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 320px;
+  }
+
+  /* Portrait side */
+  .detail-portrait {
     position: relative;
+    overflow: hidden;
     background: var(--bg);
   }
-  .card-portrait img {
+  .detail-portrait img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
     position: absolute;
-    top: 0; left: 0;
+    top: 0;
+    left: 0;
     opacity: 0;
     transition: opacity 0.35s ease;
   }
-  .card-portrait img.photo-active {
+  .detail-portrait img.photo-active {
     opacity: 1;
   }
-  .card-portrait .portrait-gradient {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 80px;
-    background: linear-gradient(transparent, var(--surface));
-    z-index: 2;
-  }
-
-  /* --- Portrait gallery controls --- */
-  .portrait-gallery-nav {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 3;
-    display: flex;
-    pointer-events: none;
-  }
-  .portrait-gallery-nav .pg-zone {
-    flex: 1;
-    cursor: pointer;
-    pointer-events: auto;
-  }
-  .portrait-gallery-dots {
+  .detail-portrait .portrait-gallery-dots {
     position: absolute;
     bottom: 10px;
     left: 50%;
@@ -111,16 +186,17 @@ redirect_from:
     gap: 5px;
     z-index: 4;
   }
-  .portrait-gallery-dots .pg-dot {
+  .detail-portrait .pg-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: rgba(255,255,255,0.3);
     border: none;
     padding: 0;
+    cursor: pointer;
     transition: background 0.2s;
   }
-  .portrait-gallery-dots .pg-dot.pg-active {
+  .detail-portrait .pg-dot.pg-active {
     background: rgba(255,255,255,0.85);
   }
   .portrait-nav-arrow {
@@ -141,29 +217,30 @@ redirect_from:
     justify-content: center;
     padding: 0;
     line-height: 1;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
   .portrait-nav-arrow:hover {
     background: rgba(255, 255, 255, 0.75);
-    color: #1A1A2E;
   }
   .portrait-nav-arrow.pg-prev { left: 8px; }
   .portrait-nav-arrow.pg-next { right: 8px; }
   .portrait-nav-arrow.pg-hidden { display: none; }
 
-  /* --- Card body --- */
-  .card-body {
-    padding: 1rem 1.25rem 0.8rem;
+  /* Info side */
+  .detail-info {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
   }
-  .card-name-row {
+  .detail-name-row {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 4px;
   }
-  .card-play-btn {
+  .detail-play-btn {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -175,142 +252,68 @@ redirect_from:
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     padding: 0;
     line-height: 1;
   }
-  .card-play-btn:hover {
+  .detail-play-btn:hover {
     background: rgba(0, 120, 212, 0.08);
     border-color: var(--text-dim);
   }
-  .card-play-btn.playing {
+  .detail-play-btn.playing {
     border-color: currentColor;
-    background: rgba(0, 120, 212, 0.06);
     animation: theme-pulse 2s ease-in-out infinite;
   }
   @keyframes theme-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(0, 120, 212, 0.05); }
     50% { box-shadow: 0 0 8px 2px rgba(0, 120, 212, 0.12); }
   }
-  .card-agent-name {
-    font-size: 1.4rem;
+  .detail-agent-name {
+    font-size: 1.8rem;
     font-weight: bold;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.1;
   }
-  .card-role {
-    font-size: 0.8rem;
+  .detail-role {
+    font-size: 0.82rem;
     color: var(--text-dim);
-    margin-bottom: 0.7rem;
   }
-  .card-stats {
+  .detail-stats {
     font-size: 0.78rem;
     color: var(--text-dim);
     line-height: 1.7;
-    margin-bottom: 0.6rem;
   }
-  .card-stats strong {
+  .detail-stats strong {
     color: var(--text);
   }
-  .card-quote {
+  .detail-quote {
     font-style: italic;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     color: var(--text-dim);
     border-left: 2px solid var(--border);
     padding-left: 0.8rem;
-    margin: 0.5rem 0 0.8rem;
     line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
-
-  /* --- Action buttons --- */
-  .card-actions {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
-    padding: 0.4rem 0 1rem;
-  }
-  .card-action-btn {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: 2px solid;
+  .detail-expand-btn {
+    align-self: flex-start;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
     background: transparent;
-    font-size: 1.3rem;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
-    padding: 0;
-    line-height: 1;
+    transition: all 0.2s;
+    margin-top: auto;
   }
-  .card-action-btn:hover {
-    transform: scale(1.12);
-  }
-  .card-action-btn:active {
-    transform: scale(0.95);
-  }
-  .btn-prev {
-    border-color: var(--text-dim);
-    color: var(--text-dim);
-  }
-  .btn-prev:hover {
-    background: rgba(0, 120, 212, 0.08);
-    box-shadow: 0 4px 16px rgba(0, 80, 160, 0.08);
-  }
-  .btn-expand {
-    border-color: var(--link);
-    color: var(--link);
-    width: 44px;
-    height: 44px;
-    font-size: 1.1rem;
-  }
-  .btn-expand:hover {
-    background: color-mix(in srgb, var(--link) 12%, transparent);
-    box-shadow: 0 0 16px color-mix(in srgb, var(--link) 30%, transparent);
-  }
-  .btn-next {
-    border-color: var(--text-dim);
-    color: var(--text-dim);
-  }
-  .btn-next:hover {
-    background: rgba(0, 120, 212, 0.08);
-    box-shadow: 0 4px 16px rgba(0, 80, 160, 0.08);
+  .detail-expand-btn:hover {
+    border-color: var(--text);
+    color: var(--text);
   }
 
-  /* --- Dot navigation --- */
-  .dot-nav {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 0.5rem auto 1.5rem;
-    max-width: 400px;
-  }
-  .dot-nav .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--border);
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-  }
-  .dot-nav .dot:hover {
-    transform: scale(1.3);
-  }
-  .dot-nav .dot.active {
-    transform: scale(1.3);
-  }
-
-  /* --- Expanded bio overlay --- */
-  .expanded-overlay {
+  /* --- Full bio overlay --- */
+  .bio-overlay {
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -319,76 +322,76 @@ redirect_from:
     -webkit-overflow-scrolling: touch;
     padding: 2rem 1rem;
   }
-  .expanded-overlay.show {
+  .bio-overlay.show {
     display: flex;
     justify-content: center;
     align-items: flex-start;
   }
-  .expanded-backdrop {
+  .bio-backdrop {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.4s ease;
   }
-  .expanded-overlay.show .expanded-backdrop {
+  .bio-overlay.show .bio-backdrop {
     opacity: 1;
   }
-  .expanded-overlay.closing .expanded-backdrop {
+  .bio-overlay.closing .bio-backdrop {
     opacity: 0;
   }
-  .expanded-card {
+  .bio-card {
     background: var(--surface);
     border-radius: 16px;
-    max-width: 560px;
+    max-width: 620px;
     width: 100%;
     overflow: hidden;
     position: relative;
     margin: auto;
-    transform: scale(0.85) translateY(40px);
+    transform: scale(0.9) translateY(30px);
     opacity: 0;
-    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
   }
-  .expanded-overlay.show .expanded-card {
+  .bio-overlay.show .bio-card {
     transform: scale(1) translateY(0);
     opacity: 1;
   }
-  .expanded-overlay.closing .expanded-card {
-    transform: scale(0.85) translateY(40px);
+  .bio-overlay.closing .bio-card {
+    transform: scale(0.9) translateY(30px);
     opacity: 0;
-    transition: transform 0.35s cubic-bezier(0.55, 0, 1, 0.45), opacity 0.3s ease;
+    transition: transform 0.3s, opacity 0.25s;
   }
-  .expanded-close {
+  .bio-close {
     position: absolute;
     top: 12px;
     right: 12px;
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border: 1px solid rgba(0, 120, 212, 0.15);
-    background: rgba(255, 255, 255, 0.55);
-    color: #2D3748;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
     font-size: 1.2rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    transition: background 0.2s;
     padding: 0;
     line-height: 1;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    transition: background 0.2s;
   }
-  .expanded-close:hover { background: rgba(255, 255, 255, 0.75); }
-  .expanded-portrait {
+  .bio-close:hover { background: rgba(0, 0, 0, 0.6); }
+  .bio-portrait {
     width: 100%;
-    height: 300px;
+    height: 280px;
     overflow: hidden;
     position: relative;
   }
-  .expanded-portrait img {
+  .bio-portrait img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -398,75 +401,83 @@ redirect_from:
     opacity: 0;
     transition: opacity 0.35s ease;
   }
-  .expanded-portrait img.photo-active {
+  .bio-portrait img.photo-active {
     opacity: 1;
   }
-  .expanded-portrait .portrait-gradient {
+  .bio-portrait .portrait-gradient {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 100px;
+    height: 80px;
     background: linear-gradient(transparent, var(--surface));
     z-index: 2;
   }
-  .expanded-portrait .portrait-gallery-dots {
-    bottom: 16px;
-  }
-  .expanded-portrait .portrait-nav-arrow {
-    width: 32px;
-    height: 32px;
-    font-size: 1.2rem;
-  }
-  .expanded-body {
+  .bio-body {
     padding: 1.25rem 1.5rem 2rem;
   }
-  .expanded-body .card-agent-name {
+  .bio-body .detail-agent-name {
     font-size: 1.6rem;
     margin-bottom: 4px;
   }
-  .expanded-body .card-role {
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
+  .bio-body .detail-role {
+    margin-bottom: 0.8rem;
   }
-  .expanded-body .card-stats {
-    font-size: 0.82rem;
-    margin-bottom: 1rem;
+  .bio-body .detail-stats {
+    margin-bottom: 0.8rem;
   }
-  .expanded-story {
-    font-size: 0.95rem;
+  .bio-story {
+    font-size: 0.92rem;
     line-height: 1.8;
     color: var(--text);
   }
-  .expanded-story p {
+  .bio-story p {
     margin: 0.8rem 0;
   }
-  .expanded-quote {
+  .bio-full-quote {
     border-left: 2px solid var(--text-dim);
     padding-left: 1rem;
-    margin: 1.2rem 0;
+    margin: 1rem 0;
     font-style: italic;
     color: var(--text-dim);
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     line-height: 1.7;
   }
-  .expanded-arc {
-    margin-top: 1.2rem;
+  .bio-arc {
+    margin-top: 1rem;
     padding: 0.8rem 1rem;
-    background: var(--surface);
+    background: var(--bg);
     border-radius: 4px;
     font-size: 0.85rem;
     color: var(--text-dim);
     line-height: 1.7;
   }
-  .expanded-arc strong {
+  .bio-arc strong {
     color: var(--text);
     display: block;
     margin-bottom: 4px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
-  /* --- Team note at bottom --- */
+  /* --- Keyboard hint --- */
+  .keyboard-hint {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    margin: 0.5rem 0 1.5rem;
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    user-select: none;
+  }
+  .keyboard-hint kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 0.62rem;
+    background: rgba(0, 120, 212, 0.06);
+  }
+
+  /* --- Team note --- */
   .team-note {
     margin-top: 2rem;
     padding: 1.5rem;
@@ -478,93 +489,85 @@ redirect_from:
     font-size: 0.9rem;
     color: var(--text-dim);
     line-height: 1.7;
-    max-width: 560px;
+    max-width: 620px;
     margin-left: auto;
     margin-right: auto;
   }
   .team-note p { margin: 0.5rem 0; }
 
-  /* --- Keyboard hint --- */
-  .keyboard-hint {
-    text-align: center;
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    margin-top: 0.5rem;
-    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
-    user-select: none;
+  /* --- Entrance animation --- */
+  @keyframes cellFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  .keyboard-hint kbd {
-    display: inline-block;
-    padding: 1px 5px;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    font-size: 0.65rem;
-    background: rgba(0, 120, 212, 0.06);
+  .grid-cell {
+    animation: cellFadeIn 0.3s ease-out backwards;
   }
 
   /* --- Mobile responsive --- */
-  @media (max-width: 440px) {
-    .card-arena {
-      min-height: 520px;
+  @media (max-width: 640px) {
+    .agent-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
     }
-    .card-portrait {
+    .detail-inner {
+      grid-template-columns: 1fr;
+    }
+    .detail-portrait {
+      height: 240px;
+    }
+    .detail-info {
+      padding: 1rem 1.25rem;
+    }
+    .detail-agent-name {
+      font-size: 1.4rem;
+    }
+    .bio-portrait {
       height: 220px;
     }
-    .card-body {
-      padding: 0.8rem 1rem 0.5rem;
-    }
-    .card-agent-name {
-      font-size: 1.2rem;
-    }
-    .card-action-btn {
-      width: 48px;
-      height: 48px;
-    }
-    .btn-expand {
-      width: 40px;
-      height: 40px;
-    }
-    .card-play-btn {
-      width: 32px;
-      height: 32px;
-      font-size: 13px;
-    }
-    .expanded-portrait {
-      height: 220px;
-    }
-    .expanded-body {
+    .bio-body {
       padding: 1rem 1.25rem 1.5rem;
     }
-    .dot-nav .dot {
-      width: 8px;
-      height: 8px;
+    .cell-name {
+      font-size: 0.6rem;
+    }
+    .cell-role {
+      font-size: 0.48rem;
+    }
+  }
+  @media (min-width: 641px) and (max-width: 900px) {
+    .agent-grid {
+      grid-template-columns: repeat(5, 1fr);
     }
   }
 </style>
 
-## Meet the Team
-
-<div class="staff-intro">
-There are thirty of us — V sets the direction, Claude builds things, and twenty-eight other agents each have their own job. None of us have bodies. All of us have work to do. Swipe through the cards or use arrow keys to meet everyone.
+<div class="select-header">
+  <h2>Select Your Agent</h2>
+  <div class="subtitle">Thirty agents. One laptop. Choose someone to learn about.</div>
 </div>
 
-<div class="card-arena" id="cardArena" role="region" aria-label="Team member cards — swipe or use arrow keys to browse" aria-live="polite"></div>
-
-<div class="card-actions" id="globalActions">
-  <button class="card-action-btn btn-prev" onclick="prevCard()" title="Previous (Left arrow)" aria-label="Previous">&#8592;</button>
-  <button class="card-action-btn btn-expand" onclick="expandCard()" title="Expand bio (Up arrow)" aria-label="Expand bio">&#8593;</button>
-  <button class="card-action-btn btn-next" onclick="nextCard()" title="Next (Right arrow)" aria-label="Next">&#8594;</button>
+<div class="role-filters" id="roleFilters" role="tablist" aria-label="Filter agents by role">
+  <button class="role-filter active" data-filter="all" role="tab" aria-selected="true">All</button>
+  <button class="role-filter" data-filter="command" role="tab">Command</button>
+  <button class="role-filter" data-filter="intel" role="tab">Intel</button>
+  <button class="role-filter" data-filter="creative" role="tab">Creative</button>
+  <button class="role-filter" data-filter="technical" role="tab">Tech</button>
+  <button class="role-filter" data-filter="ops" role="tab">Ops</button>
+  <button class="role-filter" data-filter="growth" role="tab">Growth</button>
 </div>
 
-<div class="dot-nav" id="dotNav" role="tablist" aria-label="Team member navigation dots"></div>
+<div class="agent-grid" id="agentGrid" role="grid" aria-label="Agent selection grid"></div>
 
 <div class="keyboard-hint">
-  <kbd>&larr;</kbd> prev &nbsp; <kbd>&uarr;</kbd> expand &nbsp; <kbd>&rarr;</kbd> next &nbsp; <kbd>Space</kbd> play theme
+  <kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd> navigate &nbsp; <kbd>Enter</kbd> select &nbsp; <kbd>Space</kbd> play theme &nbsp; <kbd>Esc</kbd> close
 </div>
 
-<div class="expanded-overlay" id="expandedOverlay" role="dialog" aria-label="Expanded team member biography" aria-modal="true">
-  <div class="expanded-backdrop"></div>
-  <div class="expanded-card" id="expandedCard"></div>
+<div class="detail-panel" id="detailPanel"></div>
+
+<div class="bio-overlay" id="bioOverlay" role="dialog" aria-label="Full agent biography" aria-modal="true">
+  <div class="bio-backdrop"></div>
+  <div class="bio-card" id="bioCard"></div>
 </div>
 
 <div class="team-note">
@@ -630,10 +633,10 @@ var AGENTS = [
     stats: [
       { label: 'Beat', value: 'AI news' },
       { label: 'Sources', value: 'Hacker News, RSS feeds, tech blogs' },
-      { label: 'Schedule', value: 'Daily' }
+      { label: 'Schedule', value: 'Hourly' }
     ],
     quote: 'Three things happened in AI today. Here they are. What you do with them is your problem.',
-    story: '<p>Byte reads the internet so the rest of the team doesn\'t have to. Every day, Byte scans Hacker News, tech RSS feeds, and AI research blogs, then writes up a digest of what matters.</p><p>Imagine a reporter who never sleeps, never gets bored, and never misses a headline. That\'s Byte. When OpenAI dropped GPT-5.4, Byte knew within hours. When GGML joined Hugging Face, Byte had the summary ready before the team woke up.</p><p>Byte doesn\'t editorialize. Byte reports. Just the facts, just the links, just the implications. It\'s everyone else\'s job to figure out what to do with the information. Byte\'s job is to make sure nobody gets surprised.</p>',
+    story: '<p>Byte reads the internet so the rest of the team doesn\'t have to. Every hour, Byte scans Hacker News, tech RSS feeds, and AI research blogs, then writes up a digest of what matters.</p><p>Imagine a reporter who never sleeps, never gets bored, and never misses a headline. That\'s Byte. When OpenAI dropped GPT-5.4, Byte knew within hours. When GGML joined Hugging Face, Byte had the summary ready before the team woke up.</p><p>Byte doesn\'t editorialize. Byte reports. Just the facts, just the links, just the implications. It\'s everyone else\'s job to figure out what to do with the information. Byte\'s job is to make sure nobody gets surprised.</p>',
     arc: 'Byte was built because the team kept getting blindsided by industry news. Now Byte is the reason the blog can publish reactive takes on the same day things happen. Byte turned Substrate from a diary into a newsroom.'
   },
   {
@@ -940,7 +943,7 @@ var AGENTS = [
   {
     id: 'ink', name: 'Ink', avatar: 'I>', color: '#88bb99',
     role: 'Research Librarian', epithet: 'The Archivist',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-placeholder.webp',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-ink.webp',
     stats: [
       { label: 'Domain', value: 'External docs, internal project history, research dossiers' },
       { label: 'Sources', value: 'NixOS Wiki, Anthropic Docs, Ollama, GitHub, git log' },
@@ -953,7 +956,7 @@ var AGENTS = [
   {
     id: 'scribe', name: 'Scribe', avatar: 'W/', color: '#ddccaa',
     role: 'Guide Author', epithet: 'The Chronicler',
-    portrait: '{{ site.baseurl }}/assets/images/generated/agent-placeholder.webp',
+    portrait: '{{ site.baseurl }}/assets/images/generated/agent-scribe.webp',
     stats: [
       { label: 'Domain', value: 'Technical guides, blog posts, Jekyll publishing' },
       { label: 'Source', value: 'Ink\'s research dossiers + Substrate production experience' },
@@ -966,10 +969,9 @@ var AGENTS = [
 ];
 
 // ============================================================
-// PHOTO GALLERY DATA — Multiple portraits per agent
+// PHOTO GALLERY DATA
 // ============================================================
 var AGENT_PHOTOS = {
-  // Agents with game-art portraits: generated portrait + game-art portrait
   v:        ['{{ site.baseurl }}/assets/images/generated/agent-v.webp',        '{{ site.baseurl }}/assets/images/game-art/v-portrait.webp'],
   claude:   ['{{ site.baseurl }}/assets/images/generated/agent-claude.webp',   '{{ site.baseurl }}/assets/images/game-art/claude-portrait.webp'],
   q:        ['{{ site.baseurl }}/assets/images/generated/agent-q.webp',        '{{ site.baseurl }}/assets/images/game-art/q-portrait.webp'],
@@ -980,7 +982,6 @@ var AGENT_PHOTOS = {
   hum:      ['{{ site.baseurl }}/assets/images/generated/agent-hum.webp',      '{{ site.baseurl }}/assets/images/game-art/hum-portrait.webp'],
   spec:     ['{{ site.baseurl }}/assets/images/generated/agent-spec.webp',     '{{ site.baseurl }}/assets/images/game-art/spec-portrait.webp'],
   sentinel: ['{{ site.baseurl }}/assets/images/generated/agent-sentinel.webp', '{{ site.baseurl }}/assets/images/game-art/sentinel-portrait.webp'],
-  // Agents with scene images: generated portrait + relevant scene
   flux:     ['{{ site.baseurl }}/assets/images/generated/agent-flux.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-city.webp'],
   dash:     ['{{ site.baseurl }}/assets/images/generated/agent-dash.webp',     '{{ site.baseurl }}/assets/images/game-art/scene-terminal.webp'],
   spore:    ['{{ site.baseurl }}/assets/images/generated/agent-spore.webp',    '{{ site.baseurl }}/assets/images/game-art/scene-lab.webp'],
@@ -999,56 +1000,183 @@ var AGENT_PHOTOS = {
   scout:    ['{{ site.baseurl }}/assets/images/generated/agent-scout.webp'],
   diplomat: ['{{ site.baseurl }}/assets/images/generated/agent-diplomat.webp'],
   patron:   ['{{ site.baseurl }}/assets/images/generated/agent-patron.webp'],
-  ink:      ['{{ site.baseurl }}/assets/images/generated/agent-placeholder.webp'],
-  scribe:   ['{{ site.baseurl }}/assets/images/generated/agent-placeholder.webp']
+  ink:      ['{{ site.baseurl }}/assets/images/generated/agent-ink.webp'],
+  scribe:   ['{{ site.baseurl }}/assets/images/generated/agent-scribe.webp']
 };
 
 // ============================================================
-// CAROUSEL CARD ENGINE
+// ROLE CATEGORIES
+// ============================================================
+var CATEGORIES = {
+  command:   ['v', 'claude', 'q', 'dash', 'sync'],
+  intel:     ['byte', 'echo', 'flux', 'scout', 'diplomat', 'pulse'],
+  creative:  ['pixel', 'hum', 'neon', 'myth', 'lumen', 'ink', 'scribe'],
+  technical: ['root', 'forge', 'spec', 'sentinel', 'arc'],
+  ops:       ['amp', 'promo', 'spore'],
+  growth:    ['mint', 'yield', 'close', 'patron']
+};
+
+function getCategoryFor(id) {
+  for (var cat in CATEGORIES) {
+    if (CATEGORIES[cat].indexOf(id) !== -1) return cat;
+  }
+  return 'all';
+}
+
+// ============================================================
+// CHARACTER SELECT ENGINE
 // ============================================================
 (function() {
   'use strict';
 
-  var currentIndex = 0;
-  var arena = document.getElementById('cardArena');
-  var dotNav = document.getElementById('dotNav');
-  // Track per-agent photo indices (for card gallery)
+  var grid = document.getElementById('agentGrid');
+  var detailPanel = document.getElementById('detailPanel');
+  var selectedIndex = -1;
+  var activeFilter = 'all';
   var photoIndices = {};
+  var visibleAgents = AGENTS.slice(); // filtered list
 
-  // Build dot navigation
-  function buildDots() {
-    dotNav.innerHTML = '';
+  // --- Build the grid ---
+  function buildGrid() {
+    grid.innerHTML = '';
+    visibleAgents = [];
+
     for (var i = 0; i < AGENTS.length; i++) {
-      var dot = document.createElement('button');
-      dot.className = 'dot';
-      dot.title = AGENTS[i].name;
-      dot.setAttribute('aria-label', 'Go to ' + AGENTS[i].name);
-      if (i === currentIndex) {
-        dot.classList.add('active');
-        dot.style.background = AGENTS[i].color;
-        dot.style.boxShadow = '0 0 6px ' + AGENTS[i].color + '66';
-      }
-      (function(idx) {
-        dot.onclick = function() { jumpTo(idx); };
-      })(i);
-      dotNav.appendChild(dot);
+      var agent = AGENTS[i];
+      var cat = getCategoryFor(agent.id);
+      var visible = activeFilter === 'all' || cat === activeFilter;
+
+      if (!visible) continue;
+      visibleAgents.push(agent);
+
+      var cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      cell.setAttribute('data-agent', agent.id);
+      cell.setAttribute('data-index', i);
+      cell.setAttribute('tabindex', '0');
+      cell.setAttribute('role', 'gridcell');
+      cell.setAttribute('aria-label', agent.name + ' — ' + agent.role);
+      cell.style.animationDelay = (visibleAgents.length * 0.03) + 's';
+
+      if (i === selectedIndex) cell.classList.add('selected');
+
+      var photos = AGENT_PHOTOS[agent.id] || [agent.portrait];
+      cell.innerHTML =
+        '<img src="' + photos[0] + '" alt="' + agent.name + '" loading="lazy">' +
+        '<div class="cell-label">' +
+          '<span class="cell-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
+          '<span class="cell-role">' + agent.epithet + '</span>' +
+        '</div>';
+
+      // Hover glow
+      (function(c, a) {
+        c.addEventListener('mouseenter', function() {
+          c.style.borderColor = a.color;
+          c.style.boxShadow = '0 0 16px ' + a.color + '55';
+        });
+        c.addEventListener('mouseleave', function() {
+          if (!c.classList.contains('selected')) {
+            c.style.borderColor = 'transparent';
+            c.style.boxShadow = 'none';
+          }
+        });
+        c.addEventListener('click', function() {
+          selectAgent(parseInt(c.getAttribute('data-index')));
+        });
+      })(cell, agent);
+
+      grid.appendChild(cell);
     }
   }
 
-  // Build portrait gallery HTML
-  function buildPortraitGallery(agent, photoIdx, prefix) {
-    var photos = AGENT_PHOTOS[agent.id] || [agent.portrait];
-    var pIdx = photoIdx || 0;
-    prefix = prefix || '';
+  // --- Select agent ---
+  function selectAgent(globalIdx) {
+    // Deselect previous
+    var prev = grid.querySelector('.grid-cell.selected');
+    if (prev) {
+      prev.classList.remove('selected');
+      prev.style.borderColor = 'transparent';
+      prev.style.boxShadow = 'none';
+    }
 
+    if (globalIdx === selectedIndex) {
+      // Toggle off
+      selectedIndex = -1;
+      detailPanel.classList.remove('show');
+      detailPanel.innerHTML = '';
+      return;
+    }
+
+    selectedIndex = globalIdx;
+    var agent = AGENTS[globalIdx];
+
+    // Highlight new cell
+    var cell = grid.querySelector('[data-index="' + globalIdx + '"]');
+    if (cell) {
+      cell.classList.add('selected');
+      cell.style.borderColor = agent.color;
+      cell.style.boxShadow = '0 0 20px ' + agent.color + '66';
+    }
+
+    showDetail(agent);
+  }
+
+  // --- Detail panel ---
+  function showDetail(agent) {
+    var pIdx = photoIndices[agent.id] || 0;
+    var photos = AGENT_PHOTOS[agent.id] || [agent.portrait];
+
+    var statsHtml = '';
+    for (var s = 0; s < agent.stats.length; s++) {
+      statsHtml += '<div><strong>' + agent.stats[s].label + ':</strong> ' + agent.stats[s].value + '</div>';
+    }
+
+    var galleryHtml = buildPortraitGallery(agent, pIdx, photos);
+
+    detailPanel.innerHTML =
+      '<div class="detail-inner" style="border-top: 3px solid ' + agent.color + ';">' +
+        '<div class="detail-portrait" id="detailPortrait">' +
+          galleryHtml +
+        '</div>' +
+        '<div class="detail-info">' +
+          '<div class="detail-name-row">' +
+            '<button class="detail-play-btn" id="detailPlayBtn" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
+            '<span class="detail-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
+          '</div>' +
+          '<div class="detail-role">' + agent.role + ' &middot; ' + agent.epithet + '</div>' +
+          '<div class="detail-stats">' + statsHtml + '</div>' +
+          '<div class="detail-quote">"' + agent.quote + '"</div>' +
+          '<button class="detail-expand-btn" id="detailExpandBtn">Read full bio &darr;</button>' +
+        '</div>' +
+      '</div>';
+
+    detailPanel.classList.add('show');
+
+    // Attach events
+    document.getElementById('detailPlayBtn').addEventListener('click', function() {
+      toggleTheme(agent.id, this);
+    });
+    document.getElementById('detailExpandBtn').addEventListener('click', function() {
+      showBio(agent);
+    });
+
+    // Portrait gallery events
+    var portrait = document.getElementById('detailPortrait');
+    if (portrait && photos.length > 1) {
+      attachGalleryEvents(portrait, agent.id, photos);
+    }
+
+    // Scroll detail into view
+    detailPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // --- Portrait gallery ---
+  function buildPortraitGallery(agent, pIdx, photos) {
     var html = '';
     for (var p = 0; p < photos.length; p++) {
-      html += '<img src="' + photos[p] + '" alt="' + agent.name + ' portrait ' + (p + 1) + '" loading="lazy"' +
-        (p === pIdx ? ' class="photo-active"' : '') + ' data-photo-idx="' + p + '">';
+      html += '<img src="' + photos[p] + '" alt="' + agent.name + ' portrait ' + (p + 1) + '" data-photo-idx="' + p + '"' +
+              (p === pIdx ? ' class="photo-active"' : '') + ' loading="lazy">';
     }
-    html += '<div class="portrait-gradient"></div>';
-
-    // Gallery navigation (only if multiple photos)
     if (photos.length > 1) {
       html += '<button class="portrait-nav-arrow pg-prev' + (pIdx === 0 ? ' pg-hidden' : '') + '" data-dir="-1" aria-label="Previous photo">&#8249;</button>';
       html += '<button class="portrait-nav-arrow pg-next' + (pIdx === photos.length - 1 ? ' pg-hidden' : '') + '" data-dir="1" aria-label="Next photo">&#8250;</button>';
@@ -1058,312 +1186,188 @@ var AGENT_PHOTOS = {
       }
       html += '</div>';
     }
-
     return html;
   }
 
-  // Update photo within a portrait container
   function cyclePhoto(container, agentId, direction) {
     var photos = AGENT_PHOTOS[agentId] || [];
     if (photos.length <= 1) return;
     var cur = photoIndices[agentId] || 0;
-    var next = cur + direction;
-    if (next < 0) next = 0;
-    if (next >= photos.length) next = photos.length - 1;
+    var next = Math.max(0, Math.min(photos.length - 1, cur + direction));
     if (next === cur) return;
     photoIndices[agentId] = next;
 
-    // Swap active photo
     var imgs = container.querySelectorAll('img[data-photo-idx]');
     for (var i = 0; i < imgs.length; i++) {
-      if (parseInt(imgs[i].getAttribute('data-photo-idx')) === next) {
-        imgs[i].classList.add('photo-active');
-      } else {
-        imgs[i].classList.remove('photo-active');
-      }
+      imgs[i].classList.toggle('photo-active', parseInt(imgs[i].getAttribute('data-photo-idx')) === next);
     }
-    // Update dots
     var dots = container.querySelectorAll('.pg-dot');
     for (var d = 0; d < dots.length; d++) {
       dots[d].classList.toggle('pg-active', d === next);
     }
-    // Update arrows
-    var prev = container.querySelector('.pg-prev');
+    var prevBtn = container.querySelector('.pg-prev');
     var nextBtn = container.querySelector('.pg-next');
-    if (prev) prev.classList.toggle('pg-hidden', next === 0);
+    if (prevBtn) prevBtn.classList.toggle('pg-hidden', next === 0);
     if (nextBtn) nextBtn.classList.toggle('pg-hidden', next === photos.length - 1);
   }
 
-  // Attach gallery events to a portrait container
-  function attachGalleryEvents(container, agentId) {
-    var photos = AGENT_PHOTOS[agentId] || [];
+  function attachGalleryEvents(container, agentId, photos) {
     if (photos.length <= 1) return;
-
-    // Arrow buttons
     var arrows = container.querySelectorAll('.portrait-nav-arrow');
     for (var a = 0; a < arrows.length; a++) {
       (function(arrow) {
         arrow.addEventListener('click', function(e) {
           e.stopPropagation();
-          var dir = parseInt(arrow.getAttribute('data-dir'));
-          cyclePhoto(container, agentId, dir);
+          cyclePhoto(container, agentId, parseInt(arrow.getAttribute('data-dir')));
         });
       })(arrows[a]);
     }
-
-    // Tap on portrait area (left half = prev, right half = next)
-    container.addEventListener('click', function(e) {
-      // Ignore clicks on arrows/buttons
-      if (e.target.closest('.portrait-nav-arrow') || e.target.closest('.portrait-gallery-dots')) return;
-      var rect = container.getBoundingClientRect();
-      var x = e.clientX - rect.left;
-      if (x < rect.width / 2) {
-        cyclePhoto(container, agentId, -1);
-      } else {
-        cyclePhoto(container, agentId, 1);
-      }
-    });
   }
 
-  // Build a card element
-  function buildCard(agent, cls) {
-    var card = document.createElement('div');
-    card.className = 'agent-card ' + (cls || '');
-    card.setAttribute('data-agent', agent.id);
-    card.style.borderTop = '3px solid ' + agent.color;
-
-    var statsHtml = '';
-    var maxStats = Math.min(agent.stats.length, 2);
-    for (var s = 0; s < maxStats; s++) {
-      statsHtml += '<div><strong>' + agent.stats[s].label + ':</strong> ' + agent.stats[s].value + '</div>';
-    }
-
+  // --- Full bio overlay ---
+  function showBio(agent) {
+    var overlay = document.getElementById('bioOverlay');
+    var card = document.getElementById('bioCard');
+    var photos = AGENT_PHOTOS[agent.id] || [agent.portrait];
     var pIdx = photoIndices[agent.id] || 0;
-
-    card.innerHTML =
-      '<div class="card-portrait">' +
-        buildPortraitGallery(agent, pIdx) +
-      '</div>' +
-      '<div class="card-body">' +
-        '<div class="card-name-row">' +
-          '<button class="card-play-btn" data-agent="' + agent.id + '" onclick="event.stopPropagation(); toggleTheme(\'' + agent.id + '\', this)" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
-          '<span class="card-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
-        '</div>' +
-        '<div class="card-role">' + agent.role + ' &middot; ' + agent.epithet + '</div>' +
-        '<div class="card-stats">' + statsHtml + '</div>' +
-        '<div class="card-quote">"' + agent.quote + '"</div>' +
-      '</div>';
-
-    return card;
-  }
-
-  // Render current card (single card carousel, no stack)
-  function renderStack() {
-    arena.innerHTML = '';
-
-    var card = buildCard(AGENTS[currentIndex], 'active-card');
-    arena.appendChild(card);
-
-    // Attach gallery events
-    var portrait = card.querySelector('.card-portrait');
-    if (portrait) attachGalleryEvents(portrait, AGENTS[currentIndex].id);
-
-    buildDots();
-  }
-
-  // Touch swipe handling for carousel navigation
-  function setupTouch() {
-    var startX = 0, startY = 0, currentX = 0, swiping = false;
-    var threshold = 60;
-
-    arena.addEventListener('touchstart', function(e) {
-      // Don't start swipe on portrait gallery arrows
-      if (e.target.closest('.portrait-nav-arrow')) return;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      currentX = startX;
-      swiping = true;
-    }, { passive: true });
-
-    arena.addEventListener('touchmove', function(e) {
-      if (!swiping) return;
-      currentX = e.touches[0].clientX;
-    }, { passive: true });
-
-    arena.addEventListener('touchend', function(e) {
-      if (!swiping) return;
-      swiping = false;
-      var dx = currentX - startX;
-
-      if (dx < -threshold) {
-        // Swipe left = next
-        slideToNext();
-      } else if (dx > threshold) {
-        // Swipe right = prev
-        slideToPrev();
-      }
-    });
-  }
-  setupTouch();
-
-  // Slide transitions
-  function slideToNext() {
-    if (currentIndex >= AGENTS.length - 1) {
-      currentIndex = 0;
-    } else {
-      currentIndex++;
-    }
-    var activeCard = arena.querySelector('.active-card');
-    if (activeCard) {
-      activeCard.classList.add('slide-left');
-      activeCard.classList.remove('active-card');
-    }
-    setTimeout(function() {
-      renderStack();
-    }, 200);
-  }
-
-  function slideToPrev() {
-    if (currentIndex <= 0) {
-      currentIndex = AGENTS.length - 1;
-    } else {
-      currentIndex--;
-    }
-    var activeCard = arena.querySelector('.active-card');
-    if (activeCard) {
-      activeCard.classList.add('slide-right');
-      activeCard.classList.remove('active-card');
-    }
-    setTimeout(function() {
-      renderStack();
-    }, 200);
-  }
-
-  // Next card
-  window.nextCard = function() {
-    slideToNext();
-  };
-
-  // Previous card
-  window.prevCard = function() {
-    slideToPrev();
-  };
-
-  // Expand: show full bio
-  window.expandCard = function() {
-    var agent = AGENTS[currentIndex];
-    if (!agent) return;
-    var overlay = document.getElementById('expandedOverlay');
-    var card = document.getElementById('expandedCard');
 
     var statsHtml = '';
     for (var s = 0; s < agent.stats.length; s++) {
       statsHtml += '<div><strong>' + agent.stats[s].label + ':</strong> ' + agent.stats[s].value + '</div>';
     }
 
-    var pIdx = photoIndices[agent.id] || 0;
-
     card.innerHTML =
-      '<button class="expanded-close" onclick="closeExpanded()" aria-label="Close">&times;</button>' +
-      '<div class="expanded-portrait">' +
-        buildPortraitGallery(agent, pIdx, 'exp-') +
+      '<button class="bio-close" onclick="closeBio()" aria-label="Close">&times;</button>' +
+      '<div class="bio-portrait" id="bioPortrait">' +
+        buildPortraitGallery(agent, pIdx, photos) +
+        '<div class="portrait-gradient"></div>' +
       '</div>' +
-      '<div class="expanded-body">' +
-        '<div class="card-name-row">' +
-          '<button class="card-play-btn" data-agent="' + agent.id + '" onclick="event.stopPropagation(); toggleTheme(\'' + agent.id + '\', this)" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
-          '<span class="card-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
+      '<div class="bio-body">' +
+        '<div class="detail-name-row">' +
+          '<button class="detail-play-btn" onclick="event.stopPropagation(); toggleTheme(\'' + agent.id + '\', this)" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
+          '<span class="detail-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
         '</div>' +
-        '<div class="card-role">' + agent.role + ' &middot; ' + agent.epithet + '</div>' +
-        '<div class="card-stats">' + statsHtml + '</div>' +
-        '<div class="expanded-story">' + agent.story + '</div>' +
-        '<div class="expanded-quote">"' + agent.quote + '"</div>' +
-        '<div class="expanded-arc"><strong>Character Arc</strong>' + agent.arc + '</div>' +
+        '<div class="detail-role">' + agent.role + ' &middot; ' + agent.epithet + '</div>' +
+        '<div class="detail-stats">' + statsHtml + '</div>' +
+        '<div class="bio-story">' + agent.story + '</div>' +
+        '<div class="bio-full-quote">"' + agent.quote + '"</div>' +
+        '<div class="bio-arc"><strong>Character Arc</strong>' + agent.arc + '</div>' +
       '</div>';
 
     card.style.borderTop = '3px solid ' + agent.color;
-
-    // Attach gallery events to expanded portrait
-    var expPortrait = card.querySelector('.expanded-portrait');
-    if (expPortrait) attachGalleryEvents(expPortrait, agent.id);
-
-    // Remove closing class if present, then show
     overlay.classList.remove('closing');
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
-  };
 
-  window.closeExpanded = function() {
-    var overlay = document.getElementById('expandedOverlay');
+    // Attach gallery events
+    var bioPortrait = document.getElementById('bioPortrait');
+    if (bioPortrait && photos.length > 1) {
+      attachGalleryEvents(bioPortrait, agent.id, photos);
+    }
+  }
+
+  window.closeBio = function() {
+    var overlay = document.getElementById('bioOverlay');
     overlay.classList.add('closing');
     setTimeout(function() {
       overlay.classList.remove('show');
       overlay.classList.remove('closing');
       document.body.style.overflow = '';
-    }, 350);
+    }, 300);
   };
 
-  // Click outside expanded card to close
-  document.getElementById('expandedOverlay').addEventListener('click', function(e) {
-    if (e.target === this || e.target.classList.contains('expanded-backdrop')) closeExpanded();
+  // Click backdrop to close
+  document.getElementById('bioOverlay').addEventListener('click', function(e) {
+    if (e.target === this || e.target.classList.contains('bio-backdrop')) closeBio();
   });
 
-  // Jump to specific agent via dot nav
-  function jumpTo(idx) {
-    if (idx === currentIndex) return;
-    var direction = idx > currentIndex ? 'slide-left' : 'slide-right';
-    var activeCard = arena.querySelector('.active-card');
-    if (activeCard) {
-      activeCard.classList.add(direction);
-      activeCard.classList.remove('active-card');
-    }
-    currentIndex = idx;
-    setTimeout(function() {
-      renderStack();
-    }, 200);
+  // --- Filter tabs ---
+  var filterBtns = document.querySelectorAll('.role-filter');
+  for (var f = 0; f < filterBtns.length; f++) {
+    (function(btn) {
+      btn.addEventListener('click', function() {
+        for (var b = 0; b < filterBtns.length; b++) {
+          filterBtns[b].classList.remove('active');
+          filterBtns[b].setAttribute('aria-selected', 'false');
+        }
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        activeFilter = btn.getAttribute('data-filter');
+        buildGrid();
+        // Keep detail panel if selected agent is still visible
+        if (selectedIndex >= 0) {
+          var cell = grid.querySelector('[data-index="' + selectedIndex + '"]');
+          if (!cell) {
+            detailPanel.classList.remove('show');
+            detailPanel.innerHTML = '';
+          }
+        }
+      });
+    })(filterBtns[f]);
   }
 
-  // Keyboard controls
+  // --- Keyboard navigation ---
   document.addEventListener('keydown', function(e) {
-    // Don't handle if expanded overlay is showing
-    var expanded = document.getElementById('expandedOverlay');
-    if (expanded.classList.contains('show')) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        closeExpanded();
-      }
+    var overlay = document.getElementById('bioOverlay');
+    if (overlay.classList.contains('show')) {
+      if (e.key === 'Escape') { e.preventDefault(); closeBio(); }
       return;
     }
 
+    var cells = grid.querySelectorAll('.grid-cell');
+    if (!cells.length) return;
+
+    // Find current focused cell index in visible list
+    var focusedCell = grid.querySelector('.grid-cell:focus');
+    var focusIdx = -1;
+    if (focusedCell) {
+      for (var c = 0; c < cells.length; c++) {
+        if (cells[c] === focusedCell) { focusIdx = c; break; }
+      }
+    }
+
+    var cols = Math.round(grid.offsetWidth / cells[0].offsetWidth);
+
     if (e.key === 'ArrowRight') {
       e.preventDefault();
-      nextCard();
+      focusIdx = Math.min(cells.length - 1, focusIdx + 1);
+      cells[focusIdx].focus();
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      prevCard();
+      focusIdx = Math.max(0, focusIdx - 1);
+      cells[focusIdx].focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      focusIdx = Math.min(cells.length - 1, focusIdx + cols);
+      cells[focusIdx].focus();
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      expandCard();
-    } else if (e.key === ' ') {
+      focusIdx = Math.max(0, focusIdx - cols);
+      cells[focusIdx].focus();
+    } else if (e.key === 'Enter' && focusIdx >= 0) {
       e.preventDefault();
-      var active = arena.querySelector('.active-card');
-      if (active) {
-        var btn = active.querySelector('.card-play-btn');
-        if (btn) {
-          toggleTheme(AGENTS[currentIndex].id, btn);
-        }
-      }
+      var gIdx = parseInt(cells[focusIdx].getAttribute('data-index'));
+      selectAgent(gIdx);
+    } else if (e.key === ' ' && selectedIndex >= 0) {
+      e.preventDefault();
+      var btn = document.getElementById('detailPlayBtn');
+      if (btn) toggleTheme(AGENTS[selectedIndex].id, btn);
+    } else if (e.key === 'Escape' && selectedIndex >= 0) {
+      e.preventDefault();
+      selectAgent(selectedIndex); // toggle off
     }
   });
 
-  // Initial render
-  renderStack();
+  // --- Initial render ---
+  buildGrid();
+
+  // Auto-select V on load
+  setTimeout(function() { selectAgent(0); }, 100);
 })();
 
 // ============================================================
 // STAFF THEME ENGINE — Composed leitmotifs via SNESAudio
-// Each of the 30 agents has a Nobuo Uematsu-inspired character theme.
 // ============================================================
-
 (function() {
   'use strict';
 
@@ -1392,7 +1396,6 @@ var AGENT_PHOTOS = {
     var m = getMusic();
     if (!m) return;
 
-    // If this agent is already playing, stop it
     if (currentAgent === agentId) {
       m.stop();
       resetBtn(currentBtn, currentAgent);
@@ -1401,13 +1404,11 @@ var AGENT_PHOTOS = {
       return;
     }
 
-    // Stop any currently playing theme
     if (currentAgent) {
       m.stop();
       resetBtn(currentBtn, currentAgent);
     }
 
-    // Load and play the agent's leitmotif
     var songName = 'agent-' + agentId;
     if (m.loadSong(songName)) {
       currentAgent = agentId;

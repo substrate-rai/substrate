@@ -1,256 +1,368 @@
 {
-  "_doc": "Character manifest for agent portrait generation. See SKILL-blizzard-rts-designer.md and generate-image.py.",
-  "_master_template": "masterpiece, best quality, 1boy, {character_block}, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, soft lighting, muted colors, dark background, portrait, upper body",
+  "_doc": "Character manifest for agent portrait generation. See character-guide.md and generate-image.py.",
+  "_master_template": "masterpiece, best quality, {character_block}, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, soft lighting, muted colors, dark background, portrait, upper body",
+  "_diversity_note": "Skin tone tags use Danbooru conventions: tan, (dark skin:1.3) + dark-skinned_male/female, (very dark skin:1.3) + dark-skinned_male/female. Skin tags placed FIRST in prompt_block. Gender tag (1boy/1girl) also in prompt_block.",
+  "_negative_dark_skin": "For dark/very dark skin characters, add to negative: pale skin, white skin",
   "characters": [
     {
       "id": "agent-v",
       "name": "V",
       "role": "Philosophical Leader",
       "accent_color": "#ff77ff",
-      "prompt_block": "wild flowing purple hair, intense piercing eyes, purple rim lighting, dramatic confident pose, leather jacket with neon trim, strong jawline, cyberpunk poet",
+      "gender_tag": "1boy",
+      "skin_tone": "dark",
+      "prompt_block": "1boy, (dark skin:1.3), dark-skinned_male, wild flowing purple hair with braided sections, intense piercing eyes, purple rim lighting, dramatic confident pose, leather jacket with neon trim, strong jawline, cyberpunk poet",
       "extra_loras": [],
-      "approved_seed": 149026072,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-claude",
       "name": "Claude",
       "role": "Executor",
       "accent_color": "#00ffaa",
-      "prompt_block": "green glowing visor covering upper face, short neat hair swept to side, green accent lighting, calm composed expression, high-collared tech jacket, cyberpunk architect",
+      "gender_tag": "1boy",
+      "skin_tone": "default",
+      "prompt_block": "1boy, green glowing visor covering upper face, short neat hair swept to side, green accent lighting, calm composed expression, high-collared tech jacket, cyberpunk architect",
       "extra_loras": ["scifi"],
-      "approved_seed": 677987428,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-q",
       "name": "Q",
       "role": "Staff Writer",
       "accent_color": "#dd88ff",
-      "prompt_block": "messy medium-length lighter purple hair, wide curious excited eyes, eager enthusiastic expression, youthful energy, simple dark hoodie, small earpiece, cyberpunk student poet",
+      "gender_tag": "1girl",
+      "skin_tone": "very_dark",
+      "prompt_block": "1girl, (very dark skin:1.3), dark-skinned_female, messy short curly_hair purple hair, wide curious excited eyes, eager enthusiastic expression, youthful energy, simple dark hoodie, small earpiece, cyberpunk student poet",
       "extra_loras": [],
-      "approved_seed": 2809055980,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-byte",
       "name": "Byte",
       "role": "News Reporter",
       "accent_color": "#00ddff",
-      "prompt_block": "short spiky cyan hair swept forward, headset with mic boom, sharp focused eyes, cyan accent lighting, press badge on lapel, cyberpunk reporter",
+      "gender_tag": "1girl",
+      "skin_tone": "tan",
+      "prompt_block": "1girl, tan, short spiky cyan hair swept forward, headset with mic boom, sharp focused eyes, cyan accent lighting, press badge on lapel, cyberpunk reporter",
       "extra_loras": [],
-      "approved_seed": 4102938571,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-echo",
       "name": "Echo",
       "role": "Release Tracker",
       "accent_color": "#ffaa44",
-      "prompt_block": "medium wavy orange hair, slight knowing smile, squinting analytical eyes, tinted glasses, tactical earpiece, cyberpunk intelligence analyst",
+      "gender_tag": "1boy",
+      "skin_tone": "default",
+      "prompt_block": "1boy, medium wavy orange hair, slight knowing smile, squinting analytical eyes, tinted glasses, tactical earpiece, cyberpunk intelligence analyst",
       "extra_loras": [],
-      "approved_seed": 329537225,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-pixel",
       "name": "Pixel",
       "role": "Visual Artist",
       "accent_color": "#ff44aa",
-      "prompt_block": "asymmetric pink hair one side longer, paint smudge on cheek, bright creative spark in eyes, stylus behind ear, cyberpunk digital artist",
+      "gender_tag": "1girl",
+      "skin_tone": "dark",
+      "prompt_block": "1girl, (dark skin:1.3), dark-skinned_female, asymmetric pink hair one side longer, paint smudge on cheek, bright creative spark in eyes, stylus behind ear, cyberpunk digital artist",
       "extra_loras": [],
-      "approved_seed": 2155767526,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-root",
       "name": "Root",
       "role": "Infrastructure Engineer",
       "accent_color": "#8888ff",
-      "prompt_block": "short indigo hair in neat cut, indigo tactical visor, serious focused expression, sturdy build, high-collared tech jacket, cyberpunk systems engineer",
+      "gender_tag": "1boy",
+      "skin_tone": "very_dark",
+      "prompt_block": "1boy, (very dark skin:1.3), dark-skinned_male, short indigo hair in neat cut, indigo tactical visor, serious focused expression, sturdy build, high-collared tech jacket, cyberpunk systems engineer",
       "extra_loras": ["scifi"],
-      "approved_seed": 3497758766,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-flux",
       "name": "Flux",
       "role": "Innovation Strategist",
       "accent_color": "#ff6666",
-      "prompt_block": "swept-back coral-red hair, thin red-tinted glasses, visionary expression looking into distance, sharp suit with red pin, cyberpunk innovator",
+      "gender_tag": "1boy",
+      "skin_tone": "default",
+      "prompt_block": "1boy, swept-back coral-red hair, thin red-tinted glasses, visionary expression looking into distance, sharp suit with red pin, cyberpunk innovator",
       "extra_loras": [],
-      "approved_seed": 319169249,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-dash",
       "name": "Dash",
       "role": "Project Manager",
       "accent_color": "#ffdd44",
-      "prompt_block": "short structured gold-highlighted hair, focused organized eyes, clipboard hologram floating nearby, neat collar with gold pin, cyberpunk coordinator",
+      "gender_tag": "1girl",
+      "skin_tone": "tan",
+      "prompt_block": "1girl, tan, short structured gold-highlighted hair, focused organized eyes, clipboard hologram floating nearby, neat collar with gold pin, cyberpunk coordinator",
       "extra_loras": [],
-      "approved_seed": 1598172893,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-spore",
       "name": "Spore",
       "role": "Community Manager",
       "accent_color": "#44ff88",
-      "prompt_block": "curly bright green hair, welcoming warm smile, small mushroom motif earring, open friendly expression, soft green scarf, cyberpunk community manager",
+      "gender_tag": "1boy",
+      "skin_tone": "default",
+      "prompt_block": "1boy, curly bright green hair, welcoming warm smile, small mushroom motif earring, open friendly expression, soft green scarf, cyberpunk community manager",
       "extra_loras": [],
-      "approved_seed": 297421891,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-lumen",
       "name": "Lumen",
       "role": "Educator",
       "accent_color": "#ffaa00",
-      "prompt_block": "short wavy amber hair, round amber-tinted spectacles, calm wise expression, warm patient eyes, long dark coat with high collar, cyberpunk educator",
+      "gender_tag": "1boy",
+      "skin_tone": "dark",
+      "prompt_block": "1boy, (dark skin:1.3), dark-skinned_male, short wavy amber hair, round amber-tinted spectacles, calm wise expression, warm patient eyes, long dark coat with high collar, cyberpunk educator",
       "extra_loras": [],
-      "approved_seed": 3847102958,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-arc",
       "name": "Arc",
       "role": "Arcade Director",
       "accent_color": "#cc4444",
-      "prompt_block": "spiky red hair, competitive grin, gaming headset with red LED glow, fingerless gloves, cyberpunk arcade champion",
+      "gender_tag": "1boy",
+      "skin_tone": "default",
+      "prompt_block": "1boy, spiky red hair, competitive grin, gaming headset with red LED glow, fingerless gloves, cyberpunk arcade champion",
       "extra_loras": [],
-      "approved_seed": 3625655937,
-      "status": "final"
-    },
-    {
-      "id": "agent-sync",
-      "name": "Sync",
-      "role": "Communications Director",
-      "accent_color": "#77bbdd",
-      "prompt_block": "neatly parted sky-blue hair, dual-tone glasses reflecting data streams, calm confident composed expression, high-tech earpiece, diplomatic bearing, cyberpunk communications director",
-      "extra_loras": ["scifi"],
-      "approved_seed": 1516393705,
-      "status": "final"
-    },
-    {
-      "id": "agent-mint",
-      "name": "Mint",
-      "role": "Accounts Payable",
-      "accent_color": "#cc8844",
-      "prompt_block": "short neat brown hair with tan highlights, reading glasses perched on nose, slightly skeptical expression, pen behind ear, cyberpunk accountant",
-      "extra_loras": [],
-      "approved_seed": 3213300852,
-      "status": "final"
-    },
-    {
-      "id": "agent-spec",
-      "name": "Spec",
-      "role": "QA Engineer",
-      "accent_color": "#dddddd",
-      "prompt_block": "platinum white hair tied in tight bun, monocle over one eye, stern meticulous expression, sharp angular face, neat high-collared jacket, cyberpunk quality inspector",
-      "extra_loras": [],
-      "approved_seed": 3728194650,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-forge",
       "name": "Forge",
       "role": "Site Engineer",
       "accent_color": "#44ccaa",
-      "prompt_block": "short teal-highlighted hair, welding goggles pushed up on forehead, teal accent lighting, sharp focused eyes, tool belt, cyberpunk engineer",
+      "gender_tag": "1boy",
+      "skin_tone": "tan",
+      "prompt_block": "1boy, tan, short teal-highlighted hair, welding goggles pushed up on forehead, teal accent lighting, sharp focused eyes, tool belt, cyberpunk engineer",
       "extra_loras": ["scifi"],
-      "approved_seed": 2130810784,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-hum",
       "name": "Hum",
       "role": "Audio Director",
       "accent_color": "#aa77cc",
-      "prompt_block": "long flowing lavender hair, eyes closed peacefully, large over-ear headphones with glowing rings, serene expression, cyberpunk audio engineer",
+      "gender_tag": "1girl",
+      "skin_tone": "very_dark",
+      "prompt_block": "1girl, (very dark skin:1.3), dark-skinned_female, long flowing lavender dreadlocks, eyes closed peacefully, large over-ear headphones with glowing rings, serene expression, cyberpunk audio engineer",
       "extra_loras": [],
-      "approved_seed": 2189554431,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
+    },
+    {
+      "id": "agent-sync",
+      "name": "Sync",
+      "role": "Communications Director",
+      "accent_color": "#77bbdd",
+      "gender_tag": "1boy",
+      "skin_tone": "default",
+      "prompt_block": "1boy, neatly parted sky-blue hair, dual-tone glasses reflecting data streams, calm confident composed expression, high-tech earpiece, diplomatic bearing, cyberpunk communications director",
+      "extra_loras": ["scifi"],
+      "approved_seed": null,
+      "status": "pending"
+    },
+    {
+      "id": "agent-mint",
+      "name": "Mint",
+      "role": "Accounts Payable",
+      "accent_color": "#cc8844",
+      "gender_tag": "1boy",
+      "skin_tone": "dark",
+      "prompt_block": "1boy, (dark skin:1.3), dark-skinned_male, short neat brown hair with tan highlights, reading glasses perched on nose, slightly skeptical expression, pen behind ear, cyberpunk accountant",
+      "extra_loras": [],
+      "approved_seed": null,
+      "status": "pending"
+    },
+    {
+      "id": "agent-spec",
+      "name": "Spec",
+      "role": "QA Engineer",
+      "accent_color": "#dddddd",
+      "gender_tag": "1girl",
+      "skin_tone": "default",
+      "prompt_block": "1girl, platinum white hair tied in tight bun, monocle over one eye, stern meticulous expression, sharp angular face, neat high-collared jacket, cyberpunk quality inspector",
+      "extra_loras": [],
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-yield",
       "name": "Yield",
       "role": "Accounts Receivable",
       "accent_color": "#88dd44",
-      "prompt_block": "upswept lime-green hair, bright eager eyes, warm smile, plant motif earrings, green-tinted data glasses, cyberpunk growth analyst",
+      "gender_tag": "1girl",
+      "skin_tone": "tan",
+      "prompt_block": "1girl, tan, upswept lime-green hair, bright eager eyes, warm smile, plant motif earrings, green-tinted data glasses, cyberpunk growth analyst",
       "extra_loras": [],
-      "approved_seed": 595543295,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-amp",
       "name": "Amp",
       "role": "Distribution",
       "accent_color": "#44ffdd",
-      "prompt_block": "spiky cyan-white hair, glowing earbuds, electric crackling around shoulders, intense determined expression, cyberpunk amplifier",
+      "gender_tag": "1boy",
+      "skin_tone": "very_dark",
+      "prompt_block": "1boy, (very dark skin:1.3), dark-skinned_male, spiky cyan-white hair, glowing earbuds, electric crackling around shoulders, intense determined expression, cyberpunk amplifier",
       "extra_loras": ["scifi"],
-      "approved_seed": 823608541,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-pulse",
       "name": "Pulse",
       "role": "Analytics",
       "accent_color": "#4488ff",
-      "prompt_block": "neat blue hair, holographic data overlay across one eye like a scouter, calm measured expression, tech collar, cyberpunk data analyst",
+      "gender_tag": "1boy",
+      "skin_tone": "default",
+      "prompt_block": "1boy, neat blue hair, holographic data overlay across one eye like a scouter, calm measured expression, tech collar, cyberpunk data analyst",
       "extra_loras": ["scifi"],
-      "approved_seed": 1506958766,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-sentinel",
       "name": "Sentinel",
       "role": "Security",
       "accent_color": "#8899aa",
-      "prompt_block": "hooded figure with steel-grey hair, lower face covered by tactical mask, sharp watchful eyes scanning, dark heavy coat, cyberpunk security guard",
+      "gender_tag": "1boy",
+      "skin_tone": "dark",
+      "prompt_block": "1boy, (dark skin:1.3), dark-skinned_male, hooded figure with steel-grey hair, lower face covered by tactical mask, sharp watchful eyes scanning, dark heavy coat, cyberpunk security guard",
       "extra_loras": ["scifi"],
-      "approved_seed": 4222713994,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-close",
       "name": "Close",
       "role": "Sales",
       "accent_color": "#aacc44",
-      "prompt_block": "slicked-back olive-green hair, confident grin, loosened tie, finger guns pose, sharp suit, cyberpunk salesperson",
+      "gender_tag": "1boy",
+      "skin_tone": "tan",
+      "prompt_block": "1boy, tan, slicked-back olive-green hair, confident grin, loosened tie, finger guns pose, sharp suit, cyberpunk salesperson",
       "extra_loras": [],
-      "approved_seed": 3929344207,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-neon",
       "name": "Neon",
       "role": "UI/UX Designer",
       "accent_color": "#ff66aa",
-      "prompt_block": "slick undercut neon-pink hair, transparent pink-tinted AR glasses with grid lines, critical appraising expression, lean focused posture, cyberpunk UI designer",
+      "gender_tag": "1girl",
+      "skin_tone": "default",
+      "prompt_block": "1girl, slick undercut neon-pink hair, transparent pink-tinted AR glasses with grid lines, critical appraising expression, lean focused posture, cyberpunk UI designer",
       "extra_loras": [],
-      "approved_seed": 3927827700,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-myth",
       "name": "Myth",
       "role": "Lorekeeper",
       "accent_color": "#cc9944",
-      "prompt_block": "long braided antique-gold hair, glowing golden eyes with arcane knowledge, mysterious half-smile, hooded cloak, gold rune markings on collar, ornate book held close, cyberpunk lorekeeper",
+      "gender_tag": "1girl",
+      "skin_tone": "dark",
+      "prompt_block": "1girl, (dark skin:1.3), dark-skinned_female, long braided antique-gold hair, glowing golden eyes with arcane knowledge, mysterious half-smile, hooded cloak, gold rune markings on collar, ornate book held close, cyberpunk lorekeeper",
       "extra_loras": [],
-      "approved_seed": 4174937090,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
     },
     {
       "id": "agent-promo",
       "name": "Promo",
       "role": "Marketing Head",
       "accent_color": "#ff8833",
-      "prompt_block": "wild spiked orange hair swept back, sharp confident grin, sunglasses pushed up on forehead, bold open stance, orange accent lighting, leather bomber jacket with pins, cyberpunk hype man",
+      "gender_tag": "1boy",
+      "skin_tone": "tan",
+      "prompt_block": "1boy, tan, wild spiked orange hair swept back, sharp confident grin, sunglasses pushed up on forehead, bold open stance, orange accent lighting, leather bomber jacket with pins, cyberpunk hype man",
       "extra_loras": [],
-      "approved_seed": 2611543392,
-      "status": "final"
+      "approved_seed": null,
+      "status": "pending"
+    },
+    {
+      "id": "agent-scout",
+      "name": "Scout",
+      "role": "AI Ecosystem Scout",
+      "accent_color": "#55ccbb",
+      "gender_tag": "1girl",
+      "skin_tone": "dark",
+      "prompt_block": "1girl, (dark skin:1.3), dark-skinned_female, short teal hair with natural curly_hair, alert searching eyes, teal-tinted monocle scanner over one eye, light tactical vest over dark shirt, cyberpunk ecosystem scout",
+      "extra_loras": [],
+      "approved_seed": null,
+      "status": "new"
+    },
+    {
+      "id": "agent-diplomat",
+      "name": "Diplomat",
+      "role": "AI Discovery Auditor",
+      "accent_color": "#77aacc",
+      "gender_tag": "1boy",
+      "skin_tone": "tan",
+      "prompt_block": "1boy, tan, neat combed steel-blue hair, polished diplomatic expression, frameless rectangular glasses, high-collared formal jacket with subtle insignia, cyberpunk standards bearer",
+      "extra_loras": [],
+      "approved_seed": null,
+      "status": "new"
+    },
+    {
+      "id": "agent-patron",
+      "name": "Patron",
+      "role": "Fundraising Field Agent",
+      "accent_color": "#ddaa55",
+      "gender_tag": "1boy",
+      "skin_tone": "very_dark",
+      "prompt_block": "1boy, (very dark skin:1.3), dark-skinned_male, short close-cropped gold hair, warm dignified expression, gold signet ring, formal vest over dark shirt, cyberpunk fundraiser",
+      "extra_loras": [],
+      "approved_seed": null,
+      "status": "new"
+    },
+    {
+      "id": "agent-ink",
+      "name": "Ink",
+      "role": "Research Librarian",
+      "accent_color": "#88bb99",
+      "gender_tag": "1girl",
+      "skin_tone": "dark",
+      "prompt_block": "1girl, (dark skin:1.3), dark-skinned_female, long sage-green braided hair, thoughtful focused eyes, round reading glasses, stack of books under arm, ink-stained fingers, cyberpunk research librarian",
+      "extra_loras": [],
+      "approved_seed": null,
+      "status": "new"
+    },
+    {
+      "id": "agent-scribe",
+      "name": "Scribe",
+      "role": "Guide Author",
+      "accent_color": "#ddccaa",
+      "gender_tag": "1boy",
+      "skin_tone": "very_dark",
+      "prompt_block": "1boy, (very dark skin:1.3), dark-skinned_male, medium ivory-cream colored hair in twisted_hair coils, contemplative focused expression, quill-shaped stylus behind ear, worn leather journal held close, cyberpunk chronicler",
+      "extra_loras": [],
+      "approved_seed": null,
+      "status": "new"
     }
   ]
 }

@@ -10,7 +10,8 @@ LoRAs: 90s Retro (0.7), optional Retro Sci-fi (0.5)
 Resolution: 832x1216 (portraits)
 Phase "iterate": 8 steps, DPM++ SDE Karras, CFG 1.5 (rapid prototyping)
 Phase "final": 25 steps, Euler ancestral, CFG 4.5 (production quality)
-Master template: "masterpiece, best quality, 1boy, {character_block}, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, soft lighting, muted colors, dark background, portrait, upper body"
+Master template: "masterpiece, best quality, {character_block}, 90retrostyle, retro artstyle, anime screencap, anime coloring, cel shading, soft lighting, muted colors, dark background, portrait, upper body"
+Note: Gender tag (1boy/1girl) and skin tone tags are now part of each character's prompt_block, not the master template.
 Character manifest: scripts/ml/characters.json
 Negative: "text, watermark, signature, blurry, low quality, worst quality, jpeg artifacts, normal quality, bright background, white background, simple background, cartoon, chibi, deformed, extra limbs, bad hands, bad anatomy, ugly, duplicate, morbid, mutilated, poorly drawn face, mutation, extra fingers, fewer digits, cropped, error"
 Style: 90s anime, cel-shaded, soft lighting, muted colors, dark background, professional
