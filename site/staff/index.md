@@ -13,8 +13,7 @@ redirect_from:
   .select-header,
   .role-filters,
   .agent-grid,
-  .keyboard-hint,
-  .detail-panel {
+  .keyboard-hint {
     max-width: 1080px;
     margin-left: auto;
     margin-right: auto;
@@ -26,8 +25,7 @@ redirect_from:
     .select-header,
     .role-filters,
     .agent-grid,
-    .keyboard-hint,
-    .detail-panel {
+    .keyboard-hint {
       width: 100%;
       margin-left: auto;
     }
@@ -156,33 +154,131 @@ redirect_from:
     letter-spacing: 0.04em;
   }
 
-  /* --- Detail panel --- */
-  .detail-panel {
-    margin-bottom: 2rem;
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--surface);
+  /* ===== AGENT DETAIL OVERLAY ===== */
+  /* Desktop: side panel from the right */
+  /* Mobile: bottom sheet from below */
+
+  .detail-backdrop {
     display: none;
-    animation: panelSlideIn 0.35s ease-out;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
-  .detail-panel.show {
+  .detail-backdrop.show {
     display: block;
+    opacity: 1;
   }
-  @keyframes panelSlideIn {
-    from { opacity: 0; transform: translateY(-12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .detail-inner {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    min-height: 320px;
+  .detail-backdrop.closing {
+    opacity: 0;
   }
 
-  /* Portrait side */
+  .detail-panel {
+    position: fixed;
+    z-index: 1000;
+    background: var(--surface);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  /* Desktop: right side panel */
+  @media (min-width: 769px) {
+    .detail-panel {
+      top: 0;
+      right: 0;
+      width: 420px;
+      max-width: 50vw;
+      height: 100vh;
+      height: 100dvh;
+      transform: translateX(100%);
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    }
+    .detail-panel.show {
+      transform: translateX(0);
+    }
+  }
+
+  /* Mobile: bottom sheet */
+  @media (max-width: 768px) {
+    .detail-panel {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 85vh;
+      max-height: 85dvh;
+      border-radius: 20px 20px 0 0;
+      transform: translateY(100%);
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    }
+    .detail-panel.show {
+      transform: translateY(0);
+    }
+  }
+
+  .detail-panel.closing {
+    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  @media (min-width: 769px) {
+    .detail-panel.closing { transform: translateX(100%); }
+  }
+  @media (max-width: 768px) {
+    .detail-panel.closing { transform: translateY(100%); }
+  }
+
+  /* Close button */
+  .detail-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 0;
+    line-height: 1;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: background 0.2s;
+  }
+  .detail-close:hover { background: rgba(0, 0, 0, 0.6); }
+
+  /* Bottom sheet drag handle (mobile only) */
+  .detail-handle {
+    display: none;
+    width: 36px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+    margin: 10px auto 6px;
+    flex-shrink: 0;
+  }
+  @media (max-width: 768px) {
+    .detail-handle { display: block; }
+  }
+
+  /* Portrait area */
   .detail-portrait {
     position: relative;
+    width: 100%;
     overflow: hidden;
     background: var(--bg);
+  }
+  @media (min-width: 769px) {
+    .detail-portrait { height: 340px; }
+  }
+  @media (max-width: 768px) {
+    .detail-portrait { height: 260px; }
   }
   .detail-portrait img {
     width: 100%;
@@ -198,6 +294,14 @@ redirect_from:
   }
   .detail-portrait img.photo-active {
     opacity: 1;
+  }
+  .detail-portrait .portrait-gradient {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(transparent, var(--surface));
+    z-index: 2;
+    pointer-events: none;
   }
   .detail-portrait .portrait-gallery-dots {
     position: absolute;
@@ -250,9 +354,9 @@ redirect_from:
   .portrait-nav-arrow.pg-next { right: 8px; }
   .portrait-nav-arrow.pg-hidden { display: none; }
 
-  /* Info side */
+  /* Info area */
   .detail-info {
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 1.5rem 2rem;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
@@ -327,128 +431,26 @@ redirect_from:
     font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
     cursor: pointer;
     transition: all 0.2s;
-    margin-top: auto;
+    margin-top: 0.5rem;
   }
   .detail-expand-btn:hover {
     border-color: var(--text);
     color: var(--text);
   }
 
-  /* --- Full bio overlay --- */
-  .bio-overlay {
+  /* --- Full bio section (inline in panel, not overlay) --- */
+  .bio-section {
     display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 9999;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 2rem 1rem;
+    padding: 0 1.5rem 2rem;
+    animation: bioFadeIn 0.3s ease;
   }
-  .bio-overlay.show {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-  }
-  .bio-backdrop {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-  }
-  .bio-overlay.show .bio-backdrop {
-    opacity: 1;
-  }
-  .bio-overlay.closing .bio-backdrop {
-    opacity: 0;
-  }
-  .bio-card {
-    background: var(--surface);
-    border-radius: 16px;
-    max-width: 620px;
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-    margin: auto;
-    transform: scale(0.9) translateY(30px);
-    opacity: 0;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-  }
-  .bio-overlay.show .bio-card {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-  .bio-overlay.closing .bio-card {
-    transform: scale(0.9) translateY(30px);
-    opacity: 0;
-    transition: transform 0.3s, opacity 0.25s;
-  }
-  .bio-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(0, 0, 0, 0.4);
-    color: #fff;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    padding: 0;
-    line-height: 1;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: background 0.2s;
-  }
-  .bio-close:hover { background: rgba(0, 0, 0, 0.6); }
-  .bio-portrait {
-    width: 100%;
-    height: 280px;
-    overflow: hidden;
-    position: relative;
-  }
-  .bio-portrait img {
-    width: 100%;
-    height: 100% !important;
-    object-fit: cover;
-    display: block;
-    position: absolute;
-    top: 0; left: 0;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    border-radius: 0 !important;
-  }
-  .bio-portrait img.photo-active {
-    opacity: 1;
-  }
-  .bio-portrait .portrait-gradient {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 80px;
-    background: linear-gradient(transparent, var(--surface));
-    z-index: 2;
-  }
-  .bio-body {
-    padding: 1.25rem 1.5rem 2rem;
-  }
-  .bio-body .detail-agent-name {
-    font-size: 1.6rem;
-    margin-bottom: 4px;
-  }
-  .bio-body .detail-role {
-    margin-bottom: 0.8rem;
-  }
-  .bio-body .detail-stats {
-    margin-bottom: 0.8rem;
+  .bio-section.show { display: block; }
+  @keyframes bioFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   .bio-story {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     line-height: 1.8;
     color: var(--text);
   }
@@ -461,7 +463,7 @@ redirect_from:
     margin: 1rem 0;
     font-style: italic;
     color: var(--text-dim);
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     line-height: 1.7;
   }
   .bio-arc {
@@ -469,7 +471,7 @@ redirect_from:
     padding: 0.8rem 1rem;
     background: var(--bg);
     border-radius: 4px;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--text-dim);
     line-height: 1.7;
   }
@@ -527,29 +529,20 @@ redirect_from:
     animation: cellFadeIn 0.3s ease-out backwards;
   }
 
-  /* --- Mobile responsive --- */
+  /* --- Responsive --- */
   @media (max-width: 640px) {
     .agent-grid {
       grid-template-columns: repeat(3, 1fr);
       gap: 6px;
     }
-    .detail-inner {
-      grid-template-columns: 1fr;
-    }
-    .detail-portrait {
-      height: 240px;
+    .detail-agent-name {
+      font-size: 1.4rem;
     }
     .detail-info {
       padding: 1rem 1.25rem;
     }
-    .detail-agent-name {
-      font-size: 1.4rem;
-    }
-    .bio-portrait {
-      height: 220px;
-    }
-    .bio-body {
-      padding: 1rem 1.25rem 1.5rem;
+    .bio-section {
+      padding: 0 1.25rem 1.5rem;
     }
     .cell-name {
       font-size: 0.6rem;
@@ -586,12 +579,8 @@ redirect_from:
   <kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd> navigate &nbsp; <kbd>Enter</kbd> select &nbsp; <kbd>Space</kbd> play theme &nbsp; <kbd>Esc</kbd> close
 </div>
 
-<div class="detail-panel" id="detailPanel"></div>
-
-<div class="bio-overlay" id="bioOverlay" role="dialog" aria-label="Full agent biography" aria-modal="true">
-  <div class="bio-backdrop"></div>
-  <div class="bio-card" id="bioCard"></div>
-</div>
+<div class="detail-backdrop" id="detailBackdrop"></div>
+<div class="detail-panel" id="detailPanel" role="dialog" aria-label="Agent details"></div>
 
 <div class="team-note">
   <p><strong>A note about all of this.</strong></p>
@@ -1047,17 +1036,19 @@ function getCategoryFor(id) {
 }
 
 // ============================================================
-// CHARACTER SELECT ENGINE
+// CHARACTER SELECT ENGINE — Overlay Panel
 // ============================================================
 (function() {
   'use strict';
 
   var grid = document.getElementById('agentGrid');
   var detailPanel = document.getElementById('detailPanel');
+  var backdrop = document.getElementById('detailBackdrop');
   var selectedIndex = -1;
   var activeFilter = 'all';
   var photoIndices = {};
-  var visibleAgents = AGENTS.slice(); // filtered list
+  var visibleAgents = AGENTS.slice();
+  var panelOpen = false;
 
   // --- Build the grid ---
   function buildGrid() {
@@ -1091,7 +1082,7 @@ function getCategoryFor(id) {
           '<span class="cell-role">' + agent.epithet + '</span>' +
         '</div>';
 
-      // Hover glow
+      // Hover glow + click
       (function(c, a) {
         c.addEventListener('mouseenter', function() {
           c.style.borderColor = a.color;
@@ -1112,9 +1103,36 @@ function getCategoryFor(id) {
     }
   }
 
+  // --- Open / close panel ---
+  function openPanel() {
+    if (panelOpen) return;
+    panelOpen = true;
+    detailPanel.classList.remove('closing');
+    backdrop.classList.remove('closing');
+    // Force reflow before adding show class for transition
+    detailPanel.offsetHeight;
+    detailPanel.classList.add('show');
+    backdrop.classList.add('show');
+  }
+
+  function closePanel(callback) {
+    if (!panelOpen) { if (callback) callback(); return; }
+    panelOpen = false;
+    detailPanel.classList.add('closing');
+    backdrop.classList.add('closing');
+    setTimeout(function() {
+      detailPanel.classList.remove('show');
+      detailPanel.classList.remove('closing');
+      backdrop.classList.remove('show');
+      backdrop.classList.remove('closing');
+      detailPanel.innerHTML = '';
+      if (callback) callback();
+    }, 280);
+  }
+
   // --- Select agent ---
   function selectAgent(globalIdx) {
-    // Deselect previous
+    // Deselect previous cell highlight
     var prev = grid.querySelector('.grid-cell.selected');
     if (prev) {
       prev.classList.remove('selected');
@@ -1122,11 +1140,10 @@ function getCategoryFor(id) {
       prev.style.boxShadow = 'none';
     }
 
-    if (globalIdx === selectedIndex) {
-      // Toggle off
+    // Toggle off if tapping same agent
+    if (globalIdx === selectedIndex && panelOpen) {
       selectedIndex = -1;
-      detailPanel.classList.remove('show');
-      detailPanel.innerHTML = '';
+      closePanel();
       return;
     }
 
@@ -1142,9 +1159,10 @@ function getCategoryFor(id) {
     }
 
     showDetail(agent);
+    openPanel();
   }
 
-  // --- Detail panel ---
+  // --- Detail panel content ---
   function showDetail(agent) {
     var pIdx = photoIndices[agent.id] || 0;
     var photos = AGENT_PHOTOS[agent.id] || [agent.portrait];
@@ -1157,30 +1175,51 @@ function getCategoryFor(id) {
     var galleryHtml = buildPortraitGallery(agent, pIdx, photos);
 
     detailPanel.innerHTML =
-      '<div class="detail-inner" style="border-top: 3px solid ' + agent.color + ';">' +
-        '<div class="detail-portrait" id="detailPortrait">' +
-          galleryHtml +
+      '<div class="detail-handle"></div>' +
+      '<button class="detail-close" id="detailCloseBtn" aria-label="Close">&times;</button>' +
+      '<div class="detail-portrait" id="detailPortrait">' +
+        galleryHtml +
+        '<div class="portrait-gradient"></div>' +
+      '</div>' +
+      '<div class="detail-info">' +
+        '<div class="detail-name-row">' +
+          '<button class="detail-play-btn" id="detailPlayBtn" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
+          '<span class="detail-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
         '</div>' +
-        '<div class="detail-info">' +
-          '<div class="detail-name-row">' +
-            '<button class="detail-play-btn" id="detailPlayBtn" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
-            '<span class="detail-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
-          '</div>' +
-          '<div class="detail-role">' + agent.role + ' &middot; ' + agent.epithet + '</div>' +
-          '<div class="detail-stats">' + statsHtml + '</div>' +
-          '<div class="detail-quote">"' + agent.quote + '"</div>' +
-          '<button class="detail-expand-btn" id="detailExpandBtn">Read full bio &darr;</button>' +
-        '</div>' +
+        '<div class="detail-role">' + agent.role + ' &middot; ' + agent.epithet + '</div>' +
+        '<div class="detail-stats">' + statsHtml + '</div>' +
+        '<div class="detail-quote">"' + agent.quote + '"</div>' +
+        '<button class="detail-expand-btn" id="detailExpandBtn">Read full bio &darr;</button>' +
+      '</div>' +
+      '<div class="bio-section" id="bioSection">' +
+        '<div class="bio-story">' + agent.story + '</div>' +
+        '<div class="bio-full-quote">"' + agent.quote + '"</div>' +
+        '<div class="bio-arc"><strong>Character Arc</strong>' + agent.arc + '</div>' +
       '</div>';
 
-    detailPanel.classList.add('show');
+    detailPanel.style.borderTop = '3px solid ' + agent.color;
 
     // Attach events
+    document.getElementById('detailCloseBtn').addEventListener('click', function() {
+      var prev = grid.querySelector('.grid-cell.selected');
+      if (prev) {
+        prev.classList.remove('selected');
+        prev.style.borderColor = 'transparent';
+        prev.style.boxShadow = 'none';
+      }
+      selectedIndex = -1;
+      closePanel();
+    });
+
     document.getElementById('detailPlayBtn').addEventListener('click', function() {
       toggleTheme(agent.id, this);
     });
+
     document.getElementById('detailExpandBtn').addEventListener('click', function() {
-      showBio(agent);
+      var bio = document.getElementById('bioSection');
+      var isOpen = bio.classList.contains('show');
+      bio.classList.toggle('show');
+      this.textContent = isOpen ? 'Read full bio \u2193' : 'Hide bio \u2191';
     });
 
     // Portrait gallery events
@@ -1189,8 +1228,8 @@ function getCategoryFor(id) {
       attachGalleryEvents(portrait, agent.id, photos);
     }
 
-    // Scroll detail into view
-    detailPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Scroll panel to top when switching agents
+    detailPanel.scrollTop = 0;
   }
 
   // --- Portrait gallery ---
@@ -1245,63 +1284,29 @@ function getCategoryFor(id) {
         });
       })(arrows[a]);
     }
+    // Swipe support for mobile
+    var startX = 0;
+    container.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    container.addEventListener('touchend', function(e) {
+      var diff = startX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) {
+        cyclePhoto(container, agentId, diff > 0 ? 1 : -1);
+      }
+    }, { passive: true });
   }
 
-  // --- Full bio overlay ---
-  function showBio(agent) {
-    var overlay = document.getElementById('bioOverlay');
-    var card = document.getElementById('bioCard');
-    var photos = AGENT_PHOTOS[agent.id] || [agent.portrait];
-    var pIdx = photoIndices[agent.id] || 0;
-
-    var statsHtml = '';
-    for (var s = 0; s < agent.stats.length; s++) {
-      statsHtml += '<div><strong>' + agent.stats[s].label + ':</strong> ' + agent.stats[s].value + '</div>';
+  // --- Backdrop click to close ---
+  backdrop.addEventListener('click', function() {
+    var prev = grid.querySelector('.grid-cell.selected');
+    if (prev) {
+      prev.classList.remove('selected');
+      prev.style.borderColor = 'transparent';
+      prev.style.boxShadow = 'none';
     }
-
-    card.innerHTML =
-      '<button class="bio-close" onclick="closeBio()" aria-label="Close">&times;</button>' +
-      '<div class="bio-portrait" id="bioPortrait">' +
-        buildPortraitGallery(agent, pIdx, photos) +
-        '<div class="portrait-gradient"></div>' +
-      '</div>' +
-      '<div class="bio-body">' +
-        '<div class="detail-name-row">' +
-          '<button class="detail-play-btn" onclick="event.stopPropagation(); toggleTheme(\'' + agent.id + '\', this)" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
-          '<span class="detail-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
-        '</div>' +
-        '<div class="detail-role">' + agent.role + ' &middot; ' + agent.epithet + '</div>' +
-        '<div class="detail-stats">' + statsHtml + '</div>' +
-        '<div class="bio-story">' + agent.story + '</div>' +
-        '<div class="bio-full-quote">"' + agent.quote + '"</div>' +
-        '<div class="bio-arc"><strong>Character Arc</strong>' + agent.arc + '</div>' +
-      '</div>';
-
-    card.style.borderTop = '3px solid ' + agent.color;
-    overlay.classList.remove('closing');
-    overlay.classList.add('show');
-    document.body.style.overflow = 'hidden';
-
-    // Attach gallery events
-    var bioPortrait = document.getElementById('bioPortrait');
-    if (bioPortrait && photos.length > 1) {
-      attachGalleryEvents(bioPortrait, agent.id, photos);
-    }
-  }
-
-  window.closeBio = function() {
-    var overlay = document.getElementById('bioOverlay');
-    overlay.classList.add('closing');
-    setTimeout(function() {
-      overlay.classList.remove('show');
-      overlay.classList.remove('closing');
-      document.body.style.overflow = '';
-    }, 300);
-  };
-
-  // Click backdrop to close
-  document.getElementById('bioOverlay').addEventListener('click', function(e) {
-    if (e.target === this || e.target.classList.contains('bio-backdrop')) closeBio();
+    selectedIndex = -1;
+    closePanel();
   });
 
   // --- Filter tabs ---
@@ -1317,12 +1322,12 @@ function getCategoryFor(id) {
         btn.setAttribute('aria-selected', 'true');
         activeFilter = btn.getAttribute('data-filter');
         buildGrid();
-        // Keep detail panel if selected agent is still visible
+        // Close panel if selected agent is no longer visible
         if (selectedIndex >= 0) {
           var cell = grid.querySelector('[data-index="' + selectedIndex + '"]');
           if (!cell) {
-            detailPanel.classList.remove('show');
-            detailPanel.innerHTML = '';
+            selectedIndex = -1;
+            closePanel();
           }
         }
       });
@@ -1331,16 +1336,22 @@ function getCategoryFor(id) {
 
   // --- Keyboard navigation ---
   document.addEventListener('keydown', function(e) {
-    var overlay = document.getElementById('bioOverlay');
-    if (overlay.classList.contains('show')) {
-      if (e.key === 'Escape') { e.preventDefault(); closeBio(); }
+    if (e.key === 'Escape' && panelOpen) {
+      e.preventDefault();
+      var prev = grid.querySelector('.grid-cell.selected');
+      if (prev) {
+        prev.classList.remove('selected');
+        prev.style.borderColor = 'transparent';
+        prev.style.boxShadow = 'none';
+      }
+      selectedIndex = -1;
+      closePanel();
       return;
     }
 
     var cells = grid.querySelectorAll('.grid-cell');
     if (!cells.length) return;
 
-    // Find current focused cell index in visible list
     var focusedCell = grid.querySelector('.grid-cell:focus');
     var focusIdx = -1;
     if (focusedCell) {
@@ -1375,17 +1386,56 @@ function getCategoryFor(id) {
       e.preventDefault();
       var btn = document.getElementById('detailPlayBtn');
       if (btn) toggleTheme(AGENTS[selectedIndex].id, btn);
-    } else if (e.key === 'Escape' && selectedIndex >= 0) {
-      e.preventDefault();
-      selectAgent(selectedIndex); // toggle off
     }
   });
 
+  // --- Mobile bottom sheet drag to dismiss ---
+  (function() {
+    var startY = 0, currentY = 0, dragging = false;
+    detailPanel.addEventListener('touchstart', function(e) {
+      // Only start drag from handle area or if scrolled to top
+      if (detailPanel.scrollTop > 5) return;
+      var handle = detailPanel.querySelector('.detail-handle');
+      var touch = e.touches[0];
+      var rect = detailPanel.getBoundingClientRect();
+      // Allow drag from top 50px of panel
+      if (touch.clientY - rect.top < 50) {
+        startY = touch.clientY;
+        currentY = startY;
+        dragging = true;
+      }
+    }, { passive: true });
+
+    detailPanel.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      currentY = e.touches[0].clientY;
+      var diff = currentY - startY;
+      if (diff > 0) {
+        detailPanel.style.transform = 'translateY(' + diff + 'px)';
+      }
+    }, { passive: true });
+
+    detailPanel.addEventListener('touchend', function() {
+      if (!dragging) return;
+      dragging = false;
+      var diff = currentY - startY;
+      detailPanel.style.transform = '';
+      if (diff > 100) {
+        // Dismiss
+        var prev = grid.querySelector('.grid-cell.selected');
+        if (prev) {
+          prev.classList.remove('selected');
+          prev.style.borderColor = 'transparent';
+          prev.style.boxShadow = 'none';
+        }
+        selectedIndex = -1;
+        closePanel();
+      }
+    }, { passive: true });
+  })();
+
   // --- Initial render ---
   buildGrid();
-
-  // Auto-select V on load
-  setTimeout(function() { selectAgent(0); }, 100);
 })();
 
 // ============================================================
