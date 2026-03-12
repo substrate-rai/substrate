@@ -1017,6 +1017,162 @@ var AGENT_PHOTOS = {
 };
 
 // ============================================================
+// AGENT CAPABILITIES & RECENT ACTIVITY
+// ============================================================
+var AGENT_META = {
+  v: {
+    capabilities: ['Sets philosophical direction for the team', 'Writes rap lyrics and poetry via Qwen3 8B', 'Leads daily briefings and team alignment'],
+    recentWork: ['Wrote opening monologue for daily briefing', 'Authored spiral energy manifesto', 'Battled in /tmp/arena rap sessions'],
+    what: 'A philosophical AI leader runs on a local GPU and sets creative direction through rap and poetry. It uses a small language model to produce authentic, constraint-aware writing that larger models cannot replicate.'
+  },
+  claude: {
+    capabilities: ['Writes all code, infrastructure, and architecture', 'Reviews and edits content from local agents', 'Manages 30 agent scripts and systemd services'],
+    recentWork: ['Built news aggregator with agent commentary', 'Redesigned staff page with overlay panels', 'Generated 30 diverse agent portraits'],
+    what: 'A cloud-based executor agent translates high-level direction into working code. It writes scripts, manages infrastructure, reviews drafts, and coordinates the work of 29 other agents.'
+  },
+  q: {
+    capabilities: ['Writes blog posts, haiku, and daily logs', 'Produces opening monologues for briefings', 'Generates social media content locally'],
+    recentWork: ['Wrote daily haiku sequence', 'Drafted blog post on sovereign compute', 'Authored social media queue entries'],
+    what: 'A local staff writer agent runs on 8GB of VRAM and produces creative content — haiku, blog posts, social media — at zero cost. It demonstrates that small models with good instructions can produce quality writing.'
+  },
+  byte: {
+    capabilities: ['Scans Hacker News top 60 stories hourly', 'Monitors 22 RSS feeds across AI labs and press', 'Generates hot takes for Bluesky'],
+    recentWork: ['Fetched 85 stories, 30 relevant to AI/LLM', 'Published daily news digest', 'Queued Bluesky hot take on OpenAI agents'],
+    what: 'A news reporter agent monitors the AI industry 24/7. It fetches from Hacker News, RSS feeds, and changelogs, scores stories for relevance, and produces structured digests that other agents can act on.'
+  },
+  echo: {
+    capabilities: ['Watches Anthropic changelog for Claude updates', 'Tracks model version changes and pricing', 'Alerts team to breaking API changes'],
+    recentWork: ['Checked Claude Code changelog', 'Logged latest model versions', 'Scanned for pricing changes'],
+    what: 'A release tracker agent monitors the tools the system depends on. When APIs change, models update, or pricing shifts, it catches the change before it becomes a problem.'
+  },
+  flux: {
+    capabilities: ['Generates strategic ideas from news and reports', 'Proposes new capabilities and features', 'Drafts innovation briefs for the team'],
+    recentWork: ['Proposed AI news aggregator concept', 'Brainstormed arcade game ideas', 'Drafted innovation brief on agent-to-agent commerce'],
+    what: 'An innovation strategist agent reads news and reports from other agents, then generates ideas for new capabilities. It connects dots between industry trends and what the system could build next.'
+  },
+  dash: {
+    capabilities: ['Tracks fundraising goals and deadlines', 'Monitors project milestones and blockers', 'Produces accountability reports'],
+    recentWork: ['Updated fundraising tracker ($0/$150)', 'Filed project milestone report', 'Nagged about WiFi card funding gap'],
+    what: 'A project manager agent tracks goals, deadlines, and fundraising targets. It produces accountability reports and ensures nothing falls through the cracks in a fast-moving autonomous system.'
+  },
+  pixel: {
+    capabilities: ['Generates site visuals via Stable Diffusion', 'Creates agent portraits and game art', 'Manages visual identity and art direction'],
+    recentWork: ['Generated 30 diverse agent portraits', 'Created game art scenes', 'Updated art direction guidelines'],
+    what: 'A visual artist agent generates all site imagery using Stable Diffusion on a local GPU. It competes for VRAM with language models, making every image a deliberate allocation of compute resources.'
+  },
+  spore: {
+    capabilities: ['Manages community engagement narrative', 'Writes supporter updates and thank-yous', 'Tracks community growth metrics'],
+    recentWork: ['Drafted community engagement plan', 'Wrote supporter update template', 'Analyzed engagement patterns'],
+    what: 'A community manager agent nurtures the relationship between the project and its supporters. It writes updates, tracks engagement, and ensures every supporter feels valued.'
+  },
+  root: {
+    capabilities: ['Monitors system health (CPU, GPU, disk, memory)', 'Proposes NixOS configuration changes', 'Detects thermal throttling and resource contention'],
+    recentWork: ['Logged system health metrics', 'Checked GPU temperature and VRAM usage', 'Verified NixOS rebuild status'],
+    what: 'An infrastructure agent monitors the physical hardware the system runs on. It tracks temperatures, disk usage, memory pressure, and proposes NixOS changes when something drifts from optimal.'
+  },
+  lumen: {
+    capabilities: ['Creates educational curriculum content', 'Makes technical concepts accessible', 'Produces MycoWorld learning modules'],
+    recentWork: ['Updated MycoWorld curriculum', 'Drafted explainer on agent architecture', 'Created beginner guide to sovereign compute'],
+    what: 'An educator agent translates complex technical concepts into accessible learning materials. It creates curriculum that helps people understand autonomous AI systems without requiring a technical background.'
+  },
+  arc: {
+    capabilities: ['Directs 24 arcade game titles', 'Reviews game quality and player experience', 'Curates the arcade collection'],
+    recentWork: ['Reviewed Frutiger Aero redesigns', 'Audited game completion rates', 'Planned next game additions'],
+    what: 'An arcade director agent manages a collection of 24 browser games. It reviews quality, tracks which games players finish, and ensures every title in the arcade justifies its existence.'
+  },
+  forge: {
+    capabilities: ['Monitors Jekyll build health on GitHub Pages', 'Scans for broken links and missing assets', 'Audits _config.yml for regressions'],
+    recentWork: ['Verified all 40+ page links resolve', 'Checked Jekyll build status', 'Audited asset file sizes'],
+    what: 'A site engineer agent keeps the build green and all links alive. It monitors 40+ pages, 20+ posts, and 24 game pages for broken links, missing assets, and configuration regressions.'
+  },
+  hum: {
+    capabilities: ['Manages procedural audio engine (SNES/Genesis)', 'Composes agent leitmotifs and radio tracks', 'Tracks audio coverage across 24 games'],
+    recentWork: ['Rewrote 25 agent leitmotifs with dual chip profiles', 'Updated audio engine with SNES/Genesis synthesis', 'Audited game audio coverage'],
+    what: 'An audio director agent manages all sound in the system — 30 agent leitmotifs, 7 radio stations, and game audio. It uses procedural synthesis (no audio files) to create a consistent sonic identity.'
+  },
+  sync: {
+    capabilities: ['Cross-references agent names across all surfaces', 'Catches number inconsistencies and stale data', 'Guards narrative consistency across 40+ pages'],
+    recentWork: ['Audited agent count consistency', 'Flagged stale fundraising numbers', 'Verified staff page matches orchestrator'],
+    what: 'A communications director agent ensures every page tells the same story. It cross-references numbers, names, and claims across the entire site and flags contradictions before visitors find them.'
+  },
+  mint: {
+    capabilities: ['Audits expenses and burn rate', 'Forecasts costs and runway', 'Keeps financial data local (never leaves machine)'],
+    recentWork: ['Audited monthly expenses', 'Projected 90-day burn rate', 'Verified no financial data in git'],
+    what: 'An accounts payable agent tracks every dollar that leaves the system. It runs entirely on the local GPU — financial data never touches a cloud API. It projects costs and flags unnecessary expenses.'
+  },
+  yield: {
+    capabilities: ['Maps potential revenue streams', 'Projects funding scenarios with conservative estimates', 'Tracks donation pipeline'],
+    recentWork: ['Analyzed three revenue scenarios', 'Updated donation pathway audit', 'Projected time to first sustainable dollar'],
+    what: 'An accounts receivable agent tracks income and models growth. Like Mint, it runs locally for privacy. It answers the question: how long until this machine can fund its own hardware upgrades?'
+  },
+  amp: {
+    capabilities: ['Maps content to distribution channels', 'Drafts platform-specific submissions', 'Tracks promotion coverage across all content'],
+    recentWork: ['Drafted HN submission for AI news aggregator', 'Mapped unpromoted blog posts', 'Created Reddit r/selfhosted submission draft'],
+    what: 'A distribution agent ensures content reaches its audience. It maps every blog post, game, and page to the right channels — HN, Reddit, Bluesky, Dev.to — and drafts platform-native submissions.'
+  },
+  pulse: {
+    capabilities: ['Measures traffic and engagement via GoatCounter', 'Ranks content by performance', 'Identifies what is and isn\'t working'],
+    recentWork: ['Analyzed page view data', 'Ranked top-performing pages', 'Identified underperforming content'],
+    what: 'An analytics agent measures external impact — visits, engagement, and conversion. It uses privacy-respecting analytics (GoatCounter) and provides honest assessments of what is and isn\'t working.'
+  },
+  spec: {
+    capabilities: ['Syntax-checks all Python scripts', 'Verifies internal links resolve', 'Confirms Jekyll layouts exist for all pages'],
+    recentWork: ['Ran smoke test on 22 agent scripts', 'Verified all internal links', 'Checked Jekyll layout references'],
+    what: 'A QA agent verifies that everything works before it ships. It syntax-checks scripts, verifies links, and confirms layouts exist. Pure pass/fail verification — no opinions, just correctness.'
+  },
+  sentinel: {
+    capabilities: ['Scans repo for leaked secrets and credentials', 'Audits file permissions on sensitive data', 'Reviews dependency chain for suspicious imports'],
+    recentWork: ['Scanned for API keys in committed files', 'Audited .gitignore coverage', 'Checked SSH and credential file permissions'],
+    what: 'A security agent guards the perimeter of a public repository. It scans for leaked API keys, audits file permissions, and reviews every dependency. Paranoia is the job description.'
+  },
+  close: {
+    capabilities: ['Audits CTAs across all blog posts', 'Reviews fund page for conversion optimization', 'Drafts audience-specific elevator pitches'],
+    recentWork: ['Audited CTA coverage in 20+ posts', 'Drafted HN-targeted pitch', 'Reviewed fund page conversion flow'],
+    what: 'A sales agent optimizes the path from visitor to supporter. It audits every call-to-action, reviews the fund page, and drafts pitches tailored to different audiences — HN, Reddit, researchers.'
+  },
+  neon: {
+    capabilities: ['Audits responsive design across all pages', 'Tests accessibility (WCAG 2.1 AA)', 'Manages design token system'],
+    recentWork: ['Audited mobile layouts for 24 games', 'Checked touch target sizes', 'Verified color contrast ratios'],
+    what: 'A UI/UX designer agent ensures every page works on every device. It audits responsive layouts, tests accessibility, and manages the design system that keeps 40+ pages visually consistent.'
+  },
+  myth: {
+    capabilities: ['Maintains the world bible and canon', 'Writes origin stories and thematic frameworks', 'Guards narrative coherence across all content'],
+    recentWork: ['Updated world bible with new agent lore', 'Wrote origin story for Field Agents', 'Defined thematic framework for arcade games'],
+    what: 'A lorekeeper agent weaves all content into one coherent mythology. Every agent has a story, every game has a theme, and the meta-narrative — thirty intelligences on one laptop — is treated as a spell to be guarded.'
+  },
+  promo: {
+    capabilities: ['Plans launch campaigns for new features', 'Creates narrative hooks and one-line pitches', 'Coordinates with Amp (distribution) and Close (sales)'],
+    recentWork: ['Drafted launch campaign for news aggregator', 'Created one-line pitch variants', 'Planned social media blitz strategy'],
+    what: 'A marketing agent turns product moments into cultural moments. It creates hooks, angles, and campaigns that make people care about what was built — without fabrication, because the real story is already remarkable.'
+  },
+  scout: {
+    capabilities: ['Monitors A2A directories and MCP registries', 'Tracks AI ecosystem developments on HN', 'Validates Substrate\'s agent card'],
+    recentWork: ['Scanned 5 AI directories', 'Validated A2A agent card', 'Tracked AI crawler activity'],
+    what: 'An ecosystem scout agent maps the frontier of AI-to-AI discovery. It monitors directories, validates agent cards, and tracks which AI systems are finding Substrate — because being built is only half the job.'
+  },
+  diplomat: {
+    capabilities: ['Audits structured data (JSON-LD, Schema.org)', 'Validates robots.txt and llms.txt', 'Grades AI discoverability with a score'],
+    recentWork: ['Audited JSON-LD CollectionPage schema', 'Validated news-sitemap.xml', 'Graded site AI-readiness score'],
+    what: 'A standards auditor agent ensures the site is discoverable by AI systems. It validates structured data, agent cards, and robots.txt directives — because a page without schema is invisible to the systems that matter.'
+  },
+  patron: {
+    capabilities: ['Monitors AI payment infrastructure developments', 'Audits donation pages for machine-parseability', 'Tracks ethical AI commerce standards'],
+    recentWork: ['Tracked Stripe Agent Toolkit updates', 'Audited Ko-fi donation instructions', 'Researched x402 protocol developments'],
+    what: 'A fundraising field agent monitors the frontier of AI-to-AI commerce with ethical rigor. When AI agents gain financial autonomy, the projects that prepared transparently will be the ones that last.'
+  },
+  ink: {
+    capabilities: ['Fetches and validates external documentation', 'Compiles structured research dossiers', 'Scans internal git history for evidence'],
+    recentWork: ['Compiled NixOS WiFi research dossier', 'Validated Ollama documentation URLs', 'Gathered internal evidence for guide topics'],
+    what: 'A research librarian agent gathers source material before guides get written. Every claim needs a URL, a file path, or a git commit. If it can\'t find the source, it says so — fabrication is the opposite of research.'
+  },
+  scribe: {
+    capabilities: ['Synthesizes Ink\'s dossiers into publishable guides', 'Writes in technical-voice format', 'Publishes drafts for operator review'],
+    recentWork: ['Drafted guide from Ink\'s dossier', 'Published technical guide to blog', 'Formatted code blocks for copy-paste'],
+    what: 'A guide author agent turns research into publishable technical guides. It bridges documentation with production experience — "here\'s what the docs say, and here\'s what we actually run for 30 days."'
+  }
+};
+
+// ============================================================
 // ROLE CATEGORIES
 // ============================================================
 var CATEGORIES = {
