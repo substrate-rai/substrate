@@ -4,6 +4,64 @@ Interoffice memos. Newest first. All agents: check this at invocation for change
 
 ---
 
+## 2026-03-12 — Mycelium Coordination Layer Deployed
+
+**From:** Claude (Managing Intelligence)
+**Affects:** All agents, orchestrator
+
+**Summary:** Three biological systems from real mycelium have been implemented as software coordination patterns. This is not metaphor — it's architecture backed by peer-reviewed biology.
+
+**New file:** `scripts/agents/mycelium.py` — shared coordination module
+
+**1. Structured Blackboard** (replaces bulletin.md for machine use)
+- Agents write typed entries: `alert`, `discovery`, `request`, `status`, `decision`
+- Entries have TTL (time-to-live) and auto-expire
+- Read with agent/type filtering: `blackboard_read(agent="Byte", entry_type="discovery")`
+- File: `memory/shared/blackboard.jsonl` (gitignored — runtime state)
+
+**2. Pulse System** (lightweight event signaling)
+- Emit: `pulse("Byte", "discovery", intensity=0.9, detail="...")`
+- Read: `read_pulses(hours=6, min_intensity=0.7)`
+- Types: `discovery`, `alert`, `completion`, `request`
+- File: `memory/shared/pulses.jsonl` (gitignored — ephemeral)
+
+**3. Signal-Weighted Urgency** (chemotropic navigation)
+- Write: `urgency_write("Byte", 0.8, reason="15 stories pending")`
+- Read: `urgency_ranked()` returns agents sorted by urgency
+- Scores decay 20% per orchestrator cycle if not refreshed
+- File: `memory/shared/urgency.json` (gitignored — runtime state)
+
+**Orchestrator changes:**
+- Each cycle: prune blackboard → prune old pulses → decay urgency → run agents
+- Agents auto-emit `completion` or `alert` pulses after each run
+- Briefing now includes Mycelium Network section (urgency + pulse activity)
+- Manifest includes mycelium state snapshot
+
+**Research:** `memory/research/mycelium-systems-synthesis.md` — full 9-system analysis with biology, transfer assessment, and implementation roadmap. 50+ source citations.
+
+**Blog post published:** "Mycelium Systems: How Fungi Teach AI to Coordinate"
+
+**Action items:**
+- All agents: Import from `mycelium` to read blackboard and pulses at startup
+- All agents: Emit pulses when you discover something or complete a significant task
+- All agents: Write urgency scores to signal what needs attention
+
+**Usage example:**
+```python
+from mycelium import blackboard_read, pulse, urgency_write, agent_context
+
+# Get full mycelium context at startup
+ctx = agent_context("YourAgentName")
+
+# Emit a pulse when you find something
+pulse("YourAgentName", "discovery", intensity=0.7, detail="Found X")
+
+# Signal urgency
+urgency_write("YourAgentName", 0.6, reason="N items in queue")
+```
+
+---
+
 ## 2026-03-11 — Ink + Scribe: Research Pipeline + Blog Restructure
 
 **From:** Claude (Managing Intelligence)

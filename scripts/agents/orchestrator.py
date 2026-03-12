@@ -39,6 +39,17 @@ ACCOUNTABILITY_LOG = os.path.join(REPO_DIR, "memory", "accountability.log")
 BULLETIN_FILE = os.path.join(REPO_DIR, "memory", "bulletin.md")
 CONFIG_FILE = os.path.join(SCRIPT_DIR, "orchestrator.conf.json")
 
+# Mycelium coordination layer
+sys.path.insert(0, SCRIPT_DIR)
+try:
+    from mycelium import (blackboard_prune, prune_pulses, urgency_decay,
+                          urgency_ranked, pulse, blackboard_write, pulse_summary,
+                          flow_record, flow_decay, flow_ranked, validate_output,
+                          record_failure, check_saturation, get_fallback)
+    HAS_MYCELIUM = True
+except ImportError:
+    HAS_MYCELIUM = False
+
 # Try to use atomic writes
 try:
     from atomicwrite import atomic_write
@@ -430,6 +441,22 @@ def _run_one_agent(name, quick_mode, preflight_result):
         else:
             _circuit_breaker.record_failure()
 
+    # Mycelium integration: pulses, flow tracking, validation, recovery
+    if HAS_MYCELIUM:
+        if returncode == 0 and stdout:
+            pulse(name, "completion", intensity=0.3,
+                  detail=stdout[:100] if stdout else None)
+            # Record flow metrics (System 6: pathway thickening)
+            flow_record(name, output_chars=len(stdout) if stdout else 0,
+                        items_produced=1 if stdout else 0, errors=0)
+        elif returncode != 0:
+            pulse(name, "alert", intensity=0.7,
+                  detail=(stderr or "")[:100])
+            # Record failure flow (System 6: pathway atrophy)
+            flow_record(name, output_chars=0, items_produced=0, errors=1)
+            # Record failure for recovery tracking (System 9)
+            record_failure(name, error_detail=stderr[:200] if stderr else None)
+
     return (name, stdout, stderr, returncode, duration_ms, None)
 
 
@@ -704,6 +731,46 @@ def generate_briefing(timestamp, results, quick_mode=False, preflight_result=Non
                          f"{s['skip']} | {pct:.0f}%{flag} | {avg_ms} | {s['max_ms']} |")
         lines.append("")
 
+    # Mycelium network status
+    if HAS_MYCELIUM:
+        ranked = urgency_ranked()
+        ps = pulse_summary(hours=6)
+        fr = flow_ranked()
+        if ranked or ps or fr:
+            lines.append("## Mycelium Network")
+            lines.append("")
+        if ranked:
+            active = [(a, s, r) for a, s, r in ranked if s > 0.05]
+            if active:
+                lines.append("**Urgency signals (chemotropism):**")
+                lines.append("")
+                for agent, score, reason in active[:10]:
+                    bar_len = 15
+                    filled = int(bar_len * score)
+                    bar = "#" * filled + "-" * (bar_len - filled)
+                    lines.append(f"- {agent:12s} [{bar}] {score:.2f}"
+                                 f"{'  ' + reason if reason else ''}")
+                lines.append("")
+        if fr:
+            active_flow = [(a, s, r, i) for a, s, r, i in fr if r > 0]
+            if active_flow:
+                lines.append("**Flow scores (pathway thickness):**")
+                lines.append("")
+                for agent, score, runs, items in active_flow[:10]:
+                    bar_len = 15
+                    filled = int(bar_len * score)
+                    bar = "#" * filled + "-" * (bar_len - filled)
+                    lines.append(f"- {agent:12s} [{bar}] {score:.2f}"
+                                 f"  ({runs} runs, {items} items)")
+                lines.append("")
+        if ps:
+            lines.append("**Pulse activity (6h):**")
+            lines.append("")
+            for agent, events in sorted(ps.items()):
+                evts = ", ".join(f"{k}:{v}" for k, v in events.items())
+                lines.append(f"- {agent}: {evts}")
+            lines.append("")
+
     lines.append(f"*Next heartbeat: {(now + timedelta(hours=1)).strftime('%H:%M')}*")
     lines.append("")
 
@@ -746,12 +813,26 @@ def generate_manifest(timestamp, results, quick_mode, preflight_result):
     fail_count = sum(1 for a in agents_data.values() if a["status"] == "failed")
     skip_count = sum(1 for a in agents_data.values() if a["status"] == "skipped")
 
+    # Mycelium network state
+    mycelium_data = {}
+    if HAS_MYCELIUM:
+        mycelium_data["urgency"] = {
+            a: s for a, s, _ in urgency_ranked() if s > 0.01
+        }
+        mycelium_data["flow"] = {
+            a: {"score": s, "runs": r, "items": i}
+            for a, s, r, i in flow_ranked() if r > 0
+        }
+        mycelium_data["pulse_summary_6h"] = pulse_summary(hours=6)
+        mycelium_data["saturated"] = [a for a, _, _ in check_saturation()]
+
     manifest = {
         "timestamp": now.isoformat(),
         "mode": "quick" if quick_mode else "full",
         "preflight": preflight_result or {},
         "circuit_breaker": _circuit_breaker.state,
         "agents": agents_data,
+        "mycelium": mycelium_data,
         "summary": {
             "total": len(AGENTS),
             "ok": ok_count,
@@ -905,6 +986,22 @@ def main():
     # Rotate accountability log if needed
     rotate_accountability_log()
 
+    # Mycelium cycle: prune, decay, check saturation
+    if HAS_MYCELIUM:
+        bb_pruned = blackboard_prune()
+        p_pruned = prune_pulses(hours=48)
+        u_decayed = urgency_decay()
+        f_decayed = flow_decay()
+        saturated = check_saturation()
+        if bb_pruned or p_pruned or u_decayed or f_decayed:
+            print(f"[heartbeat] mycelium: pruned {bb_pruned} bb/{p_pruned} pulses, "
+                  f"decayed {u_decayed} urgency/{f_decayed} flow",
+                  file=sys.stderr)
+        if saturated:
+            names = ", ".join(f"{a}({s:.1f})" for a, s, _ in saturated)
+            print(f"[heartbeat] mycelium: SATURATED agents: {names}",
+                  file=sys.stderr)
+
     # Run agents tier by tier
     results = {}
     for tier in TIERS:
@@ -989,7 +1086,7 @@ def main():
         print(f"[heartbeat] committing agent output...", file=sys.stderr)
         try:
             subprocess.run(
-                ["git", "add", "memory/", "scripts/posts/", "_posts/"],
+                ["git", "add", "memory/", "scripts/posts/", "_posts/", "_data/"],
                 cwd=REPO_DIR, timeout=30,
             )
             status = subprocess.run(
