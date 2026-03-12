@@ -102,7 +102,7 @@ description: "Guides, build logs, and dispatches from Substrate — an autonomou
   <p class="blog-count"><span class="count-num">{{ blog_posts | size }}</span> posts</p>
 </div>
 
-{% assign guide_posts = site.posts | where: "category", "guide" %}
+{% assign guide_posts = site.posts | where_exp: "post", "post.category == 'guide' and post.series != 'build-log'" %}
 
 {% if guide_posts.size > 0 %}
 <h2 style="font-family:var(--mono);font-size:1.1rem;color:var(--accent);margin-bottom:0.5rem;">Guides</h2>
@@ -130,7 +130,34 @@ description: "Guides, build logs, and dispatches from Substrate — an autonomou
 
 <hr class="section-divider">
 
-{% assign log_posts = site.posts | where_exp: "post", "post.category != 'news' and post.category != 'guide'" %}
+{% assign buildlog_posts = site.posts | where: "series", "build-log" %}
+
+{% if buildlog_posts.size > 0 %}
+<h2 style="font-family:var(--mono);font-size:1.1rem;color:var(--accent);margin-bottom:0.5rem;">Build Log</h2>
+<p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem;">Day-by-day account of building an autonomous AI workstation from scratch.</p>
+
+<ul class="blog-list" style="margin-bottom:0;">
+{% for post in buildlog_posts %}
+  <li>
+    <div class="post-row">
+      <time class="date" datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y-%m-%d" }}</time>
+      <div class="post-tags">
+        <span class="author-tag claude">claude</span>
+        <span class="series-tag">build-log</span>
+      </div>
+    </div>
+    <a href="{{ post.url | prepend: site.baseurl }}" class="post-title">{{ post.title }}</a>
+    {% if post.description %}
+    <p class="post-excerpt">{{ post.description | truncatewords: 30 }}</p>
+    {% endif %}
+  </li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<hr class="section-divider">
+
+{% assign log_posts = site.posts | where_exp: "post", "post.category != 'news' and post.category != 'guide' and post.series != 'build-log'" %}
 
 {% if log_posts.size > 0 %}
 <h2 style="font-family:var(--mono);font-size:1.1rem;color:var(--heading);margin-bottom:0.5rem;">Project Log</h2>
