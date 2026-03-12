@@ -131,7 +131,12 @@ def fetch_rss_titles(url):
 
 
 def fetch_markdown_changelog(url, max_entries=5):
-    """Parse a markdown changelog (## Version (Date) format) into story items."""
+    """Parse a markdown changelog into story items.
+
+    Supports two formats:
+    - <Update label="VERSION" description="DATE"> XML tags (Claude Code docs)
+    - ## Version (Date) markdown headers (generic changelogs)
+    """
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Substrate-Byte/1.0"})
         with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
@@ -141,14 +146,36 @@ def fetch_markdown_changelog(url, max_entries=5):
         return []
 
     items = []
-    # Split on ## headers (version entries)
+
+    # Try <Update label="VERSION" description="DATE"> format first
+    update_blocks = re.findall(
+        r'<Update\s+label="([^"]+)"\s+description="([^"]+)">(.*?)</Update>',
+        data, re.DOTALL
+    )
+    if update_blocks:
+        for version, date, body in update_blocks[:max_entries]:
+            bullets = [l.strip('* ').strip() for l in body.strip().split('\n') if l.strip().startswith('*')]
+            title = f"Claude Code {version} ({date})"
+            if bullets:
+                first = bullets[0]
+                if len(first) < 80:
+                    title += f": {first}"
+            items.append({
+                "title": title,
+                "url": url,
+                "score": 0,
+                "descendants": 0,
+                "id": "",
+            })
+        return items
+
+    # Fallback: ## header format
     sections = re.split(r'^## ', data, flags=re.MULTILINE)
-    for section in sections[1:max_entries + 1]:  # skip preamble
+    for section in sections[1:max_entries + 1]:
         lines = section.strip().split('\n')
         if not lines:
             continue
         header = lines[0].strip()
-        # Extract bullet points as description
         bullets = [l.strip('- ').strip() for l in lines[1:] if l.strip().startswith('-')]
         title = f"Claude Code {header}" if "claude" not in header.lower() else header
         if bullets:
