@@ -51,8 +51,14 @@ RSS_FEEDS = {
     # Tier 5: Policy
     "EFF Deeplinks": "https://www.eff.org/rss/updates.xml",
     "EU AI Act": "https://artificialintelligenceact.eu/feed/",
-    # Note: Anthropic, Perplexity, xAI have no public RSS feeds (verified 2026-03)
+    # Note: Perplexity, xAI have no public RSS feeds (verified 2026-03)
 }
+
+# Markdown changelog sources — not RSS, parsed separately
+CHANGELOG_SOURCES = {
+    "Claude Code": "https://code.claude.com/docs/en/changelog.md",
+}
+# Full docs index: https://code.claude.com/docs/llms.txt
 
 # Keywords that flag a story as relevant (case-insensitive)
 RELEVANCE_KEYWORDS = [
@@ -122,6 +128,39 @@ def fetch_rss_titles(url):
             link = link_m.group(1).strip() if link_m else ""
             items.append({"title": title, "url": link, "score": 0, "descendants": 0, "id": ""})
     return items[:10]
+
+
+def fetch_markdown_changelog(url, max_entries=5):
+    """Parse a markdown changelog (## Version (Date) format) into story items."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Substrate-Byte/1.0"})
+        with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
+            data = resp.read().decode("utf-8", errors="replace")
+    except Exception as e:
+        print(f"  [warn] Changelog fetch failed for {url}: {e}", file=sys.stderr)
+        return []
+
+    items = []
+    # Split on ## headers (version entries)
+    sections = re.split(r'^## ', data, flags=re.MULTILINE)
+    for section in sections[1:max_entries + 1]:  # skip preamble
+        lines = section.strip().split('\n')
+        if not lines:
+            continue
+        header = lines[0].strip()
+        # Extract bullet points as description
+        bullets = [l.strip('- ').strip() for l in lines[1:] if l.strip().startswith('-')]
+        title = f"Claude Code {header}" if "claude" not in header.lower() else header
+        if bullets:
+            title += f": {bullets[0]}" if len(bullets[0]) < 80 else ""
+        items.append({
+            "title": title,
+            "url": url,
+            "score": 0,
+            "descendants": 0,
+            "id": "",
+        })
+    return items
 
 
 # ---------------------------------------------------------------------------
@@ -194,6 +233,22 @@ def fetch_all_sources():
                 stories.append(item)
                 relevant_count += 1
         print(f"  {feed_name}: {len(items)} items, {relevant_count} relevant")
+
+    # 3. Markdown changelogs (Claude Code, etc.)
+    print("Scanning changelog sources...")
+    for source_name, changelog_url in CHANGELOG_SOURCES.items():
+        items = fetch_markdown_changelog(changelog_url)
+        for item in items:
+            title = item.get("title", "")
+            url = item.get("url", "")
+            score = relevance_score(title, url)
+            # Changelogs are always relevant — minimum score of 2
+            score = max(score, 2)
+            item["_relevance"] = score
+            item["_signal"] = signal_score(title, url)
+            item["_source"] = source_name
+            stories.append(item)
+        print(f"  {source_name}: {len(items)} changelog entries")
 
     return stories
 
