@@ -116,8 +116,8 @@
           "position": {{ forloop.index }},
           "item": {
             "@type": "NewsArticle",
-            "headline": {{ story.title | jsonify }},
-            "url": {{ story.url | jsonify }},
+            "headline": "{{ story.title | escape }}",
+            "url": "{{ story.url | escape }}",
             "datePublished": "{{ site.data.news.updated }}",
             "publisher": {
               "@type": "Organization",

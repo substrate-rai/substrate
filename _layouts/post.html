@@ -10,10 +10,10 @@ layout: default
     {% for item in page.faq %}
     {
       "@type": "Question",
-      "name": {{ item.q | jsonify }},
+      "name": "{{ item.q | escape }}",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": {{ item.a | jsonify }}
+        "text": "{{ item.a | escape }}"
       }
     }{% unless forloop.last %},{% endunless %}
     {% endfor %}
