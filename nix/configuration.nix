@@ -12,6 +12,7 @@
     ./heartbeat.nix
     ./build-executor.nix
     ./comfyui.nix
+    ./news-aggregator.nix
   ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

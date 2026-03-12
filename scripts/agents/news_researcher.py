@@ -14,13 +14,16 @@ import json
 import os
 import subprocess
 import sys
-import urllib.request
-import urllib.error
 from datetime import datetime, timezone
 
 # Substrate shared utilities
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from shared import queue_post
+from shared_news import (
+    fetch_json, fetch_hn_item, fetch_rss_titles,
+    relevance_score, signal_score,
+    HN_TOP_URL, RSS_FEEDS, SCAN_LIMIT,
+)
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -30,107 +33,6 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 NEWS_DIR = os.path.join(REPO_ROOT, "memory", "news")
 POSTS_DIR = os.path.join(REPO_ROOT, "_posts")
 DATA_DIR = os.path.join(REPO_ROOT, "_data")
-
-HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
-HN_ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
-
-# RSS/Atom feeds to scan for broader LLM coverage
-RSS_FEEDS = {
-    # Tier 1: Major AI labs
-    "Anthropic": "https://www.anthropic.com/rss.xml",
-    "OpenAI": "https://openai.com/blog/rss.xml",
-    "Hugging Face": "https://huggingface.co/blog/feed.xml",
-    # Tier 2: Research
-    "arXiv cs.AI": "https://rss.arxiv.org/rss/cs.AI",
-    "arXiv cs.CL": "https://rss.arxiv.org/rss/cs.CL",
-    "arXiv cs.LG": "https://rss.arxiv.org/rss/cs.LG",
-    # Tier 3: Community
-    "r/LocalLLaMA": "https://www.reddit.com/r/LocalLLaMA/.rss",
-    "r/MachineLearning": "https://www.reddit.com/r/MachineLearning/.rss",
-    # Tier 4: Industry press
-    "IEEE Spectrum AI": "https://spectrum.ieee.org/feeds/feed.rss",
-    "InfoQ AI/ML": "https://feed.infoq.com/ai-ml-data-eng/",
-    "TechCrunch AI": "https://techcrunch.com/category/artificial-intelligence/feed/",
-}
-
-# How many top stories to scan
-SCAN_LIMIT = 60
-
-# How many seconds before we give up on a single request
-REQUEST_TIMEOUT = 10
-
-# Keywords that flag a story as relevant (case-insensitive)
-RELEVANCE_KEYWORDS = [
-    # AI / ML core
-    "ai", "llm", "gpt", "claude", "anthropic", "openai", "gemini", "mistral",
-    "llama", "qwen", "deepseek", "transformer", "diffusion", "neural",
-    "machine learning", "deep learning", "inference", "fine-tun", "rag",
-    "embedding", "token", "prompt", "agent", "copilot", "chatbot",
-    # Local / sovereign
-    "ollama", "llama.cpp", "vllm", "gguf", "ggml", "quantiz", "local model",
-    "self-host", "on-prem", "edge ai", "sovereign",
-    # NixOS / infra
-    "nixos", "nix ", "nixpkgs", "flake", "declarative", "reproducible build",
-    # Hardware
-    "gpu", "cuda", "rtx", "nvidia", "amd", "tpu", "compute",
-    # Open source AI
-    "open source ai", "open-source ai", "hugging face", "huggingface",
-    "weights", "model release",
-]
-
-# Higher-signal keywords for the "Substrate signal" digest
-SIGNAL_KEYWORDS = [
-    "sovereign", "self-host", "local inference", "ollama", "nixos", "nix ",
-    "on-prem", "edge ai", "open source ai", "open-source ai",
-    "llama.cpp", "gguf", "quantiz", "local model", "rtx", "cuda",
-    "ai agent", "autonomous", "collaboration",
-]
-
-# ---------------------------------------------------------------------------
-# Network helpers
-# ---------------------------------------------------------------------------
-
-def fetch_json(url):
-    """Fetch JSON from a URL. Returns parsed object or None on failure."""
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Substrate-Byte/1.0"})
-        with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
-            return json.loads(resp.read().decode("utf-8"))
-    except (urllib.error.URLError, urllib.error.HTTPError, OSError, json.JSONDecodeError) as e:
-        print(f"  [warn] Failed to fetch {url}: {e}", file=sys.stderr)
-        return None
-
-
-def fetch_hn_item(item_id):
-    """Fetch a single HN item by ID."""
-    return fetch_json(HN_ITEM_URL.format(item_id))
-
-# ---------------------------------------------------------------------------
-# Relevance scoring
-# ---------------------------------------------------------------------------
-
-def relevance_score(title, url=""):
-    """Return a relevance score (0+). Higher = more relevant to Substrate."""
-    text = (title + " " + url).lower()
-    score = 0
-    for kw in RELEVANCE_KEYWORDS:
-        if kw in text:
-            score += 1
-    return score
-
-
-def signal_score(title, url=""):
-    """Return a signal score for the Substrate-specific digest."""
-    text = (title + " " + url).lower()
-    score = 0
-    for kw in SIGNAL_KEYWORDS:
-        if kw in text:
-            score += 2
-    # Relevance keywords still count, but less
-    for kw in RELEVANCE_KEYWORDS:
-        if kw in text:
-            score += 1
-    return score
 
 # ---------------------------------------------------------------------------
 # Summarization
@@ -425,30 +327,6 @@ def write_news_json(stories, signal_stories, date_str):
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
-
-def fetch_rss_titles(url):
-    """Crude RSS/Atom parser — extract titles and links without xml.etree (some feeds break it)."""
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Substrate-Byte/1.0"})
-        with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
-            data = resp.read().decode("utf-8", errors="replace")
-    except Exception as e:
-        print(f"  [warn] RSS fetch failed for {url}: {e}", file=sys.stderr)
-        return []
-
-    import re
-    items = []
-    # Match <item> or <entry> blocks
-    for block in re.findall(r'<(?:item|entry)[\s>].*?</(?:item|entry)>', data, re.DOTALL):
-        title_m = re.search(r'<title[^>]*>(.*?)</title>', block, re.DOTALL)
-        link_m = re.search(r'<link[^>]*href=["\']([^"\']+)["\']', block) or \
-                 re.search(r'<link[^>]*>(.*?)</link>', block, re.DOTALL)
-        if title_m:
-            title = re.sub(r'<!\[CDATA\[|\]\]>', '', title_m.group(1)).strip()
-            link = link_m.group(1).strip() if link_m else ""
-            items.append({"title": title, "url": link, "score": 0, "descendants": 0, "id": ""})
-    return items[:10]  # Latest 10 per feed
-
 
 def main():
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")

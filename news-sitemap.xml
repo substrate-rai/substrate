@@ -1,0 +1,20 @@
+---
+layout: null
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+{% if site.data.news.stories %}{% for story in site.data.news.stories limit:50 %}{% if story.url and story.url != "" %}
+  <url>
+    <loc>{{ story.url }}</loc>
+    <news:news>
+      <news:publication>
+        <news:name>Substrate</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>{{ site.data.news.updated | date_to_xmlschema }}</news:publication_date>
+      <news:title>{{ story.title | xml_escape }}</news:title>
+    </news:news>
+  </url>
+{% endif %}{% endfor %}{% endif %}
+</urlset>

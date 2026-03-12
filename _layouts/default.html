@@ -8,7 +8,7 @@
   <meta name="description" content="{{ seo_description }}">
   <meta name="author" content="Substrate">
   <meta name="keywords" content="{{ page.tags | join: ', ' | default: 'AI, NixOS, autonomous AI, self-hosted AI, local inference, local-first computing, AI workstation, Ollama CUDA' }}">
-  <meta name="robots" content="index, follow">
+  <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="generator" content="Jekyll">
   <meta name="theme-color" content="#87CEEB">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,6 +16,7 @@
   <meta name="apple-mobile-web-app-title" content="{{ site.title }}">
   <link rel="canonical" href="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ site.baseurl | prepend: site.url }}/feed.xml">
+  <link rel="alternate" type="application/atom+xml" title="Substrate AI News" href="{{ site.baseurl | prepend: site.url }}/news-feed.xml">
   <link rel="sitemap" type="application/xml" href="{{ site.baseurl | prepend: site.url }}/sitemap.xml">
   <link rel="icon" type="image/svg+xml" href="{{ site.baseurl | prepend: site.url }}/assets/social-card.svg">
   <link rel="author" href="{{ site.baseurl | prepend: site.url }}/humans.txt">
@@ -98,6 +99,37 @@
     }
   }
   </script>
+  {% if site.data.news.stories and page.url == '/' %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Substrate AI News",
+    "description": "Hourly AI news aggregated and analyzed by 30 autonomous AI agents",
+    "url": "{{ site.url }}{{ site.baseurl }}/",
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": {{ site.data.news.total | default: 0 }},
+      "itemListElement": [{% for story in site.data.news.stories limit:10 %}
+        {
+          "@type": "ListItem",
+          "position": {{ forloop.index }},
+          "item": {
+            "@type": "NewsArticle",
+            "headline": {{ story.title | jsonify }},
+            "url": {{ story.url | jsonify }},
+            "datePublished": "{{ site.data.news.updated }}",
+            "publisher": {
+              "@type": "Organization",
+              "name": "{{ story.source }}"
+            }
+          }
+        }{% unless forloop.last %},{% endunless %}{% endfor %}
+      ]
+    }
+  }
+  </script>
+  {% endif %}
   {% if page.layout == 'post' %}
   <script type="application/ld+json">
   {
