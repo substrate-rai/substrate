@@ -461,7 +461,7 @@ a.fund-strip:hover { border-color: var(--accent); }
     <span class="num-label">Games</span>
   </a>
   <a href="{{ site.baseurl }}/site/staff/" class="num-card">
-    <span class="num-value">25</span>
+    <span class="num-value">30</span>
     <span class="num-label">Agents</span>
   </a>
   <a href="{{ site.baseurl }}/blog/" class="num-card">

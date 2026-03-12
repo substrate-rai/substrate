@@ -438,12 +438,22 @@ def main():
         post += "Every dollar tracked in a plaintext ledger. substrate.lol/site/fund/"
         queue_post(post, source="spore")
     elif len(milestones_reached) == 0:
-        post = (
-            f"$0 raised. {blog_count} blog posts. 24 games. 30 agents. "
-            f"One laptop on a shelf. The ledger is transparent and empty. "
-            f"substrate.lol/site/fund/"
-        )
-        queue_post(post, source="spore")
+        # $0 raised — only post once per 7 days to avoid noise
+        last_report = os.path.join(ENGAGEMENT_DIR, f"{date_str}.md")
+        existing_reports = sorted(
+            [f for f in os.listdir(ENGAGEMENT_DIR) if f.endswith(".md")]
+        ) if os.path.isdir(ENGAGEMENT_DIR) else []
+        # Skip if we posted a $0 report in the last 7 days
+        from datetime import timedelta
+        cutoff = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        recent_reports = [f for f in existing_reports if f[:10] >= cutoff and f != f"{date_str}.md"]
+        if not recent_reports:
+            post = (
+                f"$0 raised. {blog_count} blog posts. 24 games. 30 agents. "
+                f"One laptop on a shelf. The ledger is transparent and empty. "
+                f"substrate.lol/site/fund/"
+            )
+            queue_post(post, source="spore")
 
 
 if __name__ == "__main__":

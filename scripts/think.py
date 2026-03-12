@@ -40,7 +40,15 @@ Be direct. Be concise. No filler. Output structured data, not prose. \
 Use timestamps, bullet points, and key-value pairs."""
 
 
-def think(prompt, model=DEFAULT_MODEL, system=SYSTEM_PROMPT, stream=True):
+PRESETS = {
+    "guide":   {"temperature": 0.7, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.2, "num_predict": 2048, "num_ctx": 8192},
+    "social":  {"temperature": 0.7, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.3, "num_predict": 512,  "num_ctx": 4096},
+    "summary": {"temperature": 0.3, "top_p": 0.85, "top_k": 10, "repeat_penalty": 1.2, "num_predict": 1024, "num_ctx": 4096},
+    "log":     {"temperature": 0.3, "top_p": 0.8, "top_k": 10, "repeat_penalty": 1.1, "num_predict": 512,  "num_ctx": 4096},
+}
+
+
+def think(prompt, model=DEFAULT_MODEL, system=SYSTEM_PROMPT, stream=True, preset=None):
     payload = {
         "model": model,
         "prompt": prompt,
@@ -48,6 +56,8 @@ def think(prompt, model=DEFAULT_MODEL, system=SYSTEM_PROMPT, stream=True):
     }
     if system:
         payload["system"] = system
+    if preset and preset in PRESETS:
+        payload["options"] = PRESETS[preset]
 
     try:
         resp = requests.post(OLLAMA_URL, json=payload, stream=stream, timeout=300)
@@ -80,6 +90,8 @@ def main():
     parser.add_argument("--model", default=DEFAULT_MODEL, help=f"Ollama model (default: {DEFAULT_MODEL})")
     parser.add_argument("--raw", action="store_true", help="No system prompt")
     parser.add_argument("--no-stream", action="store_true", help="Wait for full response")
+    parser.add_argument("--preset", choices=list(PRESETS.keys()),
+                        help="Sampling preset (guide, social, summary, log)")
     args = parser.parse_args()
 
     # Get prompt from argument or stdin
@@ -101,7 +113,8 @@ def main():
         sys.exit(1)
 
     system = None if args.raw else SYSTEM_PROMPT
-    think(prompt, model=args.model, system=system, stream=not args.no_stream)
+    think(prompt, model=args.model, system=system, stream=not args.no_stream,
+          preset=args.preset)
 
 
 if __name__ == "__main__":

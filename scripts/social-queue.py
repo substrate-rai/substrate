@@ -79,8 +79,10 @@ def list_queue():
         text_preview = entry["text"][:60] + "..." if len(entry["text"]) > 60 else entry["text"]
         platform = entry.get("platform", "bluesky")
         print(f"  [{i}] {status} | {platform} | {text_preview}")
-    queued = sum(1 for e in entries if e.get("status") == "queued")
-    print(f"\n  {queued} queued, {len(entries) - queued} sent")
+    pending = sum(1 for e in entries if e.get("status") in ("queued", "pending"))
+    sent = sum(1 for e in entries if e.get("status") == "sent")
+    failed = len(entries) - pending - sent
+    print(f"\n  {pending} pending, {sent} sent" + (f", {failed} failed" if failed else ""))
 
 
 def prune_queue():

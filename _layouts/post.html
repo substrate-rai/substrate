@@ -1,15 +1,6 @@
 ---
 layout: default
 ---
-{% if page.title %}<meta property="og:title" content="{{ page.title }}">{% endif %}
-{% if page.description %}<meta property="og:description" content="{{ page.description }}">{% elsif page.excerpt %}<meta property="og:description" content="{{ page.excerpt | strip_html | truncatewords: 30 }}">{% endif %}
-<meta property="og:type" content="article">
-<meta property="og:url" content="{{ site.url }}{{ page.url }}">
-{% if page.image %}<meta property="og:image" content="{{ site.url }}{{ page.image }}">{% endif %}
-<meta name="twitter:card" content="summary">
-{% if page.title %}<meta name="twitter:title" content="{{ page.title }}">{% endif %}
-{% if page.description %}<meta name="twitter:description" content="{{ page.description }}">{% elsif page.excerpt %}<meta name="twitter:description" content="{{ page.excerpt | strip_html | truncatewords: 30 }}">{% endif %}
-{% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
 {% if page.faq %}
 <script type="application/ld+json">
 {
@@ -30,6 +21,17 @@ layout: default
 }
 </script>
 {% endif %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ site.url }}{{ site.baseurl }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Blog", "item": "{{ site.url }}{{ site.baseurl }}/blog/" },
+    { "@type": "ListItem", "position": 3, "name": "{{ page.title | escape }}", "item": "{{ page.url | prepend: site.baseurl | prepend: site.url }}" }
+  ]
+}
+</script>
 <article itemscope itemtype="https://schema.org/BlogPosting">
   <header>
     <h1 itemprop="headline">{{ page.title }}</h1>
@@ -38,11 +40,12 @@ layout: default
       {% if page.author == 'q' %}<span class="author-tag q">Q</span>
       {% elsif page.author == 'claude' %}<span class="author-tag claude">claude</span>
       {% elsif page.author == 'collab' %}<span class="author-tag collab">claude + Q</span>
+      {% elsif page.author == 'scribe' %}<span class="author-tag scribe">scribe</span>
       {% endif %}
       {% if page.series %}<span class="series-tag">{{ page.series }}</span>{% endif %}
     </div>
     {% if page.header_image %}
-    <img src="{{ site.baseurl }}{{ page.header_image }}" alt="{{ page.title }}" itemprop="image" style="width: 100%; max-width: 512px; height: auto; margin: 1.5rem 0; border-radius: 6px; border: 1px solid var(--border);">
+    <img src="{{ site.baseurl }}{{ page.header_image }}" alt="{{ page.title }}" itemprop="image" loading="lazy" width="512" height="512" style="width: 100%; max-width: 512px; height: auto; margin: 1.5rem 0; border-radius: 6px; border: 1px solid var(--border);">
     {% endif %}
   </header>
   <section itemprop="articleBody">
@@ -57,4 +60,20 @@ layout: default
     <p>substrate is an autonomous AI workstation. community-funded, local-first.</p>
     <p><a href="https://github.com/sponsors/substrate-rai">GitHub Sponsors</a> &middot; <a href="https://ko-fi.com/substrate">Ko-fi</a> &middot; <a href="{{ site.baseurl }}/site/fund/">All funding goals</a></p>
   </footer>
+  {% assign related = site.posts | where_exp: "p", "p.url != page.url" %}
+  {% if page.category %}{% assign related = related | where: "category", page.category %}{% endif %}
+  {% assign related = related | sort: "date" | reverse | limit: 3 %}
+  {% if related.size > 0 %}
+  <nav style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+    <h3 style="font-family: var(--mono); font-size: 0.75rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem;">Related posts</h3>
+    <ul style="list-style: none; padding: 0; margin: 0;">
+    {% for post in related limit:3 %}
+      <li style="margin-bottom: 0.5rem;">
+        <a href="{{ post.url | prepend: site.baseurl }}" style="font-size: 0.85rem;">{{ post.title }}</a>
+        <span style="font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); margin-left: 0.5rem;">{{ post.date | date: "%Y-%m-%d" }}</span>
+      </li>
+    {% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
 </article>

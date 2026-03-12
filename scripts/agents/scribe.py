@@ -101,38 +101,56 @@ def load_technical_voice():
 # Guide generation
 # ---------------------------------------------------------------------------
 
-def build_generation_prompt(topic, dossier):
-    """Build the prompt for Ollama to generate the guide."""
+def build_outline_prompt(topic, dossier):
+    """Build a prompt to generate only the outline (H2/H3 headings)."""
     title = topic["title"]
-    tags = topic.get("tags", [])
     description = topic.get("description", "")
 
-    prompt_parts = [
-        f"Write a technical guide titled: \"{title}\"",
-        "",
+    return "\n".join([
+        f"Create an outline for a technical guide titled: \"{title}\"",
         f"Description: {description}",
-        f"Tags: {', '.join(tags)}",
+        "",
+        "Output ONLY a list of H2 and H3 headings in markdown format.",
+        "REQUIRED sections (must include all of these):",
+        "- An opening H2 for the problem/fix",
+        "- ## Troubleshooting",
+        "- ## What's Next",
+        "",
+        "Output 5-8 headings total. No prose, no explanation, just headings.",
+        "",
+        "RESEARCH DOSSIER (base the outline on these topics):",
+        "",
+        dossier[:2000],  # Truncate dossier for outline step
+    ])
+
+
+def build_section_prompt(topic, heading, dossier, previous_sections=""):
+    """Build a prompt to generate one section of the guide."""
+    title = topic["title"]
+    ctx = ""
+    if previous_sections:
+        ctx = (
+            "\n\nPREVIOUS SECTIONS (do not repeat content from these):\n\n"
+            + previous_sections[-1500:]  # Last 1500 chars for context
+        )
+
+    return "\n".join([
+        f"Write the \"{heading}\" section of a technical guide titled: \"{title}\"",
         "",
         "REQUIREMENTS:",
-        "- Approximately 1500 words",
-        "- Start with a one-sentence summary of what the guide covers",
-        "- Lead with the error message or problem that brings readers here",
-        "- Show the fix immediately, then explain",
+        "- 150-300 words for this section",
         "- Every code block must be copy-pasteable with real paths",
-        "- Include a Troubleshooting section with 'error message' — fix format",
-        "- Include a What's Next section linking related guides",
-        "- Use H2 for major sections, H3 for subsections",
-        "- Tables for specs and comparisons, not prose",
+        "- Use H3 for subsections within this section",
         "- No personality, no narrative, no 'we' or 'I'",
-        "- Include 'Substrate note:' callouts for project-specific experience",
-        "- Do NOT include YAML front matter — just the markdown body",
+        "- Do NOT repeat information from previous sections",
+        "- Do NOT include YAML front matter",
+        "- ONLY output the content for this section (starting with the H2 heading)",
         "",
-        "RESEARCH DOSSIER (use this as your source material — do not invent facts):",
+        "RESEARCH DOSSIER (use as source — do not invent facts):",
         "",
         dossier,
-    ]
-
-    return "\n".join(prompt_parts)
+        ctx,
+    ])
 
 
 def generate_front_matter(topic, date_str):
@@ -158,7 +176,12 @@ def generate_front_matter(topic, date_str):
 
 
 def generate_guide_draft(topic, dossier, system_prompt):
-    """Generate a guide draft using Ollama."""
+    """Generate a guide draft using a 3-step Ollama pipeline.
+
+    1. Outline — generate H2/H3 headings only (small, focused)
+    2. Sections — generate each section individually with context
+    3. Assemble + validate — concatenate and run quality checks
+    """
     try:
         from ollama_client import chat, is_available, OllamaError
     except ImportError:
@@ -169,21 +192,140 @@ def generate_guide_draft(topic, dossier, system_prompt):
         print("[scribe] Ollama is not running", file=sys.stderr)
         return None
 
-    prompt = build_generation_prompt(topic, dossier)
-
-    print(f"  Generating draft via Ollama ({len(prompt)} char prompt)...",
-          file=sys.stderr)
+    # Step 1: Generate outline
+    outline_prompt = build_outline_prompt(topic, dossier)
+    print(f"  [1/3] Generating outline...", file=sys.stderr)
 
     try:
-        response = chat(
-            messages=[{"role": "user", "content": prompt}],
+        outline = chat(
+            messages=[{"role": "user", "content": outline_prompt}],
             system=system_prompt,
-            timeout=180,
+            timeout=60,
             think=False,
-        )
-        return response.strip()
+            preset="summary",
+            options={"num_predict": 512},
+        ).strip()
     except OllamaError as e:
-        print(f"[scribe] Ollama error: {e}", file=sys.stderr)
+        print(f"[scribe] outline failed: {e}", file=sys.stderr)
+        return None
+
+    # Parse headings from outline
+    headings = re.findall(r'^(##\s+.+)', outline, re.MULTILINE)
+    if not headings:
+        # Fallback: use a default structure
+        headings = [
+            f"## {topic['title']}",
+            "## Troubleshooting",
+            "## What's Next",
+        ]
+    print(f"  Outline: {len(headings)} sections", file=sys.stderr)
+
+    # Step 2: Generate each section
+    sections = []
+    previous = ""
+    for i, heading in enumerate(headings):
+        heading_text = heading.lstrip("#").strip()
+        print(f"  [2/3] Section {i+1}/{len(headings)}: {heading_text}...",
+              file=sys.stderr)
+
+        section_prompt = build_section_prompt(topic, heading_text, dossier, previous)
+
+        try:
+            section = chat(
+                messages=[{"role": "user", "content": section_prompt}],
+                system=system_prompt,
+                timeout=120,
+                think=False,
+                preset="guide",
+                options={"num_predict": 1024},
+            ).strip()
+        except OllamaError as e:
+            print(f"[scribe] section '{heading_text}' failed: {e}",
+                  file=sys.stderr)
+            continue
+
+        sections.append(section)
+        previous += "\n\n" + section
+
+    if not sections:
+        print("[scribe] no sections generated", file=sys.stderr)
+        return None
+
+    # Step 3: Assemble
+    draft = "\n\n".join(sections)
+    print(f"  [3/3] Assembled {len(draft)} chars, ~{len(draft.split())} words",
+          file=sys.stderr)
+
+    # Quality validation
+    try:
+        from quality import validate
+        ok, issues = validate(draft, "guide")
+        if not ok:
+            print(f"  Quality issues: {issues}", file=sys.stderr)
+            # Retry once with explicit fix instructions
+            fix_prompt = (
+                f"The following guide draft has quality issues: {', '.join(issues)}.\n"
+                f"Fix these issues. Remove all repetition, ensure a Troubleshooting "
+                f"section exists, and remove any fabricated URLs or impossible numbers.\n\n"
+                f"DRAFT:\n{draft}\n\n"
+                f"Output ONLY the corrected guide. No commentary."
+            )
+            try:
+                draft = chat(
+                    messages=[{"role": "user", "content": fix_prompt}],
+                    system=system_prompt,
+                    timeout=180,
+                    think=False,
+                    preset="guide",
+                ).strip()
+                ok2, issues2 = validate(draft, "guide")
+                if not ok2:
+                    print(f"  Retry still has issues: {issues2}", file=sys.stderr)
+                    # Return anyway — will be flagged in front matter
+                    return draft
+            except OllamaError as e:
+                print(f"[scribe] retry failed: {e}", file=sys.stderr)
+    except ImportError:
+        pass
+
+    return draft
+
+
+def cloud_edit_pass(draft_body):
+    """Send the local draft through Claude for fact-checking and polish.
+
+    Uses route.py's polish task. Returns the edited text, or None on failure.
+    Cost: ~$0.02 per guide (~2000 tokens).
+    """
+    import subprocess
+
+    polish_prompt = (
+        "Edit this technical guide draft. Fix factual errors, remove repetition, "
+        "tighten prose. Remove any fabricated URLs, benchmarks, or configuration "
+        "options. Preserve the H2/H3 structure. Output the corrected guide only.\n\n"
+        + draft_body
+    )
+
+    try:
+        result = subprocess.run(
+            [
+                sys.executable,
+                os.path.join(REPO_DIR, "scripts", "route.py"),
+                "polish",
+                polish_prompt,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+        if result.stderr:
+            print(f"  [scribe] cloud edit stderr: {result.stderr.strip()[:200]}",
+                  file=sys.stderr)
+        return None
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as e:
+        print(f"  [scribe] cloud edit failed: {e}", file=sys.stderr)
         return None
 
 
@@ -210,16 +352,18 @@ def generate_bluesky_teaser(topic):
 # Guide logging
 # ---------------------------------------------------------------------------
 
-def log_guide(topic, post_path, date_str):
+def log_guide(topic, post_path, date_str, cloud_edited=False):
     """Log guide generation to memory/guides/."""
     os.makedirs(GUIDES_DIR, exist_ok=True)
     log_path = os.path.join(GUIDES_DIR, f"{date_str}.md")
 
+    pipeline = "Qwen3 (outline+sections) → Claude (edit)" if cloud_edited else "Qwen3 only"
     entry = [
         f"## {topic['title']}",
         f"- Topic ID: {topic['id']}",
         f"- Priority: {topic.get('priority', '?')}",
         f"- Post: `{os.path.relpath(post_path, REPO_DIR)}`",
+        f"- Pipeline: {pipeline}",
         f"- Status: draft (operator review required)",
         f"- Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}",
         "",
@@ -293,12 +437,24 @@ def main():
         system_parts.append(ctx.voice)
     system_prompt = "\n\n---\n\n".join(system_parts) if system_parts else None
 
-    # Generate draft
+    # Generate draft (multi-step: outline → sections → assemble → validate)
     draft_body = generate_guide_draft(topic, dossier, system_prompt)
     if not draft_body:
         print("Draft generation failed. Ollama may be unavailable.",
               file=sys.stderr)
         sys.exit(1)
+
+    # Cloud edit pass — Claude polishes the local draft
+    cloud_edited = False
+    polished = cloud_edit_pass(draft_body)
+    if polished:
+        local_words = len(draft_body.split())
+        cloud_words = len(polished.split())
+        print(f"  Cloud edit: {local_words} → {cloud_words} words", file=sys.stderr)
+        draft_body = polished
+        cloud_edited = True
+    else:
+        print("  Cloud edit skipped (unavailable or failed)", file=sys.stderr)
 
     # Build full post
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -330,7 +486,7 @@ def main():
     print(f"  Draft saved: {post_path}")
 
     # Log the guide
-    log_guide(topic, post_path, today)
+    log_guide(topic, post_path, today, cloud_edited=cloud_edited)
     print(f"  Logged to: memory/guides/{today}.md")
 
     # Update topic status

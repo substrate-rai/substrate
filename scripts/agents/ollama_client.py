@@ -15,6 +15,16 @@ import urllib.error
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen3:8b")
 
+# Content-type sampling presets tuned for Qwen3 8B.
+# temperature >= 0.6 avoids greedy-decoding repetition loops.
+# repeat_penalty >= 1.2 prevents sentence-level looping.
+PRESETS = {
+    "guide":   {"temperature": 0.7, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.2, "num_predict": 2048, "num_ctx": 8192},
+    "social":  {"temperature": 0.7, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.3, "num_predict": 512,  "num_ctx": 4096},
+    "summary": {"temperature": 0.3, "top_p": 0.85, "top_k": 10, "repeat_penalty": 1.2, "num_predict": 1024, "num_ctx": 4096},
+    "log":     {"temperature": 0.3, "top_p": 0.8, "top_k": 10, "repeat_penalty": 1.1, "num_predict": 512,  "num_ctx": 4096},
+}
+
 # Cached availability check
 _available_cache = {"result": None, "checked_at": 0}
 _CACHE_TTL = 60  # seconds
@@ -49,7 +59,8 @@ def invalidate_cache():
     _available_cache["checked_at"] = 0
 
 
-def chat(messages, system=None, model=None, timeout=120, think=False):
+def chat(messages, system=None, model=None, timeout=120, think=False,
+         options=None, preset=None):
     """Send a chat completion request to Ollama.
 
     Args:
@@ -58,6 +69,8 @@ def chat(messages, system=None, model=None, timeout=120, think=False):
         model: Model name (default: OLLAMA_MODEL env or qwen3:8b)
         timeout: Request timeout in seconds
         think: Enable thinking mode (default: False)
+        options: Dict of Ollama sampling parameters (temperature, top_p, etc.)
+        preset: Name of a preset from PRESETS dict (merged under explicit options)
 
     Returns:
         Response text string
@@ -67,12 +80,21 @@ def chat(messages, system=None, model=None, timeout=120, think=False):
     """
     model = model or OLLAMA_MODEL
 
+    # Merge preset defaults with explicit options (explicit wins)
+    merged_options = {}
+    if preset and preset in PRESETS:
+        merged_options.update(PRESETS[preset])
+    if options:
+        merged_options.update(options)
+
     payload = {
         "model": model,
         "messages": messages,
         "stream": False,
         "think": think,
     }
+    if merged_options:
+        payload["options"] = merged_options
     if system:
         payload["messages"] = [{"role": "system", "content": system}] + payload["messages"]
 

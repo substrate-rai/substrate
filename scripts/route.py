@@ -45,6 +45,7 @@ TASK_ROUTES = {
     "review": "cloud",
     "code": "cloud",
     "haiku": "cloud",
+    "polish": "cloud",
 }
 
 SYSTEM_PROMPT = (
@@ -53,6 +54,14 @@ SYSTEM_PROMPT = (
     "You handle tasks that require frontier reasoning: summarizing logs into prose, "
     "code review, complex code generation, and quality assurance.\n\n"
     "Be direct. Be concise. No filler."
+)
+
+POLISH_SYSTEM_PROMPT = (
+    "You are editing a technical guide draft written by a local 8B model. "
+    "Fix factual errors, remove repetition, tighten prose. "
+    "Remove any fabricated URLs, benchmarks, or configuration options that don't exist. "
+    "Preserve the structure (H2/H3 headings). Keep code blocks intact unless they contain errors. "
+    "Do not add personality or narrative voice. Output the corrected guide only, no commentary."
 )
 
 HAIKU_SYSTEM_PROMPT = (
@@ -205,7 +214,7 @@ def main():
     parser.add_argument(
         "task",
         choices=list(TASK_ROUTES.keys()),
-        help="Task type: log, health, draft, summarize, review, code, haiku",
+        help="Task type: log, health, draft, summarize, review, code, haiku, polish",
     )
     parser.add_argument("prompt", nargs="?", default=None, help="Prompt text")
     parser.add_argument(
@@ -260,6 +269,14 @@ def main():
         print(raw_log)
         print("\n--- SUMMARY (claude) ---")
         print(summary)
+        return
+
+    # Polish mode — Claude edits a local model draft
+    if args.task == "polish":
+        print("[cloud] polish (editor pass)...", file=sys.stderr)
+        model = args.model or "claude-sonnet-4-20250514"
+        result = think_cloud(prompt, model=model, system=POLISH_SYSTEM_PROMPT)
+        print(result)
         return
 
     # Haiku mode — use Q's voice

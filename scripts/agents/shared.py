@@ -15,8 +15,22 @@ QUEUE_FILE = os.path.join(REPO_DIR, "scripts", "posts", "queue.jsonl")
 _queue_lock = threading.Lock()
 
 
+def _content_similarity(a, b):
+    """Word-set Jaccard similarity between two strings."""
+    words_a = set(a.lower().split())
+    words_b = set(b.lower().split())
+    if not words_a or not words_b:
+        return 0.0
+    intersection = words_a & words_b
+    union = words_a | words_b
+    return len(intersection) / len(union)
+
+
 def _is_duplicate(text, hours=24):
-    """Check if near-identical text was already queued within the last N hours."""
+    """Check if near-identical text was already queued within the last N hours.
+
+    Uses both exact match and word-set similarity (>85% = duplicate).
+    """
     if not os.path.exists(QUEUE_FILE):
         return False
 
@@ -34,7 +48,10 @@ def _is_duplicate(text, hours=24):
                     created = entry.get("created", "")
                     if created < cutoff:
                         continue
-                    if entry.get("text", "").strip().lower() == normalized:
+                    existing = entry.get("text", "").strip().lower()
+                    if existing == normalized:
+                        return True
+                    if _content_similarity(existing, normalized) > 0.85:
                         return True
                 except json.JSONDecodeError:
                     continue
@@ -72,6 +89,12 @@ SOURCE_LIMITS = {
     "manual": 20,
     "scribe": 10,
     "guide-batch": 10,
+    "myth": 1,
+    "sync": 1,
+    "spore": 1,
+    "hum": 1,
+    "byte": 2,
+    "echo": 2,
 }
 
 
@@ -84,10 +107,19 @@ def queue_post(text, platform="bluesky", source=None):
         source: Which agent queued this (for logging)
 
     Returns:
-        True if queued, False if empty/duplicate/rate-limited.
+        True if queued, False if empty/duplicate/rate-limited/quality-failed.
     """
     if not text or not text.strip():
         return False
+
+    # Quality gate for social posts
+    try:
+        from quality import validate
+        ok, reasons = validate(text, "social")
+        if not ok:
+            return False
+    except ImportError:
+        pass
 
     # Bluesky limit is 300 graphemes
     if platform == "bluesky" and len(text) > 300:

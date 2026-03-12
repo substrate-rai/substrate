@@ -487,30 +487,53 @@ DETAILS = [
 ]
 
 
+def _recently_featured(n=3):
+    """Return set of agent IDs featured in the last N lore stories."""
+    recent = set()
+    if not os.path.isdir(REPORT_DIR):
+        return recent
+    story_files = sorted(
+        [f for f in os.listdir(REPORT_DIR) if f.endswith("-story.md")],
+        reverse=True
+    )[:n]
+    for fname in story_files:
+        path = os.path.join(REPORT_DIR, fname)
+        content = read_file(path)
+        m = re.search(r'\*\*Subject:\*\*\s*(\w+)', content)
+        if m:
+            recent.add(m.group(1).lower())
+    return recent
+
+
 def pick_story_subject(staff_agents, story_issues, orch_agents):
     """Pick one agent that's missing lore or has an incomplete story.
 
     Prioritizes agents with missing story/arc/quote fields, then falls back
-    to a random agent from the full roster.
+    to a random agent from the full roster. Avoids agents featured in the
+    last 3 stories.
     """
+    recently_used = _recently_featured(3)
+
     # Agents with incomplete story fields (from the audit)
     incomplete_ids = set()
     for issue in story_issues:
-        # Extract agent name from issue message like "AgentName: story field is..."
         name = issue["message"].split(":")[0].strip().lower()
         incomplete_ids.add(name)
 
-    # Try to pick from incomplete agents first
-    if incomplete_ids:
-        agent_id = random.choice(sorted(incomplete_ids))
+    # Remove recently featured agents
+    candidates = incomplete_ids - recently_used
+
+    if candidates:
+        agent_id = random.choice(sorted(candidates))
     else:
-        # Fall back to any agent from the roster
+        # Fall back to any agent not recently featured
         all_ids = [a["id"] for a in staff_agents]
         if not all_ids:
             all_ids = [a["name"].lower() for a in orch_agents]
         if not all_ids:
             return None
-        agent_id = random.choice(all_ids)
+        fresh = [a for a in all_ids if a not in recently_used]
+        agent_id = random.choice(fresh if fresh else all_ids)
 
     return agent_id
 

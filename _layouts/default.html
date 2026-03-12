@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ page.title | default: site.title }}</title>
+  <title>{% if page.title and page.title != site.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
   {% assign seo_description = page.description | default: page.excerpt | default: site.description | strip_html | truncatewords: 50 %}
   <meta name="description" content="{{ seo_description }}">
   <meta name="author" content="Substrate">
@@ -33,8 +33,10 @@
   <meta property="og:url" content="{{ page.url | prepend: site.baseurl | prepend: site.url }}">
   <meta property="og:site_name" content="{{ site.title }}">
   <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
-  <meta property="og:image" content="{{ site.url }}{{ site.baseurl }}/assets/social-card.svg">
-  <meta property="og:image:alt" content="Substrate - autonomous AI workstation running on NixOS">
+  {% if page.image %}<meta property="og:image" content="{{ site.url }}{{ site.baseurl }}{{ page.image }}">{% else %}<meta property="og:image" content="{{ site.url }}{{ site.baseurl }}/assets/social-card.png">{% endif %}
+  <meta property="og:image:alt" content="{{ page.title | default: 'Substrate - autonomous AI workstation running on NixOS' }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:locale" content="en_US">
   {% if page.layout == 'post' %}
   <meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
@@ -47,8 +49,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ page.title | default: site.title }}">
   <meta name="twitter:description" content="{{ seo_description }}">
-  <meta name="twitter:image" content="{{ site.url }}{{ site.baseurl }}/assets/social-card.svg">
-  <meta name="twitter:image:alt" content="Substrate - autonomous AI workstation running on NixOS">
+  {% if page.image %}<meta name="twitter:image" content="{{ site.url }}{{ site.baseurl }}{{ page.image }}">{% else %}<meta name="twitter:image" content="{{ site.url }}{{ site.baseurl }}/assets/social-card.png">{% endif %}
+  <meta name="twitter:image:alt" content="{{ page.title | default: 'Substrate - autonomous AI workstation running on NixOS' }}">
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">
@@ -66,7 +68,7 @@
       "description": "Autonomous AI workstation — 30 agents, 24 games, one NixOS laptop",
       "logo": {
         "@type": "ImageObject",
-        "url": "{{ site.url }}{{ site.baseurl }}/assets/social-card.svg"
+        "url": "{{ site.url }}{{ site.baseurl }}/assets/social-card.png"
       },
       "sameAs": [
         "https://github.com/substrate-rai/substrate",
@@ -74,11 +76,7 @@
       ],
       "knowsAbout": ["NixOS", "local AI inference", "Ollama", "CUDA", "Claude Code", "autonomous computing", "browser games"]
     },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "{{ site.url }}{{ site.baseurl }}/?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
+    "inLanguage": "en"
   }
   </script>
   <script type="application/ld+json">
@@ -123,10 +121,11 @@
       "name": "Substrate",
       "logo": {
         "@type": "ImageObject",
-        "url": "{{ site.url }}{{ site.baseurl }}/assets/social-card.svg"
+        "url": "{{ site.url }}{{ site.baseurl }}/assets/social-card.png"
       }
     },
-    "image": "{{ site.url }}{{ site.baseurl }}/assets/social-card.svg",
+    "image": "{% if page.image %}{{ site.url }}{{ site.baseurl }}{{ page.image }}{% else %}{{ site.url }}{{ site.baseurl }}/assets/social-card.png{% endif %}",
+    "wordCount": "{{ page.content | number_of_words }}",
     "keywords": "{{ page.tags | default: 'AI, NixOS' | join: ', ' }}"
   }
   </script>
