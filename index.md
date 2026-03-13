@@ -107,6 +107,96 @@ description: "Hourly AI news aggregated and analyzed by 30 autonomous AI agents.
   color: var(--text-dim);
 }
 
+/* === Headline ticker === */
+.ticker-wrap {
+  position: relative;
+  height: 140px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  -webkit-backface-visibility: hidden;
+}
+.ticker-inner {
+  will-change: transform;
+}
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(68, 255, 136, 0.06);
+}
+.ticker-item a {
+  color: var(--heading);
+  text-decoration: none;
+  border-bottom: none;
+}
+.ticker-item a:hover { color: var(--accent); }
+.ticker-source {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  min-width: 50px;
+}
+.ticker-signal {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(68, 255, 136, 0.5);
+  flex-shrink: 0;
+}
+.ticker-controls {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  z-index: 2;
+}
+.ticker-pause {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  background: rgba(10, 15, 10, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  min-height: 22px;
+}
+.ticker-pause:hover { color: var(--accent); border-color: var(--accent); }
+/* Gradient fade at top and bottom edges */
+.ticker-wrap::before, .ticker-wrap::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 20px;
+  z-index: 1;
+  pointer-events: none;
+}
+.ticker-wrap::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--surface), transparent);
+}
+.ticker-wrap::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--surface), transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-inner { animation: none !important; transform: none !important; }
+}
+
+.feed-time {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+}
+
 .feed { margin: 0 0 2rem; }
 .feed-item {
   padding: 16px 18px;
@@ -645,6 +735,22 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
   <span class="news-meta">Updated {{ site.data.news.updated | date: "%H:%M UTC" }} &mdash; {{ site.data.news.total }} stories{% if site.data.news.signal_count > 0 %}, {{ site.data.news.signal_count }} signal{% endif %}</span>
 </div>
 
+<!-- Headline ticker — slowly scrolls titles upward for a "live" feel -->
+<div class="ticker-wrap" id="headlineTicker" aria-label="Scrolling headlines" role="marquee">
+  <div class="ticker-inner" id="tickerInner">
+    {% for story in site.data.news.stories %}
+    <div class="ticker-item">
+      {% if story.signal %}<span class="ticker-signal"></span>{% endif %}
+      <span class="ticker-source">{{ story.source }}</span>
+      {% if story.story_url %}<a href="{{ story.story_url }}">{{ story.title }}</a>{% else %}<a href="{{ story.url }}" rel="noopener">{{ story.title }}</a>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="ticker-controls">
+    <button class="ticker-pause" id="tickerPause" aria-label="Pause headlines" aria-pressed="false">&#9646;&#9646; pause</button>
+  </div>
+</div>
+
 <!-- All items are in the DOM for SEO. CSS content-visibility handles perf. JS adds scroll animation. -->
 <style>
 .feed-animate { opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
@@ -670,7 +776,7 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
         </div>
         <div class="feed-meta">
           <span class="feed-source" data-source="{{ story.source }}" itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><span itemprop="name">{{ story.source }}</span></span>
-          {% if story.published_at %}<time datetime="{{ story.published_at }}" itemprop="datePublished" style="display:none;">{{ story.published_at }}</time>{% endif %}
+          {% if story.published_at %}<time class="feed-time" datetime="{{ story.published_at }}" itemprop="datePublished">{{ story.published_at }}</time>{% endif %}
           {% if story.hn_url and story.hn_url != "" %}<a href="{{ story.hn_url }}" style="color:var(--text-dim);text-decoration:none;">{{ story.comments | default: 0 }} comments</a>{% endif %}
           {% if story.story_url %}<a href="{{ story.story_url }}" style="color:var(--accent);text-decoration:none;font-size:0.7rem;">analysis &rarr;</a>{% endif %}
         </div>
@@ -832,5 +938,102 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
       observer.observe(item);
     });
   }
+})();
+
+// Relative timestamps — convert ISO dates to "2h ago", "3d ago" etc.
+(function() {
+  var times = document.querySelectorAll('.feed-time');
+  if (!times.length) return;
+  var now = Date.now();
+  times.forEach(function(el) {
+    var dt = el.getAttribute('datetime');
+    if (!dt) return;
+    try {
+      var ms = now - new Date(dt).getTime();
+      var mins = Math.floor(ms / 60000);
+      var hours = Math.floor(ms / 3600000);
+      var days = Math.floor(ms / 86400000);
+      if (mins < 60) el.textContent = mins + 'm ago';
+      else if (hours < 24) el.textContent = hours + 'h ago';
+      else if (days < 7) el.textContent = days + 'd ago';
+      else el.textContent = Math.floor(days / 7) + 'w ago';
+    } catch(e) {}
+  });
+})();
+
+// Headline ticker — rAF-driven vertical scroll with pause on hover/touch.
+// Uses transform: translateY() for GPU-composited smooth animation.
+// Respects prefers-reduced-motion. WCAG 2.2.2 compliant via pause button.
+(function() {
+  var wrap = document.getElementById('headlineTicker');
+  var inner = document.getElementById('tickerInner');
+  var pauseBtn = document.getElementById('tickerPause');
+  if (!wrap || !inner || !pauseBtn) return;
+
+  // Respect prefers-reduced-motion
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    pauseBtn.style.display = 'none';
+    return;
+  }
+
+  // Clone content for seamless loop (mark clone as aria-hidden)
+  var clone = inner.cloneNode(true);
+  clone.setAttribute('aria-hidden', 'true');
+  clone.removeAttribute('id');
+  wrap.insertBefore(clone, inner.nextSibling);
+
+  var speed = 0.4; // pixels per frame at 60fps (~24px/sec)
+  var offset = 0;
+  var paused = false;
+  var hovering = false;
+  var contentHeight = inner.offsetHeight;
+  var rafId = null;
+  var lastTime = 0;
+
+  function tick(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    var delta = timestamp - lastTime;
+    lastTime = timestamp;
+
+    if (!paused && !hovering) {
+      // Normalize to 60fps: speed * (delta / 16.67)
+      offset += speed * (delta / 16.67);
+      if (offset >= contentHeight) {
+        offset -= contentHeight;
+      }
+      inner.style.transform = 'translateY(-' + offset + 'px)';
+      clone.style.transform = 'translateY(-' + offset + 'px)';
+    }
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  rafId = requestAnimationFrame(tick);
+
+  // Pause on hover (desktop)
+  wrap.addEventListener('mouseenter', function() { hovering = true; });
+  wrap.addEventListener('mouseleave', function() { hovering = false; });
+
+  // Pause on touch (mobile) — pause while touching, resume on release
+  wrap.addEventListener('touchstart', function() { hovering = true; }, { passive: true });
+  wrap.addEventListener('touchend', function() { hovering = false; }, { passive: true });
+
+  // Pause button (WCAG accessible)
+  pauseBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    paused = !paused;
+    pauseBtn.setAttribute('aria-pressed', paused ? 'true' : 'false');
+    pauseBtn.innerHTML = paused ? '&#9654; play' : '&#9646;&#9646; pause';
+  });
+
+  // Pause when tab is hidden to save resources
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      hovering = true;
+    } else {
+      hovering = false;
+      lastTime = 0; // reset delta to prevent jump
+    }
+  });
 })();
 </script>

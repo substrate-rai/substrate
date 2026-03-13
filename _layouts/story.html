@@ -335,7 +335,7 @@ layout: default
       <span class="myco-icon"></span>
       {{ page.commentary | size }} agent{% if page.commentary.size != 1 %}s{% endif %} analyzed this
     </div>
-    {% for c in page.commentary %}
+    {% for c in page.commentary limit:3 %}
     <div class="commentary-card">
       <div class="commentary-card-header">
         <img class="comment-avatar" src="{{ site.baseurl }}/assets/images/generated/agent-{{ c.agent }}.webp" alt="{{ c.agent }}" loading="lazy" width="32" height="32">
@@ -347,6 +347,26 @@ layout: default
       <div class="commentary-card-text">{{ c.text }}</div>
     </div>
     {% endfor %}
+    {% if page.commentary.size > 3 %}
+    <button class="more-comments-btn" aria-expanded="false" onclick="var t=this.nextElementSibling;var v=t.style.display!=='none';t.style.display=v?'none':'block';this.setAttribute('aria-expanded',!v);this.querySelector('.btn-text').textContent=v?'Show {{ page.commentary.size | minus: 3 }} more agents':'Hide agents'" style="margin-top:8px;font-family:var(--mono);font-size:0.7rem;color:var(--accent);background:rgba(68,255,136,0.06);border:1px solid rgba(68,255,136,0.12);border-radius:6px;padding:6px 14px;cursor:pointer;">
+      <span class="btn-text">Show {{ page.commentary.size | minus: 3 }} more agents</span>
+      <span style="margin-left:4px;">&#9660;</span>
+    </button>
+    <div style="display:none;">
+    {% for c in page.commentary offset:3 %}
+    <div class="commentary-card">
+      <div class="commentary-card-header">
+        <img class="comment-avatar" src="{{ site.baseurl }}/assets/images/generated/agent-{{ c.agent }}.webp" alt="{{ c.agent }}" loading="lazy" width="32" height="32">
+        <div class="commentary-card-meta">
+          <a href="{{ site.baseurl }}/site/staff/#{{ c.agent }}" class="comment-badge badge-{{ c.agent }}"><span class="dot"></span>{{ c.agent }}</a>
+          {% if c.role %}<span class="commentary-card-role">{{ c.role }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="commentary-card-text">{{ c.text }}</div>
+    </div>
+    {% endfor %}
+    </div>
+    {% endif %}
   </section>
   {% endif %}
 

@@ -10,6 +10,7 @@ Usage: python3 scripts/agents/news_aggregator.py
 
 import glob
 import json
+import math
 import os
 import re
 import shutil
@@ -19,7 +20,7 @@ from datetime import datetime, timezone, timedelta
 
 # Add agents dir to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from shared_news import fetch_all_sources, score_and_rank, signal_score
+from shared_news import fetch_all_sources, score_and_rank, signal_score, SOURCE_TIER
 from commentary_engine import generate_story_commentary
 from ollama_client import is_available
 
@@ -27,9 +28,77 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 DATA_DIR = os.path.join(REPO_ROOT, "_data")
 
 COMMENTARY_LIMIT = 10  # Top N stories get commentary
-OUTPUT_LIMIT = 50       # Total stories in news.json (increased for scroll feed)
+OUTPUT_LIMIT = 60       # Total stories in news.json (increased for ticker + retention)
 NEWS_DIR = os.path.join(REPO_ROOT, "news")
-STORY_RETAIN_DAYS = 7   # Keep story pages for this many days
+STORY_RETAIN_DAYS = 14  # Keep stories in the feed for this many days
+
+# Time-decay parameters
+HALF_LIFE_PRIMARY = 18   # hours — primary sources (Anthropic, OpenAI, Google) decay slower
+HALF_LIFE_EXTERNAL = 12  # hours — external press
+HALF_LIFE_HN = 8         # hours — HN stories decay fastest
+SIGNAL_FLOOR = 0.15      # minimum decay for signal stories (keeps them visible ~2 weeks)
+
+
+def _time_decay(age_hours, half_life, is_signal=False):
+    """Exponential time-decay. Returns a multiplier between 0 and 1.
+
+    Signal stories have a minimum floor to keep them visible for weeks.
+    """
+    decay = math.exp(-math.log(2) * age_hours / half_life)
+    if is_signal:
+        return max(decay, SIGNAL_FLOOR)
+    return decay
+
+
+def _get_half_life(source):
+    """Get the appropriate half-life for a source."""
+    if source in ("Anthropic", "Claude Code", "OpenAI", "Google DeepMind", "Google AI"):
+        return HALF_LIFE_PRIMARY
+    if source == "HN":
+        return HALF_LIFE_HN
+    return HALF_LIFE_EXTERNAL
+
+
+def _load_previous_stories():
+    """Load stories from the existing news.json for retention/merging.
+
+    Returns a dict of {title: story_entry} for deduplication and merging.
+    """
+    path = os.path.join(DATA_DIR, "news.json")
+    if not os.path.exists(path):
+        return {}
+
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return {}
+
+    now = datetime.now(timezone.utc)
+    retained = {}
+    for story in data.get("stories", []):
+        title = story.get("title", "")
+        if not title:
+            continue
+
+        # Calculate age from published_at or the file's updated timestamp
+        pub = story.get("published_at", data.get("updated", ""))
+        age_hours = 0
+        if pub:
+            try:
+                pub_dt = datetime.fromisoformat(pub.replace("Z", "+00:00"))
+                age_hours = (now - pub_dt).total_seconds() / 3600
+            except (ValueError, TypeError):
+                age_hours = 24  # default to 1 day if unparsable
+
+        # Drop stories older than retention window
+        if age_hours > STORY_RETAIN_DAYS * 24:
+            continue
+
+        story["_age_hours"] = age_hours
+        retained[title] = story
+
+    return retained
 
 
 def _consolidate_claude_code(stories):
@@ -67,55 +136,75 @@ def _consolidate_claude_code(stories):
 
 
 def build_news_json(stories, commentary_limit=COMMENTARY_LIMIT):
-    """Build the news.json data structure with optional commentary."""
+    """Build the news.json data structure with optional commentary.
+
+    Merges new stories with retained stories from the previous run,
+    applies time-decay scoring, and generates commentary threads
+    for the top stories that don't already have commentary.
+    """
+
+    # Load previous stories for retention
+    previous = _load_previous_stories()
+    print(f"  [retain] {len(previous)} stories from previous run")
 
     # Consolidate Claude Code entries into one summary article
     cc_article, stories = _consolidate_claude_code(stories)
 
+    now = datetime.now(timezone.utc)
     entries = []
     seen = set()
     signal_count = 0
     commentary_count = 0
 
-    # Insert Claude Code consolidated article (will be placed by source tier)
+    # Insert Claude Code consolidated article
     all_stories = list(stories)
     if cc_article:
         all_stories.append(cc_article)
-        # Re-sort to place by tier
-        from shared_news import SOURCE_TIER
-        all_stories.sort(
-            key=lambda x: (
-                SOURCE_TIER.get(x.get("_source", "HN"), 10),
-                x.get("_relevance", 0),
-                x.get("score", 0),
-            ),
-            reverse=True,
-        )
 
-    for story in all_stories[:OUTPUT_LIMIT]:
+    # Build new entries from fetched stories
+    for story in all_stories:
         title = story.get("title", "Untitled")
         if title in seen:
             continue
         seen.add(title)
 
+        source = story.get("_source", "HN")
         is_signal = story.get("_signal", 0) > 3
         if is_signal:
             signal_count += 1
 
+        # Calculate age and time-decay score
+        pub_date = story.get("pub_date", "")
+        age_hours = 0
+        if pub_date:
+            try:
+                pub_dt = datetime.fromisoformat(pub_date.replace("Z", "+00:00"))
+                age_hours = max(0, (now - pub_dt).total_seconds() / 3600)
+            except (ValueError, TypeError):
+                age_hours = 0
+
+        half_life = _get_half_life(source)
+        decay = _time_decay(age_hours, half_life, is_signal)
+        relevance = story.get("_relevance", 0)
+        hn_score = story.get("score", 0)
+        tier = SOURCE_TIER.get(source, 10)
+
+        # Combined score: (tier + relevance + log boost from HN) * time decay
+        combined = (tier + relevance + 0.1 * math.log(1 + hn_score)) * decay
+
         entry = {
             "title": title,
             "url": story.get("url", ""),
-            "source": story.get("_source", "HN"),
+            "source": source,
             "signal": is_signal,
-            "relevance": story.get("_relevance", 0),
+            "relevance": relevance,
+            "_combined": combined,
+            "_age_hours": age_hours,
         }
 
-        # Individual publish date (for SEO: sitemap + structured data)
-        pub_date = story.get("pub_date", "")
         if pub_date:
             entry["published_at"] = pub_date
 
-        # Include version list for consolidated Claude Code articles
         if story.get("_versions"):
             entry["versions"] = story["_versions"]
 
@@ -123,30 +212,73 @@ def build_news_json(stories, commentary_limit=COMMENTARY_LIMIT):
         hn_id = story.get("id", "")
         if hn_id:
             entry["hn_url"] = f"https://news.ycombinator.com/item?id={hn_id}"
-        points = story.get("score", 0)
-        if points:
-            entry["points"] = points
+        if hn_score:
+            entry["points"] = hn_score
         comments = story.get("descendants", 0)
         if comments:
             entry["comments"] = comments
 
-        # Generate commentary for top stories (3 core agents for Claude Code,
-        # 4 agents for regular stories)
-        if commentary_count < commentary_limit and is_available():
-            print(f"  Generating commentary for: {title[:60]}...")
-            commentary = generate_story_commentary(story)
-            if commentary:
-                entry["commentary"] = commentary
-            commentary_count += 1
+        # Carry over existing commentary from previous run
+        if title in previous and "commentary" in previous[title]:
+            entry["commentary"] = previous[title]["commentary"]
+            # Also carry over story_url if it existed
+            if "story_url" in previous[title]:
+                entry["story_url"] = previous[title]["story_url"]
 
         entries.append(entry)
 
+    # Merge in retained stories that weren't re-fetched this run
+    for title, prev_story in previous.items():
+        if title in seen:
+            continue
+        seen.add(title)
+
+        age_hours = prev_story.get("_age_hours", 24)
+        source = prev_story.get("source", "HN")
+        is_signal = prev_story.get("signal", False)
+        half_life = _get_half_life(source)
+        decay = _time_decay(age_hours, half_life, is_signal)
+        relevance = prev_story.get("relevance", 0)
+        hn_score = prev_story.get("points", 0) or 0
+        tier = SOURCE_TIER.get(source, 10)
+        combined = (tier + relevance + 0.1 * math.log(1 + hn_score)) * decay
+
+        if is_signal:
+            signal_count += 1
+
+        prev_story["_combined"] = combined
+        entries.append(prev_story)
+
+    # Sort by combined score (time-decay weighted)
+    entries.sort(key=lambda x: x.get("_combined", 0), reverse=True)
+
+    # Generate commentary for top stories that don't have it yet
+    for entry in entries[:OUTPUT_LIMIT]:
+        if "commentary" in entry:
+            continue
+        if commentary_count >= commentary_limit:
+            break
+        if not is_available():
+            break
+        print(f"  Generating commentary for: {entry['title'][:60]}...")
+        commentary = generate_story_commentary(entry)
+        if commentary:
+            entry["commentary"] = commentary
+        commentary_count += 1
+
+    # Trim to output limit and clean internal fields
+    final_entries = []
+    for entry in entries[:OUTPUT_LIMIT]:
+        entry.pop("_combined", None)
+        entry.pop("_age_hours", None)
+        final_entries.append(entry)
+
     return {
-        "updated": datetime.now(timezone.utc).isoformat(),
-        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-        "total": len(entries),
+        "updated": now.isoformat(),
+        "date": now.strftime("%Y-%m-%d"),
+        "total": len(final_entries),
         "signal_count": signal_count,
-        "stories": entries,
+        "stories": final_entries,
     }
 
 
@@ -349,9 +481,10 @@ def main():
     ranked = score_and_rank(stories)
     print(f"\nFetched {len(ranked)} relevant stories.")
 
-    # 3. Build news.json (with commentary if Ollama available)
+    # 3. Build news.json (merge with retained stories, apply time-decay,
+    #    generate threaded commentary if Ollama available)
     if is_available():
-        print(f"\nOllama available. Generating commentary for top {COMMENTARY_LIMIT} stories...")
+        print(f"\nOllama available. Generating threaded commentary (up to 10 agents) for top {COMMENTARY_LIMIT} stories...")
     else:
         print("\nOllama unavailable. Outputting headlines only.")
 
