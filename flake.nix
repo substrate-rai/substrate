@@ -24,7 +24,7 @@
     devShells.${system} = {
       default = pkgs.mkShell {
         packages = [
-          (pkgs.python3.withPackages (ps: [ ps.requests ]))
+          (pkgs.python3.withPackages (ps: [ ps.requests ps.google-genai ]))
         ];
       };
 
