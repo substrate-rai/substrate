@@ -30,6 +30,7 @@ RSS_FEEDS = {
     "OpenAI": "https://openai.com/blog/rss.xml",
     "Google DeepMind": "https://deepmind.google/blog/rss.xml",
     "Google AI": "https://blog.google/technology/ai/rss/",
+    "Cohere": "https://cohere-ai.ghost.io/rss/",
     # Tier 1: Major AI labs
     "Hugging Face": "https://huggingface.co/blog/feed.xml",
     "Meta AI": "https://engineering.fb.com/category/ai-research/feed/",
@@ -58,7 +59,7 @@ RSS_FEEDS = {
     # Tier 5: Policy
     "EFF Deeplinks": "https://www.eff.org/rss/updates.xml",
     "EU AI Act": "https://artificialintelligenceact.eu/feed/",
-    # Note: Perplexity, xAI have no public RSS feeds (verified 2026-03)
+    # Note: xAI, Mistral, Perplexity have no RSS — scraped via fetch_frontier_news() below
 }
 
 # Markdown changelog sources — not RSS, parsed separately
@@ -71,7 +72,8 @@ CHANGELOG_SOURCES = {
 RELEVANCE_KEYWORDS = [
     # AI / ML core
     "ai", "llm", "gpt", "claude", "anthropic", "openai", "gemini", "mistral",
-    "llama", "qwen", "deepseek", "transformer", "diffusion", "neural",
+    "llama", "qwen", "deepseek", "mistral", "cohere", "perplexity", "grok", "xai",
+    "transformer", "diffusion", "neural",
     "machine learning", "deep learning", "inference", "fine-tun", "rag",
     "embedding", "token", "prompt", "agent", "copilot", "chatbot",
     # Local / sovereign
@@ -109,6 +111,11 @@ SOURCE_TIER = {
     "Google DeepMind": 80,
     "Google AI": 80,
     "OpenAI": 60,
+    # Frontier labs (scraped, no RSS)
+    "xAI": 50,
+    "Mistral": 50,
+    "Perplexity": 50,
+    "Cohere": 45,
     # External research / press sources
     "arXiv cs.AI": 40,
     "arXiv cs.CL": 40,
@@ -176,6 +183,10 @@ def fetch_rss_titles(url):
         if title_m:
             title = html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', title_m.group(1)).strip())
             link = link_m.group(1).strip() if link_m else ""
+            # Cohere Ghost CMS fix: rewrite ghost.io URLs to canonical cohere.com/blog/
+            if "cohere-ai.ghost.io" in link:
+                slug = link.rstrip("/").split("/")[-1]
+                link = f"https://cohere.com/blog/{slug}"
             pub_date = date_m.group(1).strip() if date_m else ""
             items.append({"title": title, "url": link, "score": 0, "descendants": 0, "id": "", "pub_date": pub_date})
     return items[:10]
@@ -238,6 +249,117 @@ def fetch_anthropic_news(max_entries=10):
             seen_urls.add(item["url"])
             unique.append(item)
     return unique[:max_entries]
+
+
+# Frontier lab blog configs — sites without RSS feeds
+_FRONTIER_BLOGS = {
+    "xAI": {
+        "url": "https://x.ai/news",
+        "link_pattern": r'href="(/news/[a-z0-9][a-z0-9-]*)"',
+        "title_pattern": r'href="({path})"[^>]*>.*?<(?:h[1-4])[^>]*>([^<]+)<',
+        "base_url": "https://x.ai",
+    },
+    "Mistral": {
+        "url": "https://mistral.ai/news",
+        "link_pattern": r'href="(/news/[a-z0-9][a-z0-9-]*)"',
+        "title_pattern": r'href="({path})"[^>]*>.*?<(?:h[1-4])[^>]*>([^<]+)<',
+        "base_url": "https://mistral.ai",
+        "sitemap": "https://mistral.ai/sitemap.xml",
+        "sitemap_pattern": r'<loc>(https://mistral\.ai/news/[^<]+)</loc>',
+    },
+    "Perplexity": {
+        "url": "https://www.perplexity.ai/hub/blog",
+        "link_pattern": r'hub/blog/([a-z0-9][a-z0-9-]+[a-z0-9])',
+        "title_pattern": None,  # titles extracted from slug
+        "base_url": "https://www.perplexity.ai",
+    },
+}
+
+
+def fetch_frontier_news(max_entries=10):
+    """Scrape blog pages for frontier AI labs without RSS feeds (xAI, Mistral, Perplexity)."""
+    all_items = {}  # source_name -> list of items
+
+    for source, cfg in _FRONTIER_BLOGS.items():
+        items = []
+        try:
+            req = urllib.request.Request(cfg["url"], headers={
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36",
+            })
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
+                data = resp.read().decode("utf-8", errors="replace")
+        except Exception as e:
+            print(f"  [warn] {source} fetch failed: {e}", file=sys.stderr)
+            all_items[source] = []
+            continue
+
+        # Extract links
+        slugs = re.findall(cfg["link_pattern"], data)
+        seen = set()
+        for slug in slugs:
+            if slug in seen:
+                continue
+            seen.add(slug)
+
+            # Try to extract title from nearby heading
+            title = None
+            if cfg["title_pattern"]:
+                path = slug if slug.startswith("/") else f"/hub/blog/{slug}"
+                pattern = cfg["title_pattern"].replace("{path}", re.escape(path))
+                m = re.search(pattern, data, re.DOTALL)
+                if m:
+                    title = html.unescape(m.group(2).strip()) if m.lastindex >= 2 else None
+
+            # Fallback: title from slug
+            if not title:
+                raw_slug = slug.split("/")[-1]
+                title = raw_slug.replace("-", " ").title()
+
+            if slug.startswith("/"):
+                url = f"{cfg['base_url']}{slug}"
+            else:
+                url = f"{cfg['base_url']}/hub/blog/{slug}"
+
+            if title and len(title) > 3:
+                items.append({
+                    "title": title,
+                    "url": url,
+                    "score": 0,
+                    "descendants": 0,
+                    "id": "",
+                })
+
+        # Sitemap fallback: if HTML scrape yielded few results and a sitemap is configured
+        if len(items) < 3 and cfg.get("sitemap"):
+            try:
+                req2 = urllib.request.Request(cfg["sitemap"], headers={
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+                })
+                with urllib.request.urlopen(req2, timeout=REQUEST_TIMEOUT) as resp2:
+                    sitemap_data = resp2.read().decode("utf-8", errors="replace")
+                sitemap_urls = re.findall(cfg["sitemap_pattern"], sitemap_data)
+                # Take most recent (last in sitemap) that aren't already found
+                existing_urls = {i["url"] for i in items}
+                for surl in reversed(sitemap_urls):
+                    if surl in existing_urls:
+                        continue
+                    slug = surl.rstrip("/").split("/")[-1]
+                    title = slug.replace("-", " ").title()
+                    items.append({
+                        "title": title,
+                        "url": surl,
+                        "score": 0,
+                        "descendants": 0,
+                        "id": "",
+                    })
+                    if len(items) >= max_entries:
+                        break
+            except Exception as e:
+                print(f"  [warn] {source} sitemap fallback failed: {e}", file=sys.stderr)
+
+        all_items[source] = items[:max_entries]
+
+    return all_items
 
 
 def fetch_markdown_changelog(url, max_entries=5):
@@ -427,7 +549,29 @@ def fetch_all_sources():
             seen_urls.add(norm)
     print(f"  Anthropic: {anthropic_count} items  [PRIMARY]")
 
-    # 4. Markdown changelogs (Claude Code, etc.)
+    # 4. Frontier labs (HTML scrape — no RSS available)
+    print("Scraping frontier lab blogs...")
+    frontier_items = fetch_frontier_news()
+    for source_name, items in frontier_items.items():
+        count = 0
+        for item in items:
+            title = item.get("title", "")
+            url = item.get("url", "")
+            norm = _normalize_url(url) if url else ""
+            if norm and norm in seen_urls:
+                continue
+            score = relevance_score(title, url)
+            score = max(score, 2)  # frontier lab content is always relevant
+            item["_relevance"] = score
+            item["_signal"] = signal_score(title, url)
+            item["_source"] = source_name
+            stories.append(item)
+            count += 1
+            if norm:
+                seen_urls.add(norm)
+        print(f"  {source_name}: {count} items")
+
+    # 5. Markdown changelogs (Claude Code, etc.)
     print("Scanning changelog sources...")
     for source_name, changelog_url in CHANGELOG_SOURCES.items():
         items = fetch_markdown_changelog(changelog_url)
