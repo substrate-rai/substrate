@@ -183,6 +183,22 @@ def build_news_json(stories, commentary_limit=COMMENTARY_LIMIT):
             except (ValueError, TypeError):
                 age_hours = 0
 
+        # If no pub_date, check if story exists in previous run and use its age
+        # (prevents dateless stories from ranking #1 forever)
+        if not pub_date and title in previous:
+            prev_pub = previous[title].get("published_at", "")
+            if prev_pub:
+                try:
+                    pub_dt = datetime.fromisoformat(prev_pub.replace("Z", "+00:00"))
+                    age_hours = max(0, (now - pub_dt).total_seconds() / 3600)
+                    pub_date = prev_pub  # preserve the timestamp
+                except (ValueError, TypeError):
+                    pass
+
+        # If still no date, stamp it as "now" so it decays on future runs
+        if not pub_date:
+            pub_date = now.isoformat()
+
         half_life = _get_half_life(source)
         decay = _time_decay(age_hours, half_life, is_signal)
         relevance = story.get("_relevance", 0)
@@ -219,8 +235,12 @@ def build_news_json(stories, commentary_limit=COMMENTARY_LIMIT):
             entry["comments"] = comments
 
         # Carry over existing commentary from previous run
+        # Re-generate if old format (< 10 comments) to upgrade to threaded commentary
         if title in previous and "commentary" in previous[title]:
-            entry["commentary"] = previous[title]["commentary"]
+            prev_commentary = previous[title]["commentary"]
+            if len(prev_commentary) >= 10:
+                entry["commentary"] = prev_commentary
+            # else: drop old commentary so it gets regenerated with threaded format
             # Also carry over story_url if it existed
             if "story_url" in previous[title]:
                 entry["story_url"] = previous[title]["story_url"]
@@ -245,6 +265,10 @@ def build_news_json(stories, commentary_limit=COMMENTARY_LIMIT):
 
         if is_signal:
             signal_count += 1
+
+        # Drop old-format commentary (< 10 comments) so it gets regenerated
+        if "commentary" in prev_story and len(prev_story["commentary"]) < 10:
+            del prev_story["commentary"]
 
         prev_story["_combined"] = combined
         entries.append(prev_story)
