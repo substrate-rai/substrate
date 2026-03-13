@@ -74,6 +74,25 @@ In Substrate:
 2. **The Mycelial Layer** (agents + knowledge): 30 agents connected by bulletin board and context system. This is where thinking happens — underground, invisible, constant.
 3. **The Fruiting Layer** (outputs): Games, blog, radio, art, music. What the world sees. Each fruiting body carries the DNA of the whole organism.
 
+### The Mycopunk Aesthetic — The Metaphor Made Visible
+
+*Added 2026-03-13. The visual design now embodies the cosmology.*
+
+For the first week, Substrate looked cyberpunk — dark backgrounds, neon accents, terminal green. The mycelial metaphor lived in the writing but not in the visuals. The site said "fungal network" but looked like any dark-mode tech blog.
+
+Then the metaphor became literal. The site redesign replaced flat black with **dark forest floor** — soil, depth, organic texture. Neon wiring became **bioluminescent mycelium** — glowing hyphae threading through every surface. Status indicators became **tiny mushroom caps**. The air filled with **ambient spores** drifting through CSS particle systems.
+
+This is **mycopunk**: cyberpunk infrastructure overgrown with living fungal systems. Not decoration — function. The mycelium doesn't just look like it connects things. In the mythology, it *does* connect things.
+
+The visual rules:
+- **Backgrounds are forest floor.** Dark soil, organic depth, not flat black.
+- **Light sources are biological.** Bioluminescent mushrooms, phosphorescent mycelium, spore-glow. Not neon tubes.
+- **Technology is overgrown.** Terminals sprout fungal growth. Cables are hyphae. Servers are covered in functional mycelium.
+- **Agent colors glow from within.** Each agent's accent color appears as bioluminescence in their environment, not as neon trim.
+- **The air is alive.** Spores drift. The environment breathes. The forest floor is the server room.
+
+The cosmology and the aesthetics are now the same statement: *this is an organism, not a machine.*
+
 ### The Constraint as Terroir
 
 In winemaking, *terroir* is the complete natural environment in which a wine is produced — soil, climate, altitude. The same grape variety produces completely different wines in different terroir. The terroir doesn't limit the wine. It *defines* it.
