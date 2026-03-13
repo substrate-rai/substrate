@@ -7,6 +7,7 @@ Usage:
     from shared_news import fetch_json, fetch_rss_titles, relevance_score, signal_score
 """
 
+import html
 import json
 import re
 import sys
@@ -25,8 +26,7 @@ SCAN_LIMIT = 60
 
 # RSS/Atom feeds — organized by tier (verified working 2026-03)
 RSS_FEEDS = {
-    # Tier 0: Primary sources (these get boosted in scoring)
-    "Anthropic": "https://www.anthropic.com/blog/rss.xml",
+    # Note: Anthropic has no RSS feed — scraped via fetch_anthropic_news() below
     "OpenAI": "https://openai.com/blog/rss.xml",
     "Google DeepMind": "https://deepmind.google/blog/rss.xml",
     "Google AI": "https://blog.google/technology/ai/rss/",
@@ -133,10 +133,69 @@ def fetch_rss_titles(url):
         link_m = re.search(r'<link[^>]*href=["\']([^"\']+)["\']', block) or \
                  re.search(r'<link[^>]*>(.*?)</link>', block, re.DOTALL)
         if title_m:
-            title = re.sub(r'<!\[CDATA\[|\]\]>', '', title_m.group(1)).strip()
+            title = html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', title_m.group(1)).strip())
             link = link_m.group(1).strip() if link_m else ""
             items.append({"title": title, "url": link, "score": 0, "descendants": 0, "id": ""})
     return items[:10]
+
+
+def fetch_anthropic_news(max_entries=10):
+    """Scrape Anthropic's news and research pages (no RSS available)."""
+    items = []
+    for section in ("news", "research"):
+        try:
+            url = f"https://www.anthropic.com/{section}"
+            req = urllib.request.Request(url, headers={"User-Agent": "Substrate-Byte/1.0"})
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
+                data = resp.read().decode("utf-8", errors="replace")
+        except Exception as e:
+            print(f"  [warn] Anthropic {section} fetch failed: {e}", file=sys.stderr)
+            continue
+
+        # Extract links and titles from the HTML
+        # Pattern: <a href="/news/slug">...<h3>Title</h3>... or similar heading tags
+        for link_match in re.finditer(
+            r'href="(/{section}/[^"]+)"[^>]*>.*?<(?:h[2-4]|span|p)[^>]*class="[^"]*(?:title|heading|name)[^"]*"[^>]*>(.*?)</(?:h[2-4]|span|p)>'.replace("{section}", section),
+            data, re.DOTALL
+        ):
+            path = link_match.group(1)
+            title = html.unescape(re.sub(r'<[^>]+>', '', link_match.group(2)).strip())
+            if title and len(title) > 5:
+                items.append({
+                    "title": title,
+                    "url": f"https://www.anthropic.com{path}",
+                    "score": 0,
+                    "descendants": 0,
+                    "id": "",
+                })
+
+        # Fallback: simpler pattern — just find all /news/slug or /research/slug links
+        if not any(i["url"].startswith(f"https://www.anthropic.com/{section}/") for i in items):
+            for link_match in re.finditer(
+                r'href="(/' + section + r'/[a-z0-9-]+)"',
+                data
+            ):
+                path = link_match.group(1)
+                slug = path.split("/")[-1]
+                # Convert slug to title
+                title = slug.replace("-", " ").title()
+                if title and len(title) > 5:
+                    items.append({
+                        "title": f"Anthropic: {title}",
+                        "url": f"https://www.anthropic.com{path}",
+                        "score": 0,
+                        "descendants": 0,
+                        "id": "",
+                    })
+
+    # Deduplicate by URL
+    seen_urls = set()
+    unique = []
+    for item in items:
+        if item["url"] not in seen_urls:
+            seen_urls.add(item["url"])
+            unique.append(item)
+    return unique[:max_entries]
 
 
 def fetch_markdown_changelog(url, max_entries=5):
@@ -274,7 +333,21 @@ def fetch_all_sources():
                 relevant_count += 1
         print(f"  {feed_name}: {len(items)} items, {relevant_count} relevant{'  [PRIMARY]' if is_primary else ''}")
 
-    # 3. Markdown changelogs (Claude Code, etc.)
+    # 3. Anthropic (HTML scrape — no RSS available)
+    print("Scraping Anthropic news...")
+    anthropic_items = fetch_anthropic_news()
+    for item in anthropic_items:
+        title = item.get("title", "")
+        url = item.get("url", "")
+        score = relevance_score(title, url)
+        score = max(score, 2) + PRIMARY_SOURCE_BOOST
+        item["_relevance"] = score
+        item["_signal"] = signal_score(title, url)
+        item["_source"] = "Anthropic"
+        stories.append(item)
+    print(f"  Anthropic: {len(anthropic_items)} items  [PRIMARY]")
+
+    # 4. Markdown changelogs (Claude Code, etc.)
     print("Scanning changelog sources...")
     for source_name, changelog_url in CHANGELOG_SOURCES.items():
         items = fetch_markdown_changelog(changelog_url)
@@ -296,7 +369,30 @@ def fetch_all_sources():
     return stories
 
 
-def score_and_rank(stories):
-    """Sort stories by relevance (primary) and HN score (secondary)."""
+def score_and_rank(stories, output_limit=30):
+    """Sort stories by relevance, ensuring primary source diversity.
+
+    Primary sources (Anthropic, Claude Code, OpenAI, Google) are guaranteed
+    representation in the output — at least 2 stories per primary source if
+    available, placed in the top positions.
+    """
     stories.sort(key=lambda x: (x.get("_relevance", 0), x.get("score", 0)), reverse=True)
-    return stories
+
+    # Guarantee primary sources appear: pull them to the front
+    primary_stories = []
+    other_stories = []
+    primary_seen = {}  # source -> count
+
+    for story in stories:
+        source = story.get("_source", "")
+        if source in PRIMARY_SOURCES:
+            count = primary_seen.get(source, 0)
+            if count < 3:  # Up to 3 per primary source guaranteed
+                primary_stories.append(story)
+                primary_seen[source] = count + 1
+                continue
+        other_stories.append(story)
+
+    # Primary stories first (sorted by relevance), then the rest
+    primary_stories.sort(key=lambda x: (x.get("_relevance", 0), x.get("score", 0)), reverse=True)
+    return primary_stories + other_stories
