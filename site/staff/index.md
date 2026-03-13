@@ -203,7 +203,7 @@ redirect_from:
     width: 100%;
     height: 100vh;
     height: 100dvh;
-    background: var(--surface);
+    background: #0d0f12;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     transform: translateY(100%);
@@ -292,32 +292,82 @@ redirect_from:
     .agent-nav-arrow { display: none; }
   }
 
-  /* Bottom sheet drag handle (mobile only) */
-  .detail-handle {
-    display: none;
+  /* ===== TRADING CARD LAYOUT ===== */
+  /* Proportions based on MTG: art 44%, nameplate 6%, type 5%, textbox 30%, frame 8% */
+
+  /* Card frame — centers and constrains on desktop */
+  .card-frame {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 12px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  @media (max-width: 768px) {
+    .card-frame {
+      max-width: 100%;
+      padding: 0;
+      justify-content: flex-start;
+    }
   }
 
-  /* Portrait area */
+  /* Card inner — the actual card with border bevel */
+  .card-inner {
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #141820;
+    position: relative;
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,0.08),
+      0 8px 40px rgba(0,0,0,0.6);
+  }
+  /* Inner bevel — colored border per agent */
+  .card-inner::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 12px;
+    border: 1.5px solid var(--agent-color, rgba(255,255,255,0.1));
+    pointer-events: none;
+    z-index: 6;
+    opacity: 0.4;
+  }
+  @media (max-width: 768px) {
+    .card-inner {
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .card-inner::before {
+      display: none;
+    }
+  }
+
+  /* Art window — ~44% of card, swipe zone */
   .detail-portrait {
     position: relative;
     width: 100%;
     overflow: hidden;
-    background: var(--bg);
-    height: 50vh;
-    height: 50dvh;
-    max-height: 500px;
+    background: #000;
+    aspect-ratio: 4 / 3;
+    touch-action: none; /* swipe zone — no browser gestures */
   }
   @media (max-width: 768px) {
     .detail-portrait {
-      height: 45vh;
-      height: 45dvh;
+      aspect-ratio: 3 / 4;
+      max-height: 50vh;
+      max-height: 50dvh;
     }
   }
   .detail-portrait img {
     width: 100%;
     height: 100% !important;
     object-fit: cover;
-    object-position: top center;
+    object-position: center 20%; /* bias top to catch faces */
     display: block;
     position: absolute;
     top: 0;
@@ -332,14 +382,19 @@ redirect_from:
   .detail-portrait .portrait-gradient {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 80px;
-    background: linear-gradient(transparent, var(--surface));
+    height: 50px;
+    background: linear-gradient(transparent, #141820);
     z-index: 2;
     pointer-events: none;
   }
+  @media (max-width: 768px) {
+    .detail-portrait .portrait-gradient {
+      background: linear-gradient(transparent, #0d0f12);
+    }
+  }
   .detail-portrait .portrait-gallery-dots {
     position: absolute;
-    bottom: 10px;
+    bottom: 6px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -388,17 +443,45 @@ redirect_from:
   .portrait-nav-arrow.pg-next { right: 8px; }
   .portrait-nav-arrow.pg-hidden { display: none; }
 
-  /* Info area */
-  .detail-info {
-    padding: 1.25rem 1.5rem 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-  .detail-name-row {
+  /* Name plate — colored bar like MTG card name area */
+  .card-nameplate {
+    padding: 0.6rem 1.25rem;
     display: flex;
     align-items: center;
     gap: 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.03);
+  }
+  .card-nameplate .detail-agent-name {
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  /* Type line — role + epithet */
+  .card-typeline {
+    padding: 0.3rem 1.25rem;
+    font-size: clamp(11px, 3vw, 13px);
+    color: var(--text-dim);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Text box — scrollable card body */
+  .detail-info {
+    padding: 0.75rem 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    touch-action: pan-y; /* allow vertical scroll, block horizontal */
+  }
+  .detail-name-row {
+    display: none; /* moved to nameplate */
   }
   .detail-play-btn {
     width: 36px;
@@ -594,24 +677,28 @@ redirect_from:
       grid-template-columns: repeat(5, 1fr);
     }
   }
-  /* Desktop: constrain panel width for readability */
+  /* Desktop: card inner has aspect ratio constraint */
   @media (min-width: 769px) {
-    .detail-panel {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .card-inner {
+      max-height: calc(100vh - 40px);
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
     }
-    .detail-portrait {
-      max-width: 600px;
-      width: 100%;
+  }
+  /* Mobile: card is edge-to-edge, scrolls naturally */
+  @media (max-width: 768px) {
+    .card-inner {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: #0d0f12;
     }
-    .detail-info {
-      max-width: 600px;
-      width: 100%;
-    }
-    .bio-section {
-      max-width: 600px;
-      width: 100%;
+    .card-nameplate {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #0d0f12;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
   }
 </style>
@@ -1266,6 +1353,7 @@ function getCategoryFor(id) {
   var photoIndices = {};
   var visibleAgents = AGENTS.slice();
   var panelOpen = false;
+  var _savedScrollY = 0;
 
   // --- Build the grid ---
   function buildGrid() {
@@ -1326,7 +1414,11 @@ function getCategoryFor(id) {
     panelOpen = true;
     detailPanel.classList.remove('closing');
     backdrop.classList.remove('closing');
-    // Lock body scroll
+    // Lock body scroll (iOS Safari fix: overflow:hidden alone doesn't work)
+    _savedScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = '-' + _savedScrollY + 'px';
+    document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
     // Force reflow before adding show class for transition
     detailPanel.offsetHeight;
@@ -1337,8 +1429,12 @@ function getCategoryFor(id) {
   function closePanel(callback) {
     if (!panelOpen) { if (callback) callback(); return; }
     panelOpen = false;
-    // Unlock body scroll
+    // Unlock body scroll (restore saved position)
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
     document.body.style.overflow = '';
+    window.scrollTo(0, _savedScrollY);
     detailPanel.classList.add('closing');
     backdrop.classList.add('closing');
     setTimeout(function() {
@@ -1454,27 +1550,39 @@ function getCategoryFor(id) {
       '<button class="detail-close" id="detailCloseBtn" aria-label="Close">&times;</button>' +
       (hasPrev ? '<button class="agent-nav-arrow nav-prev" id="agentPrev" aria-label="Previous agent">&#8249;</button>' : '') +
       (hasNext ? '<button class="agent-nav-arrow nav-next" id="agentNext" aria-label="Next agent">&#8250;</button>' : '') +
-      '<div class="detail-portrait" id="detailPortrait">' +
-        galleryHtml +
-        '<div class="portrait-gradient"></div>' +
-      '</div>' +
-      '<div class="detail-info">' +
-        '<div class="detail-name-row">' +
-          '<button class="detail-play-btn" id="detailPlayBtn" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
-          '<span class="detail-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
+      '<div class="card-frame">' +
+        '<div class="card-inner" style="--agent-color:' + agent.color + ';">' +
+          /* Art window */
+          '<div class="detail-portrait" id="detailPortrait">' +
+            galleryHtml +
+            '<div class="portrait-gradient"></div>' +
+          '</div>' +
+          /* Name plate */
+          '<div class="card-nameplate">' +
+            '<button class="detail-play-btn" id="detailPlayBtn" title="Play ' + agent.name + '\'s theme" aria-label="Play ' + agent.name + '\'s theme" style="color:' + agent.color + ';">&#9654;</button>' +
+            '<span class="detail-agent-name" style="color:' + agent.color + ';">' + agent.name + '</span>' +
+            '<span style="margin-left:auto;font-size:0.7rem;color:var(--text-dim);font-family:monospace;">' + agent.avatar + '</span>' +
+          '</div>' +
+          /* Type line */
+          '<div class="card-typeline">' +
+            '<span>' + agent.role + ' &middot; ' + agent.epithet + '</span>' +
+          '</div>' +
+          /* Text box */
+          '<div class="detail-info">' +
+            '<div class="detail-stats">' + statsHtml + '</div>' +
+            '<div class="detail-quote">"' + agent.quote + '"</div>' +
+            '<button class="detail-expand-btn" id="detailExpandBtn">Read full bio &darr;</button>' +
+          '</div>' +
+          /* Bio section (expands inside card) */
+          '<div class="bio-section" id="bioSection">' +
+            '<div class="bio-story">' + agent.story + '</div>' +
+            '<div class="bio-full-quote">"' + agent.quote + '"</div>' +
+            '<div class="bio-arc"><strong>Character Arc</strong>' + agent.arc + '</div>' +
+          '</div>' +
         '</div>' +
-        '<div class="detail-role">' + agent.role + ' &middot; ' + agent.epithet + '</div>' +
-        '<div class="detail-stats">' + statsHtml + '</div>' +
-        '<div class="detail-quote">"' + agent.quote + '"</div>' +
-        '<button class="detail-expand-btn" id="detailExpandBtn">Read full bio &darr;</button>' +
-      '</div>' +
-      '<div class="bio-section" id="bioSection">' +
-        '<div class="bio-story">' + agent.story + '</div>' +
-        '<div class="bio-full-quote">"' + agent.quote + '"</div>' +
-        '<div class="bio-arc"><strong>Character Arc</strong>' + agent.arc + '</div>' +
       '</div>';
 
-    detailPanel.style.borderTop = '3px solid ' + agent.color;
+    detailPanel.style.borderTop = 'none';
 
     // Attach events
     document.getElementById('detailCloseBtn').addEventListener('click', function() {
@@ -1691,17 +1799,33 @@ function getCategoryFor(id) {
     }
   });
 
-  // --- Swipe left/right to navigate agents, swipe down to close ---
+  // --- Swipe left/right on art window to navigate agents ---
+  // Only tracks swipe on the portrait area to avoid conflict with text scrolling
   (function() {
-    var startX = 0, startY = 0, currentX = 0, currentY = 0, tracking = false;
-    var swipeThreshold = 60;
+    var startX = 0, startY = 0, currentX = 0, currentY = 0, tracking = false, startTime = 0;
+    var swipeThreshold = 50;
 
     detailPanel.addEventListener('touchstart', function(e) {
+      // Swipe zone: nameplate + typeline (not portrait — that's for photo gallery)
+      // Also allow portrait if agent only has 1 photo
+      var target = e.target;
+      var portrait = detailPanel.querySelector('.detail-portrait');
+      var nameplate = detailPanel.querySelector('.card-nameplate');
+      var typeline = detailPanel.querySelector('.card-typeline');
+      if (!nameplate) return;
+      var photos = selectedIndex >= 0 ? (AGENT_PHOTOS[AGENTS[selectedIndex].id] || []) : [];
+      var portraitSwipeable = portrait && portrait.contains(target) && photos.length <= 1;
+      var isSwipeZone = (nameplate && nameplate.contains(target)) ||
+                        (typeline && typeline.contains(target)) ||
+                        portraitSwipeable;
+      if (!isSwipeZone) return;
+
       var touch = e.touches[0];
       startX = touch.clientX;
       startY = touch.clientY;
       currentX = startX;
       currentY = startY;
+      startTime = Date.now();
       tracking = true;
     }, { passive: true });
 
@@ -1718,15 +1842,14 @@ function getCategoryFor(id) {
       var diffY = startY - currentY;
       var absDiffX = Math.abs(diffX);
       var absDiffY = Math.abs(diffY);
+      var dt = Date.now() - startTime;
 
-      // Require horizontal dominance for left/right swipe
-      if (absDiffX > swipeThreshold && absDiffX > absDiffY * 1.2) {
+      // Horizontal swipe: >50px, more horizontal than vertical, within 500ms
+      if (absDiffX > swipeThreshold && absDiffX > absDiffY * 1.5 && dt < 500) {
         if (diffX > 0) {
-          // Swipe left → next agent
-          navigateAgent(1);
+          navigateAgent(1);  // swipe left → next
         } else {
-          // Swipe right → prev agent
-          navigateAgent(-1);
+          navigateAgent(-1); // swipe right → prev
         }
       }
     }, { passive: true });
