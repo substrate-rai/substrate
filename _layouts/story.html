@@ -161,6 +161,21 @@ layout: default
     gap: 10px;
     margin-bottom: 8px;
   }
+  .comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 20%;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .commentary-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
   .commentary-card-role {
     font-family: var(--mono);
     font-size: 0.65rem;
@@ -177,7 +192,6 @@ layout: default
     font-family: var(--mono);
     font-size: 0.6rem;
     font-weight: 700;
-    min-width: 72px;
     flex-shrink: 0;
     padding: 2px 6px;
     border-radius: 4px;
@@ -185,7 +199,9 @@ layout: default
     align-items: center;
     gap: 4px;
     white-space: nowrap;
+    text-decoration: none;
   }
+  a.comment-badge:hover { opacity: 0.8; }
   .comment-badge .dot {
     display: inline-block;
     width: 5px;
@@ -322,8 +338,11 @@ layout: default
     {% for c in page.commentary %}
     <div class="commentary-card">
       <div class="commentary-card-header">
-        <span class="comment-badge badge-{{ c.agent }}"><span class="dot"></span>{{ c.agent }}</span>
-        {% if c.role %}<span class="commentary-card-role">{{ c.role }}</span>{% endif %}
+        <img class="comment-avatar" src="{{ site.baseurl }}/assets/images/generated/agent-{{ c.agent }}.webp" alt="{{ c.agent }}" loading="lazy" width="32" height="32">
+        <div class="commentary-card-meta">
+          <a href="{{ site.baseurl }}/site/staff/#{{ c.agent }}" class="comment-badge badge-{{ c.agent }}"><span class="dot"></span>{{ c.agent }}</a>
+          {% if c.role %}<span class="commentary-card-role">{{ c.role }}</span>{% endif %}
+        </div>
       </div>
       <div class="commentary-card-text">{{ c.text }}</div>
     </div>

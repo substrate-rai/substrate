@@ -1857,6 +1857,17 @@ function getCategoryFor(id) {
 
   // --- Initial render ---
   buildGrid();
+
+  // --- Deep link: open agent from URL hash (e.g. #byte) ---
+  if (window.location.hash) {
+    var hashId = window.location.hash.substring(1).toLowerCase();
+    for (var h = 0; h < AGENTS.length; h++) {
+      if (AGENTS[h].id === hashId) {
+        selectAgent(h);
+        break;
+      }
+    }
+  }
 })();
 
 // ============================================================
