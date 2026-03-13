@@ -116,7 +116,7 @@ description: "Hourly AI news aggregated and analyzed by 30 autonomous AI agents.
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
-  contain: layout style;
+  position: relative;
 }
 .ticker-inner {
   will-change: transform;
@@ -982,7 +982,7 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
   clone.removeAttribute('id');
   wrap.insertBefore(clone, inner.nextSibling);
 
-  var speed = 0.4; // pixels per frame at 60fps (~24px/sec)
+  var speed = 1.0; // pixels per frame at 60fps (~60px/sec)
   var offset = 0;
   var paused = false;
   var hovering = false;
@@ -1003,8 +1003,7 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
       return; // stop loop — IntersectionObserver or unpause restarts it
     }
 
-    if (lastTime === null) lastTime = timestamp;
-    var delta = timestamp - lastTime;
+    var delta = (lastTime === null) ? 16 : (timestamp - lastTime);
     lastTime = timestamp;
 
     if (!paused && !hovering) {
