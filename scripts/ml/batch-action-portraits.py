@@ -20,6 +20,10 @@ MANIFEST = os.path.join(SCRIPT_DIR, "action-portraits.json")
 GENERATE_SCRIPT = os.path.join(SCRIPT_DIR, "generate-image.py")
 OUTPUT_DIR = os.path.join(REPO_ROOT, "assets", "images", "generated")
 
+# VRAM management — import from shared ollama client
+sys.path.insert(0, os.path.join(os.path.dirname(SCRIPT_DIR), "shared"))
+from ollama import unload_models, load_model, is_available
+
 NEGATIVE_DARK = "pale skin, white skin, light skin"
 
 
@@ -46,6 +50,18 @@ def main():
     print(f"Phase: {args.phase}")
     print(f"Output: {OUTPUT_DIR}")
     print()
+
+    # --- VRAM bookend: unload Ollama before batch ---
+    if not args.dry_run:
+        try:
+            unloaded = unload_models()
+            for name in unloaded:
+                print(f"ollama: unloaded {name}")
+            if not unloaded:
+                print("ollama: no models loaded, VRAM is free")
+        except Exception as e:
+            print(f"ollama: could not reach ({e}), assuming VRAM is free")
+        print()
 
     success = 0
     failed = 0
@@ -129,6 +145,18 @@ def main():
 
     print("=" * 50)
     print(f"Done. {success} ok, {failed} failed, {skipped} skipped")
+
+    # --- VRAM bookend: reload Ollama after batch ---
+    if not args.dry_run:
+        try:
+            if is_available(timeout=3):
+                print("\nollama: reloading model into VRAM...")
+                load_model()
+                print("ollama: model loaded")
+            else:
+                print("\nollama: service not running, skipping reload")
+        except Exception as e:
+            print(f"\nollama: reload failed ({e}), run manually if needed")
 
 
 if __name__ == "__main__":

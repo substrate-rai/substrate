@@ -50,7 +50,7 @@ SCRIPT_DIR = Path(__file__).parent
 OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "assets" / "images" / "generated"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
-from ollama import unload_models
+from ollama import unload_models, load_model, is_available
 
 # Master prompt template — character block gets inserted at {character_block}
 MASTER_TEMPLATE = (
@@ -112,6 +112,19 @@ def unload_ollama_models():
             print(f"ollama: unloaded {name}")
     except Exception as e:
         print(f"ollama: could not reach ({e}), assuming VRAM is free")
+
+
+def reload_ollama_model():
+    """Reload the default Ollama model back into VRAM."""
+    try:
+        if not is_available(timeout=3):
+            print("ollama: service not running, skipping reload")
+            return
+        print("ollama: reloading model into VRAM...")
+        load_model()
+        print("ollama: model loaded")
+    except Exception as e:
+        print(f"ollama: reload failed ({e}), run manually if needed")
 
 
 def comfyui_is_running():
@@ -571,6 +584,8 @@ def main():
     parser.add_argument("--no-start", action="store_true", help="Don't auto-start ComfyUI")
     parser.add_argument("--no-stop", action="store_true", help="Don't stop ComfyUI after generation")
     parser.add_argument("--restart", action="store_true", help="Force restart ComfyUI")
+    parser.add_argument("--reload-ollama", action="store_true",
+                        help="Reload Ollama model into VRAM after generation completes")
     args = parser.parse_args()
 
     if not args.no_unload:
@@ -599,6 +614,9 @@ def main():
     finally:
         if not args.no_stop and proc is not None:
             stop_comfyui(proc)
+        # Auto-reload Ollama if we unloaded it (standalone mode), or if explicitly requested
+        if args.reload_ollama or (not args.no_unload and not args.no_stop):
+            reload_ollama_model()
 
 
 if __name__ == "__main__":
