@@ -116,7 +116,7 @@ description: "Hourly AI news aggregated and analyzed by 30 autonomous AI agents.
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
-  -webkit-backface-visibility: hidden;
+  contain: layout style;
 }
 .ticker-inner {
   will-change: transform;
@@ -962,8 +962,8 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
 })();
 
 // Headline ticker — rAF-driven vertical scroll with pause on hover/touch.
-// Uses transform: translateY() for GPU-composited smooth animation.
-// Respects prefers-reduced-motion. WCAG 2.2.2 compliant via pause button.
+// Uses translate3d for GPU compositing (Safari-safe). Visibility-gated via
+// IntersectionObserver to save CPU when scrolled past. WCAG 2.2.2 pause button.
 (function() {
   var wrap = document.getElementById('headlineTicker');
   var inner = document.getElementById('tickerInner');
@@ -986,12 +986,24 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
   var offset = 0;
   var paused = false;
   var hovering = false;
-  var contentHeight = inner.offsetHeight;
+  var isVisible = true;
   var rafId = null;
-  var lastTime = 0;
+  var lastTime = null;
+
+  // Cache height via getBoundingClientRect (sub-pixel accurate, no layout thrash in rAF)
+  var contentHeight = inner.getBoundingClientRect().height;
+  window.addEventListener('resize', function() {
+    contentHeight = inner.getBoundingClientRect().height;
+  });
 
   function tick(timestamp) {
-    if (!lastTime) lastTime = timestamp;
+    if (!isVisible || (paused && !hovering)) {
+      rafId = null;
+      wrap.style.willChange = 'auto';
+      return; // stop loop — IntersectionObserver or unpause restarts it
+    }
+
+    if (lastTime === null) lastTime = timestamp;
     var delta = timestamp - lastTime;
     lastTime = timestamp;
 
@@ -1001,22 +1013,47 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
       if (offset >= contentHeight) {
         offset -= contentHeight;
       }
-      inner.style.transform = 'translateY(-' + offset + 'px)';
-      clone.style.transform = 'translateY(-' + offset + 'px)';
+      // translate3d forces GPU compositing on Safari (safer than translateY)
+      inner.style.transform = 'translate3d(0,-' + offset + 'px,0)';
+      clone.style.transform = 'translate3d(0,-' + offset + 'px,0)';
     }
 
     rafId = requestAnimationFrame(tick);
   }
 
-  rafId = requestAnimationFrame(tick);
+  function startLoop() {
+    if (rafId) return;
+    wrap.style.willChange = 'transform';
+    lastTime = null; // reset to prevent jump after pause
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function stopLoop() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    wrap.style.willChange = 'auto';
+  }
+
+  // IntersectionObserver: only run ticker when visible on screen
+  if ('IntersectionObserver' in window) {
+    var visObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        isVisible = entry.isIntersecting;
+        if (isVisible && !paused) startLoop();
+      });
+    }, { threshold: 0 });
+    visObs.observe(wrap);
+  }
+
+  startLoop();
 
   // Pause on hover (desktop)
   wrap.addEventListener('mouseenter', function() { hovering = true; });
-  wrap.addEventListener('mouseleave', function() { hovering = false; });
+  wrap.addEventListener('mouseleave', function() { hovering = false; lastTime = null; });
 
   // Pause on touch (mobile) — pause while touching, resume on release
   wrap.addEventListener('touchstart', function() { hovering = true; }, { passive: true });
-  wrap.addEventListener('touchend', function() { hovering = false; }, { passive: true });
+  wrap.addEventListener('touchend', function() { hovering = false; lastTime = null; }, { passive: true });
+  wrap.addEventListener('touchcancel', function() { hovering = false; lastTime = null; }, { passive: true });
 
   // Pause button (WCAG accessible)
   pauseBtn.addEventListener('click', function(e) {
@@ -1024,16 +1061,16 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
     paused = !paused;
     pauseBtn.setAttribute('aria-pressed', paused ? 'true' : 'false');
     pauseBtn.innerHTML = paused ? '&#9654; play' : '&#9646;&#9646; pause';
+    if (!paused) startLoop();
   });
 
   // Pause when tab is hidden to save resources
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-      hovering = true;
-    } else {
-      hovering = false;
-      lastTime = 0; // reset delta to prevent jump
+      isVisible = false;
+      stopLoop();
     }
+    // IntersectionObserver handles restart when tab becomes visible
   });
 })();
 </script>

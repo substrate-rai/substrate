@@ -484,21 +484,31 @@ def _generate_comment(agent_name, role, title, url="", thread=None, is_critic=Fa
         if url:
             user_msg += f"\nURL: {url}"
 
-    try:
-        text = chat(
-            messages=[{"role": "user", "content": user_msg}],
-            system=system_prompt,
-            preset="social",
-            timeout=COMMENTARY_TIMEOUT,
-        )
-        text = _strip_thinking(text)
-        # Cap length
-        if len(text) > MAX_COMMENT_LENGTH:
-            text = text[:MAX_COMMENT_LENGTH - 3].rstrip() + "..."
-        return {"agent": agent_name, "role": role, "text": text.strip()}
-    except OllamaError as e:
-        print(f"  [warn] Commentary failed for {agent_name}: {e}", file=sys.stderr)
-        return None
+    # Retry with exponential backoff (Ollama can hang sporadically)
+    for attempt in range(3):
+        try:
+            text = chat(
+                messages=[{"role": "user", "content": user_msg}],
+                system=system_prompt,
+                preset="social",
+                timeout=COMMENTARY_TIMEOUT,
+                keep_alive=-1,
+            )
+            text = _strip_thinking(text)
+            # Cap length
+            if len(text) > MAX_COMMENT_LENGTH:
+                text = text[:MAX_COMMENT_LENGTH - 3].rstrip() + "..."
+            # Small delay between calls for Ollama stability
+            time.sleep(0.5)
+            return {"agent": agent_name, "role": role, "text": text.strip()}
+        except (OllamaError, OSError) as e:
+            if attempt < 2:
+                wait = 2 ** attempt
+                print(f"  [retry] {agent_name} attempt {attempt+1} failed: {e}, retrying in {wait}s", file=sys.stderr)
+                time.sleep(wait)
+            else:
+                print(f"  [warn] Commentary failed for {agent_name} after 3 attempts: {e}", file=sys.stderr)
+                return None
 
 
 def generate_story_commentary(story, max_comments=MAX_COMMENTS):

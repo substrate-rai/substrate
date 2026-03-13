@@ -65,7 +65,7 @@ def invalidate_cache():
 
 
 def chat(messages, system=None, model=None, timeout=120, think=False,
-         options=None, preset=None):
+         options=None, preset=None, keep_alive=None):
     """Send a chat completion request to Ollama.
 
     Args:
@@ -100,6 +100,8 @@ def chat(messages, system=None, model=None, timeout=120, think=False,
     }
     if merged_options:
         payload["options"] = merged_options
+    if keep_alive is not None:
+        payload["keep_alive"] = keep_alive
     if system:
         payload["messages"] = [{"role": "system", "content": system}] + payload["messages"]
 
