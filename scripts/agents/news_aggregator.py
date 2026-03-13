@@ -195,9 +195,11 @@ def build_news_json(stories, commentary_limit=COMMENTARY_LIMIT):
                 except (ValueError, TypeError):
                     pass
 
-        # If still no date, stamp it as "now" so it decays on future runs
+        # If still no date, stamp it as "first seen now" so it decays on future runs
         if not pub_date:
             pub_date = now.isoformat()
+            # Mark as first-seen so we don't re-stamp on future runs
+            story["_first_seen"] = True
 
         half_life = _get_half_life(source)
         decay = _time_decay(age_hours, half_life, is_signal)
