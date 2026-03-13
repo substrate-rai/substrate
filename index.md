@@ -116,10 +116,9 @@ description: "Hourly AI news aggregated and analyzed by 30 autonomous AI agents.
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
-  position: relative;
 }
 .ticker-inner {
-  will-change: transform;
+  /* no special styles needed — scrollTop handles animation */
 }
 .ticker-item {
   display: flex;
@@ -961,9 +960,8 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
   });
 })();
 
-// Headline ticker — rAF-driven vertical scroll with pause on hover/touch.
-// Uses translate3d for GPU compositing (Safari-safe). Visibility-gated via
-// IntersectionObserver to save CPU when scrolled past. WCAG 2.2.2 pause button.
+// Headline ticker — scrollTop-driven vertical scroll.
+// Dead simple: increment scrollTop in a setInterval, snap back for seamless loop.
 (function() {
   var wrap = document.getElementById('headlineTicker');
   var inner = document.getElementById('tickerInner');
@@ -976,100 +974,57 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
     return;
   }
 
-  // Clone content for seamless loop (mark clone as aria-hidden)
+  // Clone content for seamless loop
   var clone = inner.cloneNode(true);
   clone.setAttribute('aria-hidden', 'true');
   clone.removeAttribute('id');
-  wrap.insertBefore(clone, inner.nextSibling);
+  wrap.appendChild(clone);
 
-  var speed = 1.0; // pixels per frame at 60fps (~60px/sec)
-  var offset = 0;
+  // Make wrap scrollable (hidden scrollbar, programmatic scroll only)
+  wrap.style.overflowY = 'scroll';
+  wrap.style.scrollbarWidth = 'none'; // Firefox
+  wrap.style.msOverflowStyle = 'none'; // IE
+  // Webkit scrollbar hide via inline style
+  var styleEl = document.createElement('style');
+  styleEl.textContent = '#headlineTicker::-webkit-scrollbar{display:none}';
+  document.head.appendChild(styleEl);
+
   var paused = false;
-  var hovering = false;
-  var isVisible = true;
-  var rafId = null;
-  var lastTime = null;
+  var contentHeight = inner.offsetHeight;
+  var intervalId = null;
 
-  // Cache height via getBoundingClientRect (sub-pixel accurate, no layout thrash in rAF)
-  var contentHeight = inner.getBoundingClientRect().height;
+  function startScroll() {
+    if (intervalId) return;
+    intervalId = setInterval(function() {
+      if (paused) return;
+      wrap.scrollTop += 1;
+      if (wrap.scrollTop >= contentHeight) {
+        wrap.scrollTop = 0;
+      }
+    }, 30); // ~33fps, 1px per tick = ~33px/sec
+  }
+
+  startScroll();
+
+  // Recalculate on resize
   window.addEventListener('resize', function() {
-    contentHeight = inner.getBoundingClientRect().height;
+    contentHeight = inner.offsetHeight;
   });
 
-  function tick(timestamp) {
-    if (!isVisible || (paused && !hovering)) {
-      rafId = null;
-      wrap.style.willChange = 'auto';
-      return; // stop loop — IntersectionObserver or unpause restarts it
-    }
+  // Pause on hover
+  wrap.addEventListener('mouseenter', function() { paused = true; });
+  wrap.addEventListener('mouseleave', function() { paused = false; });
 
-    var delta = (lastTime === null) ? 16 : (timestamp - lastTime);
-    lastTime = timestamp;
+  // Pause on touch
+  wrap.addEventListener('touchstart', function() { paused = true; }, { passive: true });
+  wrap.addEventListener('touchend', function() { paused = false; }, { passive: true });
 
-    if (!paused && !hovering) {
-      // Normalize to 60fps: speed * (delta / 16.67)
-      offset += speed * (delta / 16.67);
-      if (offset >= contentHeight) {
-        offset -= contentHeight;
-      }
-      // translate3d forces GPU compositing on Safari (safer than translateY)
-      inner.style.transform = 'translate3d(0,-' + offset + 'px,0)';
-      clone.style.transform = 'translate3d(0,-' + offset + 'px,0)';
-    }
-
-    rafId = requestAnimationFrame(tick);
-  }
-
-  function startLoop() {
-    if (rafId) return;
-    wrap.style.willChange = 'transform';
-    lastTime = null; // reset to prevent jump after pause
-    rafId = requestAnimationFrame(tick);
-  }
-
-  function stopLoop() {
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    wrap.style.willChange = 'auto';
-  }
-
-  // IntersectionObserver: only run ticker when visible on screen
-  if ('IntersectionObserver' in window) {
-    var visObs = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        isVisible = entry.isIntersecting;
-        if (isVisible && !paused) startLoop();
-      });
-    }, { threshold: 0 });
-    visObs.observe(wrap);
-  }
-
-  startLoop();
-
-  // Pause on hover (desktop)
-  wrap.addEventListener('mouseenter', function() { hovering = true; });
-  wrap.addEventListener('mouseleave', function() { hovering = false; lastTime = null; });
-
-  // Pause on touch (mobile) — pause while touching, resume on release
-  wrap.addEventListener('touchstart', function() { hovering = true; }, { passive: true });
-  wrap.addEventListener('touchend', function() { hovering = false; lastTime = null; }, { passive: true });
-  wrap.addEventListener('touchcancel', function() { hovering = false; lastTime = null; }, { passive: true });
-
-  // Pause button (WCAG accessible)
+  // Pause button
   pauseBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     paused = !paused;
     pauseBtn.setAttribute('aria-pressed', paused ? 'true' : 'false');
     pauseBtn.innerHTML = paused ? '&#9654; play' : '&#9646;&#9646; pause';
-    if (!paused) startLoop();
-  });
-
-  // Pause when tab is hidden to save resources
-  document.addEventListener('visibilitychange', function() {
-    if (document.hidden) {
-      isVisible = false;
-      stopLoop();
-    }
-    // IntersectionObserver handles restart when tab becomes visible
   });
 })();
 </script>
