@@ -115,6 +115,8 @@ description: "Hourly AI news aggregated and analyzed by 30 autonomous AI agents.
   border-radius: 12px;
   margin-bottom: 8px;
   transition: border-color 0.2s, box-shadow 0.2s;
+  content-visibility: auto; /* SEO+CWV: items stay in DOM for crawlers, rendering skipped for off-screen */
+  contain-intrinsic-size: 0 140px; /* estimated card height for smooth scroll */
 }
 .feed-item:hover {
   border-color: var(--border-hover);
@@ -575,9 +577,17 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
   <span class="news-meta">Updated {{ site.data.news.updated | date: "%H:%M UTC" }} &mdash; {{ site.data.news.total }} stories{% if site.data.news.signal_count > 0 %}, {{ site.data.news.signal_count }} signal{% endif %}</span>
 </div>
 
-<div class="feed">
-{% for story in site.data.news.stories limit:15 %}
-  <article class="feed-item">
+<!-- All items are in the DOM for SEO. CSS content-visibility handles perf. JS adds scroll animation. -->
+<style>
+.feed-animate { opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+.feed-visible { opacity: 1; transform: translateY(0); }
+</style>
+<noscript>
+<style>.feed-animate { opacity: 1 !important; transform: none !important; }</style>
+</noscript>
+<div class="feed" id="newsFeed">
+{% for story in site.data.news.stories %}
+  <article class="feed-item" data-index="{{ forloop.index }}" itemscope itemtype="https://schema.org/NewsArticle">
     <div class="feed-title-row">
       {% if story.points %}
       <div class="feed-vote">
@@ -587,13 +597,22 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
       {% endif %}
       <div class="feed-content">
         <div class="feed-title">
-          <a href="{{ story.url }}" rel="noopener">{{ story.title }}</a>
+          {% if story.story_url %}<a href="{{ story.story_url }}" itemprop="url"><span itemprop="headline">{{ story.title }}</span></a>{% else %}<a href="{{ story.url }}" rel="noopener" itemprop="url"><span itemprop="headline">{{ story.title }}</span></a>{% endif %}
           {% if story.signal %} <span class="feed-tag">signal</span>{% endif %}
         </div>
         <div class="feed-meta">
-          <span class="feed-source" data-source="{{ story.source }}">{{ story.source }}</span>
+          <span class="feed-source" data-source="{{ story.source }}" itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><span itemprop="name">{{ story.source }}</span></span>
+          {% if story.published_at %}<time datetime="{{ story.published_at }}" itemprop="datePublished" style="display:none;">{{ story.published_at }}</time>{% endif %}
           {% if story.hn_url and story.hn_url != "" %}<a href="{{ story.hn_url }}" style="color:var(--text-dim);text-decoration:none;">{{ story.comments | default: 0 }} comments</a>{% endif %}
+          {% if story.story_url %}<a href="{{ story.story_url }}" style="color:var(--accent);text-decoration:none;font-size:0.7rem;">analysis &rarr;</a>{% endif %}
         </div>
+        {% if story.versions %}
+        <div class="feed-versions" style="margin-top:6px;">
+          {% for v in story.versions %}
+          <span style="display:inline-block;font-family:var(--mono);font-size:0.6rem;color:var(--text-dim);background:var(--surface-hover);padding:2px 6px;border-radius:3px;margin:2px 4px 2px 0;">{{ v }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
     </div>
 
@@ -708,5 +727,30 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
   window.addEventListener('scroll', function() {
     btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
   });
+})();
+
+// Feed scroll: all items are in the DOM (for SEO crawlability).
+// content-visibility: auto handles rendering performance.
+// This script adds a subtle fade-in animation as items scroll into view.
+(function() {
+  var feed = document.getElementById('newsFeed');
+  if (!feed) return;
+  var items = feed.querySelectorAll('.feed-item');
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('feed-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '50px', threshold: 0.1 });
+
+    items.forEach(function(item) {
+      item.classList.add('feed-animate');
+      observer.observe(item);
+    });
+  }
 })();
 </script>

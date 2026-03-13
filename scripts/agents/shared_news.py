@@ -50,6 +50,11 @@ RSS_FEEDS = {
     "VentureBeat AI": "https://venturebeat.com/category/ai/feed/",
     "IEEE Spectrum AI": "https://spectrum.ieee.org/feeds/feed.rss",
     "InfoQ AI/ML": "https://feed.infoq.com/ai-ml-data-eng/",
+    # Tier 4b: Additional research + industry sources
+    "Last Week in AI": "https://lastweekin.ai/feed",
+    "The Gradient": "https://thegradient.pub/rss/",
+    "NVIDIA AI": "https://blogs.nvidia.com/blog/category/deep-learning/feed/",
+    "arXiv stat.ML": "https://rss.arxiv.org/rss/stat.ML",
     # Tier 5: Policy
     "EFF Deeplinks": "https://www.eff.org/rss/updates.xml",
     "EU AI Act": "https://artificialintelligenceact.eu/feed/",
@@ -96,6 +101,40 @@ PRIMARY_SOURCES = {
 }
 PRIMARY_SOURCE_BOOST = 3  # added to relevance score for primary sources
 
+# Source tier weights for feed ordering — higher = appears first in feed.
+# Anthropic/Claude Code first, then Google, then OpenAI, then everything else.
+SOURCE_TIER = {
+    "Anthropic": 100,
+    "Claude Code": 100,
+    "Google DeepMind": 80,
+    "Google AI": 80,
+    "OpenAI": 60,
+    # External research / press sources
+    "arXiv cs.AI": 40,
+    "arXiv cs.CL": 40,
+    "arXiv cs.LG": 40,
+    "Hugging Face": 35,
+    "Meta AI": 35,
+    "Microsoft Research": 35,
+    "TechCrunch AI": 30,
+    "The Verge AI": 30,
+    "Ars Technica AI": 30,
+    "Wired AI": 30,
+    "MIT Tech Review": 30,
+    "VentureBeat AI": 30,
+    "IEEE Spectrum AI": 30,
+    "InfoQ AI/ML": 30,
+    "r/LocalLLaMA": 25,
+    "r/MachineLearning": 25,
+    "Last Week in AI": 30,
+    "The Gradient": 30,
+    "NVIDIA AI": 30,
+    "arXiv stat.ML": 40,
+    "HN": 20,
+    "EFF Deeplinks": 15,
+    "EU AI Act": 15,
+}
+
 
 # ---------------------------------------------------------------------------
 # Network helpers
@@ -118,7 +157,7 @@ def fetch_hn_item(item_id):
 
 
 def fetch_rss_titles(url):
-    """Crude RSS/Atom parser -- extract titles and links without xml.etree."""
+    """Crude RSS/Atom parser -- extract titles, links, and pubDates without xml.etree."""
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Substrate-Byte/1.0"})
         with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
@@ -132,10 +171,13 @@ def fetch_rss_titles(url):
         title_m = re.search(r'<title[^>]*>(.*?)</title>', block, re.DOTALL)
         link_m = re.search(r'<link[^>]*href=["\']([^"\']+)["\']', block) or \
                  re.search(r'<link[^>]*>(.*?)</link>', block, re.DOTALL)
+        # Parse pubDate/updated for recency
+        date_m = re.search(r'<(?:pubDate|updated|published|dc:date)[^>]*>(.*?)</(?:pubDate|updated|published|dc:date)>', block, re.DOTALL)
         if title_m:
             title = html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', title_m.group(1)).strip())
             link = link_m.group(1).strip() if link_m else ""
-            items.append({"title": title, "url": link, "score": 0, "descendants": 0, "id": ""})
+            pub_date = date_m.group(1).strip() if date_m else ""
+            items.append({"title": title, "url": link, "score": 0, "descendants": 0, "id": "", "pub_date": pub_date})
     return items[:10]
 
 
@@ -289,9 +331,17 @@ def signal_score(title, url=""):
 # Fetch + rank pipeline
 # ---------------------------------------------------------------------------
 
+def _normalize_url(url):
+    """Normalize URL for dedup: strip query params, trailing slashes, protocol."""
+    url = re.sub(r'^https?://', '', url)
+    url = url.split('?')[0].split('#')[0]
+    return url.rstrip('/')
+
+
 def fetch_all_sources():
     """Fetch stories from HN + all RSS feeds. Returns list of story dicts."""
     stories = []
+    seen_urls = set()  # URL-based dedup across all sources
 
     # 1. Hacker News top stories
     print("Fetching Hacker News top stories...")
@@ -303,49 +353,79 @@ def fetch_all_sources():
                 continue
             title = item.get("title", "")
             url = item.get("url", "")
+            norm = _normalize_url(url) if url else ""
+            if norm and norm in seen_urls:
+                continue
             score = relevance_score(title, url)
             if score > 0:
                 item["_relevance"] = score
                 item["_signal"] = signal_score(title, url)
                 item["_source"] = "HN"
                 stories.append(item)
+                if norm:
+                    seen_urls.add(norm)
     else:
         print("  [warn] Could not reach Hacker News API.", file=sys.stderr)
 
     # 2. RSS feeds
     print("Scanning RSS feeds...")
+    # External press/research feeds — always include their top items even if
+    # keyword matching is weak, so the feed has novel coverage beyond labs.
+    EXTERNAL_PRESS = {
+        "TechCrunch AI", "The Verge AI", "Ars Technica AI", "Wired AI",
+        "MIT Tech Review", "VentureBeat AI", "IEEE Spectrum AI", "InfoQ AI/ML",
+        "arXiv cs.AI", "arXiv cs.CL", "arXiv cs.LG", "arXiv stat.ML",
+        "Last Week in AI", "The Gradient", "NVIDIA AI",
+    }
     for feed_name, feed_url in RSS_FEEDS.items():
         items = fetch_rss_titles(feed_url)
         relevant_count = 0
         is_primary = feed_name in PRIMARY_SOURCES
+        is_external = feed_name in EXTERNAL_PRESS
         for item in items:
             title = item.get("title", "")
             url = item.get("url", "")
+            norm = _normalize_url(url) if url else ""
+            if norm and norm in seen_urls:
+                continue
             score = relevance_score(title, url)
             # Primary sources are always relevant and get a boost
             if is_primary:
                 score = max(score, 2) + PRIMARY_SOURCE_BOOST
+            # External press: include top items even with low keyword match
+            # (they're curated AI feeds, so content is relevant by definition)
+            elif is_external and score == 0:
+                score = 1  # minimum inclusion score for AI-specific feeds
             if score > 0:
                 item["_relevance"] = score
                 item["_signal"] = signal_score(title, url)
                 item["_source"] = feed_name
                 stories.append(item)
                 relevant_count += 1
-        print(f"  {feed_name}: {len(items)} items, {relevant_count} relevant{'  [PRIMARY]' if is_primary else ''}")
+                if norm:
+                    seen_urls.add(norm)
+        print(f"  {feed_name}: {len(items)} items, {relevant_count} relevant{'  [PRIMARY]' if is_primary else ''}{'  [EXTERNAL]' if is_external else ''}")
 
     # 3. Anthropic (HTML scrape — no RSS available)
     print("Scraping Anthropic news...")
     anthropic_items = fetch_anthropic_news()
+    anthropic_count = 0
     for item in anthropic_items:
         title = item.get("title", "")
         url = item.get("url", "")
+        norm = _normalize_url(url) if url else ""
+        if norm and norm in seen_urls:
+            continue
         score = relevance_score(title, url)
         score = max(score, 2) + PRIMARY_SOURCE_BOOST
         item["_relevance"] = score
         item["_signal"] = signal_score(title, url)
         item["_source"] = "Anthropic"
         stories.append(item)
-    print(f"  Anthropic: {len(anthropic_items)} items  [PRIMARY]")
+        anthropic_count += 1
+        if norm:
+            seen_urls.add(norm)
+    print(f"  Anthropic: {anthropic_count} items  [PRIMARY]")
 
     # 4. Markdown changelogs (Claude Code, etc.)
     print("Scanning changelog sources...")
@@ -369,30 +449,36 @@ def fetch_all_sources():
     return stories
 
 
-def score_and_rank(stories, output_limit=30):
-    """Sort stories by relevance, ensuring primary source diversity.
+def score_and_rank(stories, output_limit=50):
+    """Sort stories by source tier, then relevance within each tier.
 
-    Primary sources (Anthropic, Claude Code, OpenAI, Google) are guaranteed
-    representation in the output — at least 2 stories per primary source if
-    available, placed in the top positions.
+    Ordering: Anthropic/Claude Code > Google > OpenAI > external sources > HN.
+    Within each tier, stories sort by relevance then HN score.
+    External news sources (TechCrunch, arXiv, etc.) are included to ensure
+    novel coverage beyond the big three labs.
     """
-    stories.sort(key=lambda x: (x.get("_relevance", 0), x.get("score", 0)), reverse=True)
+    # Sort by: source tier (desc), then relevance (desc), then HN score (desc)
+    def sort_key(story):
+        source = story.get("_source", "HN")
+        tier = SOURCE_TIER.get(source, 10)
+        relevance = story.get("_relevance", 0)
+        hn_score = story.get("score", 0)
+        return (tier, relevance, hn_score)
 
-    # Guarantee primary sources appear: pull them to the front
-    primary_stories = []
-    other_stories = []
-    primary_seen = {}  # source -> count
+    stories.sort(key=sort_key, reverse=True)
 
+    # Ensure diversity: cap any single source at 5 stories in the output
+    result = []
+    source_counts = {}
+    overflow = []
     for story in stories:
-        source = story.get("_source", "")
-        if source in PRIMARY_SOURCES:
-            count = primary_seen.get(source, 0)
-            if count < 3:  # Up to 3 per primary source guaranteed
-                primary_stories.append(story)
-                primary_seen[source] = count + 1
-                continue
-        other_stories.append(story)
+        source = story.get("_source", "HN")
+        count = source_counts.get(source, 0)
+        if count < 5:
+            result.append(story)
+            source_counts[source] = count + 1
+        else:
+            overflow.append(story)
 
-    # Primary stories first (sorted by relevance), then the rest
-    primary_stories.sort(key=lambda x: (x.get("_relevance", 0), x.get("score", 0)), reverse=True)
-    return primary_stories + other_stories
+    # Append overflow stories at the end (still sorted)
+    return (result + overflow)[:output_limit]

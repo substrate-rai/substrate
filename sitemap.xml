@@ -5,30 +5,22 @@ layout: null
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>{{ site.url }}{{ site.baseurl }}/</loc>
-    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-    <changefreq>hourly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>{{ site.data.news.updated | default: site.time | date_to_xmlschema }}</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}{{ site.baseurl }}/ai/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
   </url>
   {% for page in site.pages %}{% if page.layout and page.url != '/sitemap.xml' and page.url != '/feed.xml' and page.url != '/robots.txt' and page.url != '/ai/' %}
   <url>
     <loc>{{ page.url | prepend: site.baseurl | prepend: site.url }}</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
   </url>
   {% endif %}{% endfor %}
   {% for post in site.posts %}
   <url>
     <loc>{{ post.url | prepend: site.baseurl | prepend: site.url }}</loc>
     <lastmod>{{ post.last_modified_at | default: post.date | date_to_xmlschema }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   {% endfor %}
 </urlset>

@@ -6,6 +6,25 @@ redirect_from:
   - /staff/
 ---
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Substrate",
+  "url": "{{ site.url }}{{ site.baseurl }}/",
+  "member": [{% for agent in site.data.agents %}
+    {
+      "@type": "Person",
+      "name": "{{ agent.name }}",
+      "jobTitle": "{{ agent.role }}",
+      "image": "{{ site.url }}{{ site.baseurl }}{{ agent.portrait }}",
+      "description": "{{ agent.quote | escape }}",
+      "memberOf": { "@type": "Organization", "name": "Substrate" }
+    }{% unless forloop.last %},{% endunless %}{% endfor %}
+  ]
+}
+</script>
+
 <style>
   /* ===== CHARACTER SELECT GRID ===== */
 

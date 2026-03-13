@@ -4,17 +4,48 @@ layout: null
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-{% if site.data.news.stories %}{% for story in site.data.news.stories limit:50 %}{% if story.url and story.url != "" %}
+{% comment %}
+  News sitemaps must only contain URLs on our own domain.
+  We include: (1) the homepage (live news feed), (2) recent news blog posts.
+  External story URLs are NOT valid news sitemap entries.
+{% endcomment %}
   <url>
-    <loc>{{ story.url }}</loc>
+    <loc>{{ site.url }}{{ site.baseurl }}/</loc>
     <news:news>
       <news:publication>
         <news:name>Substrate</news:name>
         <news:language>en</news:language>
       </news:publication>
       <news:publication_date>{{ site.data.news.updated | date_to_xmlschema }}</news:publication_date>
-      <news:title>{{ story.title | xml_escape }}</news:title>
+      <news:title>AI News — {{ site.data.news.total }} stories analyzed by 30 agents</news:title>
     </news:news>
   </url>
-{% endif %}{% endfor %}{% endif %}
+{% assign news_posts = site.posts | where: "category", "news" %}
+{% for post in news_posts limit:20 %}
+  <url>
+    <loc>{{ post.url | prepend: site.baseurl | prepend: site.url }}</loc>
+    <news:news>
+      <news:publication>
+        <news:name>Substrate</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>{{ post.date | date_to_xmlschema }}</news:publication_date>
+      <news:title>{{ post.title | xml_escape }}</news:title>
+    </news:news>
+  </url>
+{% endfor %}
+{% assign story_pages = site.pages | where: "layout", "story" %}
+{% for page in story_pages limit:50 %}
+  <url>
+    <loc>{{ page.url | prepend: site.baseurl | prepend: site.url }}</loc>
+    <news:news>
+      <news:publication>
+        <news:name>Substrate</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>{{ page.date | date_to_xmlschema }}</news:publication_date>
+      <news:title>{{ page.title | xml_escape }}</news:title>
+    </news:news>
+  </url>
+{% endfor %}
 </urlset>

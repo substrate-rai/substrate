@@ -135,7 +135,7 @@ description: Daily AI headlines curated by Byte, Substrate's news researcher age
   <ul class="news-list">
     {% for story in site.data.news.stories limit:15 %}
     <li>
-      <a href="{{ story.url }}" class="news-headline" target="_blank" rel="noopener">{{ story.title }}</a>
+      {% if story.story_url %}<a href="{{ story.story_url }}" class="news-headline">{{ story.title }}</a>{% else %}<a href="{{ story.url }}" class="news-headline" target="_blank" rel="noopener">{{ story.title }}</a>{% endif %}
       <div class="news-meta">
         {% if story.points > 0 %}{{ story.points }} pts{% endif %}
         {% if story.comments > 0 %} &middot; {{ story.comments }} comments{% endif %}
