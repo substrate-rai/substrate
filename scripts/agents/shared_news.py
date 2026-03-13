@@ -25,11 +25,13 @@ SCAN_LIMIT = 60
 
 # RSS/Atom feeds — organized by tier (verified working 2026-03)
 RSS_FEEDS = {
-    # Tier 1: Major AI labs
+    # Tier 0: Primary sources (these get boosted in scoring)
+    "Anthropic": "https://www.anthropic.com/blog/rss.xml",
     "OpenAI": "https://openai.com/blog/rss.xml",
-    "Hugging Face": "https://huggingface.co/blog/feed.xml",
     "Google DeepMind": "https://deepmind.google/blog/rss.xml",
     "Google AI": "https://blog.google/technology/ai/rss/",
+    # Tier 1: Major AI labs
+    "Hugging Face": "https://huggingface.co/blog/feed.xml",
     "Meta AI": "https://engineering.fb.com/category/ai-research/feed/",
     "Microsoft Research": "https://www.microsoft.com/en-us/research/feed/",
     # Tier 2: Research
@@ -86,6 +88,13 @@ SIGNAL_KEYWORDS = [
     "llama.cpp", "gguf", "quantiz", "local model", "rtx", "cuda",
     "ai agent", "autonomous", "collaboration",
 ]
+
+# Primary sources get a scoring boost — these are our main coverage targets
+# and also our competition. Stories from these sources should rank higher.
+PRIMARY_SOURCES = {
+    "Anthropic", "Claude Code", "OpenAI", "Google DeepMind", "Google AI",
+}
+PRIMARY_SOURCE_BOOST = 3  # added to relevance score for primary sources
 
 
 # ---------------------------------------------------------------------------
@@ -249,33 +258,40 @@ def fetch_all_sources():
     for feed_name, feed_url in RSS_FEEDS.items():
         items = fetch_rss_titles(feed_url)
         relevant_count = 0
+        is_primary = feed_name in PRIMARY_SOURCES
         for item in items:
             title = item.get("title", "")
             url = item.get("url", "")
             score = relevance_score(title, url)
+            # Primary sources are always relevant and get a boost
+            if is_primary:
+                score = max(score, 2) + PRIMARY_SOURCE_BOOST
             if score > 0:
                 item["_relevance"] = score
                 item["_signal"] = signal_score(title, url)
                 item["_source"] = feed_name
                 stories.append(item)
                 relevant_count += 1
-        print(f"  {feed_name}: {len(items)} items, {relevant_count} relevant")
+        print(f"  {feed_name}: {len(items)} items, {relevant_count} relevant{'  [PRIMARY]' if is_primary else ''}")
 
     # 3. Markdown changelogs (Claude Code, etc.)
     print("Scanning changelog sources...")
     for source_name, changelog_url in CHANGELOG_SOURCES.items():
         items = fetch_markdown_changelog(changelog_url)
+        is_primary = source_name in PRIMARY_SOURCES
         for item in items:
             title = item.get("title", "")
             url = item.get("url", "")
             score = relevance_score(title, url)
             # Changelogs are always relevant — minimum score of 2
             score = max(score, 2)
+            if is_primary:
+                score += PRIMARY_SOURCE_BOOST
             item["_relevance"] = score
             item["_signal"] = signal_score(title, url)
             item["_source"] = source_name
             stories.append(item)
-        print(f"  {source_name}: {len(items)} changelog entries")
+        print(f"  {source_name}: {len(items)} changelog entries{'  [PRIMARY]' if is_primary else ''}")
 
     return stories
 
