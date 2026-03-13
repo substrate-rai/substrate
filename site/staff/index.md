@@ -174,14 +174,13 @@ redirect_from:
   }
 
   /* ===== AGENT DETAIL OVERLAY ===== */
-  /* Desktop: side panel from the right */
-  /* Mobile: bottom sheet from below */
+  /* Fullscreen overlay on all viewports */
 
   .detail-backdrop {
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.6);
     z-index: 999;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -197,93 +196,105 @@ redirect_from:
   .detail-panel {
     position: fixed;
     z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
     background: var(--surface);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    transform: translateY(100%);
     transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
   }
-
-  /* Desktop: right side panel */
-  @media (min-width: 769px) {
-    .detail-panel {
-      top: 0;
-      right: 0;
-      width: 420px;
-      max-width: 50vw;
-      height: 100vh;
-      height: 100dvh;
-      transform: translateX(100%);
-      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
-    }
-    .detail-panel.show {
-      transform: translateX(0);
-    }
+  .detail-panel.show {
+    transform: translateY(0);
   }
-
-  /* Mobile: bottom sheet */
-  @media (max-width: 768px) {
-    .detail-panel {
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-height: 85vh;
-      max-height: 85dvh;
-      border-radius: 20px 20px 0 0;
-      transform: translateY(100%);
-      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
-    }
-    .detail-panel.show {
-      transform: translateY(0);
-    }
-  }
-
   .detail-panel.closing {
     transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+    transform: translateY(100%);
   }
-  @media (min-width: 769px) {
-    .detail-panel.closing { transform: translateX(100%); }
+  /* Swipe animation classes */
+  .detail-panel.slide-left {
+    animation: slideLeft 0.3s ease;
   }
-  @media (max-width: 768px) {
-    .detail-panel.closing { transform: translateY(100%); }
+  .detail-panel.slide-right {
+    animation: slideRight 0.3s ease;
+  }
+  @keyframes slideLeft {
+    0% { opacity: 0; transform: translateX(60px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideRight {
+    0% { opacity: 0; transform: translateX(-60px); }
+    100% { opacity: 1; transform: translateX(0); }
   }
 
   /* Close button */
   .detail-close {
-    position: absolute;
+    position: fixed;
     top: 12px;
     right: 12px;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
     color: #fff;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10;
+    z-index: 1010;
     padding: 0;
     line-height: 1;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     transition: background 0.2s;
   }
-  .detail-close:hover { background: rgba(0, 0, 0, 0.6); }
+  .detail-close:hover { background: rgba(0, 0, 0, 0.7); }
+
+  /* Agent navigation arrows (prev/next agent) */
+  .agent-nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1010;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 1.4rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: background 0.2s;
+  }
+  .agent-nav-arrow:hover { background: rgba(255, 255, 255, 0.3); }
+  .agent-nav-arrow.nav-prev { left: 8px; }
+  .agent-nav-arrow.nav-next { right: 8px; }
+  @media (min-width: 769px) {
+    .agent-nav-arrow.nav-prev { left: 16px; }
+    .agent-nav-arrow.nav-next { right: 16px; }
+  }
+  /* Hide on mobile — swipe is primary nav */
+  @media (max-width: 768px) {
+    .agent-nav-arrow { display: none; }
+  }
 
   /* Bottom sheet drag handle (mobile only) */
   .detail-handle {
     display: none;
-    width: 36px;
-    height: 4px;
-    background: rgba(0, 0, 0, 0.15);
-    border-radius: 2px;
-    margin: 10px auto 6px;
-    flex-shrink: 0;
-  }
-  @media (max-width: 768px) {
-    .detail-handle { display: block; }
   }
 
   /* Portrait area */
@@ -292,12 +303,15 @@ redirect_from:
     width: 100%;
     overflow: hidden;
     background: var(--bg);
-  }
-  @media (min-width: 769px) {
-    .detail-portrait { height: 340px; }
+    height: 50vh;
+    height: 50dvh;
+    max-height: 500px;
   }
   @media (max-width: 768px) {
-    .detail-portrait { height: 260px; }
+    .detail-portrait {
+      height: 45vh;
+      height: 45dvh;
+    }
   }
   .detail-portrait img {
     width: 100%;
@@ -570,10 +584,34 @@ redirect_from:
     .cell-role {
       font-size: 0.48rem;
     }
+    .detail-close {
+      top: 8px;
+      right: 8px;
+    }
   }
   @media (min-width: 641px) and (max-width: 900px) {
     .agent-grid {
       grid-template-columns: repeat(5, 1fr);
+    }
+  }
+  /* Desktop: constrain panel width for readability */
+  @media (min-width: 769px) {
+    .detail-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .detail-portrait {
+      max-width: 600px;
+      width: 100%;
+    }
+    .detail-info {
+      max-width: 600px;
+      width: 100%;
+    }
+    .bio-section {
+      max-width: 600px;
+      width: 100%;
     }
   }
 </style>
@@ -596,7 +634,7 @@ redirect_from:
 <div class="agent-grid" id="agentGrid" role="grid" aria-label="Agent selection grid"></div>
 
 <div class="keyboard-hint">
-  <kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd> navigate &nbsp; <kbd>Enter</kbd> select &nbsp; <kbd>Space</kbd> play theme &nbsp; <kbd>Esc</kbd> close
+  <kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd> navigate &nbsp; <kbd>Enter</kbd> select &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> prev/next agent &nbsp; <kbd>Space</kbd> play theme &nbsp; <kbd>Esc</kbd> close
 </div>
 
 <div class="detail-backdrop" id="detailBackdrop"></div>
@@ -1288,6 +1326,8 @@ function getCategoryFor(id) {
     panelOpen = true;
     detailPanel.classList.remove('closing');
     backdrop.classList.remove('closing');
+    // Lock body scroll
+    document.body.style.overflow = 'hidden';
     // Force reflow before adding show class for transition
     detailPanel.offsetHeight;
     detailPanel.classList.add('show');
@@ -1297,6 +1337,8 @@ function getCategoryFor(id) {
   function closePanel(callback) {
     if (!panelOpen) { if (callback) callback(); return; }
     panelOpen = false;
+    // Unlock body scroll
+    document.body.style.overflow = '';
     detailPanel.classList.add('closing');
     backdrop.classList.add('closing');
     setTimeout(function() {
@@ -1307,6 +1349,53 @@ function getCategoryFor(id) {
       detailPanel.innerHTML = '';
       if (callback) callback();
     }, 280);
+  }
+
+  // --- Navigate to adjacent agent ---
+  function navigateAgent(direction) {
+    if (selectedIndex < 0) return;
+    // Find current position in visible agents
+    var curVisIdx = -1;
+    for (var i = 0; i < visibleAgents.length; i++) {
+      if (AGENTS.indexOf(visibleAgents[i]) === selectedIndex) {
+        curVisIdx = i;
+        break;
+      }
+    }
+    if (curVisIdx < 0) return;
+    var nextVisIdx = curVisIdx + direction;
+    if (nextVisIdx < 0 || nextVisIdx >= visibleAgents.length) return;
+
+    var nextAgent = visibleAgents[nextVisIdx];
+    var nextGlobalIdx = AGENTS.indexOf(nextAgent);
+
+    // Deselect previous
+    var prev = grid.querySelector('.grid-cell.selected');
+    if (prev) {
+      prev.classList.remove('selected');
+      prev.style.borderColor = 'transparent';
+      prev.style.boxShadow = 'none';
+    }
+
+    selectedIndex = nextGlobalIdx;
+
+    // Highlight new cell
+    var cell = grid.querySelector('[data-index="' + nextGlobalIdx + '"]');
+    if (cell) {
+      cell.classList.add('selected');
+      cell.style.borderColor = nextAgent.color;
+      cell.style.boxShadow = '0 0 20px ' + nextAgent.color + '66';
+    }
+
+    // Animate slide direction
+    detailPanel.classList.remove('slide-left', 'slide-right');
+    detailPanel.classList.add(direction > 0 ? 'slide-left' : 'slide-right');
+    setTimeout(function() {
+      detailPanel.classList.remove('slide-left', 'slide-right');
+    }, 300);
+
+    showDetail(nextAgent);
+    detailPanel.scrollTop = 0;
   }
 
   // --- Select agent ---
@@ -1353,9 +1442,18 @@ function getCategoryFor(id) {
 
     var galleryHtml = buildPortraitGallery(agent, pIdx, photos);
 
+    // Determine if prev/next agents exist in visible list
+    var curVisIdx = -1;
+    for (var vi = 0; vi < visibleAgents.length; vi++) {
+      if (visibleAgents[vi].id === agent.id) { curVisIdx = vi; break; }
+    }
+    var hasPrev = curVisIdx > 0;
+    var hasNext = curVisIdx < visibleAgents.length - 1;
+
     detailPanel.innerHTML =
-      '<div class="detail-handle"></div>' +
       '<button class="detail-close" id="detailCloseBtn" aria-label="Close">&times;</button>' +
+      (hasPrev ? '<button class="agent-nav-arrow nav-prev" id="agentPrev" aria-label="Previous agent">&#8249;</button>' : '') +
+      (hasNext ? '<button class="agent-nav-arrow nav-next" id="agentNext" aria-label="Next agent">&#8250;</button>' : '') +
       '<div class="detail-portrait" id="detailPortrait">' +
         galleryHtml +
         '<div class="portrait-gradient"></div>' +
@@ -1406,6 +1504,12 @@ function getCategoryFor(id) {
     if (portrait && photos.length > 1) {
       attachGalleryEvents(portrait, agent.id, photos);
     }
+
+    // Agent navigation arrows (desktop)
+    var prevBtn = document.getElementById('agentPrev');
+    var nextBtn = document.getElementById('agentNext');
+    if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); navigateAgent(-1); });
+    if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); navigateAgent(1); });
 
     // Scroll panel to top when switching agents
     detailPanel.scrollTop = 0;
@@ -1476,7 +1580,7 @@ function getCategoryFor(id) {
     }, { passive: true });
   }
 
-  // --- Backdrop click to close ---
+  // --- Backdrop click to close (fallback) ---
   backdrop.addEventListener('click', function() {
     var prev = grid.querySelector('.grid-cell.selected');
     if (prev) {
@@ -1528,6 +1632,25 @@ function getCategoryFor(id) {
       return;
     }
 
+    // When panel is open, arrow left/right navigate between agents
+    if (panelOpen) {
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateAgent(1);
+        return;
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigateAgent(-1);
+        return;
+      } else if (e.key === ' ' && selectedIndex >= 0) {
+        e.preventDefault();
+        var btn = document.getElementById('detailPlayBtn');
+        if (btn) toggleTheme(AGENTS[selectedIndex].id, btn);
+        return;
+      }
+    }
+
+    // When panel is closed, navigate grid
     var cells = grid.querySelectorAll('.grid-cell');
     if (!cells.length) return;
 
@@ -1568,47 +1691,43 @@ function getCategoryFor(id) {
     }
   });
 
-  // --- Mobile bottom sheet drag to dismiss ---
+  // --- Swipe left/right to navigate agents, swipe down to close ---
   (function() {
-    var startY = 0, currentY = 0, dragging = false;
+    var startX = 0, startY = 0, currentX = 0, currentY = 0, tracking = false;
+    var swipeThreshold = 60;
+
     detailPanel.addEventListener('touchstart', function(e) {
-      // Only start drag from handle area or if scrolled to top
-      if (detailPanel.scrollTop > 5) return;
-      var handle = detailPanel.querySelector('.detail-handle');
       var touch = e.touches[0];
-      var rect = detailPanel.getBoundingClientRect();
-      // Allow drag from top 50px of panel
-      if (touch.clientY - rect.top < 50) {
-        startY = touch.clientY;
-        currentY = startY;
-        dragging = true;
-      }
+      startX = touch.clientX;
+      startY = touch.clientY;
+      currentX = startX;
+      currentY = startY;
+      tracking = true;
     }, { passive: true });
 
     detailPanel.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
+      if (!tracking) return;
+      currentX = e.touches[0].clientX;
       currentY = e.touches[0].clientY;
-      var diff = currentY - startY;
-      if (diff > 0) {
-        detailPanel.style.transform = 'translateY(' + diff + 'px)';
-      }
     }, { passive: true });
 
     detailPanel.addEventListener('touchend', function() {
-      if (!dragging) return;
-      dragging = false;
-      var diff = currentY - startY;
-      detailPanel.style.transform = '';
-      if (diff > 100) {
-        // Dismiss
-        var prev = grid.querySelector('.grid-cell.selected');
-        if (prev) {
-          prev.classList.remove('selected');
-          prev.style.borderColor = 'transparent';
-          prev.style.boxShadow = 'none';
+      if (!tracking) return;
+      tracking = false;
+      var diffX = startX - currentX;
+      var diffY = startY - currentY;
+      var absDiffX = Math.abs(diffX);
+      var absDiffY = Math.abs(diffY);
+
+      // Require horizontal dominance for left/right swipe
+      if (absDiffX > swipeThreshold && absDiffX > absDiffY * 1.2) {
+        if (diffX > 0) {
+          // Swipe left → next agent
+          navigateAgent(1);
+        } else {
+          // Swipe right → prev agent
+          navigateAgent(-1);
         }
-        selectedIndex = -1;
-        closePanel();
       }
     }, { passive: true });
   })();
