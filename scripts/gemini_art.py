@@ -152,7 +152,7 @@ def build_game_prompt(description):
     return f"{STYLE_PREFIX_GAME}. Scene: {description}. {NEGATIVE_GUIDANCE}"
 
 
-def generate_image(api_key, prompt, aspect_ratio="1:1", reference_path=None, model="gemini-2.0-flash-exp"):
+def generate_image(api_key, prompt, aspect_ratio="1:1", reference_path=None, model="gemini-2.5-flash-image"):
     """Call Gemini API to generate an image.
 
     Returns (image_bytes, mime_type) or raises on error.
@@ -213,7 +213,7 @@ def generate_image(api_key, prompt, aspect_ratio="1:1", reference_path=None, mod
     raise RuntimeError("No image returned by Gemini. The prompt may have been filtered.")
 
 
-def refine_image(api_key, instruction, model="gemini-2.0-flash-exp"):
+def refine_image(api_key, instruction, model="gemini-2.5-flash-image"):
     """Refine the last generated image with a text instruction."""
     if not LAST_IMAGE_FILE.exists():
         print("ERROR: No previous image to refine. Generate one first.")
@@ -393,8 +393,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    parser.add_argument("--model", default="gemini-2.0-flash-exp",
-                        help="Gemini model (default: gemini-2.0-flash-exp)")
+    parser.add_argument("--model", default="gemini-2.5-flash-image",
+                        help="Gemini model (default: gemini-2.5-flash-image)")
 
     sub = parser.add_subparsers(dest="command")
 

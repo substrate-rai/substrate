@@ -18,7 +18,13 @@ const SubstrateAudio = (function() {
   function getCtx() {
     if (!ctx) {
       try {
-        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        // Share AudioContext if one already exists (Safari limits to 4)
+        if (window._substrateAudioCtx) {
+          ctx = window._substrateAudioCtx;
+        } else {
+          ctx = new (window.AudioContext || window.webkitAudioContext)();
+          window._substrateAudioCtx = ctx;
+        }
       } catch(e) {
         return null;
       }

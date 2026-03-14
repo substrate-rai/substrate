@@ -955,6 +955,33 @@ def print_summary(results):
 # Main
 # ---------------------------------------------------------------------------
 
+def _rotate_briefings(now):
+    """Delete briefings >48h old and manifests >7d old."""
+    if not os.path.isdir(BRIEFINGS_DIR):
+        return
+    cutoff_briefing = now - timedelta(hours=48)
+    cutoff_manifest = now - timedelta(days=7)
+    removed = 0
+    for fname in os.listdir(BRIEFINGS_DIR):
+        fpath = os.path.join(BRIEFINGS_DIR, fname)
+        if fname == "latest.md" or not os.path.isfile(fpath):
+            continue
+        try:
+            # Parse date from filename (YYYY-MM-DD-HH00.md or YYYY-MM-DD-HHMM-manifest.json)
+            date_str = fname[:10]  # YYYY-MM-DD
+            fdate = datetime.strptime(date_str, "%Y-%m-%d")
+            if fname.endswith("-manifest.json") and fdate < cutoff_manifest:
+                os.unlink(fpath)
+                removed += 1
+            elif fname.endswith(".md") and fdate < cutoff_briefing:
+                os.unlink(fpath)
+                removed += 1
+        except (ValueError, OSError):
+            continue
+    if removed:
+        print(f"[heartbeat] rotated {removed} old briefing/manifest files", file=sys.stderr)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Substrate orchestrator — hourly heartbeat")
     parser.add_argument("--quick", action="store_true", help="Quick mode: skip AI-dependent agents")
@@ -985,6 +1012,9 @@ def main():
 
     # Rotate accountability log if needed
     rotate_accountability_log()
+
+    # Rotate old briefings (>48h) and manifests (>7d)
+    _rotate_briefings(now)
 
     # Mycelium cycle: prune, decay, check saturation
     if HAS_MYCELIUM:

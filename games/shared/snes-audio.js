@@ -23,7 +23,7 @@ function n(s) {
   var b = NM[m[1]]; if (m[2]==='#') b++; else if (m[2]==='b') b--;
   return b + (parseInt(m[3]) + 1) * 12;
 }
-var R = -1, SR = 32000, SL = 512;
+var R = -1, SR = 44100, SL = 512;
 
 // -- Sample generation --------------------------------------------------------
 function genSamples() {
@@ -724,6 +724,8 @@ function Engine() {
   this._chip = 'snes';
   this._on = false;  // playing
   this._mt = false;  // muted
+  this._wasPlaying = false; // track state for visibility change
+  this._intensity = 1.0;    // adaptive music intensity (0-1)
   this._vol = 0.6;
   this._ch = [];
   this._sq = 0;      // sequence position
@@ -743,11 +745,18 @@ function Engine() {
 
 Engine.prototype._init = function() {
   if (this._ctx) return;
-  try { this._ctx = new (window.AudioContext || window.webkitAudioContext)({sampleRate:44100}); } catch(e) { return; }
+  try {
+    if (window._substrateAudioCtx) {
+      this._ctx = window._substrateAudioCtx;
+    } else {
+      this._ctx = new (window.AudioContext || window.webkitAudioContext)({sampleRate:44100});
+      window._substrateAudioCtx = this._ctx;
+    }
+  } catch(e) { return; }
 
-  var c = this._ctx, k = Object.keys(this._smp);
+  var c = this._ctx, ctxSR = c.sampleRate, k = Object.keys(this._smp);
   for (var i = 0; i < k.length; i++) {
-    var raw = this._smp[k[i]], ab = c.createBuffer(1, raw.length, SR);
+    var raw = this._smp[k[i]], ab = c.createBuffer(1, raw.length, ctxSR);
     var d = ab.getChannelData(0); for (var j = 0; j < raw.length; j++) d[j] = raw[j];
     this._buf[k[i]] = ab;
   }
@@ -795,7 +804,28 @@ Engine.prototype._init = function() {
   this._dist.connect(this._bf);
   this._bf.connect(this._mg);
 
-  this._mg.connect(c.destination);
+  // Vertical layering: rhythm (ch 0-3) and melody (ch 4-7) with independent gain
+  this._layerRhythm = c.createGain(); this._layerRhythm.gain.value = 1.0;
+  this._layerMelody = c.createGain(); this._layerMelody.gain.value = 1.0;
+  this._routeLayers();
+
+  // Limiter (brickwall) to prevent clipping when all 8 channels sum
+  this._lim = c.createDynamicsCompressor();
+  this._lim.threshold.value = -3;
+  this._lim.knee.value = 2;
+  this._lim.ratio.value = 20;
+  this._lim.attack.value = 0.001;
+  this._lim.release.value = 0.05;
+  this._mg.connect(this._lim);
+  this._lim.connect(c.destination);
+
+  // Pause audio when tab goes to background
+  var self = this;
+  this._visCb = function() {
+    if (document.hidden && self._on) { self._wasPlaying = true; self.pause(); }
+    else if (!document.hidden && self._wasPlaying) { self._wasPlaying = false; self.resume(); }
+  };
+  document.addEventListener('visibilitychange', self._visCb);
 };
 
 Engine.prototype._resume = function() {
@@ -835,12 +865,12 @@ Engine.prototype._note = function(ch, midi, inst, vol, t) {
   var v = (vol/100) * 0.5;
   var env = this._ctx.createGain();
   env.gain.setValueAtTime(0.001, t);
-  env.gain.linearRampToValueAtTime(v, t + id.a);
-  env.gain.linearRampToValueAtTime(v * id.su, t + id.a + id.d);
+  env.gain.exponentialRampToValueAtTime(v, t + id.a);
+  env.gain.exponentialRampToValueAtTime(Math.max(v * id.su, 0.001), t + id.a + id.d);
 
   if (!id.lp) {
     var nl = id.a + id.d + 0.05;
-    env.gain.linearRampToValueAtTime(0.001, t + nl + id.r);
+    env.gain.exponentialRampToValueAtTime(0.001, t + nl + id.r);
     src.stop(t + nl + id.r + 0.01);
   }
 
@@ -852,8 +882,11 @@ Engine.prototype._note = function(ch, midi, inst, vol, t) {
     env.connect(pan); last = pan;
   }
 
-  // Route based on chip profile
-  if (this._chip === 'genesis') {
+  // Route through vertical layer gain, then to chip profile
+  var layer = (ch < 4) ? this._layerRhythm : this._layerMelody;
+  if (layer) {
+    last.connect(layer);
+  } else if (this._chip === 'genesis') {
     last.connect(this._gdry);
   } else {
     last.connect(this._dry);
@@ -967,10 +1000,10 @@ Engine.prototype.stinger = function(type) {
     var env = self._ctx.createGain();
     var st = t + i * dur;
     env.gain.setValueAtTime(0.001, st);
-    env.gain.linearRampToValueAtTime(v, st + id.a);
-    env.gain.linearRampToValueAtTime(v * id.su, st + id.a + id.d);
+    env.gain.exponentialRampToValueAtTime(v, st + id.a);
+    env.gain.exponentialRampToValueAtTime(Math.max(v * id.su, 0.001), st + id.a + id.d);
     var nl = id.a + id.d + 0.05;
-    env.gain.linearRampToValueAtTime(0.001, st + nl + id.r);
+    env.gain.exponentialRampToValueAtTime(0.001, st + nl + id.r);
     src.stop(st + nl + id.r + 0.01);
 
     src.connect(env);
@@ -983,12 +1016,30 @@ Engine.prototype.stinger = function(type) {
 
 // -- Public API ---------------------------------------------------------------
 
+Engine.prototype._routeLayers = function() {
+  if (!this._layerRhythm || !this._ctx) return;
+  // Disconnect layers from previous chip routing
+  try { this._layerRhythm.disconnect(); } catch(e) {}
+  try { this._layerMelody.disconnect(); } catch(e) {}
+  // Connect to current chip path
+  if (this._chip === 'genesis') {
+    this._layerRhythm.connect(this._gdry);
+    this._layerMelody.connect(this._gdry);
+  } else {
+    this._layerRhythm.connect(this._dry);
+    this._layerRhythm.connect(this._ei);
+    this._layerMelody.connect(this._dry);
+    this._layerMelody.connect(this._ei);
+  }
+};
+
 Engine.prototype.loadSong = function(name) {
   var s = songs();
   if (s[name]) {
     this._song = s[name];
     this._sn = name;
     this._chip = s[name].chip || 'snes';
+    if (this._ctx) this._routeLayers();
     return true;
   }
   return false;
@@ -1053,6 +1104,18 @@ Engine.prototype.isMuted = function() { return this._mt; };
 Engine.prototype.isPlaying = function() { return this._on; };
 Engine.prototype.getSongName = function() { return this._sn; };
 Engine.prototype.listSongs = function() { return Object.keys(songs()); };
+
+// Adaptive music: set intensity 0-1. At 0, melody layer is silent. At 1, full.
+// Rhythm layer stays at 1.0 always. Melody fades smoothly via exponential ramp.
+Engine.prototype.setIntensity = function(level) {
+  this._intensity = Math.max(0, Math.min(1, level));
+  if (!this._ctx || !this._layerMelody) return;
+  var t = this._ctx.currentTime;
+  var target = Math.max(this._intensity, 0.001);
+  this._layerMelody.gain.setTargetAtTime(target, t, 0.4);
+};
+
+Engine.prototype.getIntensity = function() { return this._intensity; };
 
 // -- Music toggle button ------------------------------------------------------
 

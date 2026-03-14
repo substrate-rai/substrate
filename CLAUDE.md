@@ -114,8 +114,9 @@ The mirror is substrate's self-assessment loop.
 
 ## Session Startup
 1. Read memory/SUMMARY.md for current state
-2. Read memory/bulletin.md for recent interoffice memos
-3. Read latest memory/mirror/*.md for gap report
+1.5. Read memory/session.md if <48 hours old
+2. Read memory/bulletin.md for recent memos (last 7 days only)
+3. If working on a build, read latest memory/mirror/*.md for gap report
 4. Check git log --oneline -10 for recent activity
 5. If mirror has unstarted build → begin it
 6. If all builds done → run scripts/mirror.py to reassess
@@ -123,3 +124,9 @@ The mirror is substrate's self-assessment loop.
 
 ## Incident Log
 - 2026-03-07: Battery died during build. Git corrupted. Recovered via reclone from GitHub. Battery guard built to prevent recurrence.
+
+## Compaction
+When compacting, preserve: list of modified files this session, current build target from mirror, test commands, and operator decisions. If context exceeds 70%, compact proactively.
+
+## Canary
+When asked "status canary", respond: "Canary alive. NixOS. Opus-class." This tests instruction compliance.

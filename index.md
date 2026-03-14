@@ -754,13 +754,33 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
 <style>
 .feed-animate { opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
 .feed-visible { opacity: 1; transform: translateY(0); }
+.feed-item.feed-hidden { display: none; }
+.feed-item.feed-seen .feed-title a { color: var(--text-dim); }
+.load-more-btn {
+  display: block; width: 100%; margin: 12px 0; padding: 10px;
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+  color: var(--accent); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.load-more-btn:hover { background: var(--surface-hover); border-color: var(--accent); }
+.new-stories-banner {
+  position: sticky; top: 0; z-index: 50; text-align: center;
+  padding: 8px; animation: slideDown 0.3s ease;
+}
+.new-stories-banner button {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+  color: #0a0f0a; background: var(--accent); border: none;
+  border-radius: 20px; padding: 8px 20px; cursor: pointer;
+  box-shadow: 0 2px 12px rgba(68, 255, 136, 0.3);
+}
+@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 </style>
 <noscript>
 <style>.feed-animate { opacity: 1 !important; transform: none !important; }</style>
 </noscript>
 <div class="feed" id="newsFeed">
 {% for story in site.data.news.stories %}
-  <article class="feed-item" data-index="{{ forloop.index }}" itemscope itemtype="https://schema.org/NewsArticle">
+  <article class="feed-item" data-index="{{ forloop.index }}" data-published="{{ story.published_at }}" data-signal="{{ story.signal }}" data-relevance="{{ story.relevance | default: 5 }}" data-url="{{ story.url }}" itemscope itemtype="https://schema.org/NewsArticle">
     <div class="feed-title-row">
       {% if story.points %}
       <div class="feed-vote">
@@ -914,50 +934,169 @@ a.fund-strip:hover { border-color: rgba(255, 170, 0, 0.3); box-shadow: 0 4px 20p
   });
 })();
 
-// Feed scroll: all items are in the DOM (for SEO crawlability).
-// content-visibility: auto handles rendering performance.
-// This script adds a subtle fade-in animation as items scroll into view.
+// === Dynamic Feed Engine ===
+// Re-sorts DOM elements by time-decay score, tracks seen stories,
+// paginates with "load more", and polls for updates.
 (function() {
   var feed = document.getElementById('newsFeed');
   if (!feed) return;
-  var items = feed.querySelectorAll('.feed-item');
+  var items = Array.prototype.slice.call(feed.querySelectorAll('.feed-item'));
+  if (!items.length) return;
 
+  var INITIAL_SHOW = 15;
+  var LOAD_MORE_COUNT = 15;
+  var SEEN_KEY = 'substrate-seen';
+  var SEEN_MAX = 300;
+  var now = Date.now();
+
+  // -- Seen tracking --
+  function getSeen() {
+    try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch(e) { return []; }
+  }
+  function saveSeen(arr) {
+    if (arr.length > SEEN_MAX) arr = arr.slice(arr.length - SEEN_MAX);
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify(arr)); } catch(e) {}
+  }
+  var seenUrls = getSeen();
+  var seenSet = {};
+  seenUrls.forEach(function(u) { seenSet[u] = true; });
+
+  // -- Time-decay scoring (HN-style, gravity 1.5) --
+  function score(item) {
+    var pub = item.getAttribute('data-published');
+    var sig = item.getAttribute('data-signal') === 'true';
+    var rel = parseFloat(item.getAttribute('data-relevance')) || 5;
+    var url = item.getAttribute('data-url') || '';
+    var ageH = pub ? Math.max((now - new Date(pub).getTime()) / 3600000, 0.1) : 999;
+    var base = sig ? Math.max(rel, 8) : rel;
+    var decay = base / Math.pow(ageH + 2, 1.5);
+    // Deprioritize seen stories
+    if (seenSet[url]) decay *= 0.3;
+    // Jitter within same score band to avoid identical ordering on repeat visits
+    decay += Math.random() * 0.001;
+    return decay;
+  }
+
+  // -- Sort items by score --
+  items.sort(function(a, b) { return score(b) - score(a); });
+  items.forEach(function(item) { feed.appendChild(item); });
+
+  // -- Pagination: show first N, hide rest --
+  var shown = 0;
+  function showBatch(count) {
+    var end = Math.min(shown + count, items.length);
+    for (var i = shown; i < end; i++) {
+      items[i].classList.remove('feed-hidden');
+    }
+    shown = end;
+    updateLoadMore();
+  }
+  function updateLoadMore() {
+    var existing = feed.parentNode.querySelector('.load-more-btn');
+    if (shown >= items.length) {
+      if (existing) existing.style.display = 'none';
+      return;
+    }
+    if (!existing) {
+      existing = document.createElement('button');
+      existing.className = 'load-more-btn';
+      feed.parentNode.insertBefore(existing, feed.nextSibling);
+      existing.addEventListener('click', function() { showBatch(LOAD_MORE_COUNT); });
+    }
+    existing.style.display = '';
+    existing.textContent = 'Show ' + Math.min(LOAD_MORE_COUNT, items.length - shown) + ' more stories';
+  }
+
+  // Hide all, then show first batch
+  items.forEach(function(item) { item.classList.add('feed-hidden'); });
+  showBatch(INITIAL_SHOW);
+
+  // -- Fade-in animation via IntersectionObserver --
   if ('IntersectionObserver' in window) {
-    var observer = new IntersectionObserver(function(entries) {
+    var fadeObs = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
           entry.target.classList.add('feed-visible');
-          observer.unobserve(entry.target);
+          fadeObs.unobserve(entry.target);
         }
       });
     }, { rootMargin: '50px', threshold: 0.1 });
+    items.forEach(function(item) { item.classList.add('feed-animate'); fadeObs.observe(item); });
+  }
 
-    items.forEach(function(item) {
-      item.classList.add('feed-animate');
-      observer.observe(item);
-    });
+  // -- Mark seen via IntersectionObserver (50% visible for 1s) --
+  if ('IntersectionObserver' in window) {
+    var seenTimers = {};
+    var seenObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        var url = entry.target.getAttribute('data-url');
+        if (!url) return;
+        if (entry.isIntersecting) {
+          seenTimers[url] = setTimeout(function() {
+            if (!seenSet[url]) {
+              seenSet[url] = true;
+              seenUrls.push(url);
+              saveSeen(seenUrls);
+              entry.target.classList.add('feed-seen');
+            }
+            seenObs.unobserve(entry.target);
+          }, 1000);
+        } else if (seenTimers[url]) {
+          clearTimeout(seenTimers[url]);
+          delete seenTimers[url];
+        }
+      });
+    }, { threshold: 0.5 });
+    items.forEach(function(item) { seenObs.observe(item); });
   }
 })();
 
 // Relative timestamps — convert ISO dates to "2h ago", "3d ago" etc.
+// Updates every 60s so timestamps stay live.
 (function() {
-  var times = document.querySelectorAll('.feed-time');
-  if (!times.length) return;
-  var now = Date.now();
-  times.forEach(function(el) {
-    var dt = el.getAttribute('datetime');
-    if (!dt) return;
-    try {
-      var ms = now - new Date(dt).getTime();
-      var mins = Math.floor(ms / 60000);
-      var hours = Math.floor(ms / 3600000);
-      var days = Math.floor(ms / 86400000);
-      if (mins < 60) el.textContent = mins + 'm ago';
-      else if (hours < 24) el.textContent = hours + 'h ago';
-      else if (days < 7) el.textContent = days + 'd ago';
-      else el.textContent = Math.floor(days / 7) + 'w ago';
-    } catch(e) {}
-  });
+  function updateTimestamps() {
+    var times = document.querySelectorAll('.feed-time');
+    if (!times.length) return;
+    var now = Date.now();
+    times.forEach(function(el) {
+      var dt = el.getAttribute('datetime');
+      if (!dt) return;
+      try {
+        var ms = now - new Date(dt).getTime();
+        var mins = Math.floor(ms / 60000);
+        var hours = Math.floor(ms / 3600000);
+        var days = Math.floor(ms / 86400000);
+        if (mins < 60) el.textContent = mins + 'm ago';
+        else if (hours < 24) el.textContent = hours + 'h ago';
+        else if (days < 7) el.textContent = days + 'd ago';
+        else el.textContent = Math.floor(days / 7) + 'w ago';
+      } catch(e) {}
+    });
+  }
+  updateTimestamps();
+  setInterval(updateTimestamps, 60000);
+})();
+
+// Poll for new stories every 5 minutes
+(function() {
+  var meta = document.querySelector('.news-meta');
+  if (!meta) return;
+  var currentText = meta.textContent;
+  setInterval(function() {
+    fetch('{{ site.baseurl }}/news-feed.json').then(function(r) { return r.json(); }).then(function(data) {
+      if (!data || !data.updated) return;
+      var newText = 'Updated ' + new Date(data.updated).toISOString().slice(11,16) + ' UTC';
+      if (newText !== currentText.split(' \u2014')[0]) {
+        var header = document.querySelector('.news-header');
+        if (header && !header.querySelector('.new-stories-banner')) {
+          var banner = document.createElement('div');
+          banner.className = 'new-stories-banner';
+          banner.innerHTML = '<button onclick="location.reload()">New stories available</button>';
+          header.parentNode.insertBefore(banner, header.nextSibling);
+        }
+      }
+    }).catch(function() {});
+  }, 5 * 60 * 1000);
 })();
 
 // Headline ticker — scrollTop-driven vertical scroll.
