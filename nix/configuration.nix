@@ -13,8 +13,11 @@
     ./build-executor.nix
     ./comfyui.nix
     ./news-aggregator.nix
+    ./monitoring.nix
   ];
+
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 20;
   boot.loader.efi.canTouchEfiVariables = true;
 
   boot.initrd.luks.devices."cryptroot" = {
@@ -41,22 +44,40 @@
     open = true;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+    powerManagement.enable = true;
   };
   hardware.graphics.enable = true;
   hardware.firmware = [ pkgs.linux-firmware ];
 
+  # Desktop environment — KDE Plasma 6 on X11 (not Wayland — NVIDIA stability)
+  services.xserver.enable = true;
+  services.desktopManager.plasma6.enable = true;
+  services.displayManager.sddm.enable = true;
+  services.displayManager.defaultSession = "plasmax11";
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "operator";
+  };
+
   # Packages
   environment.systemPackages = with pkgs; [
     vim git curl wget htop nvtopPackages.full tmux fish pciutils usbutils
+    # Desktop
+    kitty firefox
+    # Claude-native desktop control tools
+    libnotify         # notify-send for desktop notifications
+    imagemagick       # wallpaper generation / image manipulation
+    scrot             # screenshots
+    xdotool           # window manipulation
+    xclip             # clipboard access
+    # 3D modeling
+    blender           # headless 3D modeling, rendering, format conversion
   ];
 
   # Power — keep running with lid closed
   services.logind.lidSwitch = "ignore";
   services.logind.lidSwitchDocked = "ignore";
   powerManagement.enable = false;
-
-  # Auto-login on tty1
-  services.getty.autologinUser = "operator";
 
   # Services
   services.openssh = {
@@ -73,18 +94,90 @@
     allowedTCPPorts = [ 22 ];
   };
 
+  # Brute force protection
+  services.fail2ban = {
+    enable = true;
+    maxretry = 5;
+    bantime = "1h";
+  };
+
+  # Compressed swap in RAM — prevents OOM kills
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+    algorithm = "zstd";
+  };
+
+  # SSD maintenance
+  services.fstrim.enable = true;
+
+  # Disk health monitoring
+  services.smartd = {
+    enable = true;
+    autodetect = true;
+    notifications.mail.enable = false;
+  };
+
+  # Thermal management
+  services.auto-cpufreq = {
+    enable = true;
+    settings = {
+      charger = { governor = "performance"; };
+      battery = { governor = "powersave"; };
+    };
+  };
+  services.thermald.enable = true;
+
+  # Ollama — CUDA-accelerated local inference
   services.ollama = {
     enable = true;
     package = pkgs.ollama-cuda;
     environmentVariables = {
-      OLLAMA_KEEP_ALIVE = "-1";          # primary model stays loaded (no cold starts)
-      OLLAMA_NUM_PARALLEL = "2";          # handle 2 concurrent requests
-      OLLAMA_MAX_LOADED_MODELS = "2";     # room for embedding model alongside Qwen3
+      OLLAMA_KEEP_ALIVE = "-1";
+      OLLAMA_NUM_PARALLEL = "2";
+      OLLAMA_MAX_LOADED_MODELS = "2";
+      OLLAMA_FLASH_ATTENTION = "1";
+      OLLAMA_KV_CACHE_TYPE = "q8_0";
+    };
+  };
+
+  # Ollama sandboxing + OOM protection
+  systemd.services.ollama = {
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = 5;
+      OOMScoreAdjust = -500;
+      MemoryMax = "12G";
+      NoNewPrivileges = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      ReadWritePaths = [ "/var/lib/ollama" ];
+    };
+    unitConfig = {
+      StartLimitBurst = 5;
+      StartLimitIntervalSec = 300;
     };
   };
 
   # Nix settings
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    auto-optimise-store = true;
+    substituters = [
+      "https://cache.nixos.org"
+      "https://cuda-maintainers.cachix.org"
+    ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+    ];
+  };
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
 
   system.stateVersion = "24.11";
 }
