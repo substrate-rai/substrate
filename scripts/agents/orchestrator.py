@@ -109,10 +109,6 @@ AGENTS = [
     ("Sentinel", "X|", "security.py",         "Security",                  "quick"),
     ("Forge",    "F/", "site_engineer.py",    "Site Engineer",             "quick"),
 
-    # Core — cloud executor and local writer (no standalone scripts)
-    ("Claude",   ">_", "claude_executor.py",  "Executor",                  "quick"),
-    ("Q",        "Q_", "q_writer.py",         "Staff Writer",              "quick"),
-
     # Content & Intelligence
     ("Byte",     "B>", "news_researcher.py",  "News Reporter",             "full"),
     ("Echo",     "E~", "release_tracker.py",  "Release Tracker",           "quick"),
@@ -162,7 +158,7 @@ _AGENT_MAP = {a[0]: a for a in AGENTS}
 # Agents in the same tier are independent. Quick agents within a tier run
 # in parallel. Full agents always run sequentially (single-GPU bottleneck).
 TIERS = [
-    {"name": "Core",     "agents": ["Claude", "Q"]},
+    # Claude IS the orchestrator; Q writes via pipeline — neither needs a standalone agent script
     {"name": "Infra",    "agents": ["Root", "Spec", "Sentinel", "Forge"]},
     {"name": "Intel",    "agents": ["Byte", "Echo", "Scout", "Patron", "Ink"]},
     {"name": "Creative", "agents": ["Pixel", "Arc", "Hum", "V", "Neon", "Myth", "Scribe"]},
