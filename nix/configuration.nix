@@ -119,6 +119,9 @@
   };
 
   # Thermal management
+  # Plasma enables power-profiles-daemon by default — conflicts with auto-cpufreq
+  services.power-profiles-daemon.enable = false;
+
   services.auto-cpufreq = {
     enable = true;
     settings = {
