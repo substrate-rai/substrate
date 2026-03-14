@@ -13,7 +13,9 @@ writes to blog/posts/ for operator review before publishing.
 """
 
 import argparse
+import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta
@@ -121,6 +123,82 @@ def quality_review(draft):
     return result.stdout.strip()
 
 
+# ---------------------------------------------------------------------------
+# Content evaluation (evaluator-optimizer pattern)
+# ---------------------------------------------------------------------------
+
+# Content types eligible for auto-publish (score >= threshold)
+AUTO_PUBLISH_TYPES = {"news", "build-log"}
+AUTO_PUBLISH_THRESHOLD = 7
+QUALITY_DIR = os.path.join(REPO_DIR, "memory", "content-quality")
+
+
+def detect_content_type(git_log):
+    """Detect content type from git log for auto-publish routing."""
+    log_lower = git_log.lower()
+    if "news" in log_lower and "digest" in log_lower:
+        return "news"
+    if any(word in log_lower for word in ["guide", "tutorial", "how to", "how-to"]):
+        return "guide"
+    # Default: build log (pipeline.py is the build log generator)
+    return "build-log"
+
+
+def evaluate_draft(draft):
+    """Score a draft using local Ollama evaluator. Returns (score, reasoning).
+
+    Scores 0-10 on: factual accuracy, tone consistency, formatting, length.
+    Never auto-publishes financial advice, health claims, or domain-expert content.
+    """
+    eval_prompt = (
+        "Score this blog post draft on a scale of 0-10. Evaluate:\n"
+        "1. Factual accuracy (are claims verifiable from the git log?)\n"
+        "2. Tone consistency (technical build log, direct, no marketing)\n"
+        "3. Formatting (proper markdown, clear structure)\n"
+        "4. Length (200-500 words is ideal for a build log)\n\n"
+        "Respond with ONLY a JSON object, no other text:\n"
+        '{"score": N, "reasoning": "one sentence"}\n\n'
+        f"--- DRAFT ---\n{draft}\n--- END DRAFT ---"
+    )
+
+    try:
+        result = subprocess.run(
+            [sys.executable, os.path.join(SCRIPT_DIR, "route.py"), "draft", eval_prompt],
+            capture_output=True, text=True, timeout=120,
+        )
+    except subprocess.TimeoutExpired:
+        return 5, "evaluation timed out, defaulting to draft mode"
+
+    if result.returncode != 0:
+        return 5, "evaluation failed, defaulting to draft mode"
+
+    text = result.stdout.strip()
+    try:
+        json_match = re.search(r'\{[^}]+\}', text)
+        if json_match:
+            data = json.loads(json_match.group())
+            score = int(data.get("score", 5))
+            score = max(0, min(10, score))  # clamp to 0-10
+            return score, data.get("reasoning", "")
+    except (json.JSONDecodeError, ValueError, AttributeError):
+        pass
+
+    return 5, "could not parse evaluation, defaulting to draft mode"
+
+
+def log_quality(date_str, content_type, score, reasoning, auto_published):
+    """Log quality assessment to memory/content-quality/."""
+    os.makedirs(QUALITY_DIR, exist_ok=True)
+    log_path = os.path.join(QUALITY_DIR, f"{date_str}.md")
+    with open(log_path, "w") as f:
+        f.write(f"# Content Quality — {date_str}\n\n")
+        f.write(f"**Type:** {content_type}\n")
+        f.write(f"**Score:** {score}/10\n")
+        f.write(f"**Auto-publish eligible:** {content_type in AUTO_PUBLISH_TYPES}\n")
+        f.write(f"**Published:** {auto_published}\n\n")
+        f.write(f"**Reasoning:** {reasoning}\n")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Substrate daily blog pipeline.")
     parser.add_argument(
@@ -157,13 +235,31 @@ def main():
         print("[pipeline] running quality review via cloud brain...", file=sys.stderr)
         draft = quality_review(draft)
 
+    # Evaluate draft quality (evaluator-optimizer pattern)
+    content_type = detect_content_type(git_log)
+    score, reasoning = evaluate_draft(draft)
+
+    # Auto-publish routing: only news/build-log with score >= threshold
+    auto_published = False
+    is_draft = True
+    if content_type in AUTO_PUBLISH_TYPES and score >= AUTO_PUBLISH_THRESHOLD:
+        is_draft = False
+        auto_published = True
+        print(f"[pipeline] quality {score}/10 — auto-publishing ({content_type})", file=sys.stderr)
+    else:
+        print(f"[pipeline] quality {score}/10 — draft mode ({content_type})", file=sys.stderr)
+
+    # Log quality assessment
+    log_quality(date_str, content_type, score, reasoning, auto_published)
+
     # Build the full post
     slug = f"{date_str}-build-log"
+    draft_str = "true" if is_draft else "false"
     post = (
         f"---\n"
         f"title: \"Build Log: {date_str}\"\n"
         f"date: {date_str}\n"
-        f"draft: true\n"
+        f"draft: {draft_str}\n"
         f"---\n\n"
         f"{draft}\n"
     )
