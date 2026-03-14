@@ -98,6 +98,104 @@ def find_social_queue():
 
 
 # ---------------------------------------------------------------------------
+# Structured JSON input — parse agent output from latest findings
+# ---------------------------------------------------------------------------
+
+FINDINGS_FILE = os.path.join(MEMORY_DIR, "briefings", "latest-findings.json")
+
+
+def parse_agent_output(stdout):
+    """Try to parse structured JSON from agent stdout.
+
+    Agents print a JSON object as their last line of stdout.
+    Returns the parsed dict or None.
+    """
+    if not stdout:
+        return None
+    for line in reversed(stdout.strip().splitlines()):
+        line = line.strip()
+        if line.startswith("{"):
+            try:
+                return json.loads(line)
+            except json.JSONDecodeError:
+                continue
+    return None
+
+
+def load_structured_findings():
+    """Load structured findings from latest-findings.json if it exists.
+
+    Written by the orchestrator after collecting agent outputs.
+    """
+    if not os.path.isfile(FINDINGS_FILE):
+        return {}
+    try:
+        with open(FINDINGS_FILE) as f:
+            return json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return {}
+
+
+def analyze_structured_findings(structured):
+    """Convert structured agent findings into executive findings.
+
+    This supplements (not replaces) the regex-based analyzers — agents
+    that output JSON get parsed here with higher fidelity.
+    """
+    findings = []
+    for agent_name, data in structured.items():
+        if not isinstance(data, dict):
+            continue
+
+        status = data.get("status", "")
+        agent_findings = data.get("findings", [])
+        actions_taken = data.get("actions_taken", [])
+
+        for f in agent_findings:
+            severity = f.get("severity", "info")
+            if severity == "info":
+                continue  # Don't create executive findings for informational items
+
+            finding = {
+                "source": agent_name,
+                "type": f.get("type", "unknown"),
+                "severity": severity,
+                "detail": f.get("title", ""),
+                "action": APPROVAL,
+            }
+
+            # Map certain finding types to auto-executable actions
+            ftype = f.get("type", "")
+            if ftype == "Services" and "down" in f.get("title", "").lower():
+                finding["action"] = SAFE
+                finding["fix"] = "restart_service"
+                # Extract service name from the title
+                title = f.get("title", "")
+                if ":" in title:
+                    finding["service"] = title.split(":")[-1].strip()
+            elif ftype == "Disk" and "critical" in severity:
+                finding["action"] = SAFE
+                finding["fix"] = "run_nix_gc"
+            elif ftype == "Timers" and "inactive" in f.get("title", "").lower():
+                finding["action"] = SAFE
+                finding["fix"] = "enable_timer"
+                title = f.get("title", "")
+                if ":" in title:
+                    finding["timer"] = title.split(":")[-1].strip()
+
+            findings.append(finding)
+
+        # Log actions already taken by agents themselves
+        for a in actions_taken:
+            action_name = a.get("action", "")
+            success = a.get("success", False)
+            if action_name:
+                log(f"[{agent_name}] already acted: {action_name} ({'OK' if success else 'FAIL'})")
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
 # Analyzers — extract actionable findings from reports
 # ---------------------------------------------------------------------------
 
@@ -344,8 +442,60 @@ def publish_social(finding, dry_run=False):
     return result.returncode == 0
 
 
+def restart_service(finding, dry_run=False):
+    """Restart a safe-listed systemd service."""
+    SAFE_SERVICES = {"ollama", "ollama.service"}
+    service = finding.get("service", "")
+    if service not in SAFE_SERVICES:
+        log(f"Service '{service}' not in safe list, skipping", "skip")
+        return False
+    log(f"Restarting service: {service}", "act")
+    if dry_run:
+        return True
+    result = subprocess.run(
+        ["sudo", "systemctl", "restart", service],
+        capture_output=True, text=True, timeout=30
+    )
+    return result.returncode == 0
+
+
+def run_nix_gc(finding, dry_run=False):
+    """Run nix garbage collection to free disk space."""
+    log("Running nix-collect-garbage --delete-older-than 7d", "act")
+    if dry_run:
+        return True
+    result = subprocess.run(
+        ["sudo", "nix-collect-garbage", "--delete-older-than", "7d"],
+        capture_output=True, text=True, timeout=300
+    )
+    return result.returncode == 0
+
+
+def enable_timer(finding, dry_run=False):
+    """Enable an inactive systemd timer."""
+    SAFE_TIMERS = {
+        "substrate-health.timer", "substrate-blog.timer",
+        "substrate-mirror.timer",
+    }
+    timer = finding.get("timer", "")
+    if timer not in SAFE_TIMERS:
+        log(f"Timer '{timer}' not in safe list, skipping", "skip")
+        return False
+    log(f"Enabling timer: {timer}", "act")
+    if dry_run:
+        return True
+    result = subprocess.run(
+        ["sudo", "systemctl", "enable", "--now", timer],
+        capture_output=True, text=True, timeout=30
+    )
+    return result.returncode == 0
+
+
 EXECUTORS = {
     "restart_ollama": restart_ollama,
+    "restart_service": restart_service,
+    "run_nix_gc": run_nix_gc,
+    "enable_timer": enable_timer,
     "publish_draft": publish_draft,
     "publish_social": publish_social,
 }
@@ -409,15 +559,33 @@ def run(dry_run=False, report_only=False):
     log(f"Draft posts: {len(drafts)}")
     log(f"Social queue: {len(social_queue)}")
 
+    # Phase 1b: Read structured findings (JSON from agents)
+    structured = load_structured_findings()
+    if structured:
+        log(f"Structured findings: {len(structured)} agent(s)")
+
     # Phase 2: Decide
     print(f"\n[2/3] ANALYZING findings...")
     findings = []
+    # Structured findings first (higher fidelity than regex)
+    if structured:
+        findings.extend(analyze_structured_findings(structured))
     findings.extend(analyze_briefing(briefing))
     findings.extend(analyze_site_health(site_report))
     findings.extend(analyze_infra(infra_report))
     findings.extend(analyze_security(security_report))
     findings.extend(analyze_drafts(drafts))
     findings.extend(analyze_social_queue(social_queue))
+
+    # Deduplicate findings (structured + regex may overlap)
+    seen_details = set()
+    deduped = []
+    for f in findings:
+        key = (f["source"], f["type"], f.get("detail", "")[:60])
+        if key not in seen_details:
+            seen_details.add(key)
+            deduped.append(f)
+    findings = deduped
 
     if not findings:
         print("\n  All clear. Nothing to act on.\n")

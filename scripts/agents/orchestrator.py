@@ -43,7 +43,8 @@ CONFIG_FILE = os.path.join(SCRIPT_DIR, "orchestrator.conf.json")
 sys.path.insert(0, SCRIPT_DIR)
 try:
     from mycelium import (blackboard_prune, prune_pulses, urgency_decay,
-                          urgency_ranked, pulse, blackboard_write, pulse_summary,
+                          urgency_ranked, pulse, blackboard_write, blackboard_read,
+                          pulse_summary,
                           flow_record, flow_decay, flow_ranked, validate_output,
                           record_failure, check_saturation, get_fallback)
     HAS_MYCELIUM = True
@@ -279,6 +280,95 @@ _circuit_breaker = CircuitBreaker(
 
 
 # ---------------------------------------------------------------------------
+# Per-agent circuit breaker (persistent across runs)
+# ---------------------------------------------------------------------------
+
+CIRCUIT_BREAKER_FILE = os.path.join(REPO_DIR, "memory", "circuit-breakers.json")
+
+
+class AgentCircuitBreaker:
+    """Per-agent circuit breaker with persistent state.
+
+    Tracks consecutive failures per agent. After `failure_threshold` failures,
+    the agent is skipped for `reset_timeout_s`. After the timeout, one probe
+    attempt is allowed (half-open). Success resets the breaker.
+
+    State is persisted to memory/circuit-breakers.json so it survives restarts.
+    """
+
+    def __init__(self, failure_threshold=3, reset_timeout_s=3600):
+        self.failure_threshold = failure_threshold
+        self.reset_timeout_s = reset_timeout_s
+        self._state = self._load()
+
+    def _load(self):
+        if os.path.isfile(CIRCUIT_BREAKER_FILE):
+            try:
+                with open(CIRCUIT_BREAKER_FILE) as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, IOError):
+                pass
+        return {}
+
+    def _save(self):
+        os.makedirs(os.path.dirname(CIRCUIT_BREAKER_FILE), exist_ok=True)
+        try:
+            with open(CIRCUIT_BREAKER_FILE, "w") as f:
+                json.dump(self._state, f, indent=2)
+        except IOError as e:
+            print(f"[heartbeat] agent breaker save failed: {e}", file=sys.stderr)
+
+    def should_skip(self, agent):
+        """Return True if this agent's circuit is open (skip it)."""
+        entry = self._state.get(agent)
+        if not entry:
+            return False
+        if entry.get("state") != "open":
+            return False
+        # Check if reset timeout has passed → half-open (allow one probe)
+        opened_at = entry.get("opened_at", 0)
+        if time.time() - opened_at >= self.reset_timeout_s:
+            entry["state"] = "half-open"
+            self._save()
+            return False
+        return True
+
+    def record_success(self, agent):
+        """Reset circuit on success."""
+        if agent in self._state:
+            self._state[agent] = {"failures": 0, "state": "closed"}
+            self._save()
+
+    def record_failure(self, agent):
+        """Increment failure count, open circuit if threshold reached."""
+        if agent not in self._state:
+            self._state[agent] = {"failures": 0, "state": "closed"}
+        entry = self._state[agent]
+        entry["failures"] = entry.get("failures", 0) + 1
+        if entry["failures"] >= self.failure_threshold:
+            entry["state"] = "open"
+            entry["opened_at"] = time.time()
+            print(f"[heartbeat] per-agent breaker OPEN for {agent} "
+                  f"after {entry['failures']} consecutive failures",
+                  file=sys.stderr)
+        self._save()
+
+    def summary(self):
+        """Return dict of agents with open/half-open circuits."""
+        return {
+            agent: entry
+            for agent, entry in self._state.items()
+            if entry.get("state") in ("open", "half-open")
+        }
+
+
+_agent_breaker = AgentCircuitBreaker(
+    failure_threshold=CFG["circuit_breaker"]["failure_threshold"],
+    reset_timeout_s=CFG["circuit_breaker"].get("agent_reset_timeout_s", 3600),
+)
+
+
+# ---------------------------------------------------------------------------
 # Error classification
 # ---------------------------------------------------------------------------
 
@@ -390,6 +480,8 @@ def run_agent_with_retry(name, script, cmd_args=None, mode="quick"):
 def get_agent_command(name):
     """Return the appropriate command args for each agent's status/quick check."""
     status_commands = {
+        "Root": ["--auto-fix"],
+        "Forge": ["--fix"],
         "Spec": ["smoke"],
         "Sentinel": ["scan"],
         "Mint": ["status"],
@@ -422,6 +514,10 @@ def _run_one_agent(name, quick_mode, preflight_result):
     if quick_mode and mode == "full":
         return (name, "", "", 0, 0, "quick mode")
 
+    # Per-agent circuit breaker: skip agents with too many consecutive failures
+    if _agent_breaker.should_skip(name):
+        return (name, "", "agent circuit breaker open", 1, 0, "agent breaker")
+
     # Skip full agents if Ollama is down (preflight) or circuit breaker open
     if mode == "full":
         if not preflight_result.get("ollama", True):
@@ -440,6 +536,12 @@ def _run_one_agent(name, quick_mode, preflight_result):
             _circuit_breaker.record_success()
         else:
             _circuit_breaker.record_failure()
+
+    # Per-agent circuit breaker tracking
+    if returncode == 0:
+        _agent_breaker.record_success(name)
+    else:
+        _agent_breaker.record_failure(name)
 
     # Mycelium integration: pulses, flow tracking, validation, recovery
     if HAS_MYCELIUM:
@@ -632,7 +734,16 @@ def generate_briefing(timestamp, results, quick_mode=False, preflight_result=Non
 
     # Show circuit breaker state
     if _circuit_breaker.state != "closed":
-        lines.append(f"**Circuit Breaker:** {_circuit_breaker.state}")
+        lines.append(f"**Ollama Circuit Breaker:** {_circuit_breaker.state}")
+
+    # Show per-agent circuit breaker state
+    agent_breaker_summary = _agent_breaker.summary()
+    if agent_breaker_summary:
+        tripped = ", ".join(
+            f"{agent}({entry.get('state', '?')}, {entry.get('failures', 0)} failures)"
+            for agent, entry in agent_breaker_summary.items()
+        )
+        lines.append(f"**Agent Circuit Breakers:** {tripped}")
 
     lines.append("")
 
@@ -831,6 +942,7 @@ def generate_manifest(timestamp, results, quick_mode, preflight_result):
         "mode": "quick" if quick_mode else "full",
         "preflight": preflight_result or {},
         "circuit_breaker": _circuit_breaker.state,
+        "agent_circuit_breakers": _agent_breaker.summary(),
         "agents": agents_data,
         "mycelium": mycelium_data,
         "summary": {
@@ -1032,10 +1144,23 @@ def main():
             print(f"[heartbeat] mycelium: SATURATED agents: {names}",
                   file=sys.stderr)
 
-    # Run agents tier by tier
+    # Run agents tier by tier with blackboard coordination
     results = {}
     for tier in TIERS:
         tier_name = tier["name"]
+
+        # Blackboard: read context from prior tiers for this tier's agents
+        if HAS_MYCELIUM:
+            prior_context = blackboard_read(entry_type="status", limit=10)
+            if prior_context:
+                context_summary = ", ".join(
+                    f"{e.get('payload', {}).get('tier', '?')}: "
+                    f"{len(e.get('payload', {}).get('ok', []))} ok"
+                    for e in prior_context[:5]
+                )
+                print(f"[heartbeat] tier {tier_name}: context from prior tiers: {context_summary}",
+                      file=sys.stderr)
+
         print(f"[heartbeat] tier {tier_name}: {', '.join(tier['agents'])}",
               file=sys.stderr)
         tier_results = run_tier(tier, args.quick, preflight_result)
@@ -1048,6 +1173,24 @@ def main():
                 dur = tier_results[name][3] if len(tier_results[name]) > 3 else 0
                 print(f"[heartbeat] {name}: {status} ({dur}ms)", file=sys.stderr)
 
+        # Blackboard: write tier summary for downstream tiers
+        if HAS_MYCELIUM:
+            ok_names = [n for n in tier["agents"]
+                        if n in tier_results and _result_status(tier_results[n]) == "OK"]
+            fail_names = [n for n in tier["agents"]
+                          if n in tier_results and _result_status(tier_results[n]) == "FAILED"]
+            blackboard_write(
+                agent="Orchestrator",
+                entry_type="status",
+                payload={
+                    "tier": tier_name,
+                    "ok": ok_names,
+                    "failed": fail_names,
+                    "timestamp": timestamp,
+                },
+                ttl_hours=2,
+            )
+
     # Log accountability
     log_accountability(timestamp, results)
 
@@ -1057,6 +1200,33 @@ def main():
 
     # Generate manifest
     manifest = generate_manifest(timestamp, results, args.quick, preflight_result)
+
+    # Extract structured JSON findings from agent stdout for executive
+    structured_findings = {}
+    for name, (stdout, stderr, rc, duration_ms, skip_reason) in results.items():
+        if not stdout or skip_reason:
+            continue
+        # Try to parse JSON from the last line of stdout
+        for line in reversed(stdout.strip().splitlines()):
+            line = line.strip()
+            if line.startswith("{"):
+                try:
+                    parsed = json.loads(line)
+                    if "agent" in parsed and "findings" in parsed:
+                        structured_findings[parsed["agent"]] = parsed
+                except json.JSONDecodeError:
+                    pass
+                break
+
+    if structured_findings:
+        findings_path = os.path.join(BRIEFINGS_DIR, "latest-findings.json")
+        os.makedirs(BRIEFINGS_DIR, exist_ok=True)
+        try:
+            atomic_write(findings_path, json.dumps(structured_findings, indent=2) + "\n")
+            print(f"[heartbeat] structured findings: {len(structured_findings)} agent(s)",
+                  file=sys.stderr)
+        except Exception as e:
+            print(f"[heartbeat] failed to write findings: {e}", file=sys.stderr)
 
     # Print summary
     print_summary(results)

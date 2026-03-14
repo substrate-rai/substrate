@@ -11,8 +11,10 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 
@@ -442,6 +444,145 @@ def check_meta_tags(content_files):
     return missing_meta
 
 
+# ---------------------------------------------------------------------------
+# Auto-fix: safe remediation actions
+# ---------------------------------------------------------------------------
+
+# Only fix files in these directories
+SAFE_FIX_DIRS = ["_posts", "site"]
+
+
+def _is_safe_to_fix(filepath):
+    """Check if a file is in a safe-to-fix directory."""
+    rel = os.path.relpath(filepath, REPO_DIR)
+    return any(rel.startswith(d + os.sep) or rel.startswith(d + "/") for d in SAFE_FIX_DIRS)
+
+
+def fix_missing_descriptions(missing_meta):
+    """Add missing description fields to frontmatter in safe directories.
+
+    Only modifies _posts/ and site/ markdown files. Generates description
+    from the title field if present.
+
+    Returns list of (filepath, action) tuples for files that were fixed.
+    """
+    fixed = []
+
+    for rel_path, missing_tags in missing_meta:
+        if "description" not in missing_tags:
+            continue
+
+        filepath = os.path.join(REPO_DIR, rel_path)
+        if not _is_safe_to_fix(filepath):
+            continue
+        if not filepath.endswith((".md", ".markdown")):
+            continue
+
+        try:
+            with open(filepath, "r") as f:
+                content = f.read()
+        except (IOError, OSError):
+            continue
+
+        # Parse frontmatter
+        fm_match = re.match(r"^(---\s*\n)(.*?)(\n---)", content, re.DOTALL)
+        if not fm_match:
+            continue
+
+        fm_open = fm_match.group(1)
+        fm_body = fm_match.group(2)
+        fm_close = fm_match.group(3)
+        rest = content[fm_match.end():]
+
+        # Skip if description already exists
+        if re.search(r"^description:", fm_body, re.MULTILINE):
+            continue
+
+        # Generate description from title
+        title_match = re.search(r'^title:\s*["\']?(.+?)["\']?\s*$', fm_body, re.MULTILINE)
+        if title_match:
+            title = title_match.group(1).strip()
+            desc = title
+        else:
+            desc = os.path.splitext(os.path.basename(rel_path))[0].replace("-", " ").title()
+
+        # Insert description after title line (or at end of frontmatter)
+        if title_match:
+            insert_after = title_match.group(0)
+            new_fm_body = fm_body.replace(
+                insert_after,
+                f'{insert_after}\ndescription: "{desc}"',
+                1,
+            )
+        else:
+            new_fm_body = fm_body + f'\ndescription: "{desc}"'
+
+        new_content = fm_open + new_fm_body + fm_close + rest
+
+        with open(filepath, "w") as f:
+            f.write(new_content)
+        fixed.append((rel_path, f"added description: \"{desc}\""))
+
+    return fixed
+
+
+def fix_broken_internal_links(broken_links, content_files):
+    """Attempt to fix broken internal links by finding the correct path.
+
+    Only fixes links in _posts/ and site/ files. Only rewrites when a unique
+    match is found (e.g., /old-path/ → /new-path/ based on filename match).
+
+    Returns list of (filepath, old_url, new_url) tuples for fixed links.
+    """
+    fixed = []
+
+    # Build a map of filenames → relative paths for resolution
+    filename_map = {}
+    for fpath in content_files:
+        basename = os.path.basename(fpath)
+        name_no_ext = os.path.splitext(basename)[0]
+        rel = os.path.relpath(fpath, REPO_DIR)
+        if name_no_ext not in filename_map:
+            filename_map[name_no_ext] = []
+        filename_map[name_no_ext].append("/" + rel)
+
+    for source_rel, broken_url in broken_links:
+        source_path = os.path.join(REPO_DIR, source_rel)
+        if not _is_safe_to_fix(source_path):
+            continue
+
+        # Try to match the broken URL's filename to an existing file
+        clean_url = broken_url.strip("/").split("#")[0].split("?")[0]
+        url_basename = os.path.basename(clean_url)
+        url_name = os.path.splitext(url_basename)[0] if url_basename else clean_url.split("/")[-1]
+
+        if not url_name or url_name not in filename_map:
+            continue
+
+        candidates = filename_map[url_name]
+        if len(candidates) != 1:
+            continue  # Ambiguous — skip
+
+        new_url = candidates[0]
+        # Don't "fix" if it's the same path
+        if new_url.rstrip("/") == broken_url.rstrip("/"):
+            continue
+
+        try:
+            with open(source_path, "r") as f:
+                content = f.read()
+
+            new_content = content.replace(broken_url, new_url)
+            if new_content != content:
+                with open(source_path, "w") as f:
+                    f.write(new_content)
+                fixed.append((source_rel, broken_url, new_url))
+        except (IOError, OSError):
+            continue
+
+    return fixed
+
+
 def build_report(date_str, total_links, broken_links, config_issues,
                  total_assets, total_asset_size, large_files, counts,
                  missing_layouts, total_image_refs, missing_images,
@@ -554,9 +695,23 @@ def main():
     parser.add_argument(
         "--dry-run", action="store_true", help="Print report without saving"
     )
+    parser.add_argument(
+        "--fix", action="store_true",
+        help="Auto-fix safe issues (missing descriptions, broken links in _posts/ and site/)"
+    )
     args = parser.parse_args()
 
     date_str = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Read blackboard for cross-agent context
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from mycelium import blackboard_read, blackboard_write
+        blackboard_context = blackboard_read(agent="Forge", limit=5)
+    except ImportError:
+        blackboard_read = None
+        blackboard_write = None
+        blackboard_context = []
 
     print(f"[Forge] Site health scan for {date_str}")
 
@@ -617,6 +772,50 @@ def main():
     counts = count_site_structure()
     print(f"[Forge] Structure: {counts['pages']} pages, {counts['posts']} posts, {counts['games']} games")
 
+    # Auto-fix if requested
+    fix_actions = []
+    if args.fix:
+        print("[Forge] Auto-fix mode: attempting safe remediations...")
+
+        # Fix missing descriptions
+        desc_fixes = fix_missing_descriptions(missing_meta)
+        for rel_path, action in desc_fixes:
+            print(f"[Forge] FIXED {rel_path}: {action}")
+            fix_actions.append(f"Fixed `{rel_path}`: {action}")
+
+        # Fix broken links
+        link_fixes = fix_broken_internal_links(broken_links, content_files)
+        for rel_path, old_url, new_url in link_fixes:
+            print(f"[Forge] FIXED {rel_path}: {old_url} → {new_url}")
+            fix_actions.append(f"Fixed `{rel_path}`: `{old_url}` → `{new_url}`")
+
+        if fix_actions:
+            # Re-run checks after fixes to get updated counts
+            total_links, broken_links = check_links(content_files)
+            missing_meta = check_meta_tags(content_files)
+
+            # Commit fixes
+            try:
+                subprocess.run(
+                    ["git", "add", "_posts/", "site/"],
+                    cwd=REPO_DIR, capture_output=True, timeout=10,
+                )
+                status = subprocess.run(
+                    ["git", "diff", "--cached", "--quiet"],
+                    cwd=REPO_DIR, timeout=10,
+                )
+                if status.returncode != 0:
+                    msg = f"site: auto-fix {len(fix_actions)} issue(s)"
+                    subprocess.run(
+                        ["git", "commit", "-m", msg],
+                        cwd=REPO_DIR, capture_output=True, timeout=10,
+                    )
+                    print(f"[Forge] Committed: {msg}")
+            except Exception as e:
+                print(f"[Forge] Commit failed: {e}", file=sys.stderr)
+        else:
+            print("[Forge] No auto-fixable issues found")
+
     # Build report
     report = build_report(
         date_str, total_links, broken_links, config_issues,
@@ -624,6 +823,13 @@ def main():
         missing_layouts, total_image_refs, missing_images,
         missing_meta,
     )
+
+    # Append fix actions to report
+    if fix_actions:
+        report += "\n## Auto-Fix Actions\n\n"
+        for action in fix_actions:
+            report += f"- {action}\n"
+        report += "\n"
 
     if args.dry_run:
         print()
@@ -640,9 +846,44 @@ def main():
                    + len(missing_layouts) + len(missing_images) + len(missing_meta))
     if issue_count == 0:
         print("[Forge] 200 OK — site is healthy")
+        overall = "HEALTHY"
     else:
         print(f"[Forge] {issue_count} issue(s) need attention")
+        overall = "ATTENTION NEEDED" if issue_count > 5 else "MINOR ISSUES"
     print("-- Forge, Substrate Site Engineering")
+
+    # Write fix actions to blackboard so downstream agents know
+    if fix_actions and blackboard_write:
+        try:
+            blackboard_write("Forge", "action", {
+                "action": f"auto-fixed {len(fix_actions)} issue(s)",
+                "success": True,
+                "fixes": fix_actions[:10],
+            }, ttl_hours=2)
+        except Exception:
+            pass
+
+    # Structured JSON output for executive consumption (last line of stdout)
+    findings = []
+    for source, url in broken_links:
+        findings.append({"type": "broken_link", "severity": "medium",
+                         "title": f"404 {url} in {source}"})
+    for source, tags in missing_meta:
+        findings.append({"type": "missing_meta", "severity": "low",
+                         "title": f"{source} missing: {', '.join(tags)}"})
+    for source, ref in missing_images:
+        findings.append({"type": "missing_image", "severity": "medium",
+                         "title": f"404 image {ref} in {source}"})
+    for issue in config_issues:
+        findings.append({"type": "config_issue", "severity": "medium",
+                         "title": issue})
+    structured = {
+        "agent": "Forge",
+        "status": overall,
+        "findings": findings,
+        "actions_taken": [{"action": a, "success": True} for a in fix_actions],
+    }
+    print(json.dumps(structured))
 
 
 if __name__ == "__main__":

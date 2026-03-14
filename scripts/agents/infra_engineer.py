@@ -13,10 +13,12 @@ Designed to run standalone with stdlib only (no pip dependencies).
 """
 
 import argparse
+import json
 import os
 import re
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -340,6 +342,57 @@ def analyze_health_log():
 # Proposal generation
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Auto-fix: safe remediation actions
+# ---------------------------------------------------------------------------
+
+# Only these services may be restarted automatically
+SAFE_RESTARTABLE_SERVICES = ["ollama.service"]
+
+ACTIONS_LOG = os.path.join(INFRA_DIR, "actions.log")
+
+
+def log_action(action, success, detail=""):
+    """Log an auto-fix action to memory/infra/actions.log."""
+    os.makedirs(INFRA_DIR, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    status = "OK" if success else "FAIL"
+    entry = f"{timestamp} | {status} | {action} | {detail}\n"
+    with open(ACTIONS_LOG, "a") as f:
+        f.write(entry)
+
+
+def attempt_service_restart(service):
+    """Attempt to restart a safe-listed service. Returns (success, message).
+
+    Safety: only restart (never stop), only services in SAFE_RESTARTABLE_SERVICES.
+    """
+    if service not in SAFE_RESTARTABLE_SERVICES:
+        return False, f"not in safe restart list: {service}"
+
+    # Double-check it's actually down before restarting
+    stdout, _, rc = run_cmd(["systemctl", "is-active", service])
+    if rc == 0 and stdout == "active":
+        return False, f"{service} is already active — no action needed"
+
+    print(f"[root] confirmed {service} is down, attempting restart...", file=sys.stderr)
+
+    # Attempt restart via systemctl (runs as operator, needs polkit or sudo)
+    _, stderr, rc = run_cmd(["systemctl", "restart", service], timeout=30)
+    if rc != 0:
+        return False, f"restart command failed: {stderr[:200]}"
+
+    # Wait briefly for the service to come up
+    time.sleep(5)
+
+    # Verify it came back
+    stdout, _, rc = run_cmd(["systemctl", "is-active", service])
+    if rc == 0 and stdout == "active":
+        return True, f"{service} restarted successfully"
+
+    return False, f"{service} restart issued but service not yet active"
+
+
 def generate_proposals(gpu, disk, memory, services, timers, ollama, comfyui, trends):
     """Generate infrastructure improvement proposals based on findings."""
     proposals = []
@@ -635,11 +688,23 @@ def main():
         description="Root -- infrastructure engineer agent for Substrate")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print report without saving to disk")
+    parser.add_argument("--auto-fix", action="store_true",
+                        help="Attempt safe auto-remediation (restart down services)")
     parser.add_argument("--date", default=None,
                         help="Date for the report (YYYY-MM-DD, default: today)")
     args = parser.parse_args()
 
     date_str = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Read blackboard for cross-agent context
+    blackboard_context = []
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from mycelium import blackboard_read, blackboard_write
+        blackboard_context = blackboard_read(agent="Root", limit=5)
+    except ImportError:
+        blackboard_read = None
+        blackboard_write = None
 
     print(f"[root] starting infrastructure scan...", file=sys.stderr)
 
@@ -665,6 +730,47 @@ def main():
     trends = analyze_health_log()
     print(f"[root] Health log: {trends['entries']} entries, {len(trends['recent_errors'])} recent errors", file=sys.stderr)
 
+    # Auto-fix: attempt safe remediation before generating proposals
+    actions_taken = []
+    # Check blackboard: skip actions another agent already took this cycle
+    already_restarted = set()
+    for entry in blackboard_context:
+        payload = entry.get("payload", {})
+        if isinstance(payload, dict) and payload.get("action", "").startswith("restart "):
+            if payload.get("success"):
+                already_restarted.add(payload["action"])
+                print(f"[root] blackboard: {payload['action']} already done this cycle, skipping",
+                      file=sys.stderr)
+
+    if args.auto_fix:
+        # Restart Ollama if it's down
+        if ollama["status"] != "OK" and "restart ollama.service" in already_restarted:
+            print(f"[root] auto-fix: Ollama restart already handled by another agent",
+                  file=sys.stderr)
+        elif ollama["status"] != "OK":
+            print(f"[root] auto-fix: Ollama is {ollama['status']}, attempting restart...",
+                  file=sys.stderr)
+            success, msg = attempt_service_restart("ollama.service")
+            log_action("restart ollama.service", success, msg)
+            actions_taken.append(("restart ollama.service", success, msg))
+            print(f"[root] auto-fix: {msg}", file=sys.stderr)
+            if success:
+                # Re-check after restart
+                ollama = check_ollama()
+                print(f"[root] auto-fix: Ollama now {ollama['status']}", file=sys.stderr)
+
+        # Restart down services from the expected list
+        for svc in services:
+            if svc["status"] != "active" and svc["name"] in SAFE_RESTARTABLE_SERVICES:
+                success, msg = attempt_service_restart(svc["name"])
+                log_action(f"restart {svc['name']}", success, msg)
+                actions_taken.append((f"restart {svc['name']}", success, msg))
+                print(f"[root] auto-fix: {msg}", file=sys.stderr)
+
+        if actions_taken:
+            # Re-run service checks after fixes
+            services = check_services()
+
     # Generate proposals
     proposals = generate_proposals(gpu, disk, memory, services, timers, ollama, comfyui, trends)
 
@@ -672,17 +778,16 @@ def main():
     report = build_report(date_str, gpu, disk, memory, services, timers, ollama, comfyui,
                           trends, proposals)
 
-    if args.dry_run:
-        print(report)
-        return
+    # Append auto-fix actions to report if any were taken
+    if actions_taken:
+        fix_lines = ["\n## Auto-Fix Actions\n"]
+        for action, success, msg in actions_taken:
+            status = "OK" if success else "FAIL"
+            fix_lines.append(f"- **[{status}]** {action}: {msg}")
+        fix_lines.append("")
+        report += "\n".join(fix_lines)
 
-    # Save report
-    os.makedirs(INFRA_DIR, exist_ok=True)
-    report_path = os.path.join(INFRA_DIR, f"{date_str}.md")
-    with open(report_path, "w") as f:
-        f.write(report)
-
-    # Print summary to stdout
+    # Determine overall status
     severities = [p["severity"] for p in proposals]
     if "critical" in severities:
         overall = "CRITICAL"
@@ -693,6 +798,42 @@ def main():
     else:
         overall = "HEALTHY"
 
+    # Write actions to blackboard so downstream agents know what happened
+    if actions_taken and blackboard_write:
+        for action, success, msg in actions_taken:
+            try:
+                blackboard_write("Root", "action", {
+                    "action": action, "success": success, "detail": msg
+                }, ttl_hours=2)
+            except Exception:
+                pass
+
+    if args.dry_run:
+        print(report)
+        # Structured JSON output for executive consumption
+        structured = {
+            "agent": "Root",
+            "status": overall,
+            "findings": [
+                {"type": p["area"], "severity": p["severity"], "title": p["title"],
+                 "action": p.get("action", "")}
+                for p in proposals
+            ],
+            "actions_taken": [
+                {"action": a[0], "success": a[1], "detail": a[2]}
+                for a in actions_taken
+            ],
+        }
+        print(json.dumps(structured))
+        return
+
+    # Save report
+    os.makedirs(INFRA_DIR, exist_ok=True)
+    report_path = os.path.join(INFRA_DIR, f"{date_str}.md")
+    with open(report_path, "w") as f:
+        f.write(report)
+
+    # Print summary to stdout (human-readable first, JSON last)
     print(f"Root here. Infrastructure status: {overall}.")
     print()
     if gpu["available"]:
@@ -709,6 +850,22 @@ def main():
     print(f"Report: {report_path}")
     print()
     print("-- Root, Substrate Infrastructure")
+
+    # Structured JSON output for executive consumption (last line of stdout)
+    structured = {
+        "agent": "Root",
+        "status": overall,
+        "findings": [
+            {"type": p["area"], "severity": p["severity"], "title": p["title"],
+             "action": p.get("action", "")}
+            for p in proposals
+        ],
+        "actions_taken": [
+            {"action": a[0], "success": a[1], "detail": a[2]}
+            for a in actions_taken
+        ],
+    }
+    print(json.dumps(structured))
 
 
 if __name__ == "__main__":

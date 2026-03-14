@@ -328,8 +328,32 @@ def write_news_json(stories, signal_stories, date_str):
 # Main
 # ---------------------------------------------------------------------------
 
+NEWS_DRAFT_THRESHOLD = 5  # Auto-draft a post when >= this many high-signal stories
+
+
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Byte — AI News Researcher")
+    parser.add_argument("--draft-post", action="store_true",
+                        help="Force draft a news digest post regardless of story count")
+    args = parser.parse_args()
+
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Read blackboard for cross-agent context (e.g., Ollama status from Root)
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from mycelium import blackboard_read
+        blackboard_context = blackboard_read(agent="Byte", limit=5)
+        # Check if Ollama was just restarted — may affect draft post capability
+        for entry in blackboard_context:
+            payload = entry.get("payload", {})
+            if isinstance(payload, dict) and "ollama" in str(payload.get("action", "")).lower():
+                print(f"[byte] blackboard: {payload.get('detail', 'Ollama action noted')}",
+                      file=sys.stderr)
+    except ImportError:
+        blackboard_context = []
+
     print(f"Byte here. Scanning Hacker News + RSS feeds for {today}.")
     print()
 
@@ -392,10 +416,16 @@ def main():
     # 4b. _data/news.json is now owned by news_aggregator.py (hourly timer)
     # with agent commentary — do NOT overwrite it here.
 
-    # 4c. Publish as Jekyll post
-    if relevant:
+    # 4c. Publish as Jekyll post — auto-draft when enough signal stories
+    post_path = None
+    take = None
+    should_post = args.draft_post or len(signal_top) >= NEWS_DRAFT_THRESHOLD
+    if relevant and should_post:
         post_path = publish_jekyll_post(relevant, signal_top, today)
         print(f"Jekyll post: {post_path}")
+    elif relevant:
+        print(f"  {len(signal_top)} signal stories (threshold: {NEWS_DRAFT_THRESHOLD}) — skipping post draft")
+        post_path = None
 
     print(f"Found {len(relevant)} relevant stories.")
     print()
@@ -431,7 +461,7 @@ def main():
     # Auto-commit output files
     try:
         git_files = [report_path]
-        if relevant:
+        if post_path:
             git_files.append(post_path)
         subprocess.run(
             ["git", "add"] + git_files,
@@ -446,6 +476,30 @@ def main():
         print(f"Auto-commit skipped: {e}", file=sys.stderr)
 
     print("-- Byte, Substrate News Desk")
+
+    # Structured JSON output for executive consumption (last line of stdout)
+    structured = {
+        "agent": "Byte",
+        "status": "OK" if relevant else "NO DATA",
+        "findings": [
+            {"type": "signal_story", "severity": "info",
+             "title": item.get("title", "Untitled"),
+             "action": f"HN score: {item.get('score', 0)}"}
+            for item in signal_top[:5]
+        ],
+        "actions_taken": [],
+    }
+    if post_path:
+        structured["actions_taken"].append({
+            "action": f"published news post: {os.path.basename(post_path)}",
+            "success": True,
+        })
+    if take:
+        structured["actions_taken"].append({
+            "action": "queued hot take for Bluesky",
+            "success": True,
+        })
+    print(json.dumps(structured))
 
 
 if __name__ == "__main__":
