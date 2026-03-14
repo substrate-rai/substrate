@@ -14,6 +14,7 @@
     ./comfyui.nix
     ./news-aggregator.nix
     ./monitoring.nix
+    ./chat-ui.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
