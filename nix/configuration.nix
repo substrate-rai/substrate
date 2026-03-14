@@ -75,8 +75,8 @@
   ];
 
   # Power — keep running with lid closed
-  services.logind.lidSwitch = "ignore";
-  services.logind.lidSwitchDocked = "ignore";
+  services.logind.settings.Login.HandleLidSwitch = "ignore";
+  services.logind.settings.Login.HandleLidSwitchDocked = "ignore";
   powerManagement.enable = false;
 
   # Services
