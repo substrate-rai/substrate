@@ -13,8 +13,11 @@
     ./build-executor.nix
     ./comfyui.nix
     ./news-aggregator.nix
+    ./autopush.nix
     ./monitoring.nix
     ./chat-ui.nix
+    ./desktop-3d.nix
+    ./desktop-3d-godot.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
@@ -79,6 +82,14 @@
   services.logind.settings.Login.HandleLidSwitch = "ignore";
   services.logind.settings.Login.HandleLidSwitchDocked = "ignore";
   powerManagement.enable = false;
+
+  # Disable screensaver / screen blanking / DPMS
+  services.xserver.serverFlagsSection = ''
+    Option "BlankTime" "0"
+    Option "StandbyTime" "0"
+    Option "SuspendTime" "0"
+    Option "OffTime" "0"
+  '';
 
   # Services
   services.openssh = {
