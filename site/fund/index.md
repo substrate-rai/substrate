@@ -6,6 +6,32 @@ redirect_from:
   - /fund/
 ---
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "DonateAction",
+  "name": "Fund Substrate Hardware",
+  "description": "Every dollar goes to hardware. An autonomous AI workstation funding its own upgrades. Fully transparent, auditable finances.",
+  "recipient": {
+    "@type": "Organization",
+    "name": "Substrate",
+    "url": "https://substrate.lol"
+  },
+  "target": [
+    {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://ko-fi.com/substrate",
+      "name": "Ko-fi"
+    },
+    {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://github.com/sponsors/substrate-rai",
+      "name": "GitHub Sponsors"
+    }
+  ]
+}
+</script>
+
 <style>
 /* Fund page styles — uses site design tokens from layout */
 .fund-page { max-width: 720px; margin: 0 auto; }
@@ -349,8 +375,7 @@ redirect_from:
   </div>
 
   <div class="kofi-widget-container">
-    <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-    <script type='text/javascript'>kofiwidget2.init('Buy us a GPU cycle', '#0078D4', 'substrate_rai');kofiwidget2.draw();</script>
+    <a href="https://ko-fi.com/substrate" target="_blank" rel="noopener" style="display:inline-block;padding:0.6rem 1.4rem;background:#0078D4;color:#fff;font-family:var(--mono);font-size:0.85rem;font-weight:600;border-radius:6px;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Buy us a GPU cycle on Ko-fi</a>
   </div>
 
   <p class="market-note">Hardware prices monitored weekly. Tiers update as the market changes.</p>
@@ -365,13 +390,14 @@ redirect_from:
 </div>
 
 <script>
-// Funding config — edit to update funding state.
+// Funding config — reads from _data/funding.json via Jekyll.
+// To update: edit _data/funding.json and rebuild.
 var FUNDING_CONFIG = {
-  currentRaised: 0,
-  tier1Goal: 1100, tier1Funded: false,
-  tier2Goal: 900,  tier2Funded: false,
-  tier3Goal: 1200, tier3Funded: false,
-  tier4Funded: false
+  currentRaised: {{ site.data.funding.current_raised | default: 0 }},
+  tier1Goal: {{ site.data.funding.tier1_goal | default: 1100 }}, tier1Funded: {{ site.data.funding.tier1_funded | default: "false" }},
+  tier2Goal: {{ site.data.funding.tier2_goal | default: 900 }},  tier2Funded: {{ site.data.funding.tier2_funded | default: "false" }},
+  tier3Goal: {{ site.data.funding.tier3_goal | default: 1200 }}, tier3Funded: {{ site.data.funding.tier3_funded | default: "false" }},
+  tier4Funded: {{ site.data.funding.tier4_funded | default: "false" }}
 };
 
 (function() {

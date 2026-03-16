@@ -21,6 +21,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(SCRIPT_DIR)
 LEDGER_FILE = os.path.join(REPO_DIR, "ledger", "revenue.txt")
 STATE_FILE = os.path.join(REPO_DIR, "memory", "donations-state.json")
+FUNDING_FILE = os.path.join(REPO_DIR, "_data", "funding.json")
 
 
 def load_env(path=None):
@@ -166,6 +167,54 @@ def main():
         print("  ko-fi: no KOFI_TOKEN — check manually at ko-fi.com/substrate", file=sys.stderr)
 
     update_ledger(all_transactions, dry_run=args.dry_run)
+
+    # Update _data/funding.json so the fund page reflects current totals
+    if not args.dry_run:
+        update_funding_data()
+
+
+def update_funding_data():
+    """Read the ledger total and update _data/funding.json for the fund page."""
+    total = 0.0
+    if os.path.exists(LEDGER_FILE):
+        with open(LEDGER_FILE) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                # Format: DATE | SOURCE | $AMOUNT | NOTES
+                parts = line.split("|")
+                if len(parts) >= 3:
+                    amount_str = parts[2].strip().lstrip("$")
+                    try:
+                        total += float(amount_str)
+                    except ValueError:
+                        pass
+
+    # Read existing funding config
+    funding = {}
+    if os.path.exists(FUNDING_FILE):
+        with open(FUNDING_FILE) as f:
+            funding = json.load(f)
+
+    funding["current_raised"] = round(total, 2)
+    funding["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+
+    # Auto-mark tiers as funded
+    tier1_goal = funding.get("tier1_goal", 1100)
+    tier2_goal = funding.get("tier2_goal", 900)
+    tier3_goal = funding.get("tier3_goal", 1200)
+    if total >= tier1_goal:
+        funding["tier1_funded"] = True
+    if total >= tier1_goal + tier2_goal:
+        funding["tier2_funded"] = True
+    if total >= tier1_goal + tier2_goal + tier3_goal:
+        funding["tier3_funded"] = True
+
+    with open(FUNDING_FILE, "w") as f:
+        json.dump(funding, f, indent=2)
+        f.write("\n")
+    print(f"[donations] funding.json updated — total: ${total:.2f}")
 
 
 if __name__ == "__main__":
