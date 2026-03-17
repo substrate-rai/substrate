@@ -109,6 +109,20 @@ def read_battery():
     except Exception:
         return {"pct": 100, "charging": True}
 
+def read_focused_app():
+    """Read focused window class via xdotool."""
+    try:
+        wid = subprocess.check_output(
+            ["xdotool", "getactivewindow"], timeout=1, stderr=subprocess.DEVNULL
+        ).strip()
+        name = subprocess.check_output(
+            ["xdotool", "getactivewindow", "getwindowclassname"],
+            timeout=1, stderr=subprocess.DEVNULL
+        ).strip()
+        return name.decode().lower()
+    except Exception:
+        return ""
+
 def read_network():
     """Read network bytes sent/received."""
     try:
@@ -219,6 +233,7 @@ def main():
             battery = read_battery()
             net = read_network()
             weather = fetch_weather()
+            app = read_focused_app()
 
             now = time.time()
             dt = max(now - prev_time, 0.001)
@@ -250,6 +265,7 @@ def main():
                 "weather_precip": weather["precip"],
                 "weather_day": weather["is_day"],
                 "notify": round(notification_burst, 2),
+                "focused_app": app,
             })
 
             sock.sendto(packet.encode(), (UDP_HOST, UDP_PORT))

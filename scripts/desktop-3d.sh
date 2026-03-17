@@ -120,8 +120,13 @@ Scenes:     desktop-3d.sh full_scene         (mycopunk forest)
 Objects:    desktop-3d.sh mushroom --color '#00ffaa' --x 0 --y 0
             desktop-3d.sh mecha --color '#00ffaa' --x 0 --y 0 --animation idle|walk|patrol
             desktop-3d.sh jellyfish|coral|vent|anglerfish|ruin [--x N --y N]
-Camera:     desktop-3d.sh camera --mode orbit|follow_cursor|cinematic
+Camera:     desktop-3d.sh camera --mode orbit|follow_cursor|cinematic|cycle
 Cursor:     desktop-3d.sh cursor --enabled true|false
+Auto:       desktop-3d.sh auto_rotate --enabled true|false
+            desktop-3d.sh idle --threshold 300
+Transition: desktop-3d.sh transition --scene haunted_graveyard   (fade to black)
+Spawn:      desktop-3d.sh spawn --model character-ghost.glb --kit graveyard --x 0 --y 0
+Hologram:   desktop-3d.sh hologram_display --x 0 --y 1.2 --z -2
 Utility:    desktop-3d.sh sky '#ff0066' '#0033aa' 2.0   (top, horizon, energy)
             desktop-3d.sh particles fireflies|rain|embers|snow
 Load model: desktop-3d.sh load_model --path /path/to/model.glb --x 0 --y 0 --scale 1.0"
@@ -146,7 +151,7 @@ case "$CMD" in
     particles)
         send_json "{\"type\":\"particles\",\"params\":{\"preset\":\"${1:-fireflies}\"}}"
         ;;
-    camera|cursor)
+    camera|cursor|auto_rotate|idle|transition|spawn|hologram_display)
         PARAMS=$(build_params_json "$@")
         send_json "{\"type\":\"$CMD\",\"params\":$PARAMS}"
         ;;
