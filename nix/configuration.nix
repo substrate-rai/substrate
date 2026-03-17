@@ -18,6 +18,8 @@
     ./chat-ui.nix
     ./desktop-3d.nix
     ./desktop-3d-godot.nix
+    ./pipewire-monitor.nix
+    ./substrate-sensors.nix
   ];
 
   boot.loader.systemd-boot.enable = true;

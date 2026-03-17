@@ -2,6 +2,12 @@ shader_type spatial;
 render_mode unshaded, cull_disabled;
 
 global uniform vec3 cursor_world_pos;
+global uniform float audio_bass;
+global uniform float audio_mid;
+global uniform float audio_treble;
+global uniform float audio_energy;
+global uniform float beat_intensity;
+global uniform float notify_flash;
 
 uniform vec3 holo_color : source_color = vec3(0.0, 0.8, 1.0);
 uniform float scanline_density : hint_range(10.0, 200.0) = 80.0;
@@ -19,29 +25,44 @@ void fragment() {
 	float cursor_dist = distance(world_pos, cursor_world_pos);
 	float proximity = 1.0 - clamp(cursor_dist / glitch_radius, 0.0, 1.0);
 
-	// Scanlines
-	float scanline = sin(UV.y * scanline_density + TIME * 2.0) * 0.5 + 0.5;
+	// Scanlines scroll speed synced to audio mid — feels like data flow
+	float scan_speed = 2.0 + audio_mid * 12.0;
+	float scanline = sin(UV.y * scanline_density + TIME * scan_speed) * 0.5 + 0.5;
 	scanline = mix(1.0, scanline, scanline_strength);
 
-	// Flicker — more stable near cursor
+	// Flicker — bass hits cause brief stability breaks
+	float flicker_rate = flicker_speed + audio_bass * 15.0;
 	float flicker_intensity = mix(0.35, 0.05, proximity);
-	float flicker = 1.0 - flicker_intensity * step(0.95, rand(floor(TIME * flicker_speed)));
+	float flicker = 1.0 - flicker_intensity * step(0.95, rand(floor(TIME * flicker_rate)));
 
-	// Horizontal glitch offset near cursor interaction
-	float glitch = 0.0;
+	// Beat causes full-screen glitch burst
+	float beat_glitch = beat_intensity * step(0.85, rand(floor(UV.y * 20.0 + TIME * 5.0))) * 0.08;
+
+	// Cursor + treble glitch
+	float glitch = beat_glitch;
 	if (proximity > 0.3) {
 		float glitch_line = step(0.97, rand(floor(UV.y * 30.0 + TIME * 3.0)));
-		glitch = glitch_line * 0.03 * proximity;
+		glitch += glitch_line * 0.03 * proximity;
 	}
+	// Treble causes fine horizontal noise
+	glitch += audio_treble * 0.01 * (rand(floor(UV.y * 80.0 + TIME * 20.0)) - 0.5);
 
 	vec2 uv_glitch = UV + vec2(glitch, 0.0);
 	float edge_glow = smoothstep(0.0, 0.05, uv_glitch.x) * smoothstep(1.0, 0.95, uv_glitch.x);
 
-	// Color shifts near cursor
-	vec3 color = holo_color * (1.0 + 0.3 * proximity);
+	// Color reacts to audio energy — brighter, more saturated
+	float energy_boost = 1.0 + audio_energy * 0.8;
+	vec3 color = holo_color * energy_boost * (1.0 + 0.3 * proximity);
+
+	// Bass shifts hue toward warmer tones
+	color = mix(color, color * vec3(1.2, 0.9, 0.8), audio_bass * 0.4);
+
+	// Notification flash — screen goes white briefly
+	color = mix(color, vec3(2.0), notify_flash * 0.6);
+
 	color *= scanline * flicker * edge_glow;
 
 	ALBEDO = color;
-	ALPHA = base_alpha * flicker * edge_glow;
+	ALPHA = base_alpha * flicker * edge_glow * (0.8 + audio_energy * 0.4);
 	if (ALPHA < 0.01) discard;
 }

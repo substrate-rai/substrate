@@ -79,6 +79,35 @@ var day_night_enabled: bool = false
 # Flickering lights (abandoned_station)
 var flicker_lights: Array = []
 
+# ── Audio reactivity ──
+var spectrum: AudioEffectSpectrumAnalyzerInstance = null
+var audio_bass: float = 0.0
+var audio_mid: float = 0.0
+var audio_treble: float = 0.0
+var audio_energy: float = 0.0
+var beat_intensity: float = 0.0
+var prev_bass: float = 0.0
+var beat_cooldown: float = 0.0
+const BEAT_THRESHOLD = 0.15
+const BEAT_COOLDOWN_TIME = 0.12
+const MIN_DB = -60.0
+const ATTACK = 0.4    # fast rise
+const DECAY = 0.07    # slow fall
+
+# ── Sensor data (UDP from daemon) ──
+var sensor_udp: PacketPeerUDP = null
+var cpu_temp: float = 0.0
+var gpu_temp: float = 0.0
+var gpu_util: float = 0.0
+var ram_pct: float = 0.0
+var bat_pct: float = 100.0
+var net_rx: float = 0.0
+var net_tx: float = 0.0
+var weather_code: int = 0
+var weather_wind: float = 0.0
+var weather_precip: float = 0.0
+var notify_flash: float = 0.0
+
 func _ready():
 	# Opaque live wallpaper — borderless, below all windows, above KDE wallpaper
 	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, true)
@@ -105,6 +134,46 @@ func _ready():
 		print(\"Desktop 3D TCP server listening on 127.0.0.1:\", PORT)
 	else:
 		push_error(\"Failed to start TCP server: \", err)
+
+	# ── Audio capture setup ──
+	# Create a Capture bus with SpectrumAnalyzer
+	var bus_idx = AudioServer.bus_count
+	AudioServer.add_bus(bus_idx)
+	AudioServer.set_bus_name(bus_idx, \"Capture\")
+	AudioServer.set_bus_volume_db(bus_idx, -80.0)  # mute playback (we just analyze)
+	AudioServer.set_bus_send(bus_idx, \"Master\")
+	# Add spectrum analyzer effect
+	var analyzer = AudioEffectSpectrumAnalyzer.new()
+	analyzer.fft_size = AudioEffectSpectrumAnalyzer.FFT_SIZE_1024
+	analyzer.buffer_length = 0.5
+	AudioServer.add_bus_effect(bus_idx, analyzer)
+	# Create microphone player
+	var mic_player = AudioStreamPlayer.new()
+	mic_player.stream = AudioStreamMicrophone.new()
+	mic_player.bus = \"Capture\"
+	mic_player.autoplay = true
+	add_child(mic_player)
+	# Get analyzer instance
+	spectrum = AudioServer.get_bus_effect_instance(bus_idx, 0) as AudioEffectSpectrumAnalyzerInstance
+	# Try to select PipeWire monitor source
+	var devices = AudioServer.get_input_device_list()
+	for d in devices:
+		if \"monitor\" in d.to_lower() or \"substrate\" in d.to_lower():
+			AudioServer.input_device = d
+			print(\"Audio capture device: \", d)
+			break
+	if spectrum:
+		print(\"Audio spectrum analyzer ready\")
+	else:
+		print(\"WARNING: Audio spectrum analyzer not available\")
+
+	# ── Sensor UDP listener ──
+	sensor_udp = PacketPeerUDP.new()
+	var udp_err = sensor_udp.bind(9778)
+	if udp_err == OK:
+		print(\"Sensor UDP listener on port 9778\")
+	else:
+		push_warning(\"Failed to bind sensor UDP: \", udp_err)
 
 func _process(delta):
 	if server and server.is_connection_available():
@@ -140,6 +209,73 @@ func _process(delta):
 		# Project screen position to world at y=0 plane
 		cursor_world_pos = cam.project_position(Vector2(mouse_screen.x, mouse_screen.y), 8.0)
 		RenderingServer.global_shader_parameter_set(\"cursor_world_pos\", cursor_world_pos)
+
+	# ── Audio spectrum analysis ──
+	if spectrum:
+		var raw_bass = _get_band_energy(20.0, 300.0)
+		var raw_mid = _get_band_energy(300.0, 4000.0)
+		var raw_treble = _get_band_energy(4000.0, 16000.0)
+		var raw_energy = (raw_bass + raw_mid + raw_treble) / 3.0
+
+		# Smooth with asymmetric attack/decay
+		audio_bass = _smooth(audio_bass, raw_bass, delta)
+		audio_mid = _smooth(audio_mid, raw_mid, delta)
+		audio_treble = _smooth(audio_treble, raw_treble, delta)
+		audio_energy = _smooth(audio_energy, raw_energy, delta)
+
+		# Beat detection — onset in bass band
+		beat_cooldown = max(0.0, beat_cooldown - delta)
+		if raw_bass - prev_bass > BEAT_THRESHOLD and beat_cooldown <= 0.0:
+			beat_intensity = 1.0
+			beat_cooldown = BEAT_COOLDOWN_TIME
+		else:
+			beat_intensity = max(0.0, beat_intensity - delta * 6.0)  # fast decay
+		prev_bass = raw_bass
+
+		# Push to global shader params
+		RenderingServer.global_shader_parameter_set(\"audio_bass\", audio_bass)
+		RenderingServer.global_shader_parameter_set(\"audio_mid\", audio_mid)
+		RenderingServer.global_shader_parameter_set(\"audio_treble\", audio_treble)
+		RenderingServer.global_shader_parameter_set(\"audio_energy\", audio_energy)
+		RenderingServer.global_shader_parameter_set(\"beat_intensity\", beat_intensity)
+
+	# ── Sensor data (UDP) ──
+	if sensor_udp:
+		while sensor_udp.get_available_packet_count() > 0:
+			var packet = sensor_udp.get_packet()
+			var text = packet.get_string_from_utf8()
+			var parsed = try_parse_json(text)
+			if parsed:
+				cpu_temp = float(parsed.get(\"cpu_temp\", 0))
+				gpu_temp = float(parsed.get(\"gpu_temp\", 0))
+				gpu_util = float(parsed.get(\"gpu_util\", 0))
+				ram_pct = float(parsed.get(\"ram_pct\", 0))
+				bat_pct = float(parsed.get(\"bat_pct\", 100))
+				net_rx = float(parsed.get(\"net_rx\", 0))
+				net_tx = float(parsed.get(\"net_tx\", 0))
+				weather_code = int(parsed.get(\"weather_code\", 0))
+				weather_wind = float(parsed.get(\"weather_wind\", 0))
+				weather_precip = float(parsed.get(\"weather_precip\", 0))
+				var raw_notify = float(parsed.get(\"notify\", 0))
+				notify_flash = max(notify_flash, raw_notify)
+
+		# Compute derived values for shaders
+		# system_heat: 0.0 (cool) to 1.0 (hot) based on GPU+CPU temp
+		var avg_temp = (cpu_temp + gpu_temp) / 2.0
+		var heat = clamp((avg_temp - 40.0) / 50.0, 0.0, 1.0)  # 40C=cool, 90C=max
+		RenderingServer.global_shader_parameter_set(\"system_heat\", heat)
+
+		# system_load: 0.0-1.0 from GPU util + RAM
+		var load_val = clamp((gpu_util + ram_pct) / 200.0, 0.0, 1.0)
+		RenderingServer.global_shader_parameter_set(\"system_load\", load_val)
+
+		# weather_intensity: precipitation + wind mapped to 0-1
+		var weather_i = clamp(weather_precip / 5.0 + weather_wind / 40.0, 0.0, 1.0)
+		RenderingServer.global_shader_parameter_set(\"weather_intensity\", weather_i)
+
+		# Notification flash decay
+		notify_flash = max(0.0, notify_flash - delta * 3.0)
+		RenderingServer.global_shader_parameter_set(\"notify_flash\", notify_flash)
 
 	# Animate
 	var t = Time.get_ticks_msec() / 1000.0
@@ -3866,6 +4002,18 @@ func _create_reactive_grass_multimesh(area_size: float, count: int) -> MultiMesh
 	mmi.multimesh = mm
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return mmi
+
+# ── Helper: audio spectrum band energy ──
+func _get_band_energy(from_hz: float, to_hz: float) -> float:
+	if not spectrum:
+		return 0.0
+	var mag = spectrum.get_magnitude_for_frequency_range(from_hz, to_hz)
+	return clamp((MIN_DB + linear_to_db(mag.length())) / abs(MIN_DB), 0.0, 1.0)
+
+# ── Helper: asymmetric smoothing (fast attack, slow decay) ──
+func _smooth(current: float, target: float, delta: float) -> float:
+	var rate = ATTACK if target > current else DECAY
+	return lerp(current, target, 1.0 - exp(-rate * delta * 60.0))
 
 # ── Helper: apply material to all MeshInstance3D children ──
 func _apply_material_recursive(node: Node, mat: Material):
