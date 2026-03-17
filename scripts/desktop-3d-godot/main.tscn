@@ -57,6 +57,28 @@ var sky_cycle_enabled: bool = false
 var cloud_nodes: Array = []
 var terrain_noise: FastNoiseLite  # shared for height queries
 
+# Cursor tracking — reads mouse position even with passthrough
+var cursor_world_pos: Vector3 = Vector3.ZERO
+var cursor_tracking: bool = true
+
+# Camera modes: orbit, follow_cursor, cinematic
+var camera_mode: String = \"orbit\"
+var camera_orbit_speed: float = 0.05
+var camera_orbit_radius: float = 5.0
+var camera_orbit_height: float = 2.5
+
+# Ghost tracking (haunted_graveyard)
+var ghost_node: Node3D = null
+
+# Satellite dish tracking (space_outpost)
+var dish_node: Node3D = null
+
+# Day/night cycle (autumn_campsite)
+var day_night_enabled: bool = false
+
+# Flickering lights (abandoned_station)
+var flicker_lights: Array = []
+
 func _ready():
 	# Opaque live wallpaper — borderless, below all windows, above KDE wallpaper
 	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, true)
@@ -111,14 +133,78 @@ func _process(delta):
 	for i in to_remove:
 		connections.remove_at(i)
 
+	# ── Cursor tracking ──
+	if cursor_tracking:
+		var mouse_screen = DisplayServer.mouse_get_position()
+		var cam = $Camera3D as Camera3D
+		# Project screen position to world at y=0 plane
+		cursor_world_pos = cam.project_position(Vector2(mouse_screen.x, mouse_screen.y), 8.0)
+		RenderingServer.global_shader_parameter_set(\"cursor_world_pos\", cursor_world_pos)
+
 	# Animate
 	var t = Time.get_ticks_msec() / 1000.0
 
-	# Camera orbit
-	$Camera3D.position.x = 5.0 * cos(t * 0.05)
-	$Camera3D.position.z = 5.0 * sin(t * 0.05)
-	$Camera3D.position.y = 2.5 + sin(t * 0.08) * 0.5
-	$Camera3D.look_at(Vector3(0, 0.8, 0))
+	# Camera — mode-based
+	match camera_mode:
+		\"orbit\":
+			$Camera3D.position.x = camera_orbit_radius * cos(t * camera_orbit_speed)
+			$Camera3D.position.z = camera_orbit_radius * sin(t * camera_orbit_speed)
+			$Camera3D.position.y = camera_orbit_height + sin(t * 0.08) * 0.5
+			$Camera3D.look_at(Vector3(0, 0.8, 0))
+		\"follow_cursor\":
+			$Camera3D.position.x = camera_orbit_radius * cos(t * camera_orbit_speed)
+			$Camera3D.position.z = camera_orbit_radius * sin(t * camera_orbit_speed)
+			$Camera3D.position.y = camera_orbit_height + sin(t * 0.08) * 0.5
+			# Subtle parallax: blend between center and cursor
+			var look_target = Vector3(0, 0.8, 0).lerp(cursor_world_pos * 0.15, 0.3)
+			$Camera3D.look_at(look_target)
+		\"cinematic\":
+			# Slow sweeping path
+			var ct = t * 0.02
+			$Camera3D.position.x = 6.0 * cos(ct) + 2.0 * sin(ct * 2.3)
+			$Camera3D.position.z = 6.0 * sin(ct) + 1.5 * cos(ct * 1.7)
+			$Camera3D.position.y = 2.0 + 1.5 * sin(ct * 0.5)
+			$Camera3D.look_at(Vector3(sin(ct * 0.3), 0.5, cos(ct * 0.3)))
+
+	# ── Ghost follows cursor (haunted_graveyard) ──
+	if ghost_node and is_instance_valid(ghost_node):
+		var ghost_target = Vector3(cursor_world_pos.x * 0.6, ghost_node.position.y, cursor_world_pos.z * 0.6)
+		ghost_node.position = ghost_node.position.lerp(ghost_target, delta * 0.5)
+		ghost_node.position.y = 0.3 + sin(t * 0.8) * 0.2  # hovering bob
+
+	# ── Satellite dish tracks cursor (space_outpost) ──
+	if dish_node and is_instance_valid(dish_node):
+		var dish_target = Vector3(cursor_world_pos.x, max(cursor_world_pos.y, 0.5), cursor_world_pos.z)
+		dish_node.look_at(dish_target)
+
+	# ── Flickering lights (abandoned_station) ──
+	for fl in flicker_lights:
+		if is_instance_valid(fl):
+			var cursor_dist = fl.global_position.distance_to(cursor_world_pos)
+			var proximity = 1.0 - clamp(cursor_dist / 5.0, 0.0, 1.0)
+			# Near cursor: stable. Far: flickery.
+			var flicker_chance = lerp(0.3, 0.0, proximity)
+			if randf() < flicker_chance * delta * 10.0:
+				fl.light_energy = randf_range(0.0, 0.3)
+			else:
+				fl.light_energy = lerp(fl.light_energy, lerp(0.5, 1.2, proximity), delta * 3.0)
+
+	# ── Day/night cycle (autumn_campsite) ──
+	if day_night_enabled:
+		var hour_info = Time.get_datetime_dict_from_system()
+		var hour_f = float(hour_info[\"hour\"]) + float(hour_info[\"minute\"]) / 60.0
+		# Map 0-24 to sun cycle: 6am=sunrise, 12=noon, 18=sunset, 0=midnight
+		var sun_t = (hour_f - 6.0) / 12.0  # 0 at 6am, 1 at 6pm
+		sun_t = clamp(sun_t, -0.5, 1.5)
+		var day_factor = clamp(sin(sun_t * PI), 0.0, 1.0)
+		var env = $WorldEnvironment.environment as Environment
+		var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
+		# Interpolate sky between night and day
+		sky_mat.sky_top_color = Color(0.05, 0.02, 0.1).lerp(Color(0.45, 0.6, 0.85), day_factor)
+		sky_mat.sky_horizon_color = Color(0.1, 0.05, 0.08).lerp(Color(0.85, 0.65, 0.4), day_factor)
+		sky_mat.sky_energy_multiplier = lerp(0.3, 3.5, day_factor)
+		$MoonLight.light_energy = lerp(0.15, 1.0, day_factor)
+		$MoonLight.light_color = Color(0.4, 0.45, 0.7).lerp(Color(1.0, 0.88, 0.55), day_factor)
 
 	# Animate sky cycle + clouds
 	if sky_cycle_enabled:
@@ -281,6 +367,32 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_fairy_environment()
 			create_fairy_garden(params)
 			return {\"status\": \"ok\", \"message\": \"Fairy garden growing...\", \"objects\": spawned_items.size()}
+		\"haunted_graveyard\":
+			apply_graveyard_environment()
+			create_haunted_graveyard(params)
+			return {\"status\": \"ok\", \"message\": \"Haunted graveyard loaded\", \"objects\": spawned_items.size()}
+		\"space_outpost\":
+			apply_space_environment()
+			create_space_outpost(params)
+			return {\"status\": \"ok\", \"message\": \"Space outpost loaded\", \"objects\": spawned_items.size()}
+		\"autumn_campsite\":
+			apply_autumn_environment()
+			create_autumn_campsite(params)
+			return {\"status\": \"ok\", \"message\": \"Autumn campsite loaded\", \"objects\": spawned_items.size()}
+		\"abandoned_station\":
+			apply_station_environment()
+			create_abandoned_station(params)
+			return {\"status\": \"ok\", \"message\": \"Abandoned station loaded\", \"objects\": spawned_items.size()}
+		\"camera\":
+			var mode = params.get(\"mode\", \"orbit\")
+			if mode in [\"orbit\", \"follow_cursor\", \"cinematic\"]:
+				camera_mode = mode
+				return {\"status\": \"ok\", \"message\": \"Camera mode: \" + mode}
+			return {\"status\": \"error\", \"message\": \"Unknown camera mode: \" + mode}
+		\"cursor\":
+			var enabled = params.get(\"enabled\", true)
+			cursor_tracking = enabled
+			return {\"status\": \"ok\", \"message\": \"Cursor tracking: \" + str(enabled)}
 		_:
 			return {\"status\": \"error\", \"message\": \"Unknown command: \" + type}
 
@@ -2475,7 +2587,7 @@ func create_fairy_garden(params: Dictionary):
 		var model_name = rock_models[randi() % rock_models.size()]
 		var rock = model_loader.load_model(model_name, Vector3(rx, ry, rz), randf_range(0.3, 1.2), randf_range(0, 360))
 		if rock:
-			rock.material_override = Materials.make_stone_material(Color(randf_range(0.25, 0.45), randf_range(0.25, 0.42), randf_range(0.22, 0.38)))
+			_apply_material_recursive(rock, Materials.make_stone_material(Color(randf_range(0.25, 0.45), randf_range(0.25, 0.42), randf_range(0.22, 0.38))))
 			objects_container.add_child(rock)
 
 	# ── Log with bark texture ──
@@ -2500,7 +2612,7 @@ func create_fairy_garden(params: Dictionary):
 	var water_shader = load(\"res://shaders/water.gdshader\")
 	var water_mat = ShaderMaterial.new()
 	water_mat.shader = water_shader
-	water_mat.set_shader_parameter(\"water_color\", Vector3(0.06, 0.15, 0.12))
+	water_mat.set_shader_parameter(\"water_color\", Color(0.06, 0.15, 0.12))
 	water_mat.set_shader_parameter(\"wave_speed\", 1.5)
 	water_mat.set_shader_parameter(\"wave_strength\", 0.02)
 	water_mat.set_shader_parameter(\"metallic\", 0.7)
@@ -2526,7 +2638,7 @@ func create_fairy_garden(params: Dictionary):
 		var bs_model = border_stones[randi() % border_stones.size()]
 		var pstone = model_loader.load_model(bs_model, Vector3(bx, -0.92, bz), randf_range(0.15, 0.35), randf_range(0, 360))
 		if pstone:
-			pstone.material_override = Materials.make_stone_material(Color(0.35 + randf() * 0.15, 0.33 + randf() * 0.1, 0.28))
+			_apply_material_recursive(pstone, Materials.make_stone_material(Color(0.35 + randf() * 0.15, 0.33 + randf() * 0.1, 0.28)))
 			objects_container.add_child(pstone)
 	# Lily pads
 	for lp in range(6):
@@ -2554,7 +2666,7 @@ func create_fairy_garden(params: Dictionary):
 			objects_container.add_child(lily)
 
 	# ── MultiMesh Grass (5000 blades, 1 draw call) ──
-	var grass_mmi = _create_grass_multimesh(8.0, 5000)
+	var grass_mmi = _create_grass_multimesh(8.0, 2000)
 	grass_mmi.position.y = -1
 	objects_container.add_child(grass_mmi)
 
@@ -2768,7 +2880,7 @@ func create_fairy_garden(params: Dictionary):
 		cloud.mesh.size = Vector2(randf_range(3, 7), randf_range(1.5, 3))
 		var c_mat = ShaderMaterial.new()
 		c_mat.shader = cloud_shader
-		c_mat.set_shader_parameter(\"cloud_color\", Vector3(0.95, 0.93, 0.88))
+		c_mat.set_shader_parameter(\"cloud_color\", Color(0.95, 0.93, 0.88))
 		c_mat.set_shader_parameter(\"alpha_base\", randf_range(0.2, 0.45))
 		c_mat.set_shader_parameter(\"noise_tex\", cloud_noise_tex)
 		cloud.material_override = c_mat
@@ -2779,6 +2891,988 @@ func create_fairy_garden(params: Dictionary):
 
 	sky_cycle_enabled = true
 	spawned_items.append({\"type\": \"scene\", \"name\": \"fairy_garden\"})
+
+# ── HAUNTED GRAVEYARD ────────────────────────────────────────────────────────
+
+func apply_graveyard_environment():
+	var env = $WorldEnvironment.environment as Environment
+	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
+	sky_mat.sky_top_color = Color(0.12, 0.04, 0.2)
+	sky_mat.sky_horizon_color = Color(0.15, 0.08, 0.22)
+	sky_mat.ground_bottom_color = Color(0.02, 0.02, 0.05)
+	sky_mat.ground_horizon_color = Color(0.08, 0.05, 0.12)
+	sky_mat.sky_energy_multiplier = 0.6
+	env.tonemap_mode = 3  # Filmic
+	env.tonemap_exposure = 1.0
+	env.ambient_light_source = 1
+	env.ambient_light_energy = 0.3
+	env.ambient_light_color = Color(0.3, 0.25, 0.45)
+	env.sdfgi_enabled = true
+	env.sdfgi_use_occlusion = true
+	env.sdfgi_energy = 0.5
+	env.ssao_enabled = true
+	env.ssao_radius = 1.5
+	env.ssao_intensity = 3.0
+	env.ssr_enabled = true
+	env.ssr_max_steps = 64
+	# Green volumetric fog
+	env.volumetric_fog_enabled = true
+	env.volumetric_fog_density = 0.04
+	env.volumetric_fog_albedo = Color(0.08, 0.15, 0.06)
+	env.volumetric_fog_emission = Color(0.02, 0.06, 0.02)
+	env.volumetric_fog_emission_energy = 0.5
+	env.fog_enabled = true
+	env.fog_density = 0.015
+	env.fog_light_color = Color(0.06, 0.1, 0.05)
+	# Glow for candles/pumpkins
+	env.glow_enabled = true
+	env.glow_intensity = 1.8
+	env.glow_bloom = 0.4
+	env.glow_strength = 1.3
+	env.glow_hdr_threshold = 0.5
+	# Cold moonlight
+	$MoonLight.light_color = Color(0.55, 0.6, 0.85)
+	$MoonLight.light_energy = 0.35
+	$MoonLight.shadow_enabled = true
+
+func create_haunted_graveyard(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+	ghost_node = null
+	sky_cycle_enabled = false
+	day_night_enabled = false
+	flicker_lights.clear()
+	await get_tree().process_frame
+
+	var ML = preload(\"res://model_loader.gd\")
+
+	# Terrain — dark earth
+	terrain_noise = FastNoiseLite.new()
+	terrain_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	terrain_noise.frequency = 0.02
+	terrain_noise.fractal_octaves = 3
+	terrain_noise.seed = 666
+	var terrain_mi = Terrain.create_terrain(20.0, 0.5, 0.3, 666)
+	terrain_mi.material_override = Materials.make_ground_material(Color(0.12, 0.1, 0.08))
+	terrain_mi.position = Vector3(0, -1, 0)
+	objects_container.add_child(terrain_mi)
+
+	# ── Stone walls forming graveyard border ──
+	var wall_positions = [
+		{\"model\": \"stone-wall.glb\", \"pos\": Vector3(-6, -1, -5), \"rot\": 0},
+		{\"model\": \"stone-wall.glb\", \"pos\": Vector3(-4, -1, -5), \"rot\": 0},
+		{\"model\": \"stone-wall.glb\", \"pos\": Vector3(-2, -1, -5), \"rot\": 0},
+		{\"model\": \"stone-wall-column.glb\", \"pos\": Vector3(-7, -1, -5), \"rot\": 0},
+		{\"model\": \"stone-wall.glb\", \"pos\": Vector3(-7, -1, -3), \"rot\": 90},
+		{\"model\": \"stone-wall.glb\", \"pos\": Vector3(-7, -1, -1), \"rot\": 90},
+	]
+	for wp in wall_positions:
+		var wall = model_loader.load_model(wp[\"model\"], wp[\"pos\"], 1.0, wp[\"rot\"], ML.GRAVEYARD_PATH)
+		if wall:
+			_apply_material_recursive(wall, Materials.make_stone_material(Color(0.3, 0.28, 0.25)))
+			objects_container.add_child(wall)
+
+	# ── Iron fences ──
+	for i in range(5):
+		var fence = model_loader.load_model(\"iron-fence.glb\", Vector3(0 + i * 2, -1, -5), 1.0, 0, ML.GRAVEYARD_PATH)
+		if fence:
+			objects_container.add_child(fence)
+
+	# ── Gravestones scattered ──
+	var gravestone_models = [\"gravestone-cross.glb\", \"gravestone-round.glb\", \"gravestone-bevel.glb\", \"gravestone-decorative.glb\", \"gravestone-broken.glb\", \"gravestone-wide.glb\"]
+	for i in range(18):
+		var gx = randf_range(-5, 5)
+		var gz = randf_range(-4, 4)
+		var gy = _terrain_y(gx, gz)
+		var gmodel = gravestone_models[randi() % gravestone_models.size()]
+		var stone = model_loader.load_model(gmodel, Vector3(gx, gy, gz), randf_range(0.8, 1.2), randf_range(-15, 15), ML.GRAVEYARD_PATH)
+		if stone:
+			objects_container.add_child(stone)
+
+	# ── Crypts ──
+	var crypt = model_loader.load_model(\"crypt-large.glb\", Vector3(-5, -1, 2), 1.0, -30, ML.GRAVEYARD_PATH)
+	if crypt:
+		_apply_material_recursive(crypt, Materials.make_stone_material(Color(0.28, 0.26, 0.24)))
+		objects_container.add_child(crypt)
+	var crypt2 = model_loader.load_model(\"crypt-small.glb\", Vector3(5, -1, 0), 1.0, 45, ML.GRAVEYARD_PATH)
+	if crypt2:
+		objects_container.add_child(crypt2)
+
+	# ── Crooked pines ──
+	for i in range(4):
+		var px = randf_range(-8, 8)
+		var pz = randf_range(-6, 6)
+		var py = _terrain_y(px, pz)
+		var pine_name = [\"pine-crooked.glb\", \"pine.glb\", \"pine-fall-crooked.glb\"][randi() % 3]
+		var pine = model_loader.load_model(pine_name, Vector3(px, py, pz), randf_range(0.8, 1.5), randf_range(0, 360), ML.GRAVEYARD_PATH)
+		if pine:
+			objects_container.add_child(pine)
+
+	# ── Pumpkins with proximity glow ──
+	var pumpkin_models = [\"pumpkin-carved.glb\", \"pumpkin-tall-carved.glb\", \"pumpkin.glb\"]
+	var glow_shader = load(\"res://shaders/proximity_glow.gdshader\")
+	for i in range(8):
+		var px = randf_range(-5, 5)
+		var pz = randf_range(-4, 4)
+		var py = _terrain_y(px, pz)
+		var pmodel = pumpkin_models[randi() % pumpkin_models.size()]
+		var pumpkin = model_loader.load_model(pmodel, Vector3(px, py, pz), randf_range(0.6, 1.2), randf_range(0, 360), ML.GRAVEYARD_PATH)
+		if pumpkin:
+			if \"carved\" in pmodel and glow_shader:
+				var glow_mat = ShaderMaterial.new()
+				glow_mat.shader = glow_shader
+				glow_mat.set_shader_parameter(\"base_emission\", Color(1.0, 0.5, 0.1))
+				glow_mat.set_shader_parameter(\"base_strength\", 1.5)
+				glow_mat.set_shader_parameter(\"max_strength\", 6.0)
+				glow_mat.set_shader_parameter(\"glow_radius\", 4.0)
+				glow_mat.set_shader_parameter(\"albedo\", Color(0.6, 0.3, 0.05))
+				_apply_material_recursive(pumpkin, glow_mat)
+			objects_container.add_child(pumpkin)
+			# Small light near carved pumpkins
+			if \"carved\" in pmodel:
+				var plight = OmniLight3D.new()
+				plight.light_color = Color(1.0, 0.6, 0.15)
+				plight.light_energy = 0.6
+				plight.omni_range = 2.5
+				plight.position = Vector3(px, py + 0.3, pz)
+				objects_container.add_child(plight)
+
+	# ── Candles with proximity glow ──
+	for i in range(6):
+		var cx = randf_range(-4, 4)
+		var cz = randf_range(-3, 3)
+		var cy = _terrain_y(cx, cz)
+		var candle = model_loader.load_model(\"candle-multiple.glb\", Vector3(cx, cy, cz), randf_range(0.8, 1.2), randf_range(0, 360), ML.GRAVEYARD_PATH)
+		if candle:
+			if glow_shader:
+				var glow_mat = ShaderMaterial.new()
+				glow_mat.shader = glow_shader
+				glow_mat.set_shader_parameter(\"base_emission\", Color(1.0, 0.8, 0.3))
+				glow_mat.set_shader_parameter(\"base_strength\", 2.0)
+				glow_mat.set_shader_parameter(\"max_strength\", 7.0)
+				glow_mat.set_shader_parameter(\"glow_radius\", 3.5)
+				glow_mat.set_shader_parameter(\"albedo\", Color(0.9, 0.85, 0.7))
+				_apply_material_recursive(candle, glow_mat)
+			objects_container.add_child(candle)
+
+	# ── Coffins ──
+	var coffin = model_loader.load_model(\"coffin-old.glb\", Vector3(2, -1, 3), 1.0, 20, ML.GRAVEYARD_PATH)
+	if coffin:
+		objects_container.add_child(coffin)
+	var coffin2 = model_loader.load_model(\"coffin.glb\", Vector3(-2, -1, 4), 1.0, -60, ML.GRAVEYARD_PATH)
+	if coffin2:
+		objects_container.add_child(coffin2)
+
+	# ── Lanterns ──
+	for i in range(3):
+		var lx = randf_range(-5, 5)
+		var lz = randf_range(-4, 4)
+		var ly = _terrain_y(lx, lz)
+		var lantern = model_loader.load_model(\"lantern-candle.glb\", Vector3(lx, ly, lz), 1.0, 0, ML.GRAVEYARD_PATH)
+		if lantern:
+			objects_container.add_child(lantern)
+
+	# ── Ghost — follows cursor ──
+	var ghost = model_loader.load_model(\"character-ghost.glb\", Vector3(0, 0.3, 0), 1.2, 0, ML.GRAVEYARD_PATH)
+	if ghost:
+		# Make ghost translucent and glowing
+		var ghost_mat = StandardMaterial3D.new()
+		ghost_mat.albedo_color = Color(0.7, 0.85, 0.75, 0.5)
+		ghost_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		ghost_mat.emission_enabled = true
+		ghost_mat.emission = Color(0.5, 0.9, 0.6)
+		ghost_mat.emission_energy_multiplier = 2.0
+		_apply_material_recursive(ghost, ghost_mat)
+		objects_container.add_child(ghost)
+		ghost_node = ghost
+		# Ghost light
+		var ghost_light = OmniLight3D.new()
+		ghost_light.light_color = Color(0.5, 0.9, 0.6)
+		ghost_light.light_energy = 0.4
+		ghost_light.omni_range = 3.0
+		ghost.add_child(ghost_light)
+
+	# ── Skeleton ──
+	var skel = model_loader.load_model(\"character-skeleton.glb\", Vector3(4, -1, -2), 1.0, -45, ML.GRAVEYARD_PATH)
+	if skel:
+		objects_container.add_child(skel)
+
+	# ── Ground fog (billboard quads) ──
+	var fog_shader = load(\"res://shaders/ground_fog.gdshader\")
+	if fog_shader:
+		for i in range(20):
+			var fog = MeshInstance3D.new()
+			fog.mesh = QuadMesh.new()
+			fog.mesh.size = Vector2(randf_range(3, 6), randf_range(1.0, 2.0))
+			var fog_mat = ShaderMaterial.new()
+			fog_mat.shader = fog_shader
+			fog_mat.set_shader_parameter(\"fog_color\", Color(0.1, 0.2, 0.08))
+			fog_mat.set_shader_parameter(\"fog_alpha\", randf_range(0.2, 0.4))
+			fog_mat.set_shader_parameter(\"cursor_clear_radius\", 3.0)
+			fog.material_override = fog_mat
+			fog.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			fog.position = Vector3(randf_range(-8, 8), -0.6 + randf_range(-0.2, 0.2), randf_range(-6, 6))
+			objects_container.add_child(fog)
+
+	# ── Lights (max 4 shadow-casting) ──
+	var moon_accent = OmniLight3D.new()
+	moon_accent.light_color = Color(0.4, 0.5, 0.8)
+	moon_accent.light_energy = 0.3
+	moon_accent.omni_range = 12.0
+	moon_accent.position = Vector3(0, 5, 0)
+	objects_container.add_child(moon_accent)
+
+	spawned_items.append({\"type\": \"scene\", \"name\": \"haunted_graveyard\"})
+
+# ── SPACE OUTPOST ────────────────────────────────────────────────────────────
+
+func apply_space_environment():
+	var env = $WorldEnvironment.environment as Environment
+	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
+	sky_mat.sky_top_color = Color(0.0, 0.0, 0.02)
+	sky_mat.sky_horizon_color = Color(0.0, 0.02, 0.04)
+	sky_mat.ground_bottom_color = Color(0.0, 0.0, 0.0)
+	sky_mat.ground_horizon_color = Color(0.0, 0.01, 0.02)
+	sky_mat.sky_energy_multiplier = 0.15
+	env.tonemap_mode = 3
+	env.tonemap_exposure = 1.0
+	env.ambient_light_source = 3
+	env.ambient_light_energy = 0.2
+	env.ambient_light_color = Color(0.1, 0.2, 0.25)
+	env.sdfgi_enabled = true
+	env.sdfgi_use_occlusion = true
+	env.sdfgi_energy = 0.4
+	env.ssao_enabled = true
+	env.ssao_radius = 1.0
+	env.ssao_intensity = 2.5
+	env.ssr_enabled = true
+	env.ssr_max_steps = 64
+	# No atmosphere — minimal fog
+	env.volumetric_fog_enabled = false
+	env.fog_enabled = false
+	# Strong glow for outpost lights
+	env.glow_enabled = true
+	env.glow_intensity = 2.0
+	env.glow_bloom = 0.5
+	env.glow_strength = 1.5
+	env.glow_hdr_threshold = 0.4
+	# Dim distant star light
+	$MoonLight.light_color = Color(0.7, 0.75, 0.85)
+	$MoonLight.light_energy = 0.2
+	$MoonLight.shadow_enabled = true
+
+func create_space_outpost(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+	ghost_node = null
+	dish_node = null
+	sky_cycle_enabled = false
+	day_night_enabled = false
+	flicker_lights.clear()
+	await get_tree().process_frame
+
+	var ML = preload(\"res://model_loader.gd\")
+
+	# ── Ground — barren crater terrain ──
+	terrain_noise = FastNoiseLite.new()
+	terrain_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	terrain_noise.frequency = 0.025
+	terrain_noise.fractal_octaves = 2
+	terrain_noise.seed = 99
+	var terrain_mi = Terrain.create_terrain(20.0, 0.5, 0.2, 99)
+	terrain_mi.material_override = Materials.make_ground_material(Color(0.15, 0.14, 0.13))
+	terrain_mi.position = Vector3(0, -1, 0)
+	objects_container.add_child(terrain_mi)
+
+	# ── Corridors forming outpost structure ──
+	var corridor_layout = [
+		{\"model\": \"corridor.glb\", \"pos\": Vector3(0, -1, 0), \"rot\": 0},
+		{\"model\": \"corridor.glb\", \"pos\": Vector3(2, -1, 0), \"rot\": 0},
+		{\"model\": \"corridor_corner.glb\", \"pos\": Vector3(4, -1, 0), \"rot\": 0},
+		{\"model\": \"corridor.glb\", \"pos\": Vector3(4, -1, 2), \"rot\": 90},
+		{\"model\": \"corridor_open.glb\", \"pos\": Vector3(-2, -1, 0), \"rot\": 0},
+		{\"model\": \"corridor_split.glb\", \"pos\": Vector3(0, -1, -2), \"rot\": 0},
+		{\"model\": \"corridor_window.glb\", \"pos\": Vector3(2, -1, -2), \"rot\": 0},
+	]
+	for cl in corridor_layout:
+		var corr = model_loader.load_model(cl[\"model\"], cl[\"pos\"], 1.0, cl[\"rot\"], ML.SPACE_PATH)
+		if corr:
+			objects_container.add_child(corr)
+
+	# ── Hangars ──
+	var hangar = model_loader.load_model(\"hangar_largeA.glb\", Vector3(-5, -1, 3), 1.0, 0, ML.SPACE_PATH)
+	if hangar:
+		objects_container.add_child(hangar)
+	var hangar2 = model_loader.load_model(\"hangar_smallA.glb\", Vector3(6, -1, -3), 1.0, 90, ML.SPACE_PATH)
+	if hangar2:
+		objects_container.add_child(hangar2)
+
+	# ── Satellite dish — tracks cursor ──
+	var dish = model_loader.load_model(\"satelliteDish_large.glb\", Vector3(-3, -1, -4), 1.2, 0, ML.SPACE_PATH)
+	if dish:
+		objects_container.add_child(dish)
+		dish_node = dish
+
+	# ── Generators and pipes ──
+	var gen = model_loader.load_model(\"machine_generatorLarge.glb\", Vector3(6, -1, 2), 1.0, 0, ML.SPACE_PATH)
+	if gen:
+		objects_container.add_child(gen)
+	for i in range(4):
+		var pipe = model_loader.load_model(\"pipe_straight.glb\", Vector3(5, -0.5, -1 + i), 1.0, 0, ML.SPACE_PATH)
+		if pipe:
+			objects_container.add_child(pipe)
+
+	# ── Crystal rocks with emission ──
+	var crystal_models = [\"rock_crystals.glb\", \"rock_crystalsLargeA.glb\", \"rock_crystalsLargeB.glb\"]
+	var glow_shader = load(\"res://shaders/proximity_glow.gdshader\")
+	for i in range(6):
+		var cx = randf_range(-7, 7)
+		var cz = randf_range(-6, 6)
+		var cy = _terrain_y(cx, cz)
+		var cmodel = crystal_models[randi() % crystal_models.size()]
+		var crystal = model_loader.load_model(cmodel, Vector3(cx, cy, cz), randf_range(0.8, 1.5), randf_range(0, 360), ML.SPACE_PATH)
+		if crystal and glow_shader:
+			var glow_mat = ShaderMaterial.new()
+			glow_mat.shader = glow_shader
+			glow_mat.set_shader_parameter(\"base_emission\", Color(0.2, 0.8, 1.0))
+			glow_mat.set_shader_parameter(\"base_strength\", 0.5)
+			glow_mat.set_shader_parameter(\"max_strength\", 4.0)
+			glow_mat.set_shader_parameter(\"glow_radius\", 5.0)
+			glow_mat.set_shader_parameter(\"albedo\", Color(0.1, 0.15, 0.2))
+			_apply_material_recursive(crystal, glow_mat)
+			objects_container.add_child(crystal)
+		elif crystal:
+			objects_container.add_child(crystal)
+
+	# ── Craters ──
+	for i in range(3):
+		var crater = model_loader.load_model(\"craterLarge.glb\", Vector3(randf_range(-7, 7), -1, randf_range(-6, 6)), randf_range(0.8, 1.5), randf_range(0, 360), ML.SPACE_PATH)
+		if crater:
+			objects_container.add_child(crater)
+
+	# ── Rover ──
+	var rover = model_loader.load_model(\"rover.glb\", Vector3(3, -1, 4), 1.0, -30, ML.SPACE_PATH)
+	if rover:
+		objects_container.add_child(rover)
+
+	# ── Astronaut ──
+	var astro = model_loader.load_model(\"astronautA.glb\", Vector3(1, -1, 3), 1.0, 45, ML.SPACE_PATH)
+	if astro:
+		objects_container.add_child(astro)
+
+	# ── Rockets ──
+	var rocket_base = model_loader.load_model(\"rocket_baseA.glb\", Vector3(-6, -1, -2), 1.2, 0, ML.SPACE_PATH)
+	if rocket_base:
+		objects_container.add_child(rocket_base)
+	var rocket_top = model_loader.load_model(\"rocket_topA.glb\", Vector3(-6, 0.5, -2), 1.2, 0, ML.SPACE_PATH)
+	if rocket_top:
+		objects_container.add_child(rocket_top)
+
+	# ── Desk with hologram screen ──
+	var desk = model_loader.load_model(\"desk_computerScreen.glb\", Vector3(1, -1, -1), 1.0, 0, ML.SPACE_PATH)
+	if desk:
+		objects_container.add_child(desk)
+	# Hologram overlay
+	var holo_shader = load(\"res://shaders/hologram.gdshader\")
+	if holo_shader:
+		for i in range(3):
+			var screen = MeshInstance3D.new()
+			screen.mesh = QuadMesh.new()
+			screen.mesh.size = Vector2(0.5, 0.4)
+			var holo_mat = ShaderMaterial.new()
+			holo_mat.shader = holo_shader
+			var holo_color = [Color(0.0, 0.8, 1.0), Color(0.0, 1.0, 0.5), Color(1.0, 0.5, 0.0)][i]
+			holo_mat.set_shader_parameter(\"holo_color\", holo_color)
+			holo_mat.set_shader_parameter(\"scanline_density\", 80.0)
+			holo_mat.set_shader_parameter(\"base_alpha\", 0.6)
+			screen.material_override = holo_mat
+			screen.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			screen.position = Vector3(0.5 + i * 1.5, 0.2, -1.5)
+			screen.rotation_degrees.y = randf_range(-10, 10)
+			objects_container.add_child(screen)
+
+	# ── Dust particles blowing away from cursor ──
+	var dust = GPUParticles3D.new()
+	dust.amount = 200
+	dust.emitting = true
+	var dust_pmat = ParticleProcessMaterial.new()
+	dust_pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	dust_pmat.emission_box_extents = Vector3(10, 0.5, 10)
+	dust_pmat.gravity = Vector3(0, -0.2, 0)
+	dust_pmat.initial_velocity_min = 0.1
+	dust_pmat.initial_velocity_max = 0.5
+	dust_pmat.direction = Vector3(1, 0.2, 0)
+	dust_pmat.spread = 45.0
+	dust_pmat.scale_min = 0.003
+	dust_pmat.scale_max = 0.01
+	dust.lifetime = 5.0
+	dust.process_material = dust_pmat
+	var dust_mesh = SphereMesh.new()
+	dust_mesh.radius = 0.008
+	dust_mesh.height = 0.016
+	var dust_mat = StandardMaterial3D.new()
+	dust_mat.albedo_color = Color(0.6, 0.55, 0.5)
+	dust_mat.roughness = 1.0
+	dust_mesh.material = dust_mat
+	dust.draw_pass_1 = dust_mesh
+	dust.position.y = -0.5
+	objects_container.add_child(dust)
+
+	# ── Outpost lights ──
+	var outpost_lights = [
+		{\"pos\": Vector3(0, 1, 0), \"color\": Color(1.0, 0.7, 0.3), \"energy\": 0.8, \"range\": 5.0},
+		{\"pos\": Vector3(-5, 1.5, 3), \"color\": Color(0.3, 0.8, 1.0), \"energy\": 0.6, \"range\": 4.0},
+		{\"pos\": Vector3(6, 0.5, 0), \"color\": Color(1.0, 0.5, 0.2), \"energy\": 0.5, \"range\": 3.0},
+	]
+	for ol in outpost_lights:
+		var light = OmniLight3D.new()
+		light.light_color = ol[\"color\"]
+		light.light_energy = ol[\"energy\"]
+		light.omni_range = ol[\"range\"]
+		light.shadow_enabled = true
+		light.position = ol[\"pos\"]
+		objects_container.add_child(light)
+
+	# Stars (tiny emissive spheres in sky dome)
+	for i in range(80):
+		var star = MeshInstance3D.new()
+		star.mesh = SphereMesh.new()
+		star.mesh.radius = randf_range(0.01, 0.04)
+		star.mesh.height = star.mesh.radius * 2
+		var star_mat = StandardMaterial3D.new()
+		star_mat.emission_enabled = true
+		star_mat.emission = Color(1, 1, randf_range(0.8, 1.0))
+		star_mat.emission_energy_multiplier = randf_range(2.0, 5.0)
+		star_mat.albedo_color = Color(0.1, 0.1, 0.1)
+		star.material_override = star_mat
+		star.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var theta = randf() * TAU
+		var phi = randf() * PI * 0.5
+		var r = 25.0
+		star.position = Vector3(cos(theta) * cos(phi) * r, sin(phi) * r + 5, sin(theta) * cos(phi) * r)
+		objects_container.add_child(star)
+
+	spawned_items.append({\"type\": \"scene\", \"name\": \"space_outpost\"})
+
+# ── AUTUMN CAMPSITE ──────────────────────────────────────────────────────────
+
+func apply_autumn_environment():
+	var env = $WorldEnvironment.environment as Environment
+	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
+	sky_mat.sky_top_color = Color(0.45, 0.55, 0.8)
+	sky_mat.sky_horizon_color = Color(0.85, 0.6, 0.35)
+	sky_mat.ground_bottom_color = Color(0.2, 0.15, 0.08)
+	sky_mat.ground_horizon_color = Color(0.55, 0.4, 0.22)
+	sky_mat.sky_energy_multiplier = 3.0
+	env.tonemap_mode = 4  # AGX
+	env.tonemap_exposure = 1.0
+	env.ambient_light_source = 1
+	env.ambient_light_sky_contribution = 0.7
+	env.ambient_light_energy = 1.0
+	env.ambient_light_color = Color(0.95, 0.85, 0.65)
+	env.sdfgi_enabled = true
+	env.sdfgi_use_occlusion = true
+	env.sdfgi_energy = 0.7
+	env.ssao_enabled = true
+	env.ssao_radius = 1.0
+	env.ssao_intensity = 2.5
+	env.ssil_enabled = true
+	env.ssil_radius = 8.0
+	env.ssr_enabled = true
+	env.ssr_max_steps = 64
+	# Warm golden fog
+	env.volumetric_fog_enabled = true
+	env.volumetric_fog_density = 0.006
+	env.volumetric_fog_albedo = Color(0.25, 0.18, 0.08)
+	env.volumetric_fog_emission = Color(0.1, 0.06, 0.02)
+	env.volumetric_fog_emission_energy = 0.3
+	env.fog_enabled = true
+	env.fog_density = 0.004
+	env.fog_light_color = Color(0.7, 0.5, 0.3)
+	env.fog_aerial_perspective = 0.8
+	# Warm glow
+	env.glow_enabled = true
+	env.glow_intensity = 0.9
+	env.glow_bloom = 0.15
+	env.glow_strength = 0.9
+	env.glow_hdr_threshold = 0.7
+	# Golden sunlight
+	$MoonLight.light_color = Color(1.0, 0.85, 0.5)
+	$MoonLight.light_energy = 0.9
+	$MoonLight.shadow_enabled = true
+
+func create_autumn_campsite(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+	ghost_node = null
+	dish_node = null
+	sky_cycle_enabled = false
+	flicker_lights.clear()
+	await get_tree().process_frame
+
+	var ML = preload(\"res://model_loader.gd\")
+
+	# Enable real-clock day/night
+	day_night_enabled = true
+
+	# ── Terrain — rolling hills ──
+	terrain_noise = FastNoiseLite.new()
+	terrain_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	terrain_noise.frequency = 0.012
+	terrain_noise.fractal_octaves = 4
+	terrain_noise.seed = 314
+	var terrain_mi = Terrain.create_terrain(25.0, 0.5, 0.5, 314)
+	terrain_mi.material_override = Materials.make_ground_material(Color(0.25, 0.2, 0.1))
+	terrain_mi.position = Vector3(0, -1, 0)
+	objects_container.add_child(terrain_mi)
+
+	# ── Fall trees (11 variants!) ──
+	var fall_trees = [\"tree_blocks_fall.glb\", \"tree_cone_fall.glb\", \"tree_default_fall.glb\", \"tree_detailed_fall.glb\", \"tree_fat_fall.glb\", \"tree_oak_fall.glb\", \"tree_plateau_fall.glb\", \"tree_simple_fall.glb\", \"tree_small_fall.glb\", \"tree_tall_fall.glb\", \"tree_thin_fall.glb\"]
+	for i in range(15):
+		var tx = randf_range(-9, 9)
+		var tz = randf_range(-9, 9)
+		# Skip campsite center
+		if Vector2(tx, tz).distance_to(Vector2(0, 0)) < 3.0:
+			continue
+		var ty = _terrain_y(tx, tz)
+		var tmodel = fall_trees[randi() % fall_trees.size()]
+		var tree_node = model_loader.load_model(tmodel, Vector3(tx, ty, tz), randf_range(0.7, 1.5), randf_range(0, 360))
+		if tree_node:
+			objects_container.add_child(tree_node)
+
+	# ── Campfire (center) ──
+	var campfire = model_loader.load_model(\"campfire_stones.glb\", Vector3(0, -1, 0), 1.2, 0)
+	if campfire:
+		objects_container.add_child(campfire)
+	var logs = model_loader.load_model(\"campfire_logs.glb\", Vector3(0, -0.95, 0), 1.2, 0)
+	if logs:
+		objects_container.add_child(logs)
+
+	# Fire particles
+	var fire = GPUParticles3D.new()
+	fire.amount = 150
+	fire.emitting = true
+	var fire_pmat = ParticleProcessMaterial.new()
+	fire_pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	fire_pmat.emission_sphere_radius = 0.3
+	fire_pmat.gravity = Vector3(0, 2.5, 0)
+	fire_pmat.initial_velocity_min = 0.3
+	fire_pmat.initial_velocity_max = 1.0
+	fire_pmat.direction = Vector3(0, 1, 0)
+	fire_pmat.spread = 15.0
+	fire_pmat.scale_min = 0.02
+	fire_pmat.scale_max = 0.06
+	fire.lifetime = 1.5
+	fire.process_material = fire_pmat
+	var fire_mesh = SphereMesh.new()
+	fire_mesh.radius = 0.025
+	fire_mesh.height = 0.05
+	var fire_mat = StandardMaterial3D.new()
+	fire_mat.emission_enabled = true
+	fire_mat.emission = Color(1.0, 0.5, 0.1)
+	fire_mat.emission_energy_multiplier = 5.0
+	fire_mat.albedo_color = Color(1.0, 0.3, 0.0)
+	fire_mesh.material = fire_mat
+	fire.draw_pass_1 = fire_mesh
+	fire.position = Vector3(0, -0.7, 0)
+	objects_container.add_child(fire)
+
+	# Campfire light
+	var fire_light = OmniLight3D.new()
+	fire_light.light_color = Color(1.0, 0.6, 0.2)
+	fire_light.light_energy = 1.2
+	fire_light.omni_range = 6.0
+	fire_light.shadow_enabled = true
+	fire_light.position = Vector3(0, 0.2, 0)
+	objects_container.add_child(fire_light)
+
+	# ── Tent ──
+	var tent = model_loader.load_model(\"tent_detailedOpen.glb\", Vector3(3, -1, 2), 1.0, -45)
+	if tent:
+		objects_container.add_child(tent)
+
+	# ── Canoe by the water ──
+	var canoe = model_loader.load_model(\"canoe.glb\", Vector3(-5, -0.95, -3), 1.0, 30)
+	if canoe:
+		objects_container.add_child(canoe)
+	var paddle = model_loader.load_model(\"canoe_paddle.glb\", Vector3(-4.5, -0.85, -2.8), 1.0, 25)
+	if paddle:
+		objects_container.add_child(paddle)
+
+	# ── Stumps and logs ──
+	var stump_models = [\"stump_old.glb\", \"stump_round.glb\", \"stump_roundDetailed.glb\"]
+	for i in range(5):
+		var sx = randf_range(-6, 6)
+		var sz = randf_range(-6, 6)
+		if Vector2(sx, sz).distance_to(Vector2(0, 0)) < 2.5:
+			continue
+		var sy = _terrain_y(sx, sz)
+		var smodel = stump_models[randi() % stump_models.size()]
+		var stump = model_loader.load_model(smodel, Vector3(sx, sy, sz), randf_range(0.8, 1.3), randf_range(0, 360))
+		if stump:
+			_apply_material_recursive(stump, Materials.make_bark_material(Color(0.22, 0.15, 0.08)))
+			objects_container.add_child(stump)
+
+	var log_stack = model_loader.load_model(\"log_stack.glb\", Vector3(2, -1, -1), 1.0, 20)
+	if log_stack:
+		objects_container.add_child(log_stack)
+
+	# ── Bridge over creek ──
+	var bridge = model_loader.load_model(\"bridge_wood.glb\", Vector3(-3, -1, 0), 1.0, 0)
+	if bridge:
+		objects_container.add_child(bridge)
+
+	# ── Creek with reactive water ──
+	var creek = MeshInstance3D.new()
+	var creek_mesh = PlaneMesh.new()
+	creek_mesh.size = Vector2(8, 2)
+	creek_mesh.subdivide_width = 48
+	creek_mesh.subdivide_depth = 16
+	creek.mesh = creek_mesh
+	var water_shader = load(\"res://shaders/reactive_water.gdshader\")
+	if water_shader:
+		var water_mat = ShaderMaterial.new()
+		water_mat.shader = water_shader
+		water_mat.set_shader_parameter(\"water_color\", Color(0.06, 0.12, 0.1))
+		water_mat.set_shader_parameter(\"wave_speed\", 1.2)
+		water_mat.set_shader_parameter(\"wave_strength\", 0.015)
+		water_mat.set_shader_parameter(\"ripple_radius\", 3.0)
+		water_mat.set_shader_parameter(\"ripple_strength\", 0.03)
+		water_mat.set_shader_parameter(\"ripple_frequency\", 8.0)
+		creek.material_override = water_mat
+	creek.position = Vector3(-3, -0.95, -3)
+	creek.rotation_degrees.y = 15
+	objects_container.add_child(creek)
+
+	# ── Reactive grass (MultiMesh with cursor push) ──
+	var grass_mmi = _create_reactive_grass_multimesh(8.0, 2000)
+	grass_mmi.position.y = -1
+	objects_container.add_child(grass_mmi)
+
+	# ── Mushrooms under trees ──
+	var shroom_models = [\"mushroom_red.glb\", \"mushroom_tan.glb\", \"mushroom_tanGroup.glb\"]
+	for i in range(6):
+		var mx = randf_range(-8, 8)
+		var mz = randf_range(-8, 8)
+		if Vector2(mx, mz).distance_to(Vector2(0, 0)) < 2.5:
+			continue
+		var my = _terrain_y(mx, mz)
+		var smodel = shroom_models[randi() % shroom_models.size()]
+		var shroom = model_loader.load_model(smodel, Vector3(mx, my, mz), randf_range(0.5, 1.5), randf_range(0, 360))
+		if shroom:
+			objects_container.add_child(shroom)
+
+	# ── Falling leaves ──
+	var leaves = GPUParticles3D.new()
+	leaves.amount = 100
+	leaves.emitting = true
+	var leaf_pmat = ParticleProcessMaterial.new()
+	leaf_pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	leaf_pmat.emission_box_extents = Vector3(10, 1, 10)
+	leaf_pmat.gravity = Vector3(0, -0.5, 0)
+	leaf_pmat.initial_velocity_min = 0.2
+	leaf_pmat.initial_velocity_max = 0.8
+	leaf_pmat.direction = Vector3(0.3, -1, 0.1)
+	leaf_pmat.spread = 30.0
+	leaf_pmat.scale_min = 0.01
+	leaf_pmat.scale_max = 0.03
+	leaf_pmat.angular_velocity_min = -90
+	leaf_pmat.angular_velocity_max = 90
+	leaves.lifetime = 8.0
+	leaves.process_material = leaf_pmat
+	var leaf_mesh = PlaneMesh.new()
+	leaf_mesh.size = Vector2(0.03, 0.025)
+	var leaf_mat = StandardMaterial3D.new()
+	leaf_mat.albedo_color = Color(0.85, 0.45, 0.12)
+	leaf_mat.roughness = 0.8
+	leaf_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	leaf_mesh.material = leaf_mat
+	leaves.draw_pass_1 = leaf_mesh
+	leaves.position = Vector3(0, 4, 0)
+	objects_container.add_child(leaves)
+
+	# ── Clouds ──
+	cloud_nodes.clear()
+	var cloud_shader = load(\"res://shaders/cloud.gdshader\")
+	var cloud_noise_tex = NoiseTexture2D.new()
+	var cn = FastNoiseLite.new()
+	cn.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	cn.frequency = 0.02
+	cn.fractal_octaves = 4
+	cloud_noise_tex.noise = cn
+	cloud_noise_tex.width = 256
+	cloud_noise_tex.height = 256
+	cloud_noise_tex.seamless = true
+	for i in range(8):
+		var cloud = MeshInstance3D.new()
+		cloud.mesh = QuadMesh.new()
+		cloud.mesh.size = Vector2(randf_range(3, 6), randf_range(1.5, 2.5))
+		var c_mat = ShaderMaterial.new()
+		c_mat.shader = cloud_shader
+		c_mat.set_shader_parameter(\"cloud_color\", Color(0.95, 0.92, 0.85))
+		c_mat.set_shader_parameter(\"alpha_base\", randf_range(0.25, 0.5))
+		c_mat.set_shader_parameter(\"noise_tex\", cloud_noise_tex)
+		cloud.material_override = c_mat
+		cloud.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		cloud.position = Vector3(randf_range(-18, 18), randf_range(6, 10), randf_range(-12, 10))
+		objects_container.add_child(cloud)
+		cloud_nodes.append(cloud)
+
+	sky_cycle_enabled = true
+	spawned_items.append({\"type\": \"scene\", \"name\": \"autumn_campsite\"})
+
+# ── ABANDONED STATION ────────────────────────────────────────────────────────
+
+func apply_station_environment():
+	var env = $WorldEnvironment.environment as Environment
+	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
+	sky_mat.sky_top_color = Color(0.05, 0.12, 0.1)
+	sky_mat.sky_horizon_color = Color(0.1, 0.15, 0.08)
+	sky_mat.ground_bottom_color = Color(0.02, 0.05, 0.04)
+	sky_mat.ground_horizon_color = Color(0.06, 0.1, 0.06)
+	sky_mat.sky_energy_multiplier = 0.4
+	env.tonemap_mode = 3  # Filmic
+	env.tonemap_exposure = 1.1
+	env.ambient_light_source = 3
+	env.ambient_light_energy = 0.25
+	env.ambient_light_color = Color(0.15, 0.2, 0.18)
+	env.sdfgi_enabled = true
+	env.sdfgi_use_occlusion = true
+	env.sdfgi_energy = 0.5
+	env.ssao_enabled = true
+	env.ssao_radius = 1.5
+	env.ssao_intensity = 3.0
+	env.ssr_enabled = true
+	env.ssr_max_steps = 64
+	# Teal-green haze
+	env.volumetric_fog_enabled = true
+	env.volumetric_fog_density = 0.03
+	env.volumetric_fog_albedo = Color(0.06, 0.12, 0.08)
+	env.volumetric_fog_emission = Color(0.02, 0.05, 0.03)
+	env.volumetric_fog_emission_energy = 0.4
+	env.fog_enabled = true
+	env.fog_density = 0.01
+	env.fog_light_color = Color(0.08, 0.12, 0.08)
+	# Glow for holograms and bio-light
+	env.glow_enabled = true
+	env.glow_intensity = 1.5
+	env.glow_bloom = 0.3
+	env.glow_strength = 1.2
+	env.glow_hdr_threshold = 0.5
+	# Broken light shafts — dim directional
+	$MoonLight.light_color = Color(0.5, 0.65, 0.55)
+	$MoonLight.light_energy = 0.3
+	$MoonLight.shadow_enabled = true
+
+func create_abandoned_station(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+	ghost_node = null
+	dish_node = null
+	sky_cycle_enabled = false
+	day_night_enabled = false
+	flicker_lights.clear()
+	await get_tree().process_frame
+
+	var ML = preload(\"res://model_loader.gd\")
+
+	# ── Floor — cracked overgrown surface ──
+	terrain_noise = FastNoiseLite.new()
+	terrain_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	terrain_noise.frequency = 0.03
+	terrain_noise.fractal_octaves = 2
+	terrain_noise.seed = 404
+	var terrain_mi = Terrain.create_terrain(18.0, 0.5, 0.15, 404)
+	terrain_mi.material_override = Materials.make_overgrown_material(Color(0.2, 0.18, 0.15))
+	terrain_mi.position = Vector3(0, -1, 0)
+	objects_container.add_child(terrain_mi)
+
+	# ── Space corridors (broken station) ──
+	var station_layout = [
+		{\"model\": \"corridor.glb\", \"pos\": Vector3(-2, -1, 0), \"rot\": 0, \"kit\": \"space\"},
+		{\"model\": \"corridor_open.glb\", \"pos\": Vector3(0, -1, 0), \"rot\": 0, \"kit\": \"space\"},
+		{\"model\": \"corridor_corner.glb\", \"pos\": Vector3(2, -1, 0), \"rot\": 0, \"kit\": \"space\"},
+		{\"model\": \"corridor_window.glb\", \"pos\": Vector3(2, -1, 2), \"rot\": 90, \"kit\": \"space\"},
+		{\"model\": \"corridor_end.glb\", \"pos\": Vector3(-4, -1, 0), \"rot\": 180, \"kit\": \"space\"},
+	]
+	for sl in station_layout:
+		var piece = model_loader.load_model(sl[\"model\"], sl[\"pos\"], 1.0, sl[\"rot\"], ML.SPACE_PATH)
+		if piece:
+			_apply_material_recursive(piece, Materials.make_rusty_metal_material(Color(0.25, 0.2, 0.18)))
+			objects_container.add_child(piece)
+
+	# ── Nature overgrowth (bushes, mushrooms breaking through) ──
+	var bush_models = [\"plant_bushDetailed.glb\", \"plant_bush.glb\", \"plant_bushLarge.glb\", \"plant_bushSmall.glb\"]
+	for i in range(10):
+		var bx = randf_range(-6, 6)
+		var bz = randf_range(-5, 5)
+		var by = _terrain_y(bx, bz)
+		var bmodel = bush_models[randi() % bush_models.size()]
+		var bush = model_loader.load_model(bmodel, Vector3(bx, by, bz), randf_range(0.5, 1.5), randf_range(0, 360))
+		if bush:
+			objects_container.add_child(bush)
+
+	var shroom_models = [\"mushroom_red.glb\", \"mushroom_redTall.glb\", \"mushroom_tan.glb\", \"mushroom_tanTall.glb\"]
+	for i in range(8):
+		var mx = randf_range(-5, 5)
+		var mz = randf_range(-4, 4)
+		var my = _terrain_y(mx, mz)
+		var smodel = shroom_models[randi() % shroom_models.size()]
+		var shroom = model_loader.load_model(smodel, Vector3(mx, my, mz), randf_range(0.6, 2.0), randf_range(0, 360))
+		if shroom:
+			objects_container.add_child(shroom)
+
+	# ── Graveyard debris (scattered among ruins) ──
+	var debris_models = [\"debris.glb\", \"debris-wood.glb\", \"rocks.glb\"]
+	for i in range(6):
+		var dx = randf_range(-5, 5)
+		var dz = randf_range(-4, 4)
+		var dy = _terrain_y(dx, dz)
+		var dmodel = debris_models[randi() % debris_models.size()]
+		var debris = model_loader.load_model(dmodel, Vector3(dx, dy, dz), randf_range(0.5, 1.2), randf_range(0, 360), ML.GRAVEYARD_PATH)
+		if debris:
+			objects_container.add_child(debris)
+
+	# ── Desk with hologram screens ──
+	var desk = model_loader.load_model(\"desk_computer.glb\", Vector3(0, -1, -1.5), 1.0, 0, ML.SPACE_PATH)
+	if desk:
+		_apply_material_recursive(desk, Materials.make_rusty_metal_material(Color(0.22, 0.2, 0.18)))
+		objects_container.add_child(desk)
+
+	var holo_shader = load(\"res://shaders/hologram.gdshader\")
+	if holo_shader:
+		for i in range(2):
+			var screen = MeshInstance3D.new()
+			screen.mesh = QuadMesh.new()
+			screen.mesh.size = Vector2(0.4, 0.35)
+			var holo_mat = ShaderMaterial.new()
+			holo_mat.shader = holo_shader
+			var holo_color = [Color(0.0, 0.7, 0.4), Color(0.2, 0.5, 0.8)][i]
+			holo_mat.set_shader_parameter(\"holo_color\", holo_color)
+			holo_mat.set_shader_parameter(\"scanline_density\", 60.0)
+			holo_mat.set_shader_parameter(\"base_alpha\", 0.5)
+			holo_mat.set_shader_parameter(\"flicker_speed\", 12.0)
+			screen.material_override = holo_mat
+			screen.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			screen.position = Vector3(-0.3 + i * 0.7, 0.1, -1.8)
+			objects_container.add_child(screen)
+
+	# ── Flickering lights (cursor-reactive) ──
+	var light_positions = [
+		Vector3(-2, 1.2, 0), Vector3(1, 1.5, 0.5), Vector3(3, 0.8, 2),
+		Vector3(-1, 1.0, -2), Vector3(4, 1.3, -1),
+	]
+	for lp in light_positions:
+		var fl = OmniLight3D.new()
+		fl.light_color = Color(randf_range(0.6, 1.0), randf_range(0.7, 0.9), randf_range(0.5, 0.8))
+		fl.light_energy = 0.5
+		fl.omni_range = 3.0
+		fl.shadow_enabled = (flicker_lights.size() < 3)  # only first 3 cast shadows
+		fl.position = lp
+		objects_container.add_child(fl)
+		flicker_lights.append(fl)
+
+	# ── Vines growing over surfaces (TIME-based mesh) ──
+	for i in range(12):
+		var vine = MeshInstance3D.new()
+		vine.mesh = CylinderMesh.new()
+		vine.mesh.top_radius = 0.005
+		vine.mesh.bottom_radius = 0.012
+		vine.mesh.height = randf_range(0.4, 1.2)
+		vine.material_override = Materials.make_moss_material(Color(0.1, 0.25, 0.06))
+		vine.position = Vector3(randf_range(-4, 4), randf_range(-0.5, 0.8), randf_range(-3, 3))
+		vine.rotation_degrees = Vector3(randf_range(-20, 20), randf_range(0, 360), randf_range(-30, 30))
+		objects_container.add_child(vine)
+
+	# ── Graveyard iron fence fragments ──
+	for i in range(3):
+		var fence = model_loader.load_model(\"iron-fence-damaged.glb\", Vector3(randf_range(-5, 5), -1, randf_range(-4, 4)), randf_range(0.8, 1.2), randf_range(0, 360), ML.GRAVEYARD_PATH)
+		if fence:
+			objects_container.add_child(fence)
+
+	# ── Barrels (space kit) ──
+	var barrel = model_loader.load_model(\"barrels.glb\", Vector3(3, -1, -2), 1.0, 15, ML.SPACE_PATH)
+	if barrel:
+		_apply_material_recursive(barrel, Materials.make_rusty_metal_material(Color(0.3, 0.22, 0.18)))
+		objects_container.add_child(barrel)
+
+	# ── Ground fog ──
+	var fog_shader = load(\"res://shaders/ground_fog.gdshader\")
+	if fog_shader:
+		for i in range(15):
+			var fog = MeshInstance3D.new()
+			fog.mesh = QuadMesh.new()
+			fog.mesh.size = Vector2(randf_range(2, 5), randf_range(0.8, 1.5))
+			var fog_mat = ShaderMaterial.new()
+			fog_mat.shader = fog_shader
+			fog_mat.set_shader_parameter(\"fog_color\", Color(0.08, 0.15, 0.1))
+			fog_mat.set_shader_parameter(\"fog_alpha\", randf_range(0.15, 0.35))
+			fog_mat.set_shader_parameter(\"cursor_clear_radius\", 2.5)
+			fog.material_override = fog_mat
+			fog.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			fog.position = Vector3(randf_range(-7, 7), -0.5 + randf_range(-0.15, 0.15), randf_range(-5, 5))
+			objects_container.add_child(fog)
+
+	spawned_items.append({\"type\": \"scene\", \"name\": \"abandoned_station\"})
+
+# ── Helper: reactive grass multimesh ──
+func _create_reactive_grass_multimesh(area_size: float, count: int) -> MultiMeshInstance3D:
+	var mm = MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.instance_count = count
+	var blade = PlaneMesh.new()
+	blade.size = Vector2(0.06, 0.25)
+	blade.orientation = PlaneMesh.FACE_Z
+	blade.subdivide_width = 0
+	blade.subdivide_depth = 1
+	var grass_shader_res = load(\"res://shaders/reactive_grass.gdshader\")
+	var blade_mat: Material
+	if grass_shader_res:
+		var smat = ShaderMaterial.new()
+		smat.shader = grass_shader_res
+		smat.set_shader_parameter(\"top_color\", Color(0.5, 0.55, 0.2))
+		smat.set_shader_parameter(\"bottom_color\", Color(0.25, 0.3, 0.08))
+		smat.set_shader_parameter(\"wind_strength\", 0.12)
+		smat.set_shader_parameter(\"wind_speed\", 0.6)
+		smat.set_shader_parameter(\"cursor_push_radius\", 3.0)
+		smat.set_shader_parameter(\"cursor_push_strength\", 0.4)
+		blade_mat = smat
+	else:
+		var gmat = StandardMaterial3D.new()
+		gmat.albedo_color = Color(0.35, 0.4, 0.12)
+		gmat.roughness = 0.7
+		gmat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		blade_mat = gmat
+	blade.material = blade_mat
+	mm.mesh = blade
+	for i in count:
+		var xform = Transform3D()
+		xform = xform.rotated(Vector3.UP, randf() * TAU)
+		var s = randf_range(0.6, 1.4)
+		xform = xform.scaled(Vector3(s, s, s))
+		var gx = randf_range(-area_size, area_size)
+		var gz = randf_range(-area_size, area_size)
+		# Skip campfire center
+		if Vector2(gx, gz).distance_to(Vector2(0, 0)) < 2.5:
+			xform.origin = Vector3(gx, -99, gz)
+		else:
+			xform.origin = Vector3(gx, _terrain_y(gx, gz) + 1.0, gz)
+		mm.set_instance_transform(i, xform)
+	var mmi = MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mmi
+
+# ── Helper: apply material to all MeshInstance3D children ──
+func _apply_material_recursive(node: Node, mat: Material):
+	if node is MeshInstance3D:
+		node.material_override = mat
+	for child in node.get_children():
+		_apply_material_recursive(child, mat)
 
 # ── Helper: terrain height query ──
 func _terrain_y(x: float, z: float) -> float:
@@ -2791,8 +3885,29 @@ func _create_grass_multimesh(area_size: float, count: int) -> MultiMeshInstance3
 	var mm = MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.instance_count = count
-	var blade = QuadMesh.new()
+	var blade = PlaneMesh.new()
 	blade.size = Vector2(0.06, 0.25)
+	blade.orientation = PlaneMesh.FACE_Z
+	blade.subdivide_width = 0
+	blade.subdivide_depth = 1
+	# Grass shader with wind sway
+	var grass_shader_res = load(\"res://shaders/grass.gdshader\")
+	var blade_mat: Material
+	if grass_shader_res:
+		var smat = ShaderMaterial.new()
+		smat.shader = grass_shader_res
+		smat.set_shader_parameter(\"top_color\", Color(0.35, 0.6, 0.18))
+		smat.set_shader_parameter(\"bottom_color\", Color(0.15, 0.3, 0.06))
+		smat.set_shader_parameter(\"wind_strength\", 0.15)
+		smat.set_shader_parameter(\"wind_speed\", 0.8)
+		blade_mat = smat
+	else:
+		var gmat = StandardMaterial3D.new()
+		gmat.albedo_color = Color(0.18, 0.38, 0.08)
+		gmat.roughness = 0.7
+		gmat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		blade_mat = gmat
+	blade.material = blade_mat
 	mm.mesh = blade
 	for i in count:
 		var xform = Transform3D()
@@ -2810,14 +3925,6 @@ func _create_grass_multimesh(area_size: float, count: int) -> MultiMeshInstance3
 	var mmi = MultiMeshInstance3D.new()
 	mmi.multimesh = mm
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var grass_shader = load(\"res://shaders/grass.gdshader\")
-	var shader_mat = ShaderMaterial.new()
-	shader_mat.shader = grass_shader
-	shader_mat.set_shader_parameter(\"top_color\", Vector3(0.2, 0.45, 0.12))
-	shader_mat.set_shader_parameter(\"bottom_color\", Vector3(0.1, 0.2, 0.05))
-	shader_mat.set_shader_parameter(\"wind_strength\", 0.15)
-	shader_mat.set_shader_parameter(\"wind_speed\", 0.8)
-	mmi.material_override = shader_mat
 	return mmi
 "
 

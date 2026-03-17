@@ -2,7 +2,7 @@ extends RefCounted
 # model_loader.gd — Kenney GLB model loading, caching, and material override
 
 const NATURE_PATH = "res://assets/models/nature-kit/Models/GLTF format/"
-const GRAVEYARD_PATH = "res://assets/models/graveyard-kit/Models/GLTF format/"
+const GRAVEYARD_PATH = "res://assets/models/graveyard-kit/Models/GLB format/"
 const SPACE_PATH = "res://assets/models/space-kit/Models/GLTF format/"
 
 var model_cache: Dictionary = {}
