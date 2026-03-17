@@ -585,11 +585,12 @@ func handle_command(msg: Dictionary) -> Dictionary:
 				return {"status": "ok", "message": "Camera mode: " + mode}
 			return {"status": "error", "message": "Unknown camera mode: " + mode}
 		"cursor":
-			var enabled = params.get("enabled", true)
-			cursor_tracking = enabled
-			return {"status": "ok", "message": "Cursor tracking: " + str(enabled)}
+			var ct_val = params.get("enabled", true)
+			cursor_tracking = str(ct_val).to_lower() != "false" and str(ct_val) != "0"
+			return {"status": "ok", "message": "Cursor tracking: " + str(cursor_tracking)}
 		"auto_rotate":
-			auto_rotate_enabled = params.get("enabled", true)
+			var ar_val = params.get("enabled", true)
+			auto_rotate_enabled = str(ar_val).to_lower() != "false" and str(ar_val) != "0"
 			if params.has("interval"):
 				auto_rotate_interval = float(params["interval"])
 			return {"status": "ok", "message": "Auto-rotate: " + str(auto_rotate_enabled)}
