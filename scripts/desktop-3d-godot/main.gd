@@ -37,6 +37,10 @@ var day_night_enabled: bool = false
 var flicker_lights: Array = []
 
 # ── Audio reactivity ──
+var mic_player: AudioStreamPlayer = null  # stored for periodic restart (bug #80173)
+var audio_restart_timer: float = 0.0
+var audio_debug_timer: float = 0.0
+const AUDIO_RESTART_INTERVAL = 1800.0  # restart audio capture every 30 min to prevent drift
 var spectrum: AudioEffectSpectrumAnalyzerInstance = null
 var audio_bass: float = 0.0
 var audio_mid: float = 0.0
@@ -45,11 +49,41 @@ var audio_energy: float = 0.0
 var beat_intensity: float = 0.0
 var prev_bass: float = 0.0
 var beat_cooldown: float = 0.0
-const BEAT_THRESHOLD = 0.15
 const BEAT_COOLDOWN_TIME = 0.12
 const MIN_DB = -60.0
-const ATTACK = 0.4    # fast rise
-const DECAY = 0.07    # slow fall
+
+# Per-band smoothing rates (attack=fast rise, decay=slow fall)
+# Tuned per frequency: bass is slow (stable displacement), treble is fast (sparkle)
+const ATTACK_DEFAULT = 0.4
+const DECAY_DEFAULT = 0.07
+# Per-band attack/decay rates (separate flat dicts to avoid nested dict parse issues)
+var _band_attack: Dictionary = {"sub_bass": 0.15, "bass": 0.3, "low_mid": 0.35, "mid": 0.5, "upper_mid": 0.6, "treble": 0.8, "presence": 0.7, "brilliance": 0.9, "energy": 0.3}
+var _band_decay: Dictionary = {"sub_bass": 0.03, "bass": 0.05, "low_mid": 0.06, "mid": 0.08, "upper_mid": 0.10, "treble": 0.12, "presence": 0.11, "brilliance": 0.15, "energy": 0.05}
+
+# Extended audio bands (7-band)
+var audio_sub_bass: float = 0.0     # 20-60 Hz
+var audio_low_mid: float = 0.0     # 250-500 Hz
+var audio_upper_mid: float = 0.0   # 2-4 kHz
+var audio_presence: float = 0.0    # 4-6 kHz
+var audio_brilliance: float = 0.0  # 6-20 kHz
+
+# Multi-band beat detection
+var beat_kick: float = 0.0    # sub_bass onset
+var beat_snare: float = 0.0   # mid onset
+var beat_hihat: float = 0.0   # treble onset
+
+# Composite audio signals
+var audio_warmth: float = 0.0     # bass×0.4 + low_mid×0.4 + sub_bass×0.2
+var audio_brightness: float = 0.0 # treble×0.3 + brilliance×0.4 + presence×0.3
+var audio_flux: float = 0.0       # spectral flux (rate of spectral change)
+
+# VRAM watchdog
+var gpu_vram_used: float = 0.0
+var gpu_vram_total: float = 8192.0
+var vram_warning_logged: bool = false
+
+# Git activity
+var git_commits_1h: float = 0.0
 
 # ── Sensor data (UDP from daemon) ──
 var sensor_udp: PacketPeerUDP = null
@@ -73,6 +107,20 @@ var idle_threshold: float = 300.0  # 5 minutes
 var pre_idle_camera_mode: String = "orbit"
 var is_idle: bool = false
 
+# ── Focus mode ──
+var focus_level: float = 0.0  # 0 = unfocused, 1 = deep focus
+const FOCUS_APPS = ["kitty", "alacritty", "konsole", "wezterm", "foot", "xterm", "gnome-terminal", "code", "cursor", "neovim", "vim", "emacs", "godot"]
+
+# ── Events ──
+var ollama_active: bool = false
+var ollama_check_timer: float = 0.0
+var commit_burst_timer: float = 0.0
+
+# ── Pomodoro ──
+var pomodoro_active: bool = false
+var pomodoro_remaining: float = 0.0
+var pomodoro_total: float = 1500.0  # 25 min
+
 # ── Scene auto-rotation ──
 var auto_rotate_enabled: bool = false
 var auto_rotate_interval: float = 3600.0  # 1 hour
@@ -83,6 +131,21 @@ var current_scene_name: String = ""
 var fade_quad: MeshInstance3D = null
 var is_transitioning: bool = false
 
+# ── Frame feedback (Butterchurn-style ping-pong warp) ──
+var feedback_enabled: bool = false
+var feedback_canvas: CanvasLayer = null
+var feedback_vp: Array = [null, null]       # two SubViewports — true ping-pong
+var feedback_mat: Array = [null, null]       # shader materials (VP0 reads VP1, VP1 reads VP0)
+var feedback_rects: Array = [null, null]     # ColorRects inside each viewport
+var feedback_display_rect: TextureRect = null
+var feedback_write_idx: int = 0              # alternates 0/1 each frame
+
+# ── Audio-reactive bloom ──
+var bloom_reactive_enabled: bool = true
+var bloom_base_intensity: float = 1.0
+var bloom_base_strength: float = 0.8
+var bloom_base_bloom: float = 0.2
+
 # ── Weather particles overlay ──
 var weather_particles: GPUParticles3D = null
 var current_weather_preset: String = ""
@@ -91,15 +154,37 @@ var current_weather_preset: String = ""
 var edge_cooldown: float = 0.0
 var was_at_edge: bool = false
 
+# ── Post-processing overlay ──
+var postfx_canvas: CanvasLayer = null
+var postfx_rect: ColorRect = null
+var current_postfx: String = ""
+
+# ── Art scene state ──
+var attractor_mesh: ImmediateMesh = null
+var attractor_instance: MeshInstance3D = null
+var attractor_points: Array = []
+var visualizer_bars: MultiMeshInstance3D = null
+var vine_meshes: Array = []
+var vine_growing: bool = false
+var fluid_particles: GPUParticles3D = null
+var lsystem_growing: bool = false
+
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
 	"evening": ["autumn_campsite", "haunted_graveyard", "neon_city"],
 	"night": ["haunted_graveyard", "space_outpost", "abandoned_station"],
 	"late_night": ["space_outpost", "abyss_scene", "abandoned_station"],
+}
+const SEASON_SCENES = {
+	"spring": ["fairy_garden", "zen_garden", "crystal_cave"],
+	"summer": ["fairy_garden", "zen_garden", "space_outpost"],
+	"autumn": ["autumn_campsite", "haunted_graveyard", "volcanic"],
+	"winter": ["space_outpost", "abyss_scene", "abandoned_station", "crystal_cave"],
 }
 
 func _ready():
@@ -129,37 +214,12 @@ func _ready():
 	else:
 		push_error("Failed to start TCP server: ", err)
 
-	# ── Audio capture setup ──
-	# Create a Capture bus with SpectrumAnalyzer
-	var bus_idx = AudioServer.bus_count
-	AudioServer.add_bus(bus_idx)
-	AudioServer.set_bus_name(bus_idx, "Capture")
-	AudioServer.set_bus_volume_db(bus_idx, -80.0)  # mute playback (we just analyze)
-	AudioServer.set_bus_send(bus_idx, "Master")
-	# Add spectrum analyzer effect
-	var analyzer = AudioEffectSpectrumAnalyzer.new()
-	analyzer.fft_size = AudioEffectSpectrumAnalyzer.FFT_SIZE_1024
-	analyzer.buffer_length = 0.5
-	AudioServer.add_bus_effect(bus_idx, analyzer)
-	# Create microphone player
-	var mic_player = AudioStreamPlayer.new()
-	mic_player.stream = AudioStreamMicrophone.new()
-	mic_player.bus = "Capture"
-	mic_player.autoplay = true
-	add_child(mic_player)
-	# Get analyzer instance
-	spectrum = AudioServer.get_bus_effect_instance(bus_idx, 0) as AudioEffectSpectrumAnalyzerInstance
-	# Try to select PipeWire monitor source
-	var devices = AudioServer.get_input_device_list()
-	for d in devices:
-		if "monitor" in d.to_lower() or "substrate" in d.to_lower():
-			AudioServer.input_device = d
-			print("Audio capture device: ", d)
-			break
-	if spectrum:
-		print("Audio spectrum analyzer ready")
-	else:
-		print("WARNING: Audio spectrum analyzer not available")
+	# ── Audio capture ──
+	# Audio analysis is handled externally by substrate_sensors.py (pw-record + FFT).
+	# Audio levels arrive via UDP sensor packets (audio_bass, audio_mid, etc.).
+	# This bypasses Godot's AudioStreamMicrophone which doesn't work reliably
+	# with PipeWire monitor sources on Linux.
+	print("Audio: using external sensor daemon (pw-record → UDP)")
 
 	# ── Sensor UDP listener ──
 	sensor_udp = PacketPeerUDP.new()
@@ -168,6 +228,12 @@ func _ready():
 		print("Sensor UDP listener on port 9778")
 	else:
 		push_warning("Failed to bind sensor UDP: ", udp_err)
+
+	# ── Shader pre-warming (compile all pipelines to prevent first-load stutter) ──
+	_prewarm_shaders()
+
+	# ── Frame feedback (disabled by default — enable via TCP "feedback" command) ──
+	# _setup_feedback()
 
 	# ── Fade transition quad (child of Camera3D, near clip) ──
 	fade_quad = MeshInstance3D.new()
@@ -201,7 +267,7 @@ func _process(delta):
 			var result = try_parse_json(conn["buffer"])
 			if result != null:
 				conn["buffer"] = ""
-				var reply = handle_command(result)
+				var reply = await handle_command(result)
 				var response_bytes = (JSON.stringify(reply) + "\
 ").to_utf8_buffer()
 				peer.put_data(response_bytes)
@@ -219,54 +285,85 @@ func _process(delta):
 		cursor_world_pos = cam.project_position(Vector2(mouse_screen.x, mouse_screen.y), 8.0)
 		RenderingServer.global_shader_parameter_set("cursor_world_pos", cursor_world_pos)
 
-	# ── Audio spectrum analysis ──
-	if spectrum:
-		var raw_bass = _get_band_energy(20.0, 300.0)
-		var raw_mid = _get_band_energy(300.0, 4000.0)
-		var raw_treble = _get_band_energy(4000.0, 16000.0)
-		var raw_energy = (raw_bass + raw_mid + raw_treble) / 3.0
-
-		# Smooth with asymmetric attack/decay
-		audio_bass = _smooth(audio_bass, raw_bass, delta)
-		audio_mid = _smooth(audio_mid, raw_mid, delta)
-		audio_treble = _smooth(audio_treble, raw_treble, delta)
-		audio_energy = _smooth(audio_energy, raw_energy, delta)
-
-		# Beat detection — onset in bass band
-		beat_cooldown = max(0.0, beat_cooldown - delta)
-		if raw_bass - prev_bass > BEAT_THRESHOLD and beat_cooldown <= 0.0:
-			beat_intensity = 1.0
-			beat_cooldown = BEAT_COOLDOWN_TIME
-		else:
-			beat_intensity = max(0.0, beat_intensity - delta * 6.0)  # fast decay
-		prev_bass = raw_bass
-
-		# Push to global shader params
-		RenderingServer.global_shader_parameter_set("audio_bass", audio_bass)
-		RenderingServer.global_shader_parameter_set("audio_mid", audio_mid)
-		RenderingServer.global_shader_parameter_set("audio_treble", audio_treble)
-		RenderingServer.global_shader_parameter_set("audio_energy", audio_energy)
-		RenderingServer.global_shader_parameter_set("beat_intensity", beat_intensity)
-
-	# ── Sensor data (UDP) ──
+	# ── Sensor data (1Hz) + Audio (30Hz) via UDP ──
+	# Audio arrives at 30Hz from audio thread, sensors at 1Hz from main loop
 	if sensor_udp:
 		while sensor_udp.get_available_packet_count() > 0:
 			var packet = sensor_udp.get_packet()
 			var text = packet.get_string_from_utf8()
 			var parsed = try_parse_json(text)
 			if parsed:
-				cpu_temp = float(parsed.get("cpu_temp", 0))
-				gpu_temp = float(parsed.get("gpu_temp", 0))
-				gpu_util = float(parsed.get("gpu_util", 0))
-				ram_pct = float(parsed.get("ram_pct", 0))
-				bat_pct = float(parsed.get("bat_pct", 100))
-				net_rx = float(parsed.get("net_rx", 0))
-				net_tx = float(parsed.get("net_tx", 0))
-				weather_code = int(parsed.get("weather_code", 0))
-				weather_wind = float(parsed.get("weather_wind", 0))
-				weather_precip = float(parsed.get("weather_precip", 0))
-				var raw_notify = float(parsed.get("notify", 0))
-				notify_flash = max(notify_flash, raw_notify)
+				var ptype = parsed.get("t", "")
+				if ptype == "audio" or parsed.has("audio_bass"):
+					# Audio packet (30Hz) — per-band smoothing
+					audio_bass = _smooth_band("bass", audio_bass, float(parsed.get("audio_bass", 0)), delta)
+					audio_mid = _smooth_band("mid", audio_mid, float(parsed.get("audio_mid", 0)), delta)
+					audio_treble = _smooth_band("treble", audio_treble, float(parsed.get("audio_treble", 0)), delta)
+					audio_energy = _smooth_band("energy", audio_energy, float(parsed.get("audio_energy", 0)), delta)
+					audio_sub_bass = _smooth_band("sub_bass", audio_sub_bass, float(parsed.get("audio_sub_bass", 0)), delta)
+					audio_low_mid = _smooth_band("low_mid", audio_low_mid, float(parsed.get("audio_low_mid", 0)), delta)
+					audio_upper_mid = _smooth_band("upper_mid", audio_upper_mid, float(parsed.get("audio_upper_mid", 0)), delta)
+					audio_presence = _smooth_band("presence", audio_presence, float(parsed.get("audio_presence", 0)), delta)
+					audio_brilliance = _smooth_band("brilliance", audio_brilliance, float(parsed.get("audio_brilliance", 0)), delta)
+					# Beat signals — instant attack (no smoothing)
+					beat_intensity = float(parsed.get("audio_beat", 0))
+					beat_kick = float(parsed.get("beat_kick", 0))
+					beat_snare = float(parsed.get("beat_snare", 0))
+					beat_hihat = float(parsed.get("beat_hihat", 0))
+					audio_flux = float(parsed.get("audio_flux", 0))
+				if ptype == "sensors" or parsed.has("cpu_temp"):
+					# Sensor packet (1Hz)
+					cpu_temp = float(parsed.get("cpu_temp", cpu_temp))
+					gpu_temp = float(parsed.get("gpu_temp", gpu_temp))
+					gpu_util = float(parsed.get("gpu_util", gpu_util))
+					ram_pct = float(parsed.get("ram_pct", ram_pct))
+					bat_pct = float(parsed.get("bat_pct", bat_pct))
+					net_rx = float(parsed.get("net_rx", net_rx))
+					net_tx = float(parsed.get("net_tx", net_tx))
+					weather_code = int(parsed.get("weather_code", weather_code))
+					weather_wind = float(parsed.get("weather_wind", weather_wind))
+					weather_precip = float(parsed.get("weather_precip", weather_precip))
+					var raw_notify = float(parsed.get("notify", 0))
+					notify_flash = max(notify_flash, raw_notify)
+					gpu_vram_used = float(parsed.get("gpu_vram", gpu_vram_used))
+					gpu_vram_total = float(parsed.get("gpu_vram_total", gpu_vram_total))
+					git_commits_1h = float(parsed.get("git_commits_1h", git_commits_1h))
+
+		# Compute composite audio signals
+		audio_warmth = audio_bass * 0.4 + audio_low_mid * 0.4 + audio_sub_bass * 0.2
+		audio_brightness = audio_treble * 0.3 + audio_brilliance * 0.4 + audio_presence * 0.3
+
+		# Push audio to shader globals
+		RenderingServer.global_shader_parameter_set("audio_bass", audio_bass)
+		RenderingServer.global_shader_parameter_set("audio_mid", audio_mid)
+		RenderingServer.global_shader_parameter_set("audio_treble", audio_treble)
+		RenderingServer.global_shader_parameter_set("audio_energy", audio_energy)
+		RenderingServer.global_shader_parameter_set("beat_intensity", beat_intensity)
+		RenderingServer.global_shader_parameter_set("audio_sub_bass", audio_sub_bass)
+		RenderingServer.global_shader_parameter_set("audio_low_mid", audio_low_mid)
+		RenderingServer.global_shader_parameter_set("audio_upper_mid", audio_upper_mid)
+		RenderingServer.global_shader_parameter_set("audio_presence", audio_presence)
+		RenderingServer.global_shader_parameter_set("audio_brilliance", audio_brilliance)
+		RenderingServer.global_shader_parameter_set("beat_kick", beat_kick)
+		RenderingServer.global_shader_parameter_set("beat_snare", beat_snare)
+		RenderingServer.global_shader_parameter_set("beat_hihat", beat_hihat)
+		RenderingServer.global_shader_parameter_set("audio_warmth", audio_warmth)
+		RenderingServer.global_shader_parameter_set("audio_brightness", audio_brightness)
+		RenderingServer.global_shader_parameter_set("audio_flux", audio_flux)
+
+		# Push VRAM and git to shader globals
+		RenderingServer.global_shader_parameter_set("gpu_vram_used", gpu_vram_used)
+		RenderingServer.global_shader_parameter_set("gpu_vram_total", gpu_vram_total)
+		RenderingServer.global_shader_parameter_set("git_commits_1h", git_commits_1h)
+
+		# VRAM watchdog — warn if > 90%
+		if gpu_vram_total > 0:
+			var vram_pct = gpu_vram_used / gpu_vram_total
+			if vram_pct > 0.9 and not vram_warning_logged:
+				push_warning("VRAM usage above 90%: ", gpu_vram_used, "/", gpu_vram_total, " MB")
+				vram_warning_logged = true
+			elif vram_pct < 0.85:
+				vram_warning_logged = false
 
 		# Compute derived values for shaders
 		# system_heat: 0.0 (cool) to 1.0 (hot) based on GPU+CPU temp
@@ -310,6 +407,8 @@ func _process(delta):
 			$Camera3D.position.z = 6.0 * sin(ct) + 1.5 * cos(ct * 1.7)
 			$Camera3D.position.y = 2.0 + 1.5 * sin(ct * 0.5)
 			$Camera3D.look_at(Vector3(sin(ct * 0.3), 0.5, cos(ct * 0.3)))
+		"static":
+			pass  # camera position set once, no per-frame update
 
 	# ── Ghost follows cursor (haunted_graveyard) ──
 	if ghost_node and is_instance_valid(ghost_node):
@@ -350,6 +449,13 @@ func _process(delta):
 		sky_mat.sky_energy_multiplier = lerp(0.3, 3.5, day_factor)
 		$MoonLight.light_energy = lerp(0.15, 1.0, day_factor)
 		$MoonLight.light_color = Color(0.4, 0.45, 0.7).lerp(Color(1.0, 0.88, 0.55), day_factor)
+
+	# ── Moon phase — real lunar cycle affects moonlight ──
+	if not day_night_enabled and not sky_cycle_enabled:
+		var moon = _get_moon_phase()
+		$MoonLight.light_energy = lerp($MoonLight.light_energy, lerp(0.1, 0.9, moon), delta * 0.1)
+		# Full moon = slightly blue, new moon = dim warm
+		$MoonLight.light_color = Color(0.5, 0.55, 0.75).lerp(Color(0.7, 0.7, 0.9), moon)
 
 	# Animate sky cycle + clouds
 	if sky_cycle_enabled:
@@ -397,6 +503,16 @@ func _process(delta):
 		var child = objects_container.get_child(i)
 		_animate_recursive(child, t, i)
 
+	# ── Art scene updates ──
+	_update_visualizer()
+	_update_fluid_attractor()
+
+	# ── Frame feedback warp ──
+	_update_feedback()
+
+	# ── Audio-reactive bloom (multi-resolution glow) ──
+	_update_bloom()
+
 	# ── Idle detection ──
 	var cursor_delta = cursor_world_pos.distance_to(prev_cursor_pos)
 	prev_cursor_pos = cursor_world_pos
@@ -415,16 +531,43 @@ func _process(delta):
 	var idle_factor = clamp(idle_time / idle_threshold, 0.0, 1.0)
 	RenderingServer.global_shader_parameter_set("idle_factor", idle_factor)
 
+	# ── Focus mode — serene when in terminals/editors ──
+	var in_focus_app = false
+	for app in FOCUS_APPS:
+		if app in focused_app:
+			in_focus_app = true
+			break
+	var focus_target = 1.0 if in_focus_app else 0.0
+	focus_level = lerp(focus_level, focus_target, delta * 0.3)  # slow transition
+	RenderingServer.global_shader_parameter_set("focus_level", focus_level)
+
+	# ── Adaptive frame rate — save GPU when fully idle ──
+	if is_idle and focus_level > 0.8:
+		Engine.max_fps = 15  # idle AND in another app — minimal
+	elif is_idle:
+		Engine.max_fps = 30  # idle but visible
+	else:
+		Engine.max_fps = 0   # uncapped (vsync handles it)
+
 	# ── Auto-rotation by time of day ──
 	if auto_rotate_enabled:
 		var hour_now = Time.get_datetime_dict_from_system()["hour"]
 		if hour_now != last_auto_rotate_hour:
 			last_auto_rotate_hour = hour_now
 			var period = _get_time_period(hour_now)
-			var candidates = TIME_SCENES.get(period, ALL_SCENES)
+			var season = _get_season()
+			# Intersect time-of-day candidates with seasonal candidates
+			var time_candidates = TIME_SCENES.get(period, ALL_SCENES)
+			var season_candidates = SEASON_SCENES.get(season, ALL_SCENES)
+			var candidates = []
+			for c in time_candidates:
+				if c in season_candidates:
+					candidates.append(c)
+			if candidates.is_empty():
+				candidates = time_candidates  # fallback to time-based
 			var pick = candidates[randi() % candidates.size()]
 			if pick != current_scene_name:
-				_transition_to_scene(pick)
+				_transition_to_scene_dissolve(pick)
 
 	# ── Weather-driven particle overlay ──
 	var target_preset = _weather_code_to_preset(weather_code)
@@ -441,6 +584,30 @@ func _process(delta):
 		_spawn_edge_burst(cursor_world_pos)
 		edge_cooldown = 1.5
 	was_at_edge = at_edge
+
+	# ── Ollama neural pulse ──
+	if ollama_active:
+		var pulse = 0.5 + 0.5 * sin(t * 3.0)
+		RenderingServer.global_shader_parameter_set("neural_pulse", pulse)
+	else:
+		RenderingServer.global_shader_parameter_set("neural_pulse", 0.0)
+
+	# ── Commit burst decay ──
+	if commit_burst_timer > 0:
+		commit_burst_timer = max(0.0, commit_burst_timer - delta)
+
+	# ── Pomodoro timer ──
+	if pomodoro_active:
+		pomodoro_remaining -= delta
+		if pomodoro_remaining <= 0:
+			pomodoro_active = false
+			pomodoro_remaining = 0
+			# Flash on completion
+			notify_flash = 1.0
+		var progress = 1.0 - clamp(pomodoro_remaining / max(pomodoro_total, 1.0), 0.0, 1.0)
+		RenderingServer.global_shader_parameter_set("pomodoro_progress", progress)
+	else:
+		RenderingServer.global_shader_parameter_set("pomodoro_progress", 0.0)
 
 func _animate_recursive(node: Node, t: float, idx: int):
 	if node is MeshInstance3D:
@@ -518,9 +685,18 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			return {"status": "ok", "message": "Created ruin", "objects": spawned_items.size()}
 		"bloom":
 			var env = $WorldEnvironment.environment as Environment
-			if params.has("strength"): env.glow_strength = float(params["strength"])
-			if params.has("intensity"): env.glow_intensity = float(params["intensity"])
-			return {"status": "ok", "message": "Bloom updated"}
+			if params.has("strength"):
+				bloom_base_strength = float(params["strength"])
+				env.glow_strength = bloom_base_strength
+			if params.has("intensity"):
+				bloom_base_intensity = float(params["intensity"])
+				env.glow_intensity = bloom_base_intensity
+			if params.has("bloom"):
+				bloom_base_bloom = float(params["bloom"])
+				env.glow_bloom = bloom_base_bloom
+			if params.has("reactive"):
+				bloom_reactive_enabled = str(params["reactive"]).to_lower() != "false" and str(params["reactive"]) != "0"
+			return {"status": "ok", "message": "Bloom updated (reactive=" + str(bloom_reactive_enabled) + ")"}
 		"sky":
 			var top = Color.html(params.get("top", "#0d0328"))
 			var horizon = Color.html(params.get("horizon", "#0a1e0f"))
@@ -573,6 +749,132 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_station_environment()
 			create_abandoned_station(params)
 			return {"status": "ok", "message": "Abandoned station loaded", "objects": spawned_items.size()}
+		"fractal":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/fractal.gdshader", params)
+			return {"status": "ok", "message": "Fractal scene loaded"}
+		"aurora":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/aurora.gdshader", params)
+			return {"status": "ok", "message": "Aurora scene loaded"}
+		"matrix_rain":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/matrix_rain.gdshader", params)
+			return {"status": "ok", "message": "Matrix rain loaded"}
+		"mycelium":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/mycelium.gdshader", params)
+			return {"status": "ok", "message": "Mycelium network loaded"}
+		"attractor":
+			apply_dark_environment()
+			create_attractor_scene(params)
+			return {"status": "ok", "message": "Strange attractor loaded", "objects": spawned_items.size()}
+		"galaxy":
+			apply_dark_environment()
+			create_galaxy_scene(params)
+			return {"status": "ok", "message": "Galaxy scene loaded", "objects": spawned_items.size()}
+		"visualizer":
+			apply_dark_environment()
+			create_visualizer_scene(params)
+			return {"status": "ok", "message": "Music visualizer loaded", "objects": spawned_items.size()}
+		"lsystem":
+			apply_fairy_environment()
+			create_lsystem_scene(params)
+			return {"status": "ok", "message": "L-system garden growing..."}
+		"vine_garden":
+			apply_fairy_environment()
+			create_vine_garden(params)
+			return {"status": "ok", "message": "Vine garden growing..."}
+		"fluid":
+			apply_dark_environment()
+			create_fluid_scene(params)
+			return {"status": "ok", "message": "Fluid scene loaded"}
+		"fire":
+			apply_dark_environment()
+			var env_f = $WorldEnvironment.environment as Environment
+			env_f.glow_enabled = false  # pixel art needs hard edges, no bloom
+			create_shader_scene("res://shaders/fire.gdshader", params)
+			return {"status": "ok", "message": "Fire scene loaded"}
+		"vaporwave":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/vaporwave.gdshader", params)
+			return {"status": "ok", "message": "Vaporwave scene loaded"}
+		"domain_warp":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/domain_warp.gdshader", params)
+			return {"status": "ok", "message": "Domain warp scene loaded"}
+		"ocean":
+			apply_dark_environment()
+			create_ocean_scene(params)
+			return {"status": "ok", "message": "Ocean scene loaded"}
+		"cloudscape":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/cloudscape_fog.gdshader", params)
+			return {"status": "ok", "message": "Cloudscape scene loaded"}
+		"physarum":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/physarum_render.gdshader", params)
+			return {"status": "ok", "message": "Physarum scene loaded"}
+		"plasma":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/plasma.gdshader", params)
+			return {"status": "ok", "message": "Plasma scene loaded"}
+		"kaleidoscope":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/kaleidoscope.gdshader", params)
+			return {"status": "ok", "message": "Kaleidoscope scene loaded"}
+		"tunnel":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/tunnel.gdshader", params)
+			return {"status": "ok", "message": "Tunnel scene loaded"}
+		"starfield":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/starfield.gdshader", params)
+			return {"status": "ok", "message": "Starfield scene loaded"}
+		"julia":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/julia.gdshader", params)
+			return {"status": "ok", "message": "Julia set scene loaded"}
+		"lava":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/lava.gdshader", params)
+			return {"status": "ok", "message": "Lava scene loaded"}
+		"nebula":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/nebula.gdshader", params)
+			return {"status": "ok", "message": "Nebula scene loaded"}
+		"lightning":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/lightning.gdshader", params)
+			return {"status": "ok", "message": "Lightning scene loaded"}
+		"blackhole":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/blackhole.gdshader", params)
+			return {"status": "ok", "message": "Black hole scene loaded"}
+		"metaballs":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/metaballs.gdshader", params)
+			return {"status": "ok", "message": "Metaballs scene loaded"}
+		"menger":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/menger.gdshader", params)
+			return {"status": "ok", "message": "Menger sponge scene loaded"}
+		"supernova":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/supernova.gdshader", params)
+			return {"status": "ok", "message": "Supernova scene loaded"}
+		"synthgrid":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/synthgrid.gdshader", params)
+			return {"status": "ok", "message": "Synthgrid scene loaded"}
+		"waveform":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/waveform.gdshader", params)
+			return {"status": "ok", "message": "Waveform scene loaded"}
+		"postfx":
+			var effect = params.get("effect", "none")
+			toggle_postfx(effect)
+			return {"status": "ok", "message": "Post-FX: " + effect}
 		"camera":
 			var mode = params.get("mode", "orbit")
 			if mode == "cycle":
@@ -597,9 +899,25 @@ func handle_command(msg: Dictionary) -> Dictionary:
 		"transition":
 			var scene_name = params.get("scene", "")
 			if scene_name in ALL_SCENES:
-				_transition_to_scene(scene_name)
+				_transition_to_scene_dissolve(scene_name)
 				return {"status": "ok", "message": "Transitioning to " + scene_name}
 			return {"status": "error", "message": "Unknown scene: " + scene_name}
+		"feedback":
+			var fb_val = params.get("enabled", true)
+			var enable = str(fb_val).to_lower() != "false" and str(fb_val) != "0"
+			if enable and not feedback_enabled:
+				_setup_feedback()
+			elif not enable and feedback_enabled:
+				_teardown_feedback()
+			if params.has("fade"):
+				var fade_v = float(params["fade"])
+				for i in range(2):
+					if feedback_mat[i]:
+						feedback_mat[i].set_shader_parameter("fade", fade_v)
+			if params.has("opacity"):
+				if feedback_display_rect:
+					feedback_display_rect.modulate.a = float(params["opacity"])
+			return {"status": "ok", "message": "Feedback: " + str(feedback_enabled)}
 		"spawn":
 			var model_name = params.get("model", "")
 			var kit = params.get("kit", "nature")
@@ -614,6 +932,42 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			if params.has("threshold"):
 				idle_threshold = float(params["threshold"])
 			return {"status": "ok", "message": "Idle threshold: " + str(idle_threshold) + "s"}
+		"event":
+			var event_name = params.get("event", "")
+			match event_name:
+				"commit":
+					commit_burst_timer = 1.0
+					_spawn_commit_burst()
+					return {"status": "ok", "message": "Commit burst!"}
+				"ollama_start":
+					ollama_active = true
+					return {"status": "ok", "message": "Ollama active"}
+				"ollama_stop":
+					ollama_active = false
+					return {"status": "ok", "message": "Ollama stopped"}
+				_:
+					return {"status": "error", "message": "Unknown event: " + event_name}
+		"screenshot":
+			var path = params.get("path", "user://screenshot.png")
+			await RenderingServer.frame_post_draw
+			var img = get_viewport().get_texture().get_image()
+			img.save_png(path)
+			return {"status": "ok", "message": "Screenshot saved to " + path, "path": path}
+		"pomodoro":
+			var action = params.get("action", "start")
+			match action:
+				"start":
+					pomodoro_active = true
+					pomodoro_remaining = float(params.get("duration", 1500))  # 25 min default
+					pomodoro_total = pomodoro_remaining
+					return {"status": "ok", "message": "Pomodoro started: " + str(int(pomodoro_remaining)) + "s"}
+				"stop":
+					pomodoro_active = false
+					return {"status": "ok", "message": "Pomodoro stopped"}
+				"status":
+					return {"status": "ok", "active": pomodoro_active, "remaining": int(pomodoro_remaining), "total": int(pomodoro_total)}
+				_:
+					return {"status": "error", "message": "Unknown pomodoro action: " + action}
 		_:
 			return {"status": "error", "message": "Unknown command: " + type}
 
@@ -3072,9 +3426,13 @@ func create_fairy_garden(params: Dictionary):
 	var dust_started = false
 	while grow_queue.size() > 0 or not dust_started:
 		await get_tree().process_frame
+		if objects_container.get_child_count() == 0:
+			break
 		var now = Time.get_ticks_msec() / 1000.0 - start_time
 		while grow_queue.size() > 0 and grow_queue[0]["time"] <= now:
 			var item = grow_queue.pop_front()
+			if not is_instance_valid(item["node"]):
+				continue
 			var tw = create_tween()
 			tw.tween_property(item["node"], "scale", Vector3.ONE, item["dur"]).set_ease(Tween.EASE_OUT).set_trans(item["trans"])
 		if now >= 22 and not dust_started:
@@ -4097,7 +4455,8 @@ func _transition_to_scene(scene_name: String):
 	var tw = create_tween()
 	tw.tween_method(_set_fade_alpha, 0.0, 1.0, 0.5)
 	tw.tween_callback(func():
-		handle_command({"type": scene_name, "params": {}})
+		@warning_ignore("redundant_await")
+		await handle_command({"type": scene_name, "params": {}})
 		current_scene_name = scene_name
 	)
 	tw.tween_method(_set_fade_alpha, 1.0, 0.0, 0.5)
@@ -4108,6 +4467,21 @@ func _set_fade_alpha(alpha: float):
 		var mat = fade_quad.material_override as StandardMaterial3D
 		if mat:
 			mat.albedo_color.a = alpha
+
+# ── Moon phase helper ──
+func _get_moon_phase() -> float:
+	# Synodic month calculation — returns 0.0 (new moon) to 1.0 (full) and back
+	var dt = Time.get_datetime_dict_from_system()
+	# Days since known new moon (Jan 6 2000 18:14 UTC)
+	var y = dt["year"]
+	var m = dt["month"]
+	var d = dt["day"]
+	# Julian day approximation
+	var jd = 367 * y - int(7 * (y + int((m + 9) / 12)) / 4) + int(275 * m / 9) + d + 1721013.5
+	var days_since = jd - 2451550.1  # Known new moon epoch
+	var phase = fmod(days_since, 29.530588853) / 29.530588853  # 0-1 through full cycle
+	# Convert to 0 (new) → 1 (full) → 0 (new): use sine-like mapping
+	return 0.5 - 0.5 * cos(phase * TAU)
 
 # ── Time-of-day helper ──
 func _get_time_period(hour: int) -> String:
@@ -4121,6 +4495,17 @@ func _get_time_period(hour: int) -> String:
 		return "night"
 	else:
 		return "late_night"
+
+func _get_season() -> String:
+	var month = Time.get_datetime_dict_from_system()["month"]
+	if month >= 3 and month <= 5:
+		return "spring"
+	elif month >= 6 and month <= 8:
+		return "summer"
+	elif month >= 9 and month <= 11:
+		return "autumn"
+	else:
+		return "winter"
 
 # ── Weather particle overlay ──
 func _weather_code_to_preset(code: int) -> String:
@@ -4140,6 +4525,8 @@ func _weather_code_to_preset(code: int) -> String:
 
 func _set_weather_particles(preset: String):
 	# Remove existing weather particles
+	# SAFETY: destroy+recreate pattern avoids bug #54478 (VRAM leak on process_material reassignment).
+	# Do NOT reuse GPUParticles3D by reassigning process_material — always queue_free() and create new.
 	if weather_particles and is_instance_valid(weather_particles):
 		weather_particles.queue_free()
 		weather_particles = null
@@ -4230,6 +4617,50 @@ func _spawn_edge_burst(pos: Vector3):
 	var timer = get_tree().create_timer(2.0)
 	timer.timeout.connect(func(): if is_instance_valid(burst): burst.queue_free())
 
+# ── Commit burst effect ──
+func _spawn_commit_burst():
+	# Celebratory explosion at scene center
+	var burst = GPUParticles3D.new()
+	burst.amount = 100
+	burst.one_shot = true
+	burst.emitting = true
+	burst.lifetime = 2.5
+	burst.explosiveness = 0.9
+	var pmat = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.5
+	pmat.gravity = Vector3(0, -2, 0)
+	pmat.initial_velocity_min = 2.0
+	pmat.initial_velocity_max = 5.0
+	pmat.spread = 180.0
+	pmat.scale_min = 0.008
+	pmat.scale_max = 0.03
+	pmat.color = Color(0.2, 1.0, 0.6)  # green = success
+	var color_ramp = Gradient.new()
+	color_ramp.set_color(0, Color(0.2, 1.0, 0.6))
+	color_ramp.set_color(1, Color(1.0, 0.8, 0.2, 0.0))
+	var curve = GradientTexture1D.new()
+	curve.gradient = color_ramp
+	pmat.color_ramp = curve
+	burst.process_material = pmat
+	var mesh = SphereMesh.new()
+	mesh.radius = 0.02
+	mesh.height = 0.04
+	var mat = StandardMaterial3D.new()
+	mat.emission_enabled = true
+	mat.emission = Color(0.3, 1.0, 0.7)
+	mat.emission_energy_multiplier = 5.0
+	mat.albedo_color = Color(0.1, 0.5, 0.3)
+	mesh.material = mat
+	burst.draw_pass_1 = mesh
+	burst.position = Vector3(0, 1, 0)
+	objects_container.add_child(burst)
+	# Also flash notification
+	notify_flash = 0.8
+	# Auto-free
+	var timer = get_tree().create_timer(3.5)
+	timer.timeout.connect(func(): if is_instance_valid(burst): burst.queue_free())
+
 # ── Cross-kit model spawning ──
 func _spawn_cross_kit(model_name: String, kit: String, params: Dictionary):
 	var ML = preload("res://model_loader.gd")
@@ -4274,6 +4705,10 @@ func _create_performance_hologram(params: Dictionary):
 	var x = float(params.get("x", 0))
 	var y = float(params.get("y", 1.2))
 	var z = float(params.get("z", -2))
+	var color_hex = params.get("color", "#00cc80")
+	var holo_color = Color.html(color_hex)
+	var scanlines = float(params.get("scanlines", 60.0))
+	var alpha = float(params.get("alpha", 0.4))
 	var group = Node3D.new()
 	group.name = "PerfHologram"
 	group.position = Vector3(x, y, z)
@@ -4286,9 +4721,9 @@ func _create_performance_hologram(params: Dictionary):
 	if holo_shader:
 		var holo_mat = ShaderMaterial.new()
 		holo_mat.shader = holo_shader
-		holo_mat.set_shader_parameter("holo_color", Color(0.0, 0.8, 0.5))
-		holo_mat.set_shader_parameter("scanline_density", 60.0)
-		holo_mat.set_shader_parameter("base_alpha", 0.4)
+		holo_mat.set_shader_parameter("holo_color", holo_color)
+		holo_mat.set_shader_parameter("scanline_density", scanlines)
+		holo_mat.set_shader_parameter("base_alpha", alpha)
 		bg.material_override = holo_mat
 	bg.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	group.add_child(bg)
@@ -4302,13 +4737,15 @@ func _create_performance_hologram(params: Dictionary):
 		"vram": {"text": "VRAM: -- MB", "pos": Vector3(0.15, 0.15, 0.01)},
 		"bat": {"text": "BAT: --%", "pos": Vector3(0.15, 0.05, 0.01)},
 	}
+	# Label color matches hologram tint
+	var label_color = Color(holo_color.r * 1.2, holo_color.g * 1.2, holo_color.b * 1.2, 0.9)
 	for key in labels:
 		var label = Label3D.new()
 		label.name = "PerfLabel_" + key
 		label.text = labels[key]["text"]
 		label.position = labels[key]["pos"]
 		label.font_size = 24
-		label.modulate = Color(0.0, 1.0, 0.6, 0.9)
+		label.modulate = label_color
 		label.outline_modulate = Color(0, 0, 0, 0)
 		label.no_depth_test = true
 		label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
@@ -4347,7 +4784,14 @@ func _get_band_energy(from_hz: float, to_hz: float) -> float:
 
 # ── Helper: asymmetric smoothing (fast attack, slow decay) ──
 func _smooth(current: float, target: float, delta: float) -> float:
-	var rate = ATTACK if target > current else DECAY
+	var rate = ATTACK_DEFAULT if target > current else DECAY_DEFAULT
+	return lerp(current, target, 1.0 - exp(-rate * delta * 60.0))
+
+# ── Helper: per-band smoothing with tuned rates ──
+func _smooth_band(band_name: String, current: float, target: float, delta: float) -> float:
+	var attack = _band_attack.get(band_name, ATTACK_DEFAULT)
+	var decay = _band_decay.get(band_name, DECAY_DEFAULT)
+	var rate = attack if target > current else decay
 	return lerp(current, target, 1.0 - exp(-rate * delta * 60.0))
 
 # ── Helper: apply material to all MeshInstance3D children ──
@@ -4409,3 +4853,987 @@ func _create_grass_multimesh(area_size: float, count: int) -> MultiMeshInstance3
 	mmi.multimesh = mm
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return mmi
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ART SCENES — Shader-based, procedural geometry, interactive
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── Dark environment for shader/art scenes ───────────────────────────────────
+
+func apply_dark_environment():
+	var env = $WorldEnvironment.environment as Environment
+	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
+	sky_mat.sky_top_color = Color(0.01, 0.005, 0.02)
+	sky_mat.sky_horizon_color = Color(0.02, 0.01, 0.03)
+	sky_mat.ground_horizon_color = Color(0.01, 0.005, 0.015)
+	sky_mat.ground_bottom_color = Color(0.005, 0.002, 0.01)
+	sky_mat.sky_energy_multiplier = 0.1
+	env.ambient_light_color = Color(0.02, 0.01, 0.03)
+	env.ambient_light_energy = 0.1
+	$MoonLight.light_energy = 0.1
+	env.glow_enabled = true
+	env.glow_intensity = 1.5
+	env.glow_strength = 1.0
+	env.glow_bloom = 0.3
+	bloom_base_intensity = 1.5
+	bloom_base_strength = 1.0
+	bloom_base_bloom = 0.3
+	env.volumetric_fog_enabled = false
+	env.fog_enabled = false
+
+# ── Full-screen shader scene (fractal, aurora, matrix, mycelium) ─────────────
+
+func create_shader_scene(shader_path: String, params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+	_clear_postfx()
+
+	var shader = load(shader_path)
+	if not shader:
+		push_error("Failed to load shader: " + shader_path)
+		return
+
+	# Create a large quad facing the camera
+	var quad = MeshInstance3D.new()
+	var qm = QuadMesh.new()
+	qm.size = Vector2(20, -11.25)  # 16:9 aspect, negative flips UV.y
+	quad.mesh = qm
+
+	var mat = ShaderMaterial.new()
+	mat.shader = shader
+	quad.material_override = mat
+	quad.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+	quad.position = Vector3(0, 2.5, 0)
+
+	objects_container.add_child(quad)
+	spawned_items.append({"type": "scene", "name": shader_path.get_file().get_basename()})
+
+	# Lock camera to face the quad — static mode prevents _process override
+	camera_mode = "static"
+	$Camera3D.position = Vector3(0, 2.5, 8)
+	$Camera3D.look_at(Vector3(0, 2.5, 0))
+
+# ── Strange Attractor (Lorenz system) ────────────────────────────────────────
+
+func create_attractor_scene(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+
+	var attractor_type = params.get("type", "lorenz")
+	var point_count = int(params.get("points", 50000))
+	var color = Color.html(params.get("color", "#00ffaa"))
+
+	# Compute attractor points
+	var points: PackedVector3Array = PackedVector3Array()
+	var x = 0.1
+	var y = 0.0
+	var z = 0.0
+	var dt = 0.005
+
+	for i in point_count:
+		var dx: float
+		var dy: float
+		var dz: float
+		if attractor_type == "rossler":
+			dx = -(y + z)
+			dy = x + 0.2 * y
+			dz = 0.2 + z * (x - 5.7)
+		else:  # lorenz
+			dx = 10.0 * (y - x)
+			dy = x * (28.0 - z) - y
+			dz = x * y - (8.0 / 3.0) * z
+		x += dx * dt
+		y += dy * dt
+		z += dz * dt
+		points.append(Vector3(x * 0.1, z * 0.1 - 1.5, y * 0.1))
+
+	# Draw with MultiMesh spheres
+	var mm = MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true
+	var sphere_count = mini(point_count, 30000)
+	mm.instance_count = sphere_count
+
+	var sphere = SphereMesh.new()
+	sphere.radius = 0.015
+	sphere.height = 0.03
+	sphere.radial_segments = 4
+	sphere.rings = 2
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.emission_enabled = true
+	mat.emission = color
+	mat.emission_energy_multiplier = 2.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sphere.material = mat
+	mm.mesh = sphere
+
+	var step_size = maxi(1, points.size() / sphere_count)
+	for i in sphere_count:
+		var idx = mini(i * step_size, points.size() - 1)
+		var xform = Transform3D()
+		xform.origin = points[idx]
+		mm.set_instance_transform(i, xform)
+		# Color gradient along the path
+		var t = float(i) / float(sphere_count)
+		var c = color.lerp(Color(1, 0.3, 0.9), t * 0.6)
+		c = c.lerp(Color(0.3, 0.6, 1.0), sin(t * TAU * 3.0) * 0.3 + 0.3)
+		mm.set_instance_color(i, c)
+
+	var mmi = MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	objects_container.add_child(mmi)
+	spawned_items.append({"type": "scene", "name": "attractor"})
+
+	# Slow rotation
+	camera_mode = "orbit"
+	camera_orbit_speed = 0.03
+	camera_orbit_radius = 6.0
+	camera_orbit_height = 2.0
+
+# ── Galaxy Scene ─────────────────────────────────────────────────────────────
+
+func create_galaxy_scene(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+
+	var arm_count = int(params.get("arms", 4))
+	var star_count = int(params.get("stars", 20000))
+	var color = Color.html(params.get("color", "#8888ff"))
+
+	var mm = MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true
+	mm.instance_count = star_count
+
+	var star_mesh = SphereMesh.new()
+	star_mesh.radius = 0.02
+	star_mesh.height = 0.04
+	star_mesh.radial_segments = 4
+	star_mesh.rings = 2
+	var mat = StandardMaterial3D.new()
+	mat.emission_enabled = true
+	mat.emission = color
+	mat.emission_energy_multiplier = 3.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	star_mesh.material = mat
+	mm.mesh = star_mesh
+
+	for i in star_count:
+		var t = randf()
+		var arm = randi() % arm_count
+		var arm_angle = float(arm) / float(arm_count) * TAU
+
+		# Logarithmic spiral
+		var r = t * 5.0
+		var theta = arm_angle + t * 3.0 + randf_range(-0.3, 0.3)
+
+		# Spread increases with radius
+		var spread = t * 0.8
+		var px = r * cos(theta) + randf_range(-spread, spread)
+		var pz = r * sin(theta) + randf_range(-spread, spread)
+		var py = randf_range(-0.1, 0.1) * (1.0 - t * 0.5)
+
+		var xform = Transform3D()
+		var s = randf_range(0.5, 1.5)
+		xform = xform.scaled(Vector3(s, s, s))
+		xform.origin = Vector3(px, py + 3.0, pz)
+		mm.set_instance_transform(i, xform)
+
+		var star_color: Color
+		if t < 0.2:
+			star_color = Color(1.0, 0.9, 0.6)
+		else:
+			star_color = color.lerp(Color(0.9, 0.9, 1.0), randf() * 0.5)
+		star_color.a = 1.0
+		mm.set_instance_color(i, star_color)
+
+	var mmi = MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	objects_container.add_child(mmi)
+
+	# Central glow
+	var core_light = OmniLight3D.new()
+	core_light.light_color = Color(1, 0.9, 0.7)
+	core_light.light_energy = 3.0
+	core_light.omni_range = 4.0
+	core_light.position = Vector3(0, 3.0, 0)
+	objects_container.add_child(core_light)
+
+	# Dust nebula particles
+	var dust = GPUParticles3D.new()
+	dust.amount = 500
+	dust.lifetime = 8.0
+	dust.visibility_aabb = AABB(Vector3(-8, -2, -8), Vector3(16, 6, 16))
+	var dust_mat = ParticleProcessMaterial.new()
+	dust_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	dust_mat.emission_sphere_radius = 6.0
+	dust_mat.gravity = Vector3.ZERO
+	dust_mat.initial_velocity_min = 0.05
+	dust_mat.initial_velocity_max = 0.15
+	dust_mat.angular_velocity_min = -10
+	dust_mat.angular_velocity_max = 10
+	dust_mat.scale_min = 0.3
+	dust_mat.scale_max = 1.5
+	dust_mat.color = Color(0.4, 0.4, 0.8, 0.15)
+	dust.process_material = dust_mat
+	var dust_mesh = QuadMesh.new()
+	dust_mesh.size = Vector2(0.2, 0.2)
+	var dm = StandardMaterial3D.new()
+	dm.albedo_color = Color(0.5, 0.5, 0.9, 0.2)
+	dm.emission_enabled = true
+	dm.emission = Color(0.3, 0.3, 0.8)
+	dm.emission_energy_multiplier = 0.5
+	dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	dust_mesh.material = dm
+	dust.draw_pass_1 = dust_mesh
+	dust.position = Vector3(0, 3, 0)
+	objects_container.add_child(dust)
+
+	spawned_items.append({"type": "scene", "name": "galaxy"})
+	camera_mode = "orbit"
+	camera_orbit_speed = 0.02
+	camera_orbit_radius = 8.0
+	camera_orbit_height = 5.0
+
+# ── Music Visualizer ─────────────────────────────────────────────────────────
+
+func create_visualizer_scene(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+
+	var bar_count = int(params.get("bars", 64))
+	var ring_radius = float(params.get("radius", 3.0))
+	var color = Color.html(params.get("color", "#00ffaa"))
+
+	# Ring of bars
+	var mm = MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true
+	mm.instance_count = bar_count
+
+	var bar = BoxMesh.new()
+	bar.size = Vector3(0.15, 1.0, 0.15)
+	var mat = StandardMaterial3D.new()
+	mat.emission_enabled = true
+	mat.emission = color
+	mat.emission_energy_multiplier = 2.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bar.material = mat
+	mm.mesh = bar
+
+	for i in bar_count:
+		var angle = float(i) / float(bar_count) * TAU
+		var xform = Transform3D()
+		xform.origin = Vector3(cos(angle) * ring_radius, 2.5, sin(angle) * ring_radius)
+		mm.set_instance_transform(i, xform)
+		var t = float(i) / float(bar_count)
+		mm.set_instance_color(i, color.lerp(Color(1, 0.3, 0.9), t))
+
+	var mmi = MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	objects_container.add_child(mmi)
+
+	visualizer_bars = mmi
+
+	# Center light
+	var center = OmniLight3D.new()
+	center.light_color = color
+	center.light_energy = 2.0
+	center.omni_range = 5.0
+	center.position = Vector3(0, 2.5, 0)
+	objects_container.add_child(center)
+
+	# Ground mirror disc
+	var disc = MeshInstance3D.new()
+	var disc_mesh = CylinderMesh.new()
+	disc_mesh.top_radius = ring_radius + 1.0
+	disc_mesh.bottom_radius = ring_radius + 1.0
+	disc_mesh.height = 0.05
+	disc.mesh = disc_mesh
+	var disc_mat = StandardMaterial3D.new()
+	disc_mat.albedo_color = Color(0.05, 0.05, 0.08)
+	disc_mat.metallic = 0.8
+	disc_mat.roughness = 0.1
+	disc.material_override = disc_mat
+	disc.position = Vector3(0, 1.95, 0)
+	objects_container.add_child(disc)
+
+	spawned_items.append({"type": "scene", "name": "visualizer"})
+	camera_mode = "orbit"
+	camera_orbit_speed = 0.04
+	camera_orbit_radius = 6.0
+	camera_orbit_height = 4.0
+
+# ── L-System Tree Scene ──────────────────────────────────────────────────────
+
+func create_lsystem_scene(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+
+	var tree_count = int(params.get("trees", 5))
+	var color = Color.html(params.get("color", "#00cc66"))
+
+	for t_idx in tree_count:
+		var tx = randf_range(-4, 4)
+		var tz = randf_range(-4, 4)
+		var base_pos = Vector3(tx, 0, tz)
+		_grow_lsystem_tree(base_pos, color, int(params.get("depth", 5)))
+
+	# Ground
+	var ground = MeshInstance3D.new()
+	var gm = PlaneMesh.new()
+	gm.size = Vector2(12, 12)
+	ground.mesh = gm
+	var gmat = StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.08, 0.15, 0.05)
+	gmat.roughness = 0.95
+	ground.material_override = gmat
+	objects_container.add_child(ground)
+
+	spawned_items.append({"type": "scene", "name": "lsystem"})
+	camera_mode = "orbit"
+	camera_orbit_radius = 7.0
+	camera_orbit_height = 3.5
+
+func _grow_lsystem_tree(pos: Vector3, color: Color, depth: int):
+	var segments: Array = []
+	_lsystem_branch(pos, Vector3.UP, 1.5, 0.08, depth, segments)
+
+	for seg in segments:
+		var cyl = MeshInstance3D.new()
+		var cm = CylinderMesh.new()
+		var start: Vector3 = seg["start"]
+		var end_pt: Vector3 = seg["end"]
+		var dir = end_pt - start
+		var seg_length = dir.length()
+		if seg_length < 0.001:
+			continue
+		cm.top_radius = seg["radius"] * 0.6
+		cm.bottom_radius = seg["radius"]
+		cm.height = seg_length
+		cm.radial_segments = 6
+		cyl.mesh = cm
+
+		var mat = StandardMaterial3D.new()
+		var d = int(seg["depth"])
+		if d >= 3:
+			mat.albedo_color = color.lerp(Color(0.2, 0.8, 0.3), 0.5)
+			mat.emission_enabled = true
+			mat.emission = color
+			mat.emission_energy_multiplier = 0.8
+		else:
+			mat.albedo_color = Color(0.25, 0.18, 0.1)
+			mat.roughness = 0.9
+		cyl.material_override = mat
+
+		var mid = (start + end_pt) * 0.5
+		cyl.position = mid
+		var up = Vector3.UP
+		var norm_dir = dir.normalized()
+		if abs(norm_dir.dot(up)) < 0.999:
+			cyl.look_at(cyl.position + norm_dir)
+			cyl.rotate_object_local(Vector3.RIGHT, PI / 2.0)
+
+		cyl.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		objects_container.add_child(cyl)
+
+func _lsystem_branch(pos: Vector3, direction: Vector3, seg_length: float, radius: float, depth: int, segments: Array):
+	if depth <= 0 or radius < 0.005:
+		return
+
+	var end_pos = pos + direction * seg_length
+	segments.append({"start": pos, "end": end_pos, "radius": radius, "depth": depth})
+
+	var branch_count = 2 + (randi() % 2)
+	for i in branch_count:
+		var angle = randf_range(0.3, 0.7)
+		var new_dir = direction.rotated(Vector3.RIGHT, angle).rotated(Vector3.UP, randf() * TAU)
+		var new_length = seg_length * randf_range(0.6, 0.8)
+		var new_radius = radius * randf_range(0.5, 0.7)
+		_lsystem_branch(end_pos, new_dir, new_length, new_radius, depth - 1, segments)
+
+# ── Vine Garden ──────────────────────────────────────────────────────────────
+
+func create_vine_garden(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+
+	var vine_count = int(params.get("vines", 12))
+	var color = Color.html(params.get("color", "#22aa44"))
+
+	# Pillars for vines to climb
+	for i in 6:
+		var pillar = MeshInstance3D.new()
+		var pm = CylinderMesh.new()
+		pm.top_radius = 0.15
+		pm.bottom_radius = 0.2
+		pm.height = 4.0
+		pm.radial_segments = 8
+		pillar.mesh = pm
+		var pmat = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.35, 0.3, 0.25)
+		pmat.roughness = 0.9
+		pillar.material_override = pmat
+		var angle = float(i) / 6.0 * TAU
+		pillar.position = Vector3(cos(angle) * 3.0, 2.0, sin(angle) * 3.0)
+		objects_container.add_child(pillar)
+
+	# Ground
+	var ground = MeshInstance3D.new()
+	var gm = PlaneMesh.new()
+	gm.size = Vector2(12, 12)
+	ground.mesh = gm
+	var gmat = StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.06, 0.12, 0.04)
+	gmat.roughness = 0.95
+	ground.material_override = gmat
+	objects_container.add_child(ground)
+
+	# Create vines
+	for v in vine_count:
+		var start_angle = randf() * TAU
+		var start_r = randf_range(2.5, 3.5)
+		var start_pos = Vector3(cos(start_angle) * start_r, 0, sin(start_angle) * start_r)
+		var vine_color = color.lerp(Color(0.1, 0.6, 0.2), randf() * 0.4)
+		_create_vine(start_pos, vine_color, int(randf_range(15, 35)))
+
+	# Flowers at vine tips
+	for i in 8:
+		var flower = MeshInstance3D.new()
+		var fm = SphereMesh.new()
+		fm.radius = 0.1
+		fm.height = 0.15
+		flower.mesh = fm
+		var fmat = StandardMaterial3D.new()
+		var flower_colors = [Color(1, 0.3, 0.5), Color(0.9, 0.7, 0.2), Color(0.6, 0.3, 1.0), Color(1, 0.5, 0.2)]
+		fmat.albedo_color = flower_colors[i % flower_colors.size()]
+		fmat.emission_enabled = true
+		fmat.emission = fmat.albedo_color
+		fmat.emission_energy_multiplier = 1.5
+		flower.material_override = fmat
+		var fa = randf() * TAU
+		flower.position = Vector3(cos(fa) * randf_range(2.0, 3.5), randf_range(1.5, 3.5), sin(fa) * randf_range(2.0, 3.5))
+		flower.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		objects_container.add_child(flower)
+
+	spawned_items.append({"type": "scene", "name": "vine_garden"})
+	camera_mode = "orbit"
+	camera_orbit_radius = 6.0
+	camera_orbit_height = 2.5
+
+func _create_vine(start: Vector3, color: Color, segments: int):
+	var pos = start
+	var direction = Vector3(randf_range(-0.2, 0.2), 1.0, randf_range(-0.2, 0.2)).normalized()
+
+	for i in segments:
+		var seg = MeshInstance3D.new()
+		var cm = CylinderMesh.new()
+		cm.top_radius = 0.02
+		cm.bottom_radius = 0.025
+		cm.height = 0.2
+		cm.radial_segments = 4
+		seg.mesh = cm
+
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = color
+		if i > segments * 0.7:
+			mat.emission_enabled = true
+			mat.emission = color
+			mat.emission_energy_multiplier = 0.5
+		mat.roughness = 0.8
+		seg.material_override = mat
+
+		var next_pos = pos + direction * 0.2
+		var mid = (pos + next_pos) * 0.5
+		seg.position = mid
+
+		var norm_dir = direction.normalized()
+		if abs(norm_dir.dot(Vector3.UP)) < 0.999:
+			seg.look_at(seg.position + norm_dir)
+			seg.rotate_object_local(Vector3.RIGHT, PI / 2.0)
+
+		seg.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		objects_container.add_child(seg)
+
+		pos = next_pos
+		direction = direction.rotated(Vector3.UP, randf_range(-0.3, 0.3))
+		direction = direction.rotated(Vector3.RIGHT, randf_range(-0.15, 0.05))
+		direction = direction.normalized()
+		direction.y = max(direction.y, 0.3)
+
+# ── Fluid Particle Scene ─────────────────────────────────────────────────────
+
+func create_fluid_scene(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+
+	var color = Color.html(params.get("color", "#00aaff"))
+	var count = int(params.get("particles", 5000))
+
+	var particles = GPUParticles3D.new()
+	particles.amount = count
+	particles.lifetime = 6.0
+	particles.visibility_aabb = AABB(Vector3(-10, -5, -10), Vector3(20, 15, 20))
+
+	var pmat = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 4.0
+	pmat.gravity = Vector3(0, -0.5, 0)
+	pmat.initial_velocity_min = 0.5
+	pmat.initial_velocity_max = 2.0
+	pmat.angular_velocity_min = -30
+	pmat.angular_velocity_max = 30
+	pmat.damping_min = 1.0
+	pmat.damping_max = 3.0
+	pmat.scale_min = 0.3
+	pmat.scale_max = 1.0
+	pmat.attractor_interaction_enabled = true
+
+	var grad = Gradient.new()
+	grad.set_color(0, color)
+	grad.add_point(0.5, color.lerp(Color(1, 0.3, 0.9), 0.5))
+	grad.set_color(grad.get_point_count() - 1, Color(color.r, color.g, color.b, 0.0))
+	var grad_tex = GradientTexture1D.new()
+	grad_tex.gradient = grad
+	pmat.color_ramp = grad_tex
+
+	particles.process_material = pmat
+
+	var pmesh = SphereMesh.new()
+	pmesh.radius = 0.04
+	pmesh.height = 0.08
+	pmesh.radial_segments = 6
+	pmesh.rings = 3
+	var draw_mat = StandardMaterial3D.new()
+	draw_mat.emission_enabled = true
+	draw_mat.emission = color
+	draw_mat.emission_energy_multiplier = 3.0
+	draw_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	draw_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pmesh.material = draw_mat
+	particles.draw_pass_1 = pmesh
+	particles.position = Vector3(0, 3, 0)
+	objects_container.add_child(particles)
+	fluid_particles = particles
+
+	# Cursor attractor
+	var attractor = GPUParticlesAttractorSphere3D.new()
+	attractor.radius = 2.0
+	attractor.strength = 3.0
+	attractor.position = Vector3(0, 3, 0)
+	attractor.name = "FluidAttractor"
+	objects_container.add_child(attractor)
+
+	var light = OmniLight3D.new()
+	light.light_color = color
+	light.light_energy = 1.5
+	light.omni_range = 8.0
+	light.position = Vector3(0, 4, 0)
+	objects_container.add_child(light)
+
+	spawned_items.append({"type": "scene", "name": "fluid"})
+	camera_mode = "orbit"
+	camera_orbit_speed = 0.02
+	camera_orbit_radius = 7.0
+	camera_orbit_height = 4.0
+
+# ── Post-Processing Effects ──────────────────────────────────────────────────
+
+func toggle_postfx(effect: String):
+	_clear_postfx()
+	if effect == "none" or effect == "off" or effect == "":
+		return
+
+	var shader_map = {
+		"crt": "res://shaders/crt.gdshader",
+		"tiltshift": "res://shaders/tiltshift.gdshader",
+		"ink": "res://shaders/ink.gdshader",
+		"vhs": "res://shaders/vhs.gdshader",
+		"chroma": "res://shaders/chroma.gdshader",
+		"anime": "res://shaders/anime.gdshader",
+		"nightvision": "res://shaders/nightvision.gdshader",
+		"pixelate": "res://shaders/pixelate.gdshader",
+		"glitch": "res://shaders/glitch.gdshader",
+		"thermal": "res://shaders/thermal.gdshader",
+		"ascii": "res://shaders/ascii.gdshader",
+	}
+
+	if not shader_map.has(effect):
+		push_error("Unknown post-fx: " + effect)
+		return
+
+	var shader = load(shader_map[effect])
+	if not shader:
+		return
+
+	postfx_canvas = CanvasLayer.new()
+	postfx_canvas.layer = 10
+	add_child(postfx_canvas)
+
+	postfx_rect = ColorRect.new()
+	postfx_rect.anchors_preset = Control.PRESET_FULL_RECT
+	postfx_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var mat = ShaderMaterial.new()
+	mat.shader = shader
+	postfx_rect.material = mat
+	postfx_canvas.add_child(postfx_rect)
+	current_postfx = effect
+
+func _clear_postfx():
+	if postfx_canvas:
+		postfx_canvas.queue_free()
+		postfx_canvas = null
+		postfx_rect = null
+		current_postfx = ""
+
+# ── Visualizer _process update ───────────────────────────────────────────────
+
+func _update_visualizer():
+	if not is_instance_valid(visualizer_bars) or not visualizer_bars.is_inside_tree():
+		return
+	var mm = visualizer_bars.multimesh
+	if not mm:
+		return
+
+	var bar_count = mm.instance_count
+	var ring_radius = 3.0
+
+	for i in bar_count:
+		var angle = float(i) / float(bar_count) * TAU
+		var freq_t = float(i) / float(bar_count)
+		var height: float
+		if freq_t < 0.33:
+			height = audio_bass * 3.0
+		elif freq_t < 0.66:
+			height = audio_mid * 2.5
+		else:
+			height = audio_treble * 2.0
+		height = max(height, 0.05) + beat_intensity * 0.5
+
+		var xform = Transform3D()
+		xform = xform.scaled(Vector3(1.0, height, 1.0))
+		xform.origin = Vector3(cos(angle) * ring_radius, 2.0 + height * 0.5, sin(angle) * ring_radius)
+		mm.set_instance_transform(i, xform)
+
+		var t = float(i) / float(bar_count)
+		var c = Color(0, 1, 0.66).lerp(Color(1, 0.3, 0.9), t)
+		c = c.lerp(Color(1, 1, 1), beat_intensity * 0.3)
+		mm.set_instance_color(i, c)
+
+# ── Fluid attractor follows cursor ───────────────────────────────────────────
+
+func _update_fluid_attractor():
+	var attractor_node = objects_container.get_node_or_null("FluidAttractor")
+	if attractor_node and cursor_tracking:
+		attractor_node.position = cursor_world_pos + Vector3(0, 1, 0)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NEW SCENES — Wave 2
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── Ocean scene with subdivided plane ──
+func create_ocean_scene(params: Dictionary):
+	for child in objects_container.get_children():
+		child.queue_free()
+	spawned_items.clear()
+	_clear_postfx()
+
+	# Apply watery environment
+	var env = $WorldEnvironment.environment as Environment
+	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
+	sky_mat.sky_top_color = Color(0.05, 0.08, 0.2)
+	sky_mat.sky_horizon_color = Color(0.3, 0.25, 0.45)
+	sky_mat.ground_horizon_color = Color(0.1, 0.15, 0.25)
+	sky_mat.ground_bottom_color = Color(0.02, 0.03, 0.08)
+	sky_mat.sky_energy_multiplier = 1.5
+	env.ambient_light_color = Color(0.1, 0.15, 0.25)
+	env.ambient_light_energy = 0.3
+	$MoonLight.light_energy = 0.6
+	$MoonLight.light_color = Color(0.7, 0.75, 0.9)
+	env.glow_enabled = true
+	env.glow_intensity = 1.0
+	env.glow_strength = 0.8
+	env.fog_enabled = true
+	env.fog_light_color = Color(0.15, 0.2, 0.35)
+	env.fog_density = 0.005
+
+	# Subdivided plane for wave displacement
+	var plane = MeshInstance3D.new()
+	var pm = PlaneMesh.new()
+	pm.size = Vector2(40, 40)
+	pm.subdivide_width = 128
+	pm.subdivide_depth = 128
+	plane.mesh = pm
+
+	var shader = load("res://shaders/ocean.gdshader")
+	if shader:
+		var mat = ShaderMaterial.new()
+		mat.shader = shader
+		plane.material_override = mat
+
+	plane.position = Vector3(0, -0.5, 0)
+	plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	objects_container.add_child(plane)
+	spawned_items.append({"type": "ocean"})
+	current_scene_name = "ocean"
+
+# ── Audio capture restart (bug #80173: AudioStreamMicrophone accumulates ~1s delay/hour) ──
+func _restart_audio_capture():
+	if mic_player:
+		var bus_name = mic_player.bus
+		mic_player.stop()
+		mic_player.queue_free()
+		mic_player = AudioStreamPlayer.new()
+		mic_player.stream = AudioStreamMicrophone.new()
+		mic_player.bus = bus_name
+		mic_player.volume_db = 0.0
+		add_child(mic_player)
+		mic_player.play()
+		# Re-select PipeWire monitor source
+		var devices = AudioServer.get_input_device_list()
+		for d in devices:
+			if "monitor" in d.to_lower() or "substrate" in d.to_lower():
+				AudioServer.input_device = d
+				break
+		print("Audio capture restarted (periodic drift prevention)")
+
+# ── Shader pre-warming — compile all shaders at startup to prevent stutter ──
+# Note: canvas_item shaders referencing SCREEN_PIXEL_SIZE may log errors during
+# prewarm in offscreen context — these are harmless and non-fatal.
+func _prewarm_shaders():
+	# Spatial shaders — render on a tiny MeshInstance3D
+	var spatial_shaders = [
+		"res://shaders/fractal.gdshader",
+		"res://shaders/aurora.gdshader",
+		"res://shaders/matrix_rain.gdshader",
+		"res://shaders/mycelium.gdshader",
+		"res://shaders/fire.gdshader",
+		"res://shaders/vaporwave.gdshader",
+		"res://shaders/domain_warp.gdshader",
+		"res://shaders/ocean.gdshader",
+		"res://shaders/cloudscape_fog.gdshader",
+		"res://shaders/physarum_render.gdshader",
+		"res://shaders/plasma.gdshader",
+		"res://shaders/kaleidoscope.gdshader",
+		"res://shaders/tunnel.gdshader",
+		"res://shaders/starfield.gdshader",
+		"res://shaders/julia.gdshader",
+		"res://shaders/lava.gdshader",
+		"res://shaders/nebula.gdshader",
+		"res://shaders/lightning.gdshader",
+		"res://shaders/blackhole.gdshader",
+		"res://shaders/metaballs.gdshader",
+		"res://shaders/menger.gdshader",
+		"res://shaders/supernova.gdshader",
+		"res://shaders/synthgrid.gdshader",
+		"res://shaders/waveform.gdshader",
+	]
+	for path in spatial_shaders:
+		var shader = load(path)
+		if not shader:
+			continue
+		var quad = MeshInstance3D.new()
+		var qm = QuadMesh.new()
+		qm.size = Vector2(0.001, 0.001)
+		quad.mesh = qm
+		var mat = ShaderMaterial.new()
+		mat.shader = shader
+		quad.material_override = mat
+		quad.position = Vector3(0, -100, 0)
+		add_child(quad)
+		quad.call_deferred("queue_free")
+
+	# Canvas_item shaders — render on a tiny ColorRect in a CanvasLayer
+	var canvas_shaders = [
+		"res://shaders/crt.gdshader",
+		"res://shaders/tiltshift.gdshader",
+		"res://shaders/ink.gdshader",
+		"res://shaders/vhs.gdshader",
+		"res://shaders/chroma.gdshader",
+		"res://shaders/anime.gdshader",
+		"res://shaders/nightvision.gdshader",
+		"res://shaders/pixelate.gdshader",
+		"res://shaders/glitch.gdshader",
+		"res://shaders/thermal.gdshader",
+		"res://shaders/ascii.gdshader",
+		"res://shaders/feedback_warp.gdshader",
+		"res://shaders/transition_dissolve.gdshader",
+	]
+	var warmup_canvas = CanvasLayer.new()
+	warmup_canvas.layer = -100  # behind everything
+	add_child(warmup_canvas)
+	for path in canvas_shaders:
+		var shader = load(path)
+		if not shader:
+			continue
+		var rect = ColorRect.new()
+		rect.size = Vector2(1, 1)
+		rect.position = Vector2(-100, -100)  # off-screen
+		var mat = ShaderMaterial.new()
+		mat.shader = shader
+		rect.material = mat
+		warmup_canvas.add_child(rect)
+	warmup_canvas.call_deferred("queue_free")
+	print("Shader pre-warm: ", spatial_shaders.size() + canvas_shaders.size(), " shaders queued")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FRAME FEEDBACK — Butterchurn-style two-viewport ping-pong warp
+# Two SubViewports: VP0 reads VP1's texture, VP1 reads VP0's texture.
+# Each frame only one updates (UPDATE_ONCE), avoiding Vulkan's prohibition
+# on reading and writing the same texture in one pass.
+# Beat-seeded content (kick/snare/hihat) evolves via warp frame-over-frame.
+# Bloom: Godot's multi-level glow dynamically modulated by audio bands.
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _setup_feedback():
+	## Initialize Butterchurn-style two-viewport ping-pong feedback warp.
+	## VP0's shader reads VP1's texture and vice versa. Each frame we trigger
+	## UPDATE_ONCE on the write viewport, then swap. No self-reference.
+	if feedback_canvas:
+		return  # already set up
+
+	# Load the warp shader
+	var warp_shader = load("res://shaders/feedback_warp.gdshader")
+	if not warp_shader:
+		push_warning("Feedback warp shader not found")
+		return
+
+	# Create two SubViewports for ping-pong
+	for i in range(2):
+		feedback_vp[i] = SubViewport.new()
+		feedback_vp[i].size = Vector2i(960, 540)
+		feedback_vp[i].render_target_update_mode = SubViewport.UPDATE_DISABLED
+		feedback_vp[i].transparent_bg = false
+		add_child(feedback_vp[i])
+
+		feedback_mat[i] = ShaderMaterial.new()
+		feedback_mat[i].shader = warp_shader
+		feedback_mat[i].set_shader_parameter("fade", 0.95)
+
+		feedback_rects[i] = ColorRect.new()
+		feedback_rects[i].size = Vector2(960, 540)
+		feedback_rects[i].material = feedback_mat[i]
+		feedback_vp[i].add_child(feedback_rects[i])
+
+	# Cross-reference: VP0 reads VP1, VP1 reads VP0 (never self)
+	feedback_mat[0].set_shader_parameter("previous_frame", feedback_vp[1].get_texture())
+	feedback_mat[1].set_shader_parameter("previous_frame", feedback_vp[0].get_texture())
+
+	# Display canvas — shows the most recently written viewport
+	feedback_canvas = CanvasLayer.new()
+	feedback_canvas.layer = 10  # over the 3D scene as an overlay effect
+	add_child(feedback_canvas)
+
+	feedback_display_rect = TextureRect.new()
+	feedback_display_rect.stretch_mode = TextureRect.STRETCH_SCALE
+	feedback_display_rect.custom_minimum_size = Vector2(1920, 1080)
+	feedback_display_rect.size = Vector2(1920, 1080)
+	feedback_display_rect.modulate = Color(1, 1, 1, 0.5)  # semi-transparent overlay
+	feedback_display_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	feedback_canvas.add_child(feedback_display_rect)
+
+	# Seed: render both viewports once to initialize
+	feedback_vp[0].render_target_update_mode = SubViewport.UPDATE_ONCE
+	feedback_vp[1].render_target_update_mode = SubViewport.UPDATE_ONCE
+	feedback_write_idx = 0
+
+	feedback_enabled = true
+	print("Frame feedback initialized (two-viewport ping-pong warp)")
+
+func _teardown_feedback():
+	## Disable and clean up feedback loop.
+	if feedback_canvas:
+		feedback_canvas.queue_free()
+		feedback_canvas = null
+	for i in range(2):
+		if feedback_vp[i]:
+			feedback_vp[i].queue_free()
+			feedback_vp[i] = null
+		feedback_mat[i] = null
+		feedback_rects[i] = null
+	feedback_display_rect = null
+	feedback_enabled = false
+
+func _update_feedback():
+	## Ping-pong: trigger write viewport, display it, swap.
+	if not feedback_enabled:
+		return
+	if not feedback_vp[0] or not feedback_vp[1]:
+		return
+
+	# Trigger render on the write viewport (reads from the other)
+	feedback_vp[feedback_write_idx].render_target_update_mode = SubViewport.UPDATE_ONCE
+
+	# Display the write viewport's output
+	feedback_display_rect.texture = feedback_vp[feedback_write_idx].get_texture()
+
+	# Adjust fade and overlay opacity based on scene type
+	var fade_val = 0.96 if current_scene_name in ART_SCENES else 0.93
+	var alpha_val = 0.45 if current_scene_name in ART_SCENES else 0.35
+	feedback_mat[feedback_write_idx].set_shader_parameter("fade", fade_val)
+	if feedback_display_rect:
+		feedback_display_rect.modulate.a = alpha_val
+
+	# Swap write target for next frame
+	feedback_write_idx = 1 - feedback_write_idx
+
+func _update_bloom():
+	## Audio-reactive bloom — modulates Godot's built-in multi-level glow.
+	## Achieves the Butterchurn multi-resolution blur effect natively.
+	if not bloom_reactive_enabled:
+		return
+	var env = $WorldEnvironment.environment as Environment
+	if not env or not env.glow_enabled:
+		return
+	# Beat kick → brief glow intensity spike
+	var kick_boost = beat_kick * 0.8
+	# Energy → sustained glow modulation
+	var energy_mod = audio_energy * 0.4
+	# Bass → bloom spread
+	var bass_bloom = audio_bass * 0.15
+
+	env.glow_intensity = bloom_base_intensity + kick_boost + energy_mod * 0.3
+	env.glow_strength = bloom_base_strength + energy_mod * 0.2
+	env.glow_bloom = clamp(bloom_base_bloom + bass_bloom + kick_boost * 0.1, 0.0, 1.0)
+	# Treble → lower HDR threshold (more elements bloom)
+	env.glow_hdr_threshold = clamp(0.8 - audio_treble * 0.3 - beat_kick * 0.2, 0.1, 1.0)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ENHANCED SCENE TRANSITIONS — dissolve with audio-reactive edge glow
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _transition_to_scene_dissolve(scene_name: String):
+	## Crossfade transition using dissolve shader. Falls back to fade if unavailable.
+	if is_transitioning:
+		return
+	is_transitioning = true
+
+	# Use the simpler fade transition (the dissolve needs dual SubViewports
+	# which is too complex for the current architecture — save for future)
+	# For now, use an improved fade with audio-reactive speed
+	var fade_duration = max(0.3, 0.6 - beat_intensity * 0.2)  # faster on beats
+
+	var tw = create_tween()
+	tw.tween_method(_set_fade_alpha, 0.0, 1.0, fade_duration)
+	tw.tween_callback(func():
+		@warning_ignore("redundant_await")
+		await handle_command({"type": scene_name, "params": {}})
+		current_scene_name = scene_name
+	)
+	tw.tween_method(_set_fade_alpha, 1.0, 0.0, fade_duration)
+	tw.tween_callback(func(): is_transitioning = false)
+

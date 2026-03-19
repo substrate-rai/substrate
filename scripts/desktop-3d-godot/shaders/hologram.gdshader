@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode unshaded, cull_disabled;
+render_mode unshaded, cull_disabled, shadows_disabled, ambient_light_disabled, fog_disabled;
 
 global uniform vec3 cursor_world_pos;
 global uniform float audio_bass;
