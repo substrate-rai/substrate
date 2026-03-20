@@ -89,13 +89,46 @@ Escape-time fractals: ≤80 max iterations for realtime. 256 is too heavy.
 - **Godot 4.6** with Forward+ renderer
 - **PipeWire** for audio capture (audio reactivity is optional — scenes animate fine without it)
 
-### System Dependencies (NixOS)
-The NixOS module at `nix/desktop-3d-godot.nix` handles everything. On other distros you need:
+### System Dependencies
+
+**NixOS** — the module at `nix/desktop-3d-godot.nix` handles everything via `nixos-rebuild switch`.
+
+**Gentoo:**
+```bash
+# Godot 4.6 — not in main portage tree, use flatpak or build from source
+flatpak install flathub org.godotengine.Godot
+# OR build from source (needs scons, vulkan headers):
+# git clone https://github.com/godotengine/godot.git -b 4.6-stable
+# cd godot && scons platform=linuxbsd vulkan=yes production=yes
+
+# Audio capture
+emerge --ask media-video/pipewire  # includes pw-cat
+# Ensure PipeWire is running (not PulseAudio):
+# systemctl --user enable --now pipewire pipewire-pulse wireplumber
+
+# Python
+emerge --ask dev-python/requests
+
+# X11 tools
+emerge --ask x11-apps/xprop x11-misc/xdotool
+
+# Vulkan drivers (pick your GPU)
+emerge --ask media-libs/vulkan-loader dev-util/vulkan-tools
+# NVIDIA: emerge --ask x11-drivers/nvidia-drivers (with vulkan USE flag)
+# AMD: emerge --ask media-libs/mesa (with vulkan USE flag)
+# Intel: emerge --ask media-libs/mesa (with vulkan USE flag)
+
+# Optional: GPU metrics
+# NVIDIA: nvidia-smi comes with nvidia-drivers
+# AMD: emerge --ask dev-util/radeontop
+```
+
+**Other distros** — you need these packages by whatever name:
 - `godot4` (Godot 4.6+)
 - `python3` + `requests`
 - `pipewire` + `pw-cat` (for audio capture)
 - `xprop`, `xdotool` (X11 window management)
-- `nvidia-smi` or equivalent (optional, for GPU metrics)
+- Vulkan drivers for your GPU
 
 ### Architecture Overview
 
