@@ -171,8 +171,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -816,6 +816,12 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			env_aq.glow_enabled = false
 			create_shader_scene("res://shaders/aquarium.gdshader", params)
 			return {"status": "ok", "message": "Aquarium loaded"}
+		"neon_city_pixel":
+			apply_dark_environment()
+			var env_ncp = $WorldEnvironment.environment as Environment
+			env_ncp.glow_enabled = false
+			create_shader_scene("res://shaders/neon_city.gdshader", params)
+			return {"status": "ok", "message": "Neon city pixel loaded"}
 		"victory":
 			apply_dark_environment()
 			var env_v = $WorldEnvironment.environment as Environment
