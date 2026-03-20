@@ -2,8 +2,6 @@
 """Substrate's local brain. Runs inference on the RTX 4060 via Ollama.
 
 Usage:
-    nix develop
-
     # Prompt as argument
     python3 scripts/think.py "summarize what substrate is"
 

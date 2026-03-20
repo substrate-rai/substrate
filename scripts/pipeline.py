@@ -2,7 +2,6 @@
 """Substrate daily blog pipeline. Reads the day's git log and drafts a post.
 
 Usage:
-    nix develop
     python3 scripts/pipeline.py                   # draft from today's commits
     python3 scripts/pipeline.py --date 2026-03-06  # specific date
     python3 scripts/pipeline.py --dry-run          # print draft, don't write file

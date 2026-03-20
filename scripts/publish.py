@@ -2,7 +2,6 @@
 """Publish social media posts from a markdown file.
 
 Usage:
-    nix develop
     python3 scripts/publish.py scripts/posts/2026-03-06-launch.md --dry-run
     python3 scripts/publish.py scripts/posts/2026-03-06-launch.md --platform bluesky
 """

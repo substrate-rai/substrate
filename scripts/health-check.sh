@@ -3,7 +3,7 @@
 #
 # Logs GPU temp, VRAM usage, Ollama status to memory/health.log.
 # Auto-repairs: restarts Ollama if down, alerts on high disk/temp.
-# Run by systemd timer every hour.
+# Run by fcron every hour.
 
 set -euo pipefail
 
@@ -23,9 +23,8 @@ alert() {
 {
     echo "--- $TIMESTAMP ---"
 
-    # GPU — check NixOS system path first
+    # GPU
     NVIDIA_SMI="nvidia-smi"
-    [[ -x /run/current-system/sw/bin/nvidia-smi ]] && NVIDIA_SMI="/run/current-system/sw/bin/nvidia-smi"
     if command -v "$NVIDIA_SMI" &>/dev/null; then
         gpu_info=$("$NVIDIA_SMI" --query-gpu=temperature.gpu,memory.used,memory.total,utilization.gpu \
             --format=csv,noheader,nounits 2>/dev/null) || gpu_info="error"
@@ -60,7 +59,7 @@ alert() {
         echo "ollama: online, models: ${models:-none}"
     else
         echo "ollama: offline — attempting restart"
-        if systemctl restart ollama 2>/dev/null; then
+        if rc-service ollama restart 2>/dev/null; then
             sleep 3
             if curl -s --max-time 5 http://localhost:11434/api/tags >/dev/null 2>&1; then
                 echo "ollama: restarted successfully"
@@ -70,7 +69,7 @@ alert() {
                 alert "Ollama restart failed — service is down"
             fi
         else
-            echo "ollama: cannot restart (no systemctl access)"
+            echo "ollama: cannot restart (no rc-service access)"
             alert "Ollama is down and cannot be restarted"
         fi
     fi

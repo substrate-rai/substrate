@@ -104,15 +104,15 @@ def check_health():
 
     # Ollama
     try:
-        result = subprocess.run(["systemctl", "is-active", "ollama"],
+        result = subprocess.run(["rc-service", "ollama", "status"],
                                 capture_output=True, text=True, timeout=5)
-        health["ollama"] = result.stdout.strip()
+        health["ollama"] = "active" if result.returncode == 0 else "inactive"
     except Exception:
         health["ollama"] = "unknown"
 
-    # GPU — check NixOS system path first
+    # GPU
     nvidia_smi = "nvidia-smi"
-    for path in ["/run/current-system/sw/bin/nvidia-smi", "/usr/bin/nvidia-smi"]:
+    for path in ["/usr/bin/nvidia-smi", "/opt/cuda/bin/nvidia-smi"]:
         if os.path.exists(path):
             nvidia_smi = path
             break
@@ -135,16 +135,16 @@ def check_health():
     except Exception:
         health["disk"] = "unknown"
 
-    # Active timers
+    # Scheduled jobs (fcron)
     try:
         result = subprocess.run(
-            ["systemctl", "list-timers", "--no-pager", "--no-legend"],
+            ["fcrontab", "-l"],
             capture_output=True, text=True, timeout=5
         )
-        substrate_timers = [line for line in result.stdout.strip().split("\n")
-                           if "substrate" in line]
-        health["timers"] = len(substrate_timers)
-        health["timer_list"] = substrate_timers
+        substrate_jobs = [line for line in result.stdout.strip().split("\n")
+                         if line.strip() and not line.startswith("#") and "substrate" in line.lower()]
+        health["timers"] = len(substrate_jobs)
+        health["timer_list"] = substrate_jobs
     except Exception:
         health["timers"] = 0
         health["timer_list"] = []

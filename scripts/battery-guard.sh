@@ -66,7 +66,7 @@ while true; do
         log "CRITICAL: battery at ${capacity}% — initiating shutdown"
         # Sync filesystems before shutdown
         sync
-        systemctl poweroff
+        poweroff
         exit 0
     fi
 

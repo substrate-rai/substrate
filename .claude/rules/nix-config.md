@@ -1,12 +1,17 @@
 ---
-globs: ["nix/**", "flake.nix", "flake.lock"]
+globs: ["gentoo/**"]
 ---
 
-# NixOS Conventions
+# Gentoo / OpenRC Conventions
 
-- NixOS configuration is the single source of truth for system state.
-- Python3 is NOT in system PATH — use `nix develop` or full nix store path.
-- Dev shell (`flake.nix`) provides python3 + requests.
-- Never inline secrets in Nix config — use agenix or sops-nix.
-- `nix/configuration.nix` imports: battery-guard.nix, health-check.nix, daily-blog.nix, feedback-loop.nix
-- After changes: `sudo nixos-rebuild switch --flake .#substrate`
+- Portage config (`gentoo/`) + `/var/lib/portage/world` is the source of truth for system state.
+- Python3 IS in system PATH on Gentoo (no nix develop wrapper needed).
+- Never inline secrets in Portage config — use environment files with restricted permissions.
+- OpenRC service scripts: `gentoo/init.d/` → install to `/etc/init.d/`
+- Service environment: `gentoo/conf.d/` → install to `/etc/conf.d/`
+- Scheduled tasks: `gentoo/fcrontab` → install with `fcrontab gentoo/fcrontab`
+- After Portage config changes: `emerge --update --deep --newuse @world`
+- Service management: `rc-service <name> start|stop|restart|status`
+- Enable/disable: `rc-update add|del <name> default`
+- **elogind must be in boot runlevel**, not default: `rc-update add elogind boot`
+- NVIDIA suspend hook: `gentoo/elogind-nvidia-sleep.sh` → `/etc/elogind/system-sleep/`

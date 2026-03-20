@@ -236,55 +236,55 @@ cfo_console() {
                 ;;
             1)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_payable.py" status
+                python3 "$REPO/scripts/agents/accounts_payable.py" status
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
             2)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_payable.py" audit
+                python3 "$REPO/scripts/agents/accounts_payable.py" audit
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
             3)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_payable.py" forecast
+                python3 "$REPO/scripts/agents/accounts_payable.py" forecast
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
             4)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_payable.py" alert
+                python3 "$REPO/scripts/agents/accounts_payable.py" alert
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
             5)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_receivable.py" status
+                python3 "$REPO/scripts/agents/accounts_receivable.py" status
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
             6)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_receivable.py" audit
+                python3 "$REPO/scripts/agents/accounts_receivable.py" audit
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
             7)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_receivable.py" forecast
+                python3 "$REPO/scripts/agents/accounts_receivable.py" forecast
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
             8)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_receivable.py" pipeline
+                python3 "$REPO/scripts/agents/accounts_receivable.py" pipeline
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
             9)
                 echo ""
-                nix develop "$REPO" --command python3 "$REPO/scripts/agents/accounts_receivable.py" health
+                python3 "$REPO/scripts/agents/accounts_receivable.py" health
                 echo -e "  Press any key to continue..."
                 read -n1 -r
                 ;;
@@ -378,7 +378,7 @@ main_screen() {
     fi
     DISK=$(df -h / 2>/dev/null | tail -1 | awk '{print $3 "/" $2 " (" $5 " used)"}')
     echo -e "  ${DIM}Disk:${RESET} $DISK"
-    if systemctl is-active --quiet ollama 2>/dev/null; then
+    if rc-service ollama status &>/dev/null; then
         echo -e "  ${DIM}Ollama:${RESET} ${GREEN}active${RESET}"
     else
         echo -e "  ${DIM}Ollama:${RESET} ${RED}inactive${RESET}"

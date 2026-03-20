@@ -9,7 +9,7 @@ Usage:
     python3 scripts/social-queue.py --list             # show queue status
 
 Queue file: scripts/posts/queue.jsonl (one JSON object per line)
-Designed to run from a systemd timer (e.g. twice daily).
+Designed to run from fcron (e.g. twice daily).
 """
 
 import argparse

@@ -1,0 +1,20 @@
+# /etc/portage/bashrc — Snapper hooks for automatic BTRFS snapshots
+# Takes a snapshot before and after every emerge operation
+# Install: cp gentoo/portage-bashrc /etc/portage/bashrc
+
+if [[ "${EBUILD_PHASE}" == "setup" ]]; then
+    if command -v snapper >/dev/null 2>&1; then
+        snapper create --type pre --cleanup-algorithm number \
+            --description "emerge: ${CATEGORY}/${PF}" --print-number > /tmp/.snapper_pre_number 2>/dev/null
+    fi
+fi
+
+if [[ "${EBUILD_PHASE}" == "postinst" || "${EBUILD_PHASE}" == "postrm" ]]; then
+    if command -v snapper >/dev/null 2>&1 && [ -f /tmp/.snapper_pre_number ]; then
+        pre_number=$(cat /tmp/.snapper_pre_number)
+        snapper create --type post --cleanup-algorithm number \
+            --pre-number "$pre_number" \
+            --description "emerge: ${CATEGORY}/${PF}" 2>/dev/null
+        rm -f /tmp/.snapper_pre_number
+    fi
+fi

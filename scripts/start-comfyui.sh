@@ -1,8 +1,8 @@
-#!/run/current-system/sw/bin/bash
-# Start ComfyUI with CUDA support on NixOS.
+#!/usr/bin/env bash
+# Start ComfyUI with CUDA support.
 #
 # Uses a standalone venv at /home/operator/comfyui/venv with pip-installed
-# PyTorch CUDA 12.4, bypassing the slow nix develop shell.
+# PyTorch CUDA 12.4.
 #
 # Usage:
 #   ./scripts/start-comfyui.sh                    # normal start on port 8188
@@ -21,8 +21,8 @@ COMFYUI_DIR="/home/operator/comfyui"
 VENV_DIR="$COMFYUI_DIR/venv"
 PYTHON="$VENV_DIR/bin/python3"
 
-# NixOS library paths — required for CUDA and C++ runtime
-export LD_LIBRARY_PATH="/run/opengl-driver/lib:/nix/store/ihpdbhy4rfxaixiamyb588zfc3vj19al-gcc-15.2.0-lib/lib:/nix/store/m028f6iw72di3mqah6zmfpjx91973bk0-cuda-merged-12.4/lib:/nix/store/drxbq03f66krz302bp077bqf0damsayv-zlib-1.3.1/lib:/nix/store/rla54w2i158xf5i5fla3mwh5760x3pgn-libglvnd-1.7.0/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# CUDA library paths (Gentoo standard locations)
+export LD_LIBRARY_PATH="/usr/lib64:/opt/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 if [ ! -d "$COMFYUI_DIR" ]; then
     echo "error: ComfyUI not found at $COMFYUI_DIR"

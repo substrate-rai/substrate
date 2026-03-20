@@ -271,7 +271,7 @@ def _band_power(samples, n, freq_res, lo_hz, hi_hz, step=3):
 def _find_default_sink_id():
     """Find the default audio sink node ID via wpctl."""
     try:
-        r = subprocess.run(["/run/current-system/sw/bin/wpctl", "inspect", "@DEFAULT_AUDIO_SINK@"],
+        r = subprocess.run(["/usr/bin/wpctl", "inspect", "@DEFAULT_AUDIO_SINK@"],
                            capture_output=True, text=True, timeout=3)
         for line in r.stdout.split("\n"):
             line = line.strip()
@@ -346,7 +346,7 @@ def audio_capture_thread():
         try:
             sink_id = _find_default_sink_id()
             proc = subprocess.Popen(
-                ["/run/current-system/sw/bin/pw-cat", "--record",
+                ["/usr/bin/pw-cat", "--record",
                  "--target", sink_id,
                  "--format", "s16", "--rate", str(AUDIO_RATE),
                  "--channels", "2", "-"],

@@ -2,8 +2,6 @@
 """Substrate's two-brain routing layer. Qwen3 logs, Claude thinks.
 
 Usage:
-    nix develop
-
     # Qwen3 logs raw data (free, fast, local)
     python3 scripts/route.py log "process git log into structured entries"
     python3 scripts/route.py health

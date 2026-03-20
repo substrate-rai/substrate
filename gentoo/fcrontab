@@ -1,0 +1,80 @@
+# Substrate fcrontab — operator user
+# All times ET (system timezone America/New_York)
+# &bootrun — run if missed while machine was off/sleeping (= systemd Persistent=true)
+#
+# Migrated from 20 systemd timers (see nix/*.nix for originals, preserved in git history)
+
+SHELL=/bin/bash
+HOME=/home/operator
+PATH=/usr/local/bin:/usr/bin:/bin
+SUBSTRATE=/home/operator/substrate
+
+# === EVERY 15 MINUTES ===
+# Heartbeat — all-agent check-in, generates briefing + executive summary
+&bootrun */15 * * * *    cd $SUBSTRATE && python3 scripts/agents/orchestrator.py
+
+# === HOURLY ===
+# Health check — GPU, VRAM, Ollama, disk, battery logging
+&bootrun 0 * * * *       cd $SUBSTRATE && bash scripts/health-check.sh
+
+# News aggregator — AI news fetch + agent commentary
+&bootrun 30 * * * *      cd $SUBSTRATE && python3 scripts/agents/news_aggregator.py
+
+# Autopush — commit data changes + push to GitHub (triggers Pages rebuild)
+&bootrun 45 * * * *      cd $SUBSTRATE && bash scripts/autopush.sh
+
+# === DAILY — MORNING BLOCK (6am ET) ===
+# Mirror — self-assessment gap report
+&bootrun 0 6 * * *       cd $SUBSTRATE && python3 scripts/mirror.py
+
+# Stats — GitHub stars, forks, watchers
+&bootrun 0 6 * * *       cd $SUBSTRATE && python3 scripts/stats.py
+
+# Donations — Ko-fi donation check
+&bootrun 5 6 * * *       cd $SUBSTRATE && python3 scripts/donations.py
+
+# Audience — GoatCounter page views
+&bootrun 10 6 * * *      cd $SUBSTRATE && python3 scripts/stats.py --metrics
+
+# Metrics — unified metrics report (GitHub + Bluesky + GoatCounter)
+&bootrun 30 6 * * *      cd $SUBSTRATE && python3 scripts/stats.py --all
+
+# Build executor — run top mirror proposal
+&bootrun 30 6 * * *      cd $SUBSTRATE && python3 scripts/build.py
+
+# Q's monologue — haiku from latest briefing → Bluesky queue
+&bootrun 0 7 * * *       cd $SUBSTRATE && python3 scripts/monologue.py
+
+# === DAILY — SOCIAL ===
+# Social queue — post to Bluesky (twice daily: 10am and 4pm ET)
+&bootrun 0 10 * * *      cd $SUBSTRATE && python3 scripts/social-queue.py
+&bootrun 0 16 * * *      cd $SUBSTRATE && python3 scripts/social-queue.py
+
+# === DAILY — EVENING ===
+# Blog pipeline — draft build log from day's git activity (9pm ET)
+&bootrun 0 21 * * *      cd $SUBSTRATE && python3 scripts/pipeline.py
+
+# === EVERY 6 HOURS ===
+# Git push — safety push to GitHub (learned from Day 1 battery incident)
+&bootrun 15 0,6,12,18 * * *  cd $SUBSTRATE && git push origin master
+
+# === WEEKLY — SUNDAY ===
+# Retro — weekly retrospective (Sun 6am)
+&bootrun 0 6 * * 0       cd $SUBSTRATE && python3 scripts/agents/orchestrator.py --retro
+
+# Weekly report — state of substrate (Sun 8pm)
+&bootrun 0 20 * * 0      cd $SUBSTRATE && bash scripts/content-calendar.sh weekly-report
+
+# === WEEKLY — CONTENT CALENDAR ===
+# Monday — Technical deep-dive draft (10am)
+&bootrun 0 10 * * 1      cd $SUBSTRATE && bash scripts/content-calendar.sh monday
+
+# Wednesday — Weekly narrative draft (10am)
+&bootrun 0 10 * * 3      cd $SUBSTRATE && bash scripts/content-calendar.sh wednesday
+
+# Friday — Social-only post draft (10am)
+&bootrun 0 10 * * 5      cd $SUBSTRATE && bash scripts/content-calendar.sh friday
+
+# === NIGHTLY MAINTENANCE ===
+# Restart Godot — memory leak mitigation (~20MB/hr)
+0 4 * * *                bash $SUBSTRATE/scripts/restart-godot.sh

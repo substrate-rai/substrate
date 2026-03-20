@@ -401,7 +401,7 @@ def restart_ollama(finding, dry_run=False):
     if dry_run:
         return True
     result = subprocess.run(
-        ["sudo", "systemctl", "restart", "ollama"],
+        ["sudo", "rc-service", "ollama", "restart"],
         capture_output=True, text=True, timeout=30
     )
     return result.returncode == 0
@@ -453,25 +453,25 @@ def restart_service(finding, dry_run=False):
     if dry_run:
         return True
     result = subprocess.run(
-        ["sudo", "systemctl", "restart", service],
+        ["sudo", "rc-service", service, "restart"],
         capture_output=True, text=True, timeout=30
     )
     return result.returncode == 0
 
 
-def run_nix_gc(finding, dry_run=False):
-    """Run nix garbage collection to free disk space."""
-    log("Running nix-collect-garbage --delete-older-than 7d", "act")
+def run_disk_cleanup(finding, dry_run=False):
+    """Clean old distfiles and snapper snapshots to free disk space."""
+    log("Running eclean-dist and snapper cleanup", "act")
     if dry_run:
         return True
     result = subprocess.run(
-        ["sudo", "nix-collect-garbage", "--delete-older-than", "7d"],
+        ["sudo", "eclean-dist", "--deep"],
         capture_output=True, text=True, timeout=300
     )
     return result.returncode == 0
 
 
-def enable_timer(finding, dry_run=False):
+def enable_service(finding, dry_run=False):
     """Enable an inactive systemd timer."""
     SAFE_TIMERS = {
         "substrate-health.timer", "substrate-blog.timer",
@@ -479,23 +479,26 @@ def enable_timer(finding, dry_run=False):
     }
     timer = finding.get("timer", "")
     if timer not in SAFE_TIMERS:
-        log(f"Timer '{timer}' not in safe list, skipping", "skip")
+        log(f"Service '{timer}' not in safe list, skipping", "skip")
         return False
-    log(f"Enabling timer: {timer}", "act")
+    log(f"Enabling service: {timer}", "act")
     if dry_run:
         return True
     result = subprocess.run(
-        ["sudo", "systemctl", "enable", "--now", timer],
+        ["sudo", "rc-update", "add", timer, "default"],
         capture_output=True, text=True, timeout=30
     )
+    if result.returncode == 0:
+        subprocess.run(["sudo", "rc-service", timer, "start"],
+                       capture_output=True, text=True, timeout=30)
     return result.returncode == 0
 
 
 EXECUTORS = {
     "restart_ollama": restart_ollama,
     "restart_service": restart_service,
-    "run_nix_gc": run_nix_gc,
-    "enable_timer": enable_timer,
+    "run_disk_cleanup": run_disk_cleanup,
+    "enable_service": enable_service,
     "publish_draft": publish_draft,
     "publish_social": publish_social,
 }

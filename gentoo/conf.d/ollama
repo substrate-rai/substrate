@@ -1,0 +1,20 @@
+# /etc/conf.d/ollama — Ollama environment and resource limits
+# Replaces: systemd ollama.service [Service] Environment= and resource directives
+
+# Ollama server settings
+export OLLAMA_HOST="0.0.0.0:11434"
+export OLLAMA_KEEP_ALIVE="-1"
+export OLLAMA_NUM_PARALLEL="2"
+export OLLAMA_MAX_LOADED_MODELS="2"
+export OLLAMA_FLASH_ATTENTION="1"
+export OLLAMA_KV_CACHE_TYPE="q8_0"
+
+# CUDA device
+export CUDA_VISIBLE_DEVICES="0"
+
+# cgroups v2 resource limits (replaces systemd MemoryMax=12G + OOMScoreAdjust=-500)
+rc_cgroup_settings="memory.max 12884901888"
+SSD_OOM_SCORE_ADJ="-500"
+
+# Do NOT set rc_cgroup_cleanup here — it would kill SSH sessions
+# rc_cgroup_cleanup="YES"  # NEVER set globally

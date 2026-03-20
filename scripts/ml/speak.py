@@ -5,8 +5,8 @@ Uses Microsoft SpeechT5 for lightweight TTS (~1GB VRAM).
 Can give Q a voice.
 
 Usage:
-    nix develop .#ml --command python3 scripts/ml/speak.py "Hello, I am Q."
-    nix develop .#ml --command python3 scripts/ml/speak.py "Substrate is online." --output greeting.wav
+    python3 scripts/ml/speak.py "Hello, I am Q."
+    python3 scripts/ml/speak.py "Substrate is online." --output greeting.wav
 """
 
 import argparse

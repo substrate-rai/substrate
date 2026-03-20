@@ -1,0 +1,47 @@
+#!/sbin/openrc-run
+# Ollama — local inference server (CUDA-accelerated)
+# Replaces: systemd ollama.service
+
+name="ollama"
+description="Ollama local inference server"
+
+supervisor=supervise-daemon
+command="/usr/local/bin/ollama"
+command_args="serve"
+command_user="operator:users"
+directory="/var/lib/ollama"
+pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/var/log/ollama/ollama.log"
+error_log="/var/log/ollama/ollama.err"
+
+# Respawn policy — matches systemd Restart=on-failure, StartLimitBurst=5/300s
+respawn_delay=5
+respawn_max=5
+respawn_period=300
+
+# Health check — superior to systemd watchdog (native OpenRC feature)
+healthcheck_timer=30
+
+depend() {
+    need net
+    after net nvidia-persistenced
+}
+
+start_pre() {
+    checkpath --directory --owner operator:users /var/lib/ollama
+    checkpath --directory --owner operator:users /var/log/ollama
+
+    # Verify NVIDIA GPU is accessible
+    if ! command -v nvidia-smi >/dev/null 2>&1; then
+        ewarn "nvidia-smi not found — CUDA acceleration unavailable"
+    fi
+}
+
+healthcheck() {
+    # Check if API responds (equivalent to systemd ExecStartPost curl check)
+    wget -qO /dev/null http://localhost:11434/api/tags 2>/dev/null
+}
+
+unhealthy() {
+    eend 1 "Ollama health check failed — restarting"
+}

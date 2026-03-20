@@ -1,8 +1,8 @@
-#!/run/current-system/sw/bin/bash
+#!/usr/bin/env bash
 # Start the ML Toolkit Web UI on port 8190.
 #
 # Uses the ComfyUI venv (PyTorch CUDA 12.4, diffusers, transformers, etc.)
-# so we get GPU acceleration without needing nix develop.
+# for GPU acceleration.
 #
 # Usage:
 #   ./scripts/start-ml-ui.sh                # default: 127.0.0.1:8190
@@ -26,8 +26,8 @@ WEB_UI="$SCRIPT_DIR/ml/web-ui.py"
 VENV_DIR="/home/operator/comfyui/venv"
 PYTHON="$VENV_DIR/bin/python3"
 
-# NixOS library paths — required for CUDA and C++ runtime
-export LD_LIBRARY_PATH="/run/opengl-driver/lib:/nix/store/ihpdbhy4rfxaixiamyb588zfc3vj19al-gcc-15.2.0-lib/lib:/nix/store/m028f6iw72di3mqah6zmfpjx91973bk0-cuda-merged-12.4/lib:/nix/store/drxbq03f66krz302bp077bqf0damsayv-zlib-1.3.1/lib:/nix/store/rla54w2i158xf5i5fla3mwh5760x3pgn-libglvnd-1.7.0/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# CUDA library paths (Gentoo standard locations)
+export LD_LIBRARY_PATH="/usr/lib64:/opt/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 if [ ! -f "$PYTHON" ]; then
     echo "error: venv not found at $VENV_DIR"

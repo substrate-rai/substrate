@@ -12,7 +12,7 @@ sleep 0.5
 
 # Start server in background
 cd "$REPO_DIR"
-nix develop --command python3 "$SCRIPT_DIR/chat-ui.py" --port "$PORT" &
+python3 "$SCRIPT_DIR/chat-ui.py" --port "$PORT" &
 SERVER_PID=$!
 
 # Wait for server to be ready

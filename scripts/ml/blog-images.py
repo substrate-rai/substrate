@@ -6,9 +6,9 @@ a dark-themed tech/cyber image from the post title, saves it, and updates
 the front matter.
 
 Usage:
-    nix develop .#ml --command python3 scripts/ml/blog-images.py --dry-run
-    nix develop .#ml --command python3 scripts/ml/blog-images.py --post 2026-03-06-day-0-substrate-is-alive.md
-    nix develop .#ml --command python3 scripts/ml/blog-images.py
+    python3 scripts/ml/blog-images.py --dry-run
+    python3 scripts/ml/blog-images.py --post 2026-03-06-day-0-substrate-is-alive.md
+    python3 scripts/ml/blog-images.py
 """
 
 import argparse

@@ -1,0 +1,32 @@
+#!/sbin/openrc-run
+# ComfyUI — Stable Diffusion web interface (manual start only)
+# Replaces: systemd comfyui.service
+
+name="comfyui"
+description="ComfyUI Stable Diffusion web interface"
+
+supervisor=supervise-daemon
+command="/usr/bin/python3"
+command_args="/home/operator/ComfyUI/main.py --listen 0.0.0.0 --port 8188"
+command_user="operator:users"
+directory="/home/operator/ComfyUI"
+pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/var/log/comfyui.log"
+error_log="/var/log/comfyui.err"
+
+# No auto-respawn — manual start service
+respawn_max=0
+
+depend() {
+    need net
+    after net nvidia-persistenced ollama
+}
+
+start_pre() {
+    # ComfyUI needs CUDA
+    if ! command -v nvidia-smi >/dev/null 2>&1; then
+        eerror "NVIDIA drivers not loaded — ComfyUI requires CUDA"
+        return 1
+    fi
+    checkpath --directory --owner operator:users /var/log
+}

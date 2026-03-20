@@ -1,0 +1,92 @@
+# /etc/portage/sets/substrate — custom package set
+# Install with: emerge --ask @substrate
+# Reconstructs the full Substrate stack on a fresh Gentoo install
+
+# === Core System ===
+sys-apps/openrc
+sys-kernel/gentoo-kernel-bin
+sys-kernel/installkernel
+sys-boot/grub
+sys-apps/systemd-utils
+sys-fs/btrfs-progs
+app-backup/snapper
+
+# === Init & Scheduling ===
+sys-process/fcron
+sys-auth/elogind
+sys-apps/dbus
+
+# === Logging ===
+app-admin/syslog-ng
+app-admin/logrotate
+
+# === Networking ===
+net-misc/networkmanager
+net-misc/openssh
+net-analyzer/fail2ban
+
+# === GPU (NVIDIA RTX 4060) ===
+x11-drivers/nvidia-drivers
+dev-util/nvidia-cuda-toolkit
+
+# === Desktop ===
+x11-misc/lightdm
+x11-wm/i3-gaps
+x11-terms/kitty
+www-client/firefox
+x11-misc/dmenu
+x11-misc/dunst
+x11-apps/xrandr
+x11-apps/xdpyinfo
+
+# === Desktop Utilities ===
+x11-libs/libnotify
+media-gfx/imagemagick
+media-gfx/scrot
+x11-misc/xdotool
+x11-misc/xclip
+x11-misc/xsel
+
+# === Audio ===
+media-video/pipewire
+media-sound/mpd
+media-sound/mpc
+media-sound/ncmpcpp
+
+# === Development ===
+dev-lang/python
+dev-lang/ruby
+dev-ruby/jekyll
+dev-ruby/bundler
+dev-vcs/git
+app-editors/vim
+net-misc/curl
+net-misc/wget
+
+# === 3D / Graphics ===
+dev-games/godot
+media-gfx/blender
+
+# === System Utilities ===
+app-misc/tmux
+app-shells/fish
+sys-apps/pciutils
+sys-apps/usbutils
+sys-process/htop
+app-misc/nvtop
+
+# === Monitoring ===
+net-analyzer/prometheus
+www-apps/grafana
+
+# === Power Management ===
+sys-power/thermald
+app-laptop/laptop-mode-tools
+sys-apps/smartmontools
+
+# === Security ===
+app-crypt/gnupg
+net-misc/socat
+
+# === Node.js (for Electron / desktop-3d) ===
+net-libs/nodejs

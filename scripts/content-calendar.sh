@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # content-calendar.sh — Weekly content generation
 #
-# Called by systemd timers on a schedule:
+# Called by fcron on a schedule:
 #   Monday:    Technical deep-dive post (SEO-targeted how-to)
 #   Wednesday: "What substrate built this week" narrative post
 #   Friday:    Social-only post (screenshot, metric, or observation)
@@ -22,9 +22,9 @@ DAY_TYPE="${1:-}"
 
 cd "$REPO_DIR"
 
-# Check if we're in nix develop or have python3
+# Check if python3 is available
 if ! command -v python3 &>/dev/null; then
-    echo "error: python3 not found — this script must run from nix develop or a systemd service with python3 in path" >&2
+    echo "error: python3 not found — ensure python3 is installed (emerge dev-lang/python)" >&2
     exit 1
 fi
 

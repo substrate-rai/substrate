@@ -56,7 +56,7 @@ case "$cmd" in
   icons)
     # Set icon theme via kwriteconfig6
     if [[ "${1:-}" == "--list" ]]; then
-      find /run/current-system/sw/share/icons /home/operator/.local/share/icons -maxdepth 1 -mindepth 1 -type d -printf '%f\n' 2>/dev/null | sort -u
+      find /usr/share/icons /home/operator/.local/share/icons -maxdepth 1 -mindepth 1 -type d -printf '%f\n' 2>/dev/null | sort -u
     else
       kwriteconfig6 --file kdeglobals --group Icons --key Theme "$1"
       # Signal Plasma to reload

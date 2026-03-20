@@ -5,9 +5,9 @@ Uses Facebook's MusicGen-small (~2GB VRAM) to generate music from text prompts.
 Q can finally produce beats.
 
 Usage:
-    nix develop .#ml --command python3 scripts/ml/compose.py "lo-fi hip hop beat with vinyl crackle"
-    nix develop .#ml --command python3 scripts/ml/compose.py "dark ambient synth" --duration 10
-    nix develop .#ml --command python3 scripts/ml/compose.py "chiptune boss battle" --output boss.wav
+    python3 scripts/ml/compose.py "lo-fi hip hop beat with vinyl crackle"
+    python3 scripts/ml/compose.py "dark ambient synth" --duration 10
+    python3 scripts/ml/compose.py "chiptune boss battle" --output boss.wav
 """
 
 import argparse

@@ -5,9 +5,9 @@ Uses faster-whisper (CTranslate2) for efficient CUDA inference.
 Auto-unloads Ollama models to free VRAM if needed.
 
 Usage:
-    nix develop .#ml --command python3 scripts/ml/transcribe.py audio.mp3
-    nix develop .#ml --command python3 scripts/ml/transcribe.py recording.wav --model large-v3
-    nix develop .#ml --command python3 scripts/ml/transcribe.py meeting.m4a --output transcript.txt
+    python3 scripts/ml/transcribe.py audio.mp3
+    python3 scripts/ml/transcribe.py recording.wav --model large-v3
+    python3 scripts/ml/transcribe.py meeting.m4a --output transcript.txt
 """
 
 import argparse

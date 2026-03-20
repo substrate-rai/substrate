@@ -2,7 +2,7 @@
 # metrics.sh — Track GitHub and social metrics
 #
 # Logs GitHub stars/forks and Bluesky follower count to memory/metrics.log.
-# Run by systemd timer (weekly) or manually.
+# Run by fcron (weekly) or manually.
 #
 # Requires: curl (system), no auth needed for public GitHub API.
 

@@ -1,0 +1,22 @@
+#!/sbin/openrc-run
+# NVIDIA persistence daemon — keeps GPU initialized between jobs
+# NOTE: nvidia-drivers ebuild with USE=persistenced provides this script.
+# This is a reference/fallback in case the ebuild version differs.
+
+name="nvidia-persistenced"
+description="NVIDIA Persistence Daemon"
+
+supervisor=supervise-daemon
+command="/usr/bin/nvidia-persistenced"
+command_args="--persistence-mode --verbose"
+command_user="root"
+pidfile="/run/nvidia-persistenced/nvidia-persistenced.pid"
+
+depend() {
+    need localmount
+    before ollama comfyui
+}
+
+start_pre() {
+    checkpath --directory --owner root:root --mode 0755 /run/nvidia-persistenced
+}

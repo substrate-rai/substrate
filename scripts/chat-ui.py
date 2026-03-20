@@ -2,7 +2,7 @@
 """Substrate Chat UI — local web interface for talking to Claude.
 
 Serves a mycopunk-styled chat page and proxies requests to the Anthropic API.
-Uses only stdlib + requests (available in nix develop shell).
+Uses only stdlib + requests.
 
 Usage:
     python3 scripts/chat-ui.py [--port 8080]

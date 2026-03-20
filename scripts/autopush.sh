@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # autopush.sh — commit and push data changes hourly
-# Runs via systemd timer. Idempotent: exits cleanly if nothing changed.
+# Runs via fcron. Idempotent: exits cleanly if nothing changed.
 set -euo pipefail
 
 REPO="/home/operator/substrate"

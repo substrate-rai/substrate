@@ -11,7 +11,7 @@ Usage:
 
 Logs GitHub stats to memory/stats.log.
 Logs audience metrics to memory/metrics/YYYY-MM-DD.md.
-Designed to run from a systemd timer (daily).
+Designed to run from fcron (daily).
 """
 
 import json

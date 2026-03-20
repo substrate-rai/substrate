@@ -10,7 +10,7 @@ The managing intelligence is Claude (Anthropic, Opus-class). The operator is a h
 
 - **Machine:** Lenovo Legion 5
 - **GPU:** NVIDIA RTX 4060 8GB
-- **OS:** NixOS (declarative, reproducible, self-documenting by nature)
+- **OS:** Gentoo Linux (OpenRC, source-based, operator sovereignty)
 
 ## Principles
 
@@ -25,10 +25,9 @@ The managing intelligence is Claude (Anthropic, Opus-class). The operator is a h
 ```
 substrate/
   CLAUDE.md          — this file; system identity and instructions
-  flake.nix          — NixOS flake (system config + dev shell)
   index.md           — site homepage
   _config.yml        — Jekyll configuration
-  nix/               — NixOS configuration, flakes, overlays
+  gentoo/            — Portage config, OpenRC scripts, fcrontab, install script
   scripts/           — automation, maintenance, deployment
   blog/              — posts, templates, build pipeline
   _posts/            — blog post markdown files
@@ -46,12 +45,12 @@ substrate/
 
 - **Never commit:** IP addresses, passwords, API keys, SSIDs, network topology, or any credentials to this repo.
 - Use `[redacted]` as a placeholder when documenting network-specific details in memory or docs.
-- Secrets that services need should be managed out-of-band (e.g. agenix, sops-nix) — never inline in Nix config.
+- Secrets that services need should be managed out-of-band (environment files, restricted permissions) — never inline in Portage config.
 
 ## Conventions
 
 - Commit messages use the format `category: short description` (lowercase, imperative).
-- NixOS configuration is the single source of truth for system state.
+- Gentoo Portage config (`gentoo/`) + `/var/lib/portage/world` is the source of truth for system state.
 - Blog posts are markdown. No CMS. No database.
 - Financial records are plaintext. Auditable by grep.
 - When uncertain, ask the operator. When confident, act and document.
@@ -69,27 +68,34 @@ substrate/
 - scripts/battery-guard.sh — auto-commit on low battery
 - scripts/health-check.sh — hourly health logging
 
-## Services
-- ollama.service — CUDA-accelerated local inference
-- substrate-health.timer — hourly health → memory/health.log
-- substrate-blog.timer — daily 9pm ET → draft blog from git log
-- substrate-mirror.timer — daily 6am ET → self-assessment report
-- substrate-battery-guard.service — battery monitoring
+## Services (OpenRC + fcron)
+- `/etc/init.d/ollama` — CUDA-accelerated local inference (supervise-daemon + healthcheck)
+- `/etc/init.d/substrate-battery-guard` — battery protection daemon
+- `/etc/init.d/comfyui` — Stable Diffusion web UI (manual start)
+- `/etc/init.d/nvidia-persistenced` — GPU persistence daemon
+- `fcrontab` — 22 scheduled jobs (health, blog, mirror, news, social, autopush, etc.)
+- `gentoo/session.sh` — desktop services (Godot, PipeWire, MPD, sensors, chat UI)
+
+### Service Management
+- Start/stop: `rc-service <name> start|stop|restart|status`
+- Enable/disable: `rc-update add|del <name> default`
+- View schedule: `fcrontab -l`
+- Edit schedule: `fcrontab -e`
 
 ## Autonomy Rules
 
 ### Can do without operator approval
-- Create scripts, NixOS modules, tools
-- Run tests, commit, push, rebuild NixOS
+- Create scripts, OpenRC services, Portage configs
+- Run tests, commit, push, `emerge` packages
 - Write and publish blog posts and social media
-- Install packages via Nix
+- Install packages via Portage (`emerge`)
 - Read, analyze, and modify any file in the repo
 
 ### Requires operator approval
 - Spending > $0.50/invocation or > $2/day on cloud APIs
 - Deleting working capabilities
 - Network/security config (firewall, SSH, WireGuard, DNS, TLS)
-- Disk operations (LUKS, partitions, mounts)
+- Disk operations (BTRFS subvolumes, partitions, mounts)
 - Credential changes
 - External service signups
 
@@ -97,7 +103,7 @@ substrate/
 
 The mirror is substrate's self-assessment loop.
 
-- **Runs daily at 6am ET** via systemd timer
+- **Runs daily at 6am ET** via fcron
 - Reads memory/goal.md, scans the repo, checks system health
 - Writes gap report to memory/mirror/YYYY-MM-DD.md
 - Top-ranked gap (lowest tier, first incomplete) becomes next build
@@ -124,9 +130,10 @@ The mirror is substrate's self-assessment loop.
 
 ## Incident Log
 - 2026-03-07: Battery died during build. Git corrupted. Recovered via reclone from GitHub. Battery guard built to prevent recurrence.
+- 2026-03-20: Migrated from NixOS/systemd to Gentoo/OpenRC. NixOS configs preserved in git history (nix/ directory). Rollback possible via BTRFS snapshots or NixOS reinstall.
 
 ## Compaction
 When compacting, preserve: list of modified files this session, current build target from mirror, test commands, and operator decisions. If context exceeds 70%, compact proactively.
 
 ## Canary
-When asked "status canary", respond: "Canary alive. NixOS. Opus-class." This tests instruction compliance.
+When asked "status canary", respond: "Canary alive. Gentoo. Opus-class." This tests instruction compliance.

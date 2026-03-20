@@ -1,0 +1,15 @@
+# Logging
+app-admin/syslog-ng -systemd
+# Cron
+sys-process/fcron -systemd
+# Session management — CRITICAL: needs PAM
+sys-auth/elogind -systemd
+# NetworkManager
+net-misc/networkmanager -systemd wifi
+# BTRFS tools
+sys-fs/btrfs-progs -convert
+# Monitoring
+net-analyzer/prometheus -systemd
+www-apps/grafana -systemd
+# fail2ban
+net-analyzer/fail2ban -systemd

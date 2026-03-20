@@ -1,0 +1,30 @@
+#!/sbin/openrc-run
+# Substrate battery guard — graceful shutdown on critical battery
+# Replaces: systemd substrate-battery-guard.service
+
+name="substrate-battery-guard"
+description="Battery protection — auto-commit and shutdown on critical"
+
+supervisor=supervise-daemon
+command="/home/operator/substrate/scripts/battery-guard.sh"
+command_user="root"
+pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/var/log/substrate-battery-guard.log"
+
+# Respawn if it crashes
+respawn_delay=10
+respawn_max=10
+respawn_period=600
+
+depend() {
+    after localmount
+    keyword -prefix
+}
+
+start_pre() {
+    # Verify battery sysfs exists (not a desktop without battery)
+    if [ ! -f /sys/class/power_supply/BAT0/capacity ]; then
+        eerror "No battery found at /sys/class/power_supply/BAT0"
+        return 1
+    fi
+}

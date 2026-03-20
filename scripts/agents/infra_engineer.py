@@ -28,15 +28,16 @@ INFRA_DIR = os.path.join(MEMORY_DIR, "infra")
 HEALTH_LOG = os.path.join(MEMORY_DIR, "health.log")
 VOICE_FILE = os.path.join(REPO_DIR, "scripts", "prompts", "root-voice.txt")
 
-# Services and timers to check
+# Services to check (OpenRC service names)
 EXPECTED_SERVICES = [
-    "ollama.service",
+    "ollama",
 ]
 
-EXPECTED_TIMERS = [
-    "substrate-health.timer",
-    "substrate-blog.timer",
-    "substrate-mirror.timer",
+# Scheduled jobs to check (fcrontab script basenames)
+EXPECTED_JOBS = [
+    "health-check.sh",
+    "pipeline.py",
+    "mirror.py",
 ]
 
 # Disk usage warning thresholds (percentage)
@@ -82,9 +83,8 @@ def check_gpu():
         "processes": [],
     }
 
-    # NixOS: nvidia-smi may not be in restricted systemd PATH
     nvidia_smi = "nvidia-smi"
-    for path in ["/run/current-system/sw/bin/nvidia-smi", "/usr/bin/nvidia-smi"]:
+    for path in ["/usr/bin/nvidia-smi", "/opt/cuda/bin/nvidia-smi"]:
         if os.path.exists(path):
             nvidia_smi = path
             break
@@ -191,37 +191,30 @@ def check_disk():
 
 
 def check_services():
-    """Check status of expected systemd services."""
+    """Check status of expected OpenRC services."""
     results = []
 
     for svc in EXPECTED_SERVICES:
-        stdout, stderr, rc = run_cmd(["systemctl", "is-active", svc])
-        status = stdout if rc == 0 else "inactive/failed"
+        _, _, rc = run_cmd(["rc-service", svc, "status"])
+        status = "active" if rc == 0 else "inactive/failed"
         results.append({"name": svc, "status": status})
 
     return results
 
 
-def check_timers():
-    """Check status of expected systemd timers."""
+def check_scheduled_jobs():
+    """Check that expected jobs are present in fcrontab."""
     results = []
 
-    for timer in EXPECTED_TIMERS:
-        stdout, stderr, rc = run_cmd(["systemctl", "is-active", timer])
-        status = stdout if rc == 0 else "inactive/failed"
+    stdout, _, rc = run_cmd(["fcrontab", "-l"])
+    crontab_content = stdout if rc == 0 else ""
 
-        # Get next trigger time
-        next_stdout, _, next_rc = run_cmd([
-            "systemctl", "show", timer, "--property=NextElapseUSecRealtime"
-        ])
-        next_trigger = ""
-        if next_rc == 0 and "=" in next_stdout:
-            next_trigger = next_stdout.split("=", 1)[1].strip()
-
+    for job in EXPECTED_JOBS:
+        found = job in crontab_content
         results.append({
-            "name": timer,
-            "status": status,
-            "next_trigger": next_trigger,
+            "name": job,
+            "status": "active" if found else "missing",
+            "next_trigger": "",  # fcron doesn't expose next-run like systemd
         })
 
     return results
@@ -346,8 +339,8 @@ def analyze_health_log():
 # Auto-fix: safe remediation actions
 # ---------------------------------------------------------------------------
 
-# Only these services may be restarted automatically
-SAFE_RESTARTABLE_SERVICES = ["ollama.service"]
+# Only these services may be restarted automatically (OpenRC names)
+SAFE_RESTARTABLE_SERVICES = ["ollama"]
 
 ACTIONS_LOG = os.path.join(INFRA_DIR, "actions.log")
 
@@ -371,14 +364,14 @@ def attempt_service_restart(service):
         return False, f"not in safe restart list: {service}"
 
     # Double-check it's actually down before restarting
-    stdout, _, rc = run_cmd(["systemctl", "is-active", service])
-    if rc == 0 and stdout == "active":
+    _, _, rc = run_cmd(["rc-service", service, "status"])
+    if rc == 0:
         return False, f"{service} is already active — no action needed"
 
     print(f"[root] confirmed {service} is down, attempting restart...", file=sys.stderr)
 
-    # Attempt restart via systemctl (runs as operator, needs polkit or sudo)
-    _, stderr, rc = run_cmd(["systemctl", "restart", service], timeout=30)
+    # Attempt restart via rc-service
+    _, stderr, rc = run_cmd(["rc-service", service, "restart"], timeout=30)
     if rc != 0:
         return False, f"restart command failed: {stderr[:200]}"
 
@@ -386,8 +379,8 @@ def attempt_service_restart(service):
     time.sleep(5)
 
     # Verify it came back
-    stdout, _, rc = run_cmd(["systemctl", "is-active", service])
-    if rc == 0 and stdout == "active":
+    _, _, rc = run_cmd(["rc-service", service, "status"])
+    if rc == 0:
         return True, f"{service} restarted successfully"
 
     return False, f"{service} restart issued but service not yet active"
@@ -428,7 +421,7 @@ def generate_proposals(gpu, disk, memory, services, timers, ollama, comfyui, tre
             "severity": "high",
             "title": "GPU not detected",
             "description": "nvidia-smi is not responding. CUDA workloads will fail.",
-            "action": "Check NVIDIA driver status, verify NixOS GPU config in flake.nix",
+            "action": "Check NVIDIA driver status, verify GPU config in /etc/portage/package.use/nvidia",
         })
 
     # Disk proposals
@@ -442,7 +435,7 @@ def generate_proposals(gpu, disk, memory, services, timers, ollama, comfyui, tre
                     f"{fs['mount']} at {fs['used_pct']}% usage ({fs['available']} free). "
                     "System may become unresponsive."
                 ),
-                "action": "Clear old generations: sudo nix-collect-garbage -d; clean /tmp and logs",
+                "action": "Clean old distfiles: eclean-dist; prune snapper snapshots; clean /tmp and logs",
             })
         elif fs["used_pct"] >= DISK_WARN_PCT:
             proposals.append({
@@ -452,7 +445,7 @@ def generate_proposals(gpu, disk, memory, services, timers, ollama, comfyui, tre
                 "description": (
                     f"{fs['mount']} at {fs['used_pct']}% usage ({fs['available']} free)."
                 ),
-                "action": "Schedule garbage collection: nix-collect-garbage --delete-older-than 7d",
+                "action": "Clean old distfiles: eclean-dist --deep; prune old snapper snapshots",
             })
 
     # Memory proposals
@@ -476,7 +469,7 @@ def generate_proposals(gpu, disk, memory, services, timers, ollama, comfyui, tre
                 "severity": "high",
                 "title": f"Service down: {svc['name']}",
                 "description": f"{svc['name']} is {svc['status']}. Dependent workflows will fail.",
-                "action": f"systemctl restart {svc['name']} && systemctl status {svc['name']}",
+                "action": f"rc-service {svc['name']} restart && rc-service {svc['name']} status",
             })
 
     # Timer proposals
@@ -487,7 +480,7 @@ def generate_proposals(gpu, disk, memory, services, timers, ollama, comfyui, tre
                 "severity": "medium",
                 "title": f"Timer inactive: {timer['name']}",
                 "description": f"{timer['name']} is {timer['status']}. Scheduled tasks are not running.",
-                "action": f"systemctl enable --now {timer['name']}",
+                "action": f"Verify job is in fcrontab: fcrontab -l | grep {timer['name']}",
             })
 
     # Ollama proposals
@@ -497,7 +490,7 @@ def generate_proposals(gpu, disk, memory, services, timers, ollama, comfyui, tre
             "severity": "high",
             "title": "Ollama not responding",
             "description": f"Local inference unavailable: {ollama['detail']}",
-            "action": "systemctl restart ollama.service; check CUDA driver compatibility",
+            "action": "rc-service ollama restart; check CUDA driver compatibility",
         })
 
     # ComfyUI proposals
@@ -719,7 +712,7 @@ def main():
     print(f"[root] RAM: {memory.get('status', 'unknown')}", file=sys.stderr)
 
     services = check_services()
-    timers = check_timers()
+    timers = check_scheduled_jobs()
 
     ollama = check_ollama()
     print(f"[root] Ollama: {ollama['status']}", file=sys.stderr)
@@ -744,15 +737,15 @@ def main():
 
     if args.auto_fix:
         # Restart Ollama if it's down
-        if ollama["status"] != "OK" and "restart ollama.service" in already_restarted:
+        if ollama["status"] != "OK" and "restart ollama" in already_restarted:
             print(f"[root] auto-fix: Ollama restart already handled by another agent",
                   file=sys.stderr)
         elif ollama["status"] != "OK":
             print(f"[root] auto-fix: Ollama is {ollama['status']}, attempting restart...",
                   file=sys.stderr)
             success, msg = attempt_service_restart("ollama.service")
-            log_action("restart ollama.service", success, msg)
-            actions_taken.append(("restart ollama.service", success, msg))
+            log_action("restart ollama", success, msg)
+            actions_taken.append(("restart ollama", success, msg))
             print(f"[root] auto-fix: {msg}", file=sys.stderr)
             if success:
                 # Re-check after restart

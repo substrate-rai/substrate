@@ -23,12 +23,12 @@ REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 die() { echo "error: $*" >&2; exit 1; }
 
-# Find python3 — try PATH first, then nix develop
+# Find python3
 find_python() {
     if command -v python3 &>/dev/null; then
         echo "python3"
     else
-        echo "nix develop ${REPO_DIR} --command python3"
+        die "python3 not found in PATH"
     fi
 }
 

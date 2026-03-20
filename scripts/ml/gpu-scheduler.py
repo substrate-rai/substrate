@@ -5,13 +5,13 @@ Ensures only one GPU-intensive task runs at a time on the RTX 4060 (8GB).
 Auto-unloads Ollama before ML tasks, reloads after.
 
 Usage:
-    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py status
-    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py run image "a cyberpunk cat"
-    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py run transcribe audio.mp3
-    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py run speak "Hello world"
-    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py run music "lo-fi beat"
-    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py switch sd
-    nix develop .#ml --command python3 scripts/ml/gpu-scheduler.py switch ollama
+    python3 scripts/ml/gpu-scheduler.py status
+    python3 scripts/ml/gpu-scheduler.py run image "a cyberpunk cat"
+    python3 scripts/ml/gpu-scheduler.py run transcribe audio.mp3
+    python3 scripts/ml/gpu-scheduler.py run speak "Hello world"
+    python3 scripts/ml/gpu-scheduler.py run music "lo-fi beat"
+    python3 scripts/ml/gpu-scheduler.py switch sd
+    python3 scripts/ml/gpu-scheduler.py switch ollama
 """
 
 import argparse
