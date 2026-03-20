@@ -117,6 +117,37 @@ Scenes:     desktop-3d.sh full_scene         (mycopunk forest)
             desktop-3d.sh space_outpost      (sci-fi frontier — reactive)
             desktop-3d.sh autumn_campsite    (warm autumn — reactive, day/night)
             desktop-3d.sh abandoned_station  (liminal overgrowth — reactive)
+Art:        desktop-3d.sh fractal           (raymarched mandelbulb)
+            desktop-3d.sh aurora            (northern lights)
+            desktop-3d.sh matrix_rain       (digital rain)
+            desktop-3d.sh mycelium          (reaction-diffusion network)
+            desktop-3d.sh attractor         (lorenz strange attractor)
+            desktop-3d.sh galaxy            (spiral galaxy)
+            desktop-3d.sh visualizer        (audio spectrum ring)
+            desktop-3d.sh lsystem           (procedural L-system trees)
+            desktop-3d.sh vine_garden       (climbing vines + flowers)
+            desktop-3d.sh fluid             (cursor-interactive particles)
+            desktop-3d.sh fire              (procedural fire)
+            desktop-3d.sh vaporwave         (retro grid + sunset)
+            desktop-3d.sh domain_warp       (nested fBM warp art)
+            desktop-3d.sh ocean             (gerstner wave ocean)
+            desktop-3d.sh cloudscape        (volumetric clouds)
+            desktop-3d.sh physarum          (slime mold simulation)
+            desktop-3d.sh plasma            (demoscene sine waves)
+            desktop-3d.sh kaleidoscope      (polar coordinate reflections)
+            desktop-3d.sh tunnel            (infinite corridor)
+            desktop-3d.sh starfield         (parallax warp stars)
+            desktop-3d.sh julia             (julia set fractal)
+            desktop-3d.sh lava              (voronoi flowing magma)
+            desktop-3d.sh nebula            (layered space nebula)
+            desktop-3d.sh lightning         (electrical arcs)
+            desktop-3d.sh blackhole         (gravitational lensing)
+            desktop-3d.sh metaballs         (organic blob SDF)
+            desktop-3d.sh menger            (menger sponge fractal)
+            desktop-3d.sh supernova        (expanding shockwave rings)
+            desktop-3d.sh synthgrid        (retro grid + audio pillars)
+            desktop-3d.sh waveform         (7-band audio mountain range)
+PostFX:     desktop-3d.sh postfx --effect crt|tiltshift|ink|vhs|chroma|anime|nightvision|pixelate|glitch|thermal|ascii|none
 Objects:    desktop-3d.sh mushroom --color '#00ffaa' --x 0 --y 0
             desktop-3d.sh mecha --color '#00ffaa' --x 0 --y 0 --animation idle|walk|patrol
             desktop-3d.sh jellyfish|coral|vent|anglerfish|ruin [--x N --y N]
@@ -127,6 +158,11 @@ Auto:       desktop-3d.sh auto_rotate --enabled true|false
 Transition: desktop-3d.sh transition --scene haunted_graveyard   (fade to black)
 Spawn:      desktop-3d.sh spawn --model character-ghost.glb --kit graveyard --x 0 --y 0
 Hologram:   desktop-3d.sh hologram_display --x 0 --y 1.2 --z -2
+Events:     desktop-3d.sh event --event commit|ollama_start|ollama_stop
+Screenshot: desktop-3d.sh screenshot --path /tmp/screenshot.png
+Pomodoro:   desktop-3d.sh pomodoro --action start|stop|status --duration 1500
+Music:      desktop-3d.sh music play|pause|toggle|next|prev|stop|status
+            desktop-3d.sh music volume <0-100>
 Utility:    desktop-3d.sh sky '#ff0066' '#0033aa' 2.0   (top, horizon, energy)
             desktop-3d.sh particles fireflies|rain|embers|snow
 Load model: desktop-3d.sh load_model --path /path/to/model.glb --x 0 --y 0 --scale 1.0"
@@ -142,8 +178,12 @@ case "$CMD" in
     status|clear)
         send_json "{\"type\":\"$CMD\",\"params\":{}}"
         ;;
-    full_scene|abyss_scene|crystal_cave|neon_city|volcanic|zen_garden|fairy_garden|haunted_graveyard|space_outpost|autumn_campsite|abandoned_station)
+    full_scene|abyss_scene|crystal_cave|neon_city|volcanic|zen_garden|fairy_garden|haunted_graveyard|space_outpost|autumn_campsite|abandoned_station|fractal|aurora|matrix_rain|mycelium|attractor|galaxy|visualizer|lsystem|vine_garden|fluid|fire|vaporwave|domain_warp|ocean|cloudscape|physarum|plasma|kaleidoscope|tunnel|starfield|julia|lava|nebula|lightning|blackhole|metaballs|menger|supernova|synthgrid|waveform|castlevania|mgs|aquarium)
         send_json "{\"type\":\"$CMD\",\"params\":{}}"
+        ;;
+    postfx)
+        PARAMS=$(build_params_json "$@")
+        send_json "{\"type\":\"postfx\",\"params\":$PARAMS}"
         ;;
     sky)
         send_json "{\"type\":\"sky\",\"params\":{\"top\":\"${1:-#0d0328}\",\"horizon\":\"${2:-#0a1e0f}\",\"energy\":${3:-1.0}}}"
@@ -155,9 +195,30 @@ case "$CMD" in
         PARAMS=$(build_params_json "$@")
         send_json "{\"type\":\"$CMD\",\"params\":$PARAMS}"
         ;;
+    event)
+        PARAMS=$(build_params_json "$@")
+        send_json "{\"type\":\"event\",\"params\":$PARAMS}"
+        ;;
+    screenshot)
+        PARAMS=$(build_params_json "$@")
+        send_json "{\"type\":\"screenshot\",\"params\":$PARAMS}"
+        ;;
+    pomodoro)
+        PARAMS=$(build_params_json "$@")
+        send_json "{\"type\":\"pomodoro\",\"params\":$PARAMS}"
+        ;;
     mushroom|spore_cluster|tree|forest_floor|mecha|load_model|bloom|jellyfish|coral|vent|anglerfish|ruin)
         PARAMS=$(build_params_json "$@")
         send_json "{\"type\":\"$CMD\",\"params\":$PARAMS}"
+        ;;
+    music)
+        subcmd="${1:-status}"; shift || true
+        case "$subcmd" in
+            play|pause|toggle|next|prev|stop) mpc "$subcmd" 2>/dev/null | head -3 ;;
+            status) mpc status 2>/dev/null || echo "MPD not running" ;;
+            volume) mpc volume "${1:-}" 2>/dev/null ;;
+            *) die "Unknown music command: $subcmd" ;;
+        esac
         ;;
     *)
         die "Unknown command: $CMD"

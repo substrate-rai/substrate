@@ -171,8 +171,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -527,7 +527,9 @@ func _process(delta):
 	if idle_time >= idle_threshold and not is_idle:
 		is_idle = true
 		pre_idle_camera_mode = camera_mode
-		camera_mode = "cinematic"
+		# Don't override static camera (shader scenes need it locked)
+		if camera_mode != "static":
+			camera_mode = "cinematic"
 	var idle_factor = clamp(idle_time / idle_threshold, 0.0, 1.0)
 	RenderingServer.global_shader_parameter_set("idle_factor", idle_factor)
 
@@ -654,6 +656,7 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			create_forest_floor(params)
 			return {"status": "ok", "message": "Created forest_floor", "objects": spawned_items.size()}
 		"full_scene":
+			apply_forest_environment()
 			create_full_scene(params)
 			return {"status": "ok", "message": "Created full_scene", "objects": spawned_items.size()}
 		"load_model":
@@ -795,6 +798,30 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			env_f.glow_enabled = false  # pixel art needs hard edges, no bloom
 			create_shader_scene("res://shaders/fire.gdshader", params)
 			return {"status": "ok", "message": "Fire scene loaded"}
+		"castlevania":
+			apply_dark_environment()
+			var env_cv = $WorldEnvironment.environment as Environment
+			env_cv.glow_enabled = false
+			create_shader_scene("res://shaders/castlevania.gdshader", params)
+			return {"status": "ok", "message": "Castlevania hallway loaded"}
+		"mgs":
+			apply_dark_environment()
+			var env_mgs = $WorldEnvironment.environment as Environment
+			env_mgs.glow_enabled = false
+			create_shader_scene("res://shaders/mgs.gdshader", params)
+			return {"status": "ok", "message": "Shadow Moses loaded"}
+		"aquarium":
+			apply_dark_environment()
+			var env_aq = $WorldEnvironment.environment as Environment
+			env_aq.glow_enabled = false
+			create_shader_scene("res://shaders/aquarium.gdshader", params)
+			return {"status": "ok", "message": "Aquarium loaded"}
+		"victory":
+			apply_dark_environment()
+			var env_v = $WorldEnvironment.environment as Environment
+			env_v.glow_enabled = false
+			create_shader_scene("res://shaders/victory.gdshader", params)
+			return {"status": "ok", "message": "Victory scene loaded"}
 		"vaporwave":
 			apply_dark_environment()
 			create_shader_scene("res://shaders/vaporwave.gdshader", params)
@@ -1718,14 +1745,47 @@ func create_full_scene(params: Dictionary):
 	await get_tree().process_frame
 
 	create_forest_floor({})
-	create_mushroom({"color": "#00ffaa", "x": 0, "y": 0, "emission": 4.0, "scale": 1.3})
-	create_mushroom({"color": "#00ffcc", "x": 1.2, "y": 0.8, "emission": 2.5, "scale": 0.6})
-	create_mushroom({"color": "#00ff88", "x": -0.8, "y": 1.0, "emission": 3.0, "scale": 0.8})
-	create_mushroom({"color": "#44ffaa", "x": 0.5, "y": -1.5, "emission": 2.0, "scale": 0.5})
+
+	# Mushrooms with point lights
+	var mushroom_data = [
+		{"color": "#00ffaa", "x": 0, "y": 0, "emission": 4.0, "scale": 1.3},
+		{"color": "#00ffcc", "x": 1.2, "y": 0.8, "emission": 2.5, "scale": 0.6},
+		{"color": "#00ff88", "x": -0.8, "y": 1.0, "emission": 3.0, "scale": 0.8},
+		{"color": "#44ffaa", "x": 0.5, "y": -1.5, "emission": 2.0, "scale": 0.5},
+		{"color": "#00ffdd", "x": -2.0, "y": -0.5, "emission": 3.5, "scale": 0.7},
+		{"color": "#33ffaa", "x": 1.8, "y": -2.5, "emission": 2.0, "scale": 0.4},
+		{"color": "#00ffaa", "x": -3.0, "y": 2.5, "emission": 2.5, "scale": 0.9},
+		{"color": "#66ffcc", "x": 3.5, "y": 1.5, "emission": 1.8, "scale": 0.5},
+	]
+	for md in mushroom_data:
+		create_mushroom(md)
+		var ml = OmniLight3D.new()
+		ml.light_color = Color.html(md["color"])
+		ml.light_energy = float(md["emission"]) * 0.4
+		ml.omni_range = 3.0 * float(md["scale"])
+		ml.omni_attenuation = 1.5
+		ml.position = Vector3(float(md["x"]), 0.3 * float(md["scale"]), float(md["y"]))
+		objects_container.add_child(ml)
+
+	# Spore clusters with glow
 	create_spore_cluster({"color": "#ff77ff", "x": 2.5, "y": 0})
 	create_spore_cluster({"color": "#ff55dd", "x": -1.5, "y": -2.0, "emission": 2.0})
+	create_spore_cluster({"color": "#ff88cc", "x": 0.0, "y": 3.0, "emission": 2.5})
+	for sp in [Vector3(2.5, 0.5, 0), Vector3(-1.5, 0.5, -2.0), Vector3(0, 0.5, 3.0)]:
+		var sl = OmniLight3D.new()
+		sl.light_color = Color.html("#ff77ff")
+		sl.light_energy = 1.5
+		sl.omni_range = 3.0
+		sl.position = sp
+		objects_container.add_child(sl)
+
+	# Trees
 	create_tree({"color": "#77aaff", "x": -2.5, "y": 1.0})
 	create_tree({"color": "#5599ff", "x": 3.0, "y": -2.0, "emission": 2.5})
+	create_tree({"color": "#88bbff", "x": -4.0, "y": -3.0, "emission": 2.0})
+
+	# Firefly particles
+	create_particles("fireflies", {})
 
 # ── Abyss Scene (Underwater) ─────────────────────────────────────────────────
 
@@ -1737,25 +1797,25 @@ func apply_abyss_environment():
 	sky_mat.sky_horizon_color = Color(0.0, 0.03, 0.06)
 	sky_mat.ground_bottom_color = Color(0.0, 0.0, 0.01)
 	sky_mat.ground_horizon_color = Color(0.0, 0.02, 0.04)
-	sky_mat.sky_energy_multiplier = 0.15
-	# Ocean volumetric fog — thick blue-green murk
-	env.volumetric_fog_density = 0.06
-	env.volumetric_fog_albedo = Color(0.0, 0.03, 0.06)
-	env.volumetric_fog_emission = Color(0.0, 0.008, 0.02)
-	env.volumetric_fog_emission_energy = 0.3
+	sky_mat.sky_energy_multiplier = 0.4
+	# Ocean volumetric fog — blue-green murk
+	env.volumetric_fog_density = 0.04
+	env.volumetric_fog_albedo = Color(0.0, 0.04, 0.08)
+	env.volumetric_fog_emission = Color(0.0, 0.012, 0.03)
+	env.volumetric_fog_emission_energy = 0.5
 	# Distance fog — deep blue
-	env.fog_light_color = Color(0.0, 0.015, 0.04)
-	env.fog_density = 0.025
+	env.fog_light_color = Color(0.0, 0.03, 0.06)
+	env.fog_density = 0.02
 	# Boost glow for underwater bioluminescence
 	env.glow_intensity = 2.0
 	env.glow_strength = 1.5
 	env.glow_bloom = 0.5
 	env.glow_hdr_threshold = 0.4
-	# Dim ambient
-	env.ambient_light_energy = 0.2
-	# Moonlight becomes faint surface light
+	# Ambient — enough to see the ocean floor and coral
+	env.ambient_light_energy = 0.6
+	# Surface light filtering down
 	$MoonLight.light_color = Color(0.2, 0.35, 0.5)
-	$MoonLight.light_energy = 0.15
+	$MoonLight.light_energy = 0.4
 
 func apply_forest_environment():
 	var env = $WorldEnvironment.environment as Environment
@@ -1764,20 +1824,20 @@ func apply_forest_environment():
 	sky_mat.sky_horizon_color = Color(0.12, 0.25, 0.18)
 	sky_mat.ground_bottom_color = Color(0.06, 0.06, 0.12)
 	sky_mat.ground_horizon_color = Color(0.1, 0.18, 0.12)
-	sky_mat.sky_energy_multiplier = 1.0
-	env.volumetric_fog_density = 0.03
+	sky_mat.sky_energy_multiplier = 1.5
+	env.volumetric_fog_density = 0.02
 	env.volumetric_fog_albedo = Color(0.05, 0.1, 0.07)
 	env.volumetric_fog_emission = Color(0.01, 0.04, 0.02)
 	env.volumetric_fog_emission_energy = 0.8
 	env.fog_light_color = Color(0.03, 0.06, 0.04)
-	env.fog_density = 0.02
+	env.fog_density = 0.015
 	env.glow_intensity = 1.5
 	env.glow_strength = 1.2
 	env.glow_bloom = 0.3
 	env.glow_hdr_threshold = 0.6
-	env.ambient_light_energy = 0.5
+	env.ambient_light_energy = 1.0
 	$MoonLight.light_color = Color(0.6, 0.65, 0.8)
-	$MoonLight.light_energy = 0.4
+	$MoonLight.light_energy = 0.8
 
 func create_abyss_scene(params: Dictionary):
 	# Clear everything
@@ -1792,27 +1852,51 @@ func create_abyss_scene(params: Dictionary):
 	# Ocean floor
 	create_sea_floor({})
 
-	# Jellyfish — scattered at various heights
-	create_jellyfish({"color": "#ff3388", "x": 0, "y": 0, "height": 3.5, "scale": 1.2})
-	create_jellyfish({"color": "#33ccff", "x": 2.0, "y": 1.5, "height": 2.8, "scale": 0.7})
-	create_jellyfish({"color": "#ff88ff", "x": -1.8, "y": -1.0, "height": 4.2, "scale": 0.9})
-	create_jellyfish({"color": "#ffaa33", "x": 0.5, "y": 3.0, "height": 1.8, "scale": 0.5})
-	create_jellyfish({"color": "#33ffcc", "x": -3.0, "y": 2.0, "height": 3.0, "scale": 0.6})
-	create_jellyfish({"color": "#ff5555", "x": 3.5, "y": -1.5, "height": 5.0, "scale": 0.4})
+	# Jellyfish — scattered at various heights, with point lights
+	var jf_data = [
+		{"color": "#ff3388", "x": 0, "y": 0, "height": 3.5, "scale": 1.2},
+		{"color": "#33ccff", "x": 2.0, "y": 1.5, "height": 2.8, "scale": 0.7},
+		{"color": "#ff88ff", "x": -1.8, "y": -1.0, "height": 4.2, "scale": 0.9},
+		{"color": "#ffaa33", "x": 0.5, "y": 3.0, "height": 1.8, "scale": 0.5},
+		{"color": "#33ffcc", "x": -3.0, "y": 2.0, "height": 3.0, "scale": 0.6},
+		{"color": "#ff5555", "x": 3.5, "y": -1.5, "height": 5.0, "scale": 0.4},
+		{"color": "#44aaff", "x": -4.0, "y": -3.0, "height": 2.5, "scale": 0.8},
+		{"color": "#ff66aa", "x": 4.0, "y": 2.5, "height": 4.0, "scale": 0.5},
+	]
+	for jd in jf_data:
+		create_jellyfish(jd)
+		var jl = OmniLight3D.new()
+		jl.light_color = Color.html(jd["color"])
+		jl.light_energy = 1.5 * float(jd["scale"])
+		jl.omni_range = 4.0
+		jl.omni_attenuation = 1.8
+		jl.position = Vector3(float(jd["x"]), float(jd["height"]), float(jd["y"]))
+		objects_container.add_child(jl)
 
 	# Coral formations
 	create_coral({"color": "#ff4466", "x": 1.5, "y": 1.0})
 	create_coral({"color": "#ff8833", "x": -2.0, "y": -1.5})
 	create_coral({"color": "#cc44ff", "x": 0.5, "y": -2.5})
 	create_coral({"color": "#33ddff", "x": -1.0, "y": 2.5})
+	create_coral({"color": "#ff66cc", "x": 3.0, "y": -3.0})
+	create_coral({"color": "#44ffaa", "x": -3.5, "y": 0.5})
 
-	# Hydrothermal vents
+	# Hydrothermal vents with glow lights
 	create_hydrothermal_vent({"x": 3.0, "y": 0.5})
 	create_hydrothermal_vent({"x": -3.5, "y": -2.0, "scale": 0.7})
+	create_hydrothermal_vent({"x": 0.0, "y": -4.0, "scale": 0.5})
+	for vp in [Vector3(3.0, 0.5, 0.5), Vector3(-3.5, 0.5, -2.0), Vector3(0.0, 0.3, -4.0)]:
+		var vl = OmniLight3D.new()
+		vl.light_color = Color.html("#ff6633")
+		vl.light_energy = 2.0
+		vl.omni_range = 4.0
+		vl.position = vp
+		objects_container.add_child(vl)
 
 	# Anglerfish lurking
 	create_anglerfish({"x": -1.5, "y": 0.5})
 	create_anglerfish({"x": 2.5, "y": -2.0, "scale": 0.6})
+	create_anglerfish({"x": -4.0, "y": -3.5, "scale": 0.5})
 
 	# Sunken ruins
 	create_sunken_ruin({"x": 0, "y": -1.0})
@@ -2574,11 +2658,11 @@ func create_particles(preset: String, params: Dictionary):
 func apply_crystal_environment():
 	var env = $WorldEnvironment.environment as Environment
 	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
-	sky_mat.sky_top_color = Color(0.02, 0.01, 0.08)
-	sky_mat.sky_horizon_color = Color(0.05, 0.03, 0.12)
-	sky_mat.ground_bottom_color = Color(0.01, 0.01, 0.03)
-	sky_mat.ground_horizon_color = Color(0.03, 0.02, 0.08)
-	sky_mat.sky_energy_multiplier = 0.3
+	sky_mat.sky_top_color = Color(0.03, 0.02, 0.10)
+	sky_mat.sky_horizon_color = Color(0.06, 0.04, 0.15)
+	sky_mat.ground_bottom_color = Color(0.02, 0.02, 0.05)
+	sky_mat.ground_horizon_color = Color(0.04, 0.03, 0.10)
+	sky_mat.sky_energy_multiplier = 0.6
 	env.volumetric_fog_enabled = false
 	env.fog_density = 0.005
 	env.fog_light_color = Color(0.1, 0.05, 0.2)
@@ -2587,9 +2671,9 @@ func apply_crystal_environment():
 	env.glow_intensity = 2.5
 	env.glow_bloom = 0.5
 	env.sdfgi_enabled = true
-	env.ambient_light_energy = 0.3
+	env.ambient_light_energy = 0.7
 	$MoonLight.light_color = Color(0.4, 0.3, 0.7)
-	$MoonLight.light_energy = 0.2
+	$MoonLight.light_energy = 0.5
 
 func create_crystal_cave(params: Dictionary):
 	for child in objects_container.get_children():
@@ -2605,15 +2689,47 @@ func create_crystal_cave(params: Dictionary):
 	floor_mesh.position = Vector3(0, -1, 0)
 	objects_container.add_child(floor_mesh)
 
-	# Crystal clusters
+	# Crystal clusters — with point lights to illuminate surroundings
 	var crystal_colors = ["#4488ff", "#aa44ff", "#44ffdd", "#ff44aa"]
-	for i in range(20):
+	for i in range(30):
 		var cx = randf_range(-12, 12)
 		var cz = randf_range(-12, 12)
-		create_crystal_cluster(Vector3(cx, -1, cz), crystal_colors[randi() % 4])
+		var cc = crystal_colors[randi() % 4]
+		create_crystal_cluster(Vector3(cx, -1, cz), cc)
+		# Every 3rd cluster gets a point light
+		if i % 3 == 0:
+			var cl = OmniLight3D.new()
+			cl.light_color = Color.html(cc)
+			cl.light_energy = 1.5
+			cl.omni_range = 5.0
+			cl.omni_attenuation = 1.5
+			cl.position = Vector3(cx, 0.5, cz)
+			objects_container.add_child(cl)
 
-	# Large central crystal pillar
+	# Large central crystal pillar — with strong light
 	create_crystal_pillar(Vector3(0, -1, -3), "#7744ff", 4.0)
+	var pillar_light = OmniLight3D.new()
+	pillar_light.light_color = Color.html("#7744ff")
+	pillar_light.light_energy = 3.0
+	pillar_light.omni_range = 8.0
+	pillar_light.omni_attenuation = 1.2
+	pillar_light.position = Vector3(0, 2.0, -3)
+	objects_container.add_child(pillar_light)
+
+	# Stalactites hanging from ceiling
+	for i in range(15):
+		var stalactite = MeshInstance3D.new()
+		var prism = CylinderMesh.new()
+		prism.top_radius = randf_range(0.05, 0.15)
+		prism.bottom_radius = 0.0
+		prism.height = randf_range(0.8, 2.5)
+		prism.radial_segments = 5
+		stalactite.mesh = prism
+		var st_color = crystal_colors[randi() % 4]
+		stalactite.mesh.material = make_emissive_mat(st_color, randf_range(0.5, 2.0))
+		stalactite.position = Vector3(randf_range(-10, 10), 6 + randf_range(0, 2), randf_range(-10, 8))
+		stalactite.rotation_degrees.z = 180  # hang down
+		objects_container.add_child(stalactite)
 
 	# Reflective pool
 	var pool = MeshInstance3D.new()
@@ -2629,6 +2745,26 @@ func create_crystal_cave(params: Dictionary):
 	pool.mesh.material = pool_mat
 	pool.position = Vector3(5, -0.95, 3)
 	objects_container.add_child(pool)
+
+	# Sparkle particles — crystal dust floating
+	var sparkle = GPUParticles3D.new()
+	sparkle.amount = 120
+	var sp_mat = ParticleProcessMaterial.new()
+	sp_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	sp_mat.emission_box_extents = Vector3(12, 5, 12)
+	sp_mat.gravity = Vector3(0, -0.05, 0)
+	sp_mat.initial_velocity_min = 0.05
+	sp_mat.initial_velocity_max = 0.15
+	sp_mat.scale_min = 0.01
+	sp_mat.scale_max = 0.03
+	sparkle.lifetime = 12.0
+	var sp_mesh = SphereMesh.new()
+	sp_mesh.radius = 0.015
+	sp_mesh.height = 0.03
+	sp_mesh.material = make_emissive_mat("#aabbff", 6.0)
+	sparkle.draw_pass_1 = sp_mesh
+	sparkle.process_material = sp_mat
+	objects_container.add_child(sparkle)
 
 	spawned_items.append({"type": "scene", "name": "crystal_cave"})
 
@@ -2672,25 +2808,25 @@ func create_crystal_pillar(pos: Vector3, color: String, height: float):
 func apply_neon_environment():
 	var env = $WorldEnvironment.environment as Environment
 	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
-	sky_mat.sky_top_color = Color(0.01, 0.01, 0.03)
-	sky_mat.sky_horizon_color = Color(0.05, 0.02, 0.08)
-	sky_mat.ground_bottom_color = Color(0.02, 0.02, 0.04)
-	sky_mat.ground_horizon_color = Color(0.04, 0.02, 0.06)
-	sky_mat.sky_energy_multiplier = 0.5
+	sky_mat.sky_top_color = Color(0.02, 0.02, 0.06)
+	sky_mat.sky_horizon_color = Color(0.06, 0.03, 0.10)
+	sky_mat.ground_bottom_color = Color(0.03, 0.03, 0.06)
+	sky_mat.ground_horizon_color = Color(0.05, 0.03, 0.08)
+	sky_mat.sky_energy_multiplier = 0.6
 	env.volumetric_fog_enabled = true
-	env.volumetric_fog_density = 0.06
-	env.volumetric_fog_albedo = Color(0.03, 0.01, 0.05)
-	env.volumetric_fog_emission = Color(0.02, 0.01, 0.03)
+	env.volumetric_fog_density = 0.04
+	env.volumetric_fog_albedo = Color(0.04, 0.02, 0.06)
+	env.volumetric_fog_emission = Color(0.03, 0.02, 0.04)
 	env.volumetric_fog_emission_energy = 1.0
 	env.ssr_enabled = true
 	env.ssr_max_steps = 96
-	env.glow_intensity = 2.0
-	env.glow_bloom = 0.4
-	env.glow_hdr_threshold = 0.4
+	env.glow_intensity = 1.8
+	env.glow_bloom = 0.35
+	env.glow_hdr_threshold = 0.6
 	env.sdfgi_enabled = true
-	env.ambient_light_energy = 0.5
+	env.ambient_light_energy = 0.7
 	$MoonLight.light_color = Color(0.4, 0.35, 0.6)
-	$MoonLight.light_energy = 0.4
+	$MoonLight.light_energy = 0.5
 
 func create_neon_city(params: Dictionary):
 	for child in objects_container.get_children():
@@ -2758,7 +2894,7 @@ func create_neon_city(params: Dictionary):
 		sign_node.rotation_degrees.y = randf_range(-30, 30)
 		objects_container.add_child(sign_node)
 
-	# Street lamps along corridor
+	# Street lamps along corridor — with OmniLights that illuminate the wet street
 	for i in range(6):
 		var lz = -10 + i * 4.0
 		for side in [-2.5, 2.5]:
@@ -2775,13 +2911,25 @@ func create_neon_city(params: Dictionary):
 			pole.position = Vector3(side, 0.5, lz)
 			objects_container.add_child(pole)
 			# Lamp head
+			var nc_lamp = neon_colors[randi() % neon_colors.size()]
 			var lamp = MeshInstance3D.new()
 			lamp.mesh = SphereMesh.new()
 			lamp.mesh.radius = 0.1
 			lamp.mesh.height = 0.15
-			lamp.mesh.material = make_emissive_mat(neon_colors[randi() % neon_colors.size()], 4.0)
+			lamp.mesh.material = make_emissive_mat(nc_lamp, 4.0)
 			lamp.position = Vector3(side, 2.1, lz)
 			objects_container.add_child(lamp)
+			# Point light — illuminates street and building faces
+			var ll = OmniLight3D.new()
+			ll.light_color = Color.html(nc_lamp)
+			ll.light_energy = 2.5
+			ll.omni_range = 5.0
+			ll.omni_attenuation = 1.3
+			ll.position = Vector3(side, 2.0, lz)
+			objects_container.add_child(ll)
+
+	# Rain — wet cyberpunk atmosphere
+	create_particles("rain", {})
 
 	spawned_items.append({"type": "scene", "name": "neon_city"})
 
@@ -2871,24 +3019,24 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 func apply_volcanic_environment():
 	var env = $WorldEnvironment.environment as Environment
 	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
-	sky_mat.sky_top_color = Color(0.03, 0.01, 0.01)
-	sky_mat.sky_horizon_color = Color(0.3, 0.08, 0.02)
-	sky_mat.ground_bottom_color = Color(0.05, 0.02, 0.01)
-	sky_mat.ground_horizon_color = Color(0.2, 0.06, 0.02)
-	sky_mat.sky_energy_multiplier = 1.5
+	sky_mat.sky_top_color = Color(0.05, 0.02, 0.02)
+	sky_mat.sky_horizon_color = Color(0.35, 0.10, 0.03)
+	sky_mat.ground_bottom_color = Color(0.08, 0.04, 0.02)
+	sky_mat.ground_horizon_color = Color(0.25, 0.08, 0.03)
+	sky_mat.sky_energy_multiplier = 2.0
 	env.volumetric_fog_enabled = true
-	env.volumetric_fog_density = 0.04
-	env.volumetric_fog_albedo = Color(0.08, 0.03, 0.01)
-	env.volumetric_fog_emission = Color(0.06, 0.02, 0.005)
-	env.volumetric_fog_emission_energy = 0.8
+	env.volumetric_fog_density = 0.03
+	env.volumetric_fog_albedo = Color(0.10, 0.04, 0.02)
+	env.volumetric_fog_emission = Color(0.08, 0.03, 0.01)
+	env.volumetric_fog_emission_energy = 1.0
 	env.glow_intensity = 2.0
 	env.glow_bloom = 0.4
 	env.glow_hdr_threshold = 0.5
 	env.sdfgi_enabled = true
 	env.ssr_enabled = true
-	env.ambient_light_energy = 0.4
+	env.ambient_light_energy = 0.8
 	$MoonLight.light_color = Color(0.6, 0.3, 0.15)
-	$MoonLight.light_energy = 0.3
+	$MoonLight.light_energy = 0.6
 
 func create_volcanic_scene(params: Dictionary):
 	for child in objects_container.get_children():
@@ -2904,18 +3052,30 @@ func create_volcanic_scene(params: Dictionary):
 	ground.position = Vector3(0, -1, 0)
 	objects_container.add_child(ground)
 
-	# Lava rivers — emissive orange strips
-	for i in range(5):
+	# Lava rivers — emissive orange strips with point lights
+	for i in range(7):
 		var lava = MeshInstance3D.new()
 		lava.mesh = PlaneMesh.new()
-		lava.mesh.size = Vector2(randf_range(0.8, 2.0), randf_range(8, 20))
+		var lava_w = randf_range(0.8, 2.0)
+		var lava_l = randf_range(8, 20)
+		lava.mesh.size = Vector2(lava_w, lava_l)
 		lava.mesh.material = make_emissive_mat("#ff4400", 8.0)
-		lava.position = Vector3(randf_range(-10, 10), -0.95, randf_range(-8, 8))
+		var lava_x = randf_range(-10, 10)
+		var lava_z = randf_range(-8, 8)
+		lava.position = Vector3(lava_x, -0.95, lava_z)
 		lava.rotation_degrees.y = randf_range(-30, 30)
 		objects_container.add_child(lava)
+		# Lava glow — lights up surroundings orange
+		var ll = OmniLight3D.new()
+		ll.light_color = Color.html("#ff4400")
+		ll.light_energy = 3.0
+		ll.omni_range = 6.0
+		ll.omni_attenuation = 1.5
+		ll.position = Vector3(lava_x, 0.5, lava_z)
+		objects_container.add_child(ll)
 
 	# Obsidian spires — dark metallic jagged columns
-	for i in range(15):
+	for i in range(20):
 		var spire = MeshInstance3D.new()
 		var prism = CylinderMesh.new()
 		prism.top_radius = 0.0
@@ -2928,8 +3088,8 @@ func create_volcanic_scene(params: Dictionary):
 		spire.rotation_degrees = Vector3(randf_range(-8, 8), randf_range(0, 360), randf_range(-8, 8))
 		objects_container.add_child(spire)
 
-	# Volcanic vents — glowing cones
-	for i in range(4):
+	# Volcanic vents — glowing cones with lights
+	for i in range(5):
 		var vent = MeshInstance3D.new()
 		var cone = CylinderMesh.new()
 		cone.top_radius = 0.3
@@ -2937,8 +3097,18 @@ func create_volcanic_scene(params: Dictionary):
 		cone.height = 1.0
 		vent.mesh = cone
 		vent.mesh.material = make_emissive_mat("#ff6600", 4.0)
-		vent.position = Vector3(randf_range(-8, 8), -0.5, randf_range(-8, 5))
+		var vx = randf_range(-8, 8)
+		var vz = randf_range(-8, 5)
+		vent.position = Vector3(vx, -0.5, vz)
 		objects_container.add_child(vent)
+		# Vent glow
+		var vl = OmniLight3D.new()
+		vl.light_color = Color.html("#ff6600")
+		vl.light_energy = 4.0
+		vl.omni_range = 5.0
+		vl.omni_attenuation = 1.3
+		vl.position = Vector3(vx, 0.5, vz)
+		objects_container.add_child(vl)
 
 	# Auto-add ember particles
 	create_particles("embers", {})
@@ -3052,6 +3222,15 @@ func create_zen_garden(params: Dictionary):
 	roof.position = lantern_base + Vector3(0, 0.8, 0)
 	objects_container.add_child(roof)
 
+	# Lantern warm glow — illuminates surrounding stones and water
+	var lantern_light = OmniLight3D.new()
+	lantern_light.light_color = Color.html("#ffcc66")
+	lantern_light.light_energy = 2.5
+	lantern_light.omni_range = 6.0
+	lantern_light.omni_attenuation = 1.5
+	lantern_light.position = lantern_base + Vector3(0, 0.6, 0)
+	objects_container.add_child(lantern_light)
+
 	# Bonsai tree
 	var trunk = MeshInstance3D.new()
 	trunk.mesh = CylinderMesh.new()
@@ -3079,6 +3258,9 @@ func create_zen_garden(params: Dictionary):
 		rock.mesh.material = make_organic_mat("#4a4a45")
 		rock.position = Vector3(randf_range(-5, 5), -0.85, randf_range(-5, 5))
 		objects_container.add_child(rock)
+
+	# Fireflies for evening atmosphere
+	create_particles("fireflies", {})
 
 	spawned_items.append({"type": "scene", "name": "zen_garden"})
 
@@ -3484,7 +3666,7 @@ func apply_graveyard_environment():
 	env.tonemap_mode = 3  # Filmic
 	env.tonemap_exposure = 1.0
 	env.ambient_light_source = 1
-	env.ambient_light_energy = 0.3
+	env.ambient_light_energy = 0.6
 	env.ambient_light_color = Color(0.3, 0.25, 0.45)
 	env.sdfgi_enabled = true
 	env.sdfgi_use_occlusion = true
@@ -3496,12 +3678,12 @@ func apply_graveyard_environment():
 	env.ssr_max_steps = 64
 	# Green volumetric fog
 	env.volumetric_fog_enabled = true
-	env.volumetric_fog_density = 0.04
+	env.volumetric_fog_density = 0.03
 	env.volumetric_fog_albedo = Color(0.08, 0.15, 0.06)
 	env.volumetric_fog_emission = Color(0.02, 0.06, 0.02)
 	env.volumetric_fog_emission_energy = 0.5
 	env.fog_enabled = true
-	env.fog_density = 0.015
+	env.fog_density = 0.012
 	env.fog_light_color = Color(0.06, 0.1, 0.05)
 	# Glow for candles/pumpkins
 	env.glow_enabled = true
@@ -3509,9 +3691,9 @@ func apply_graveyard_environment():
 	env.glow_bloom = 0.4
 	env.glow_strength = 1.3
 	env.glow_hdr_threshold = 0.5
-	# Cold moonlight
+	# Cold moonlight — bright enough to see gravestones
 	$MoonLight.light_color = Color(0.55, 0.6, 0.85)
-	$MoonLight.light_energy = 0.35
+	$MoonLight.light_energy = 0.7
 	$MoonLight.shadow_enabled = true
 
 func create_haunted_graveyard(params: Dictionary):
@@ -3702,6 +3884,27 @@ func create_haunted_graveyard(params: Dictionary):
 	moon_accent.position = Vector3(0, 5, 0)
 	objects_container.add_child(moon_accent)
 
+	# Graveyard mist — low-hanging fog particles
+	var mist = GPUParticles3D.new()
+	mist.amount = 100
+	var mist_mat = ParticleProcessMaterial.new()
+	mist_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	mist_mat.emission_box_extents = Vector3(10, 0.3, 10)
+	mist_mat.gravity = Vector3(0, 0, 0)
+	mist_mat.initial_velocity_min = 0.1
+	mist_mat.initial_velocity_max = 0.3
+	mist_mat.scale_min = 0.3
+	mist_mat.scale_max = 0.8
+	mist.lifetime = 15.0
+	mist.position.y = -0.3
+	var mist_mesh = SphereMesh.new()
+	mist_mesh.radius = 0.5
+	mist_mesh.height = 0.2
+	mist_mesh.material = make_translucent_mat("#8899aa", 0.08)
+	mist.draw_pass_1 = mist_mesh
+	mist.process_material = mist_mat
+	objects_container.add_child(mist)
+
 	spawned_items.append({"type": "scene", "name": "haunted_graveyard"})
 
 # ── SPACE OUTPOST ────────────────────────────────────────────────────────────
@@ -3717,11 +3920,11 @@ func apply_space_environment():
 	env.tonemap_mode = 3
 	env.tonemap_exposure = 1.0
 	env.ambient_light_source = 3
-	env.ambient_light_energy = 0.2
+	env.ambient_light_energy = 0.5
 	env.ambient_light_color = Color(0.1, 0.2, 0.25)
 	env.sdfgi_enabled = true
 	env.sdfgi_use_occlusion = true
-	env.sdfgi_energy = 0.4
+	env.sdfgi_energy = 0.6
 	env.ssao_enabled = true
 	env.ssao_radius = 1.0
 	env.ssao_intensity = 2.5
@@ -3736,9 +3939,9 @@ func apply_space_environment():
 	env.glow_bloom = 0.5
 	env.glow_strength = 1.5
 	env.glow_hdr_threshold = 0.4
-	# Dim distant star light
+	# Starlight — bright enough to see outpost structures
 	$MoonLight.light_color = Color(0.7, 0.75, 0.85)
-	$MoonLight.light_energy = 0.2
+	$MoonLight.light_energy = 0.6
 	$MoonLight.shadow_enabled = true
 
 func create_space_outpost(params: Dictionary):
@@ -4216,7 +4419,7 @@ func apply_station_environment():
 	env.tonemap_mode = 3  # Filmic
 	env.tonemap_exposure = 1.1
 	env.ambient_light_source = 3
-	env.ambient_light_energy = 0.25
+	env.ambient_light_energy = 0.6
 	env.ambient_light_color = Color(0.15, 0.2, 0.18)
 	env.sdfgi_enabled = true
 	env.sdfgi_use_occlusion = true
@@ -4241,9 +4444,9 @@ func apply_station_environment():
 	env.glow_bloom = 0.3
 	env.glow_strength = 1.2
 	env.glow_hdr_threshold = 0.5
-	# Broken light shafts — dim directional
+	# Broken light shafts
 	$MoonLight.light_color = Color(0.5, 0.65, 0.55)
-	$MoonLight.light_energy = 0.3
+	$MoonLight.light_energy = 0.6
 	$MoonLight.shadow_enabled = true
 
 func create_abandoned_station(params: Dictionary):
@@ -4395,6 +4598,26 @@ func create_abandoned_station(params: Dictionary):
 			fog.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			fog.position = Vector3(randf_range(-7, 7), -0.5 + randf_range(-0.15, 0.15), randf_range(-5, 5))
 			objects_container.add_child(fog)
+
+	# Spore particles — bioluminescent spores drifting through overgrown corridors
+	var spores = GPUParticles3D.new()
+	spores.amount = 80
+	var spore_mat = ParticleProcessMaterial.new()
+	spore_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	spore_mat.emission_box_extents = Vector3(8, 3, 8)
+	spore_mat.gravity = Vector3(0, 0.08, 0)
+	spore_mat.initial_velocity_min = 0.05
+	spore_mat.initial_velocity_max = 0.2
+	spore_mat.scale_min = 0.01
+	spore_mat.scale_max = 0.03
+	spores.lifetime = 10.0
+	var spore_mesh = SphereMesh.new()
+	spore_mesh.radius = 0.015
+	spore_mesh.height = 0.03
+	spore_mesh.material = make_emissive_mat("#66ffaa", 5.0)
+	spores.draw_pass_1 = spore_mesh
+	spores.process_material = spore_mat
+	objects_container.add_child(spores)
 
 	spawned_items.append({"type": "scene", "name": "abandoned_station"})
 
@@ -4861,6 +5084,8 @@ func _create_grass_multimesh(area_size: float, count: int) -> MultiMeshInstance3
 # ── Dark environment for shader/art scenes ───────────────────────────────────
 
 func apply_dark_environment():
+	# Restore perspective projection (shader scenes may have set orthographic)
+	$Camera3D.projection = Camera3D.PROJECTION_PERSPECTIVE
 	var env = $WorldEnvironment.environment as Environment
 	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
 	sky_mat.sky_top_color = Color(0.01, 0.005, 0.02)
@@ -4902,6 +5127,19 @@ func create_shader_scene(shader_path: String, params: Dictionary):
 
 	var mat = ShaderMaterial.new()
 	mat.shader = shader
+
+	# Load sprite sheet at runtime (not imported by Godot, so use Image.load_from_file)
+	var sprite_path = ProjectSettings.globalize_path("res://sprites/rpg_16x16.png")
+	var sprite_img = Image.load_from_file(sprite_path)
+	if sprite_img:
+		var sprite_tex = ImageTexture.create_from_image(sprite_img)
+		mat.set_shader_parameter("sprite_sheet", sprite_tex)
+		mat.set_shader_parameter("sheet_size", Vector2(float(sprite_img.get_width()), float(sprite_img.get_height())))
+		mat.set_shader_parameter("tile_size", Vector2(16.0, 16.0))
+		print("Sprite sheet loaded: ", sprite_img.get_width(), "x", sprite_img.get_height(), " format=", sprite_img.get_format())
+	else:
+		push_warning("Could not load sprite sheet from: " + sprite_path)
+
 	quad.material_override = mat
 	quad.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
@@ -4910,8 +5148,10 @@ func create_shader_scene(shader_path: String, params: Dictionary):
 	objects_container.add_child(quad)
 	spawned_items.append({"type": "scene", "name": shader_path.get_file().get_basename()})
 
-	# Lock camera to face the quad — static mode prevents _process override
+	# Lock camera to face the quad — orthographic eliminates perspective tilt
 	camera_mode = "static"
+	$Camera3D.projection = Camera3D.PROJECTION_ORTHOGONAL
+	$Camera3D.size = 11.25  # match quad height
 	$Camera3D.position = Vector3(0, 2.5, 8)
 	$Camera3D.look_at(Vector3(0, 2.5, 0))
 

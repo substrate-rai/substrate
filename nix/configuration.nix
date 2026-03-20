@@ -20,6 +20,7 @@
     ./desktop-3d-godot.nix
     ./pipewire-monitor.nix
     ./substrate-sensors.nix
+    ./music-player.nix
   ];
 
   boot.loader.systemd-boot.enable = true;

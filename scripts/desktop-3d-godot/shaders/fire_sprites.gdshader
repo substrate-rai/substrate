@@ -18,6 +18,12 @@ global uniform float beat_hihat;
 global uniform float audio_warmth;
 global uniform float audio_brightness;
 
+// Sprite sheet texture (CC0 RPG characters, 256x128, 16x16 tiles)
+// No source_color — raw pixel values, no sRGB conversion darkening
+uniform sampler2D sprite_sheet : filter_nearest, repeat_disable;
+uniform vec2 sheet_size;  // 256, 128
+uniform vec2 tile_size;   // 16, 16
+
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float hash1(float p) { return fract(sin(p * 127.1) * 43758.5453); }
 
@@ -35,6 +41,53 @@ float fbm(vec2 p, int oct) {
 
 vec2 px(vec2 uv, float r) { return floor(uv*r)/r; }
 
+// ── Sprite sheet reader ──
+// Read a pixel from a sprite at (char_col, direction_row) with animation frame
+// Sheet layout: each character = 3 cols (walk frames) × 4 rows (directions: down/left/right/up)
+// Characters arranged: top half (rows 0-3) = chars 0-3, bottom half (rows 4-7) = chars 4-6
+// char_id: 0-6 (7 characters), dir: 0=down,1=left,2=right,3=up, frame: 0-2
+vec4 read_sprite(int char_id, int dir, int frame, vec2 local_px) {
+	// Sheet layout: 5 characters per row block, each = 3 cols × 4 rows
+	// Top (rows 0-3): chars 0-4 (red, gold, blue, dark, olive)
+	// Bottom (rows 4-7): chars 5-8 (white, magenta, cyan, green)
+	int char_row = char_id / 5;
+	int char_col = char_id - char_row * 5;
+
+	float tx = float(char_col * 3 + frame) * tile_size.x;
+	float ty = float(char_row * 4 + dir) * tile_size.y;
+
+	vec2 uv_sprite = (vec2(tx, ty) + local_px) / sheet_size;
+	// Clamp to valid range
+	uv_sprite = clamp(uv_sprite, vec2(0.0), vec2(1.0));
+	return texture(sprite_sheet, uv_sprite);
+}
+
+// Draw a sprite at screen position, returns color and alpha
+// pos = bottom-center of sprite in UV space
+// Aspect ratio correction: quad is 16:9, so height in UV needs 1.78x to appear square
+const float ASPECT = 16.0 / 9.0;
+
+vec4 draw_sprite_at(vec2 screen_uv, vec2 pos, float scale, int char_id, int dir, int frame, float R_val) {
+	float sprite_w = tile_size.x / R_val * scale;
+	float sprite_h = tile_size.y / R_val * scale * ASPECT; // taller to compensate 16:9
+
+	vec2 tl = vec2(pos.x - sprite_w * 0.5, pos.y);
+	vec2 rel = screen_uv - tl;
+	if (rel.x >= 0.0 && rel.x < sprite_w && rel.y >= 0.0 && rel.y < sprite_h) {
+		vec2 local_px = vec2(
+			floor(rel.x / sprite_w * tile_size.x),
+			tile_size.y - 1.0 - floor(rel.y / sprite_h * tile_size.y)
+		);
+		local_px = clamp(local_px, vec2(0.0), tile_size - vec2(1.0));
+
+		vec4 texel = read_sprite(char_id, dir, frame, local_px);
+		if (texel.a < 0.1 || (texel.r + texel.g + texel.b) < 0.05) {
+			return vec4(0.0);
+		}
+		return texel;
+	}
+	return vec4(0.0);
+}
 
 // ── Palettes ──
 vec3 sky_color(float y) {
@@ -465,8 +518,73 @@ void fragment() {
 	}
 
 	// ══════════════════════════════════════════════
-	// LAYER 7: (sprites in fire_sprites.gdshader)
+	// LAYER 7: Sprite characters from sprite sheet
 	// ══════════════════════════════════════════════
+
+	// Character 1: Blue mage sitting by fire (facing left toward fire)
+	{
+		vec2 sitter_pos = vec2(0.58, ground_y);
+		int sit_frame = int(mod(t * 0.5, 3.0));
+		vec4 spr = draw_sprite_at(p, sitter_pos, 0.35, 2, 1, sit_frame, R);
+		if (spr.a > 0.1) {
+			col = spr.rgb;
+			col += vec3(0.12, 0.04, 0.01) * (0.5 + audio_energy * 0.3);
+		}
+	}
+
+	// Character 2: Red warrior patrolling the path
+	{
+		float walk_speed = 0.015;
+		float walk_cycle = mod(t * walk_speed, 2.0);
+		float walk_x;
+		int walk_dir;
+		if (walk_cycle < 1.0) {
+			walk_x = walk_cycle * 0.5 + 0.2;
+			walk_dir = 2;
+		} else {
+			walk_x = (2.0 - walk_cycle) * 0.5 + 0.2;
+			walk_dir = 1;
+		}
+		vec2 walker_pos = vec2(walk_x, ground_y);
+		int walk_frame = int(mod(t * 4.0, 3.0));
+		vec4 spr2 = draw_sprite_at(p, walker_pos, 0.35, 0, walk_dir, walk_frame, R);
+		if (spr2.a > 0.1) {
+			col = spr2.rgb;
+		}
+	}
+
+	// Character 3: Gold knight standing guard near left mushroom
+	{
+		vec2 guard_pos = vec2(0.14, ground_y);
+		vec4 spr3 = draw_sprite_at(p, guard_pos, 0.35, 1, 2, 1, R);
+		if (spr3.a > 0.1) {
+			col = spr3.rgb;
+			float glow_t = 0.5 + 0.5 * sin(t * 1.2);
+			col += vec3(0.02, 0.06, 0.04) * glow_t;
+		}
+	}
+
+	// Character 4: Cyan ranger near right mushroom
+	{
+		vec2 ranger_pos = vec2(0.86, ground_y);
+		int ranger_frame = int(mod(t * 0.3, 3.0));
+		vec4 spr4 = draw_sprite_at(p, ranger_pos, 0.35, 7, 1, ranger_frame, R);
+		if (spr4.a > 0.1) {
+			col = spr4.rgb;
+		}
+	}
+
+	// Staff leaning behind the seated character
+	{
+		float staff_x = 0.59;
+		if (abs(p.x - staff_x) < 0.003 && p.y > ground_y && p.y < ground_y + 0.09) {
+			col = vec3(0.25, 0.15, 0.06);
+		}
+		if (abs(p.x - staff_x) < 0.005 && abs(p.y - (ground_y + 0.093)) < 0.005) {
+			float gp = 0.6 + 0.4 * sin(t * 2.0);
+			col = vec3(0.2, 0.7, 0.5) * gp;
+		}
+	}
 
 	// ══════════════════════════════════════════════
 	// LAYER 7.5: Smoke wisps rising from fire

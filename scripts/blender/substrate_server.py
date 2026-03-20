@@ -269,8 +269,7 @@ def start_server():
     _server_socket.listen(5)
     _running = True
 
-    bpy.app.timers.register(_poll_connections, first_interval=POLL_INTERVAL)
-    bpy.app.timers.register(_process_commands, first_interval=POLL_INTERVAL)
+    bpy.app.timers.register(_server_tick, first_interval=POLL_INTERVAL)
 
     print(f"[substrate] Server listening on {HOST}:{PORT}")
     return True
@@ -300,92 +299,70 @@ def stop_server():
     print("[substrate] Server stopped")
 
 
-def _poll_connections():
-    """Timer callback: accept new connections and read data (non-blocking)."""
+def _server_tick():
+    """Single timer callback: accept connections, read data, execute commands.
+
+    Merged into one timer to avoid race conditions between poll and process.
+    Wrapped in a top-level try/except so a crash never silently kills the timer.
+    """
     global _server_socket, _clients, _running
 
     if not _running or not _server_socket:
         return None  # unregister timer
 
-    # Accept new connections
     try:
-        readable, _, _ = select.select([_server_socket], [], [], 0)
-        if readable:
-            client, addr = _server_socket.accept()
-            client.setblocking(False)
-            _clients.append(client)
-    except Exception:
-        pass
-
-    # Read from existing clients
-    dead = []
-    for client in _clients:
+        # Accept new connections
         try:
-            readable, _, _ = select.select([client], [], [], 0)
-            if not readable:
-                continue
-            data = client.recv(65536)
-            if not data:
-                dead.append(client)
-                continue
-            # Parse and queue command
-            try:
-                msg = json.loads(data.decode("utf-8").strip())
-                _cmd_queue.put((msg, client))
-            except json.JSONDecodeError as e:
-                response = json.dumps({"status": "error", "message": f"Invalid JSON: {e}"})
-                try:
-                    client.sendall(response.encode("utf-8") + b"\n")
-                except Exception:
-                    dead.append(client)
-        except (ConnectionResetError, BrokenPipeError, OSError):
-            dead.append(client)
-
-    for client in dead:
-        try:
-            client.close()
+            readable, _, _ = select.select([_server_socket], [], [], 0)
+            if readable:
+                client, addr = _server_socket.accept()
+                client.setblocking(False)
+                _clients.append(client)
+                print(f"[substrate] Client connected from {addr}")
         except Exception:
             pass
-        if client in _clients:
-            _clients.remove(client)
 
-    return POLL_INTERVAL  # re-register
-
-
-def _process_commands():
-    """Timer callback: execute queued commands in main thread."""
-    global _running
-
-    if not _running:
-        return None  # unregister timer
-
-    while not _cmd_queue.empty():
-        try:
-            msg, client = _cmd_queue.get_nowait()
-        except queue.Empty:
-            break
-
-        cmd_type = msg.get("type", "")
-        params = msg.get("params", {})
-
-        # For "exec", params is the code string or dict with "code"
-        if cmd_type == "exec" and isinstance(msg.get("code"), str):
-            params = msg.get("code", "")
-
-        handler = HANDLERS.get(cmd_type)
-        if handler:
+        # Read from existing clients
+        dead = []
+        for client in list(_clients):
             try:
-                result = handler(params)
-            except Exception as e:
-                result = {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
-        else:
-            result = {"status": "error", "message": f"Unknown command type: {cmd_type}"}
+                readable, _, _ = select.select([client], [], [], 0)
+                if not readable:
+                    continue
+                data = client.recv(65536)
+                if not data:
+                    dead.append(client)
+                    continue
 
-        # Send response
-        try:
-            response = json.dumps(result)
-            client.sendall(response.encode("utf-8") + b"\n")
-        except (BrokenPipeError, ConnectionResetError, OSError):
+                # Parse and execute immediately (we're in main thread)
+                try:
+                    msg = json.loads(data.decode("utf-8").strip())
+                except json.JSONDecodeError as e:
+                    _send_response(client, {"status": "error", "message": f"Invalid JSON: {e}"})
+                    continue
+
+                cmd_type = msg.get("type", "")
+                params = msg.get("params", {})
+
+                # For "exec", code can be top-level
+                if cmd_type == "exec" and isinstance(msg.get("code"), str):
+                    params = msg.get("code", "")
+
+                handler = HANDLERS.get(cmd_type)
+                if handler:
+                    try:
+                        result = handler(params)
+                    except Exception as e:
+                        result = {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
+                else:
+                    result = {"status": "error", "message": f"Unknown command type: {cmd_type}"}
+
+                _send_response(client, result)
+
+            except (ConnectionResetError, BrokenPipeError, OSError):
+                dead.append(client)
+
+        for client in dead:
             try:
                 client.close()
             except Exception:
@@ -393,7 +370,26 @@ def _process_commands():
             if client in _clients:
                 _clients.remove(client)
 
-    return POLL_INTERVAL  # re-register
+    except Exception as e:
+        # Never let the timer die silently
+        print(f"[substrate] Timer error (recovering): {e}")
+        traceback.print_exc()
+
+    return POLL_INTERVAL  # always re-register
+
+
+def _send_response(client, result):
+    """Send JSON response to client, handling errors."""
+    try:
+        response = json.dumps(result)
+        client.sendall(response.encode("utf-8") + b"\n")
+    except (BrokenPipeError, ConnectionResetError, OSError):
+        try:
+            client.close()
+        except Exception:
+            pass
+        if client in _clients:
+            _clients.remove(client)
 
 
 # ── Blender UI Panel ─────────────────────────────────────────────────────────
