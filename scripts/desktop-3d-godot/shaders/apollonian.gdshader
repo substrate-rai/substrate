@@ -162,32 +162,35 @@ void fragment() {
 	float depth = gasket.y;
 	float radius = gasket.z;
 
-	// Edge rendering with AA
+	// Edge rendering with proper AA — widen near center where lines converge
 	float fw = fwidth(dist);
-	float edge = smoothstep(0.008 + fw, 0.002, dist);
+	float aa_width = max(fw * 2.0, 0.005);
+	float edge = smoothstep(aa_width * 2.0, 0.0, dist);
 
 	// Color by depth
 	float depth_norm = depth / 12.0;
 	vec3 edge_col = gasketPalette(depth_norm + t * 0.03);
 	col += edge_col * edge * 0.6;
 
-	// Glow around edges
-	float glow = exp(-dist * dist * 2000.0);
-	col += gasketPalette(depth_norm + 0.2) * glow * 0.3;
+	// Soft glow around edges (reduced falloff to avoid grain)
+	float glow = exp(-dist * 80.0);
+	col += gasketPalette(depth_norm + 0.2) * glow * 0.2;
 
 	// ── Circle packing overlay ──
 	float cp = circlePackingSDF(rot2(p, -t * 0.03), 8, t);
-	float cp_edge = smoothstep(0.006 + fwidth(cp), 0.001, cp);
+	float cp_fw = max(fwidth(cp) * 2.0, 0.004);
+	float cp_edge = smoothstep(cp_fw * 2.0, 0.0, cp);
 	col += vec3(0.6, 0.4, 1.0) * cp_edge * 0.2;
 	// Soft glow
-	col += vec3(0.3, 0.2, 0.5) * exp(-cp * cp * 3000.0) * 0.15;
+	col += vec3(0.3, 0.2, 0.5) * exp(-cp * 80.0) * 0.12;
 
 	// ── Concentric rings ──
 	float r = length(p);
 	for (int i = 1; i < 6; i++) {
 		float ring_r = float(i) * 0.2;
 		float ring = abs(r - ring_r);
-		float ring_line = smoothstep(0.004 + fwidth(ring), 0.001, ring);
+		float ring_fw = max(fwidth(ring), 0.003);
+		float ring_line = smoothstep(ring_fw * 2.0, 0.0, ring);
 		col += vec3(0.15, 0.1, 0.3) * ring_line * 0.08;
 	}
 
@@ -196,7 +199,8 @@ void fragment() {
 	for (int i = 0; i < 6; i++) {
 		float target = float(i) * TAU / 6.0;
 		float diff = abs(mod(angle - target + PI, TAU) - PI);
-		float radial = smoothstep(0.012 + fwidth(diff), 0.008, diff);
+		float rad_fw = max(fwidth(diff), 0.005);
+		float radial = smoothstep(rad_fw * 2.0, 0.0, diff - 0.008);
 		col += vec3(0.2, 0.15, 0.35) * radial * 0.06 * smoothstep(0.0, 0.15, r);
 	}
 

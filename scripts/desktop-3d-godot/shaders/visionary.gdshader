@@ -71,8 +71,8 @@ float sdCircle(vec2 p, float r) {
 }
 
 float sdLine(float d, float width) {
-	float fw = fwidth(d);
-	return smoothstep(width + fw, width - fw, d);
+	float fw = max(fwidth(d), 0.003);
+	return smoothstep(width + fw, max(width - fw, 0.0), d);
 }
 
 // ── Net of Being tiling ──

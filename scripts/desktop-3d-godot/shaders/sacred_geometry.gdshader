@@ -29,8 +29,8 @@ float sdSegment(vec2 p, vec2 a, vec2 b) {
 }
 
 float sdLine(vec2 p, float d, float width) {
-	float fw = fwidth(d);
-	return smoothstep(width + fw, width - fw, d);
+	float fw = max(fwidth(d), 0.003);
+	return smoothstep(width + fw, max(width - fw, 0.0), d);
 }
 
 // ── Rotation ──

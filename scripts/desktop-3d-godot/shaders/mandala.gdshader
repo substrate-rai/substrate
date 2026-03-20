@@ -39,8 +39,8 @@ vec2 rot2(vec2 p, float a) {
 
 // ── Anti-aliased line ──
 float aaLine(float d, float width) {
-	float fw = fwidth(d);
-	return smoothstep(width + fw, width - fw, d);
+	float fw = max(fwidth(d), 0.003);
+	return smoothstep(width + fw, max(width - fw, 0.0), d);
 }
 
 // ── Polar mirror fold for N-fold symmetry ──

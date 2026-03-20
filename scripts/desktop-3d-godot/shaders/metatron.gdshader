@@ -35,8 +35,8 @@ float sdSegment(vec2 p, vec2 a, vec2 b) {
 }
 
 float aaLine(float d, float width) {
-	float fw = fwidth(d);
-	return smoothstep(width + fw, width - fw, d);
+	float fw = max(fwidth(d), 0.003);
+	return smoothstep(width + fw, max(width - fw, 0.0), d);
 }
 
 // ── Metatron's Cube: 13 points, 13 circles, 78 lines ──
@@ -82,7 +82,7 @@ void fragment() {
 			// Thin crisp line
 			line_accum += aaLine(d, 0.003);
 			// Soft glow
-			line_glow += exp(-d * d * 800.0) * 0.015;
+			line_glow += exp(-d * 60.0) * 0.012;
 		}
 	}
 	// Lines: blue-violet base
@@ -109,8 +109,8 @@ void fragment() {
 		col += ring_col * ring * 0.55;
 
 		// Soft glow per circle
-		float cg = exp(-cd * cd * 600.0);
-		col += ring_col * cg * 0.08;
+		float cg = exp(-cd * 50.0);
+		col += ring_col * cg * 0.06;
 	}
 
 	// ── Inner Seed of Life (7 overlapping circles at center) ──
@@ -161,7 +161,7 @@ void fragment() {
 	// ── Emanation pulse rings ──
 	float r = length(p);
 	for (int i = 0; i < 5; i++) {
-		float ring_t = fract(float(i) * 0.2 + t * 0.1 + beat * 0.05);
+		float ring_t = fract(float(i) * 0.2 + t * 0.1);
 		float ring_r = ring_t * outer_r * 1.3;
 		float fade = (1.0 - ring_t);
 		float ring = aaLine(abs(r - ring_r), 0.003);
@@ -178,7 +178,7 @@ void fragment() {
 	// ── Treble sparkle on vertices ──
 	for (int i = 0; i < 13; i++) {
 		float d = length(p - pts[i]);
-		float spark = exp(-d * d * 2000.0) * treble * 1.5;
+		float spark = exp(-d * 40.0) * treble * 0.8;
 		col += WHITE * spark;
 	}
 
