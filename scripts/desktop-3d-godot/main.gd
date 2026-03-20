@@ -2834,14 +2834,14 @@ func create_neon_city(params: Dictionary):
 	spawned_items.clear()
 	await get_tree().process_frame
 
-	# Wet street — reflective ground with slight texture variation
+	# Wet street — reflective ground
 	var street = MeshInstance3D.new()
 	street.mesh = PlaneMesh.new()
 	street.mesh.size = Vector2(40, 40)
 	var street_mat = StandardMaterial3D.new()
-	street_mat.albedo_color = Color(0.06, 0.06, 0.08)
-	street_mat.metallic = 0.85
-	street_mat.roughness = 0.15
+	street_mat.albedo_color = Color(0.12, 0.11, 0.15)
+	street_mat.metallic = 0.7
+	street_mat.roughness = 0.2
 	street.mesh.material = street_mat
 	street.position = Vector3(0, -1, 0)
 	objects_container.add_child(street)
@@ -2852,11 +2852,23 @@ func create_neon_city(params: Dictionary):
 		curb.mesh = BoxMesh.new()
 		curb.mesh.size = Vector3(0.3, 0.15, 30)
 		var curb_mat = StandardMaterial3D.new()
-		curb_mat.albedo_color = Color(0.15, 0.14, 0.18)
-		curb_mat.roughness = 0.7
+		curb_mat.albedo_color = Color(0.25, 0.23, 0.28)
+		curb_mat.roughness = 0.6
 		curb.mesh.material = curb_mat
 		curb.position = Vector3(side, -0.92, -5)
 		objects_container.add_child(curb)
+
+	# Sidewalks — slightly raised lighter concrete
+	for side_sw in [-4.5, 4.5]:
+		var sidewalk = MeshInstance3D.new()
+		sidewalk.mesh = BoxMesh.new()
+		sidewalk.mesh.size = Vector3(3.0, 0.05, 30)
+		var sw_mat = StandardMaterial3D.new()
+		sw_mat.albedo_color = Color(0.18, 0.17, 0.22)
+		sw_mat.roughness = 0.8
+		sidewalk.mesh.material = sw_mat
+		sidewalk.position = Vector3(side_sw, -0.95, -5)
+		objects_container.add_child(sidewalk)
 
 	# Puddles — reflective patches on street
 	for i in range(6):
@@ -2923,8 +2935,8 @@ func create_neon_city(params: Dictionary):
 			var ll = OmniLight3D.new()
 			ll.light_color = Color.html(nc_lamp)
 			ll.light_energy = 2.5
-			ll.omni_range = 5.0
-			ll.omni_attenuation = 1.3
+			ll.omni_range = 6.0
+			ll.omni_attenuation = 1.5
 			ll.position = Vector3(side, 2.0, lz)
 			objects_container.add_child(ll)
 
@@ -2937,12 +2949,12 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 	var building = Node3D.new()
 	building.position = pos
 
-	# Main body — visible concrete
+	# Main body — concrete, visible against night sky
 	var body = MeshInstance3D.new()
 	body.mesh = BoxMesh.new()
 	body.mesh.size = Vector3(w, h, d)
 	var body_mat = StandardMaterial3D.new()
-	body_mat.albedo_color = Color(0.12, 0.11, 0.16)
+	body_mat.albedo_color = Color(0.22, 0.20, 0.28)
 	body_mat.metallic = 0.15
 	body_mat.roughness = 0.75
 	body.mesh.material = body_mat
@@ -2958,26 +2970,38 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 		strip.position.y = edge_y
 		building.add_child(strip)
 
-	# Windows — small emissive quads on front face
-	var win_colors = ["#ffcc66", "#aabbcc", "#334455"]
+	# Windows — emissive quads on front AND back faces
+	var win_colors = ["#ffcc66", "#eeddaa", "#aabbcc", "#88ccff"]
 	var rows = int(h / 0.6)
 	var cols = int(w / 0.5)
 	for row in range(rows):
 		for col in range(cols):
-			if randf() > 0.6:
-				continue  # not every window lit
+			if randf() > 0.8:
+				continue  # most windows lit
+			var wc = win_colors[randi() % win_colors.size()]
+			# Front face
 			var win = MeshInstance3D.new()
 			win.mesh = QuadMesh.new()
 			win.mesh.size = Vector2(0.2, 0.3)
-			var wc = win_colors[randi() % win_colors.size()]
-			var we = 1.5 if wc == "#334455" else 2.5
-			win.mesh.material = make_emissive_mat(wc, we)
+			win.mesh.material = make_emissive_mat(wc, 3.0)
 			win.position = Vector3(
 				-w / 2 + 0.3 + col * 0.5,
 				0.4 + row * 0.6,
 				d / 2 + 0.01
 			)
 			building.add_child(win)
+			# Back face too (visible from other angles)
+			if randf() > 0.4:
+				var win_b = MeshInstance3D.new()
+				win_b.mesh = QuadMesh.new()
+				win_b.mesh.size = Vector2(0.2, 0.3)
+				win_b.mesh.material = make_emissive_mat(wc, 3.0)
+				win_b.position = Vector3(
+					-w / 2 + 0.3 + col * 0.5,
+					0.4 + row * 0.6,
+					-d / 2 - 0.01
+				)
+				building.add_child(win_b)
 
 	# Roof detail — antenna or AC unit
 	if randf() > 0.5:
