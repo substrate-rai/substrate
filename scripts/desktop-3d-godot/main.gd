@@ -2808,25 +2808,25 @@ func create_crystal_pillar(pos: Vector3, color: String, height: float):
 func apply_neon_environment():
 	var env = $WorldEnvironment.environment as Environment
 	var sky_mat = env.sky.sky_material as ProceduralSkyMaterial
-	sky_mat.sky_top_color = Color(0.02, 0.02, 0.06)
-	sky_mat.sky_horizon_color = Color(0.06, 0.03, 0.10)
-	sky_mat.ground_bottom_color = Color(0.03, 0.03, 0.06)
-	sky_mat.ground_horizon_color = Color(0.05, 0.03, 0.08)
-	sky_mat.sky_energy_multiplier = 0.6
+	sky_mat.sky_top_color = Color(0.06, 0.04, 0.14)
+	sky_mat.sky_horizon_color = Color(0.14, 0.06, 0.22)
+	sky_mat.ground_bottom_color = Color(0.04, 0.04, 0.08)
+	sky_mat.ground_horizon_color = Color(0.10, 0.05, 0.16)
+	sky_mat.sky_energy_multiplier = 1.2
 	env.volumetric_fog_enabled = true
-	env.volumetric_fog_density = 0.04
-	env.volumetric_fog_albedo = Color(0.04, 0.02, 0.06)
-	env.volumetric_fog_emission = Color(0.03, 0.02, 0.04)
-	env.volumetric_fog_emission_energy = 1.0
+	env.volumetric_fog_density = 0.03
+	env.volumetric_fog_albedo = Color(0.06, 0.03, 0.10)
+	env.volumetric_fog_emission = Color(0.06, 0.03, 0.08)
+	env.volumetric_fog_emission_energy = 1.2
 	env.ssr_enabled = true
 	env.ssr_max_steps = 96
-	env.glow_intensity = 1.8
+	env.glow_intensity = 2.0
 	env.glow_bloom = 0.35
-	env.glow_hdr_threshold = 0.6
+	env.glow_hdr_threshold = 0.5
 	env.sdfgi_enabled = true
-	env.ambient_light_energy = 0.7
+	env.ambient_light_energy = 0.9
 	$MoonLight.light_color = Color(0.4, 0.35, 0.6)
-	$MoonLight.light_energy = 0.5
+	$MoonLight.light_energy = 0.7
 
 func create_neon_city(params: Dictionary):
 	for child in objects_container.get_children():
@@ -2870,25 +2870,98 @@ func create_neon_city(params: Dictionary):
 		sidewalk.position = Vector3(side_sw, -0.95, -5)
 		objects_container.add_child(sidewalk)
 
-	# Puddles — reflective patches on street
-	for i in range(6):
+	# Puddles — reflective patches concentrated in center corridor for SSR
+	for i in range(12):
 		var puddle = MeshInstance3D.new()
 		puddle.mesh = PlaneMesh.new()
-		puddle.mesh.size = Vector2(randf_range(1, 3), randf_range(1, 2))
+		puddle.mesh.size = Vector2(randf_range(1.5, 4), randf_range(1, 3))
 		var puddle_mat = StandardMaterial3D.new()
 		puddle_mat.albedo_color = Color(0.03, 0.03, 0.06)
 		puddle_mat.metallic = 1.0
-		puddle_mat.roughness = 0.02
+		puddle_mat.roughness = 0.01
 		puddle.mesh.material = puddle_mat
-		puddle.position = Vector3(randf_range(-10, 10), -0.98, randf_range(-8, 5))
+		puddle.position = Vector3(randf_range(-2.5, 2.5), -0.98, randf_range(-10, 5))
 		objects_container.add_child(puddle)
+
+	# Road markings — dashed center line
+	for seg in range(12):
+		var dash = MeshInstance3D.new()
+		dash.mesh = BoxMesh.new()
+		dash.mesh.size = Vector3(0.12, 0.01, 0.8)
+		dash.mesh.material = make_emissive_mat("#ccaa33", 1.5)
+		dash.position = Vector3(0, -0.98, -10 + seg * 1.5)
+		objects_container.add_child(dash)
+	# Crosswalk — 5 parallel strips
+	for cw in range(5):
+		var cw_strip = MeshInstance3D.new()
+		cw_strip.mesh = BoxMesh.new()
+		cw_strip.mesh.size = Vector3(4.0, 0.01, 0.2)
+		cw_strip.mesh.material = make_emissive_mat("#ccaa33", 1.2)
+		cw_strip.position = Vector3(0, -0.98, -2.0 + cw * 0.5)
+		objects_container.add_child(cw_strip)
+
+	# Street props — vending machines, crates, dumpsters on sidewalks
+	var prop_defs = [
+		{"type": "vending", "size": Vector3(0.5, 1.2, 0.4)},
+		{"type": "vending", "size": Vector3(0.5, 1.2, 0.4)},
+		{"type": "crate", "size": Vector3(0.4, 0.4, 0.4)},
+		{"type": "crate", "size": Vector3(0.5, 0.3, 0.5)},
+		{"type": "dumpster", "size": Vector3(0.8, 0.6, 0.5)},
+		{"type": "dumpster", "size": Vector3(0.7, 0.5, 0.5)},
+	]
+	for pi in range(prop_defs.size()):
+		var pdef = prop_defs[pi]
+		var prop = MeshInstance3D.new()
+		prop.mesh = BoxMesh.new()
+		prop.mesh.size = pdef["size"]
+		var prop_mat = StandardMaterial3D.new()
+		prop_mat.roughness = 0.7
+		if pdef["type"] == "vending":
+			prop_mat.albedo_color = Color(0.1, 0.1, 0.15)
+			prop_mat.metallic = 0.5
+		elif pdef["type"] == "dumpster":
+			prop_mat.albedo_color = Color(0.15, 0.18, 0.12)
+			prop_mat.metallic = 0.4
+		else:
+			prop_mat.albedo_color = Color(0.2, 0.15, 0.1)
+			prop_mat.metallic = 0.1
+		prop.mesh.material = prop_mat
+		var prop_side = -4.5 if pi % 2 == 0 else 4.5
+		prop.position = Vector3(prop_side + randf_range(-0.5, 0.5), -1.0 + pdef["size"].y / 2, -8 + pi * 3.0)
+		objects_container.add_child(prop)
+		# Vending machines get a glowing front panel
+		if pdef["type"] == "vending":
+			var glow_panel = MeshInstance3D.new()
+			glow_panel.mesh = QuadMesh.new()
+			glow_panel.mesh.size = Vector2(pdef["size"].x * 0.7, pdef["size"].y * 0.6)
+			var vend_colors = ["#00ffaa", "#ff6600", "#4488ff", "#ff0066"]
+			glow_panel.mesh.material = make_emissive_mat(vend_colors[randi() % vend_colors.size()], 4.0)
+			glow_panel.position = prop.position + Vector3(0, 0.1, pdef["size"].z / 2 + 0.01)
+			if prop_side > 0:
+				glow_panel.rotation_degrees.y = 180
+			objects_container.add_child(glow_panel)
+
+	# Manhole covers — metallic circles on street
+	for mi in range(3):
+		var manhole = MeshInstance3D.new()
+		manhole.mesh = CylinderMesh.new()
+		manhole.mesh.top_radius = 0.35
+		manhole.mesh.bottom_radius = 0.35
+		manhole.mesh.height = 0.02
+		var mh_mat = StandardMaterial3D.new()
+		mh_mat.albedo_color = Color(0.15, 0.15, 0.18)
+		mh_mat.metallic = 0.8
+		mh_mat.roughness = 0.3
+		manhole.mesh.material = mh_mat
+		manhole.position = Vector3(randf_range(-1.5, 1.5), -0.98, -6 + mi * 5.0)
+		objects_container.add_child(manhole)
 
 	# Buildings with neon trim + windows
 	var neon_colors = ["#ff0066", "#00ffaa", "#4488ff", "#ff6600", "#aa00ff", "#ffff00"]
 	for i in range(25):
 		var bx = randf_range(-15, 15)
 		var bz = randf_range(-15, 5)
-		if abs(bx) < 3 and abs(bz) < 5:
+		if abs(bx) < 3.5 and abs(bz) < 5:
 			continue
 		var h = randf_range(2, 8)
 		var w = randf_range(1, 3)
@@ -2896,15 +2969,79 @@ func create_neon_city(params: Dictionary):
 		var nc = neon_colors[randi() % neon_colors.size()]
 		create_neon_building(Vector3(bx, -1, bz), w, h, d, nc)
 
-	# Neon signs — floating emissive quads
-	for i in range(10):
+	# Building-mounted neon signs — perpendicular to faces with brackets + lights
+	for i in range(12):
 		var sign_node = MeshInstance3D.new()
 		sign_node.mesh = QuadMesh.new()
-		sign_node.mesh.size = Vector2(randf_range(0.5, 1.5), randf_range(0.3, 0.6))
-		sign_node.mesh.material = make_emissive_mat(neon_colors[randi() % neon_colors.size()], 8.0)
-		sign_node.position = Vector3(randf_range(-12, 12), randf_range(1, 5), randf_range(-10, 3))
-		sign_node.rotation_degrees.y = randf_range(-30, 30)
+		var sw = randf_range(0.6, 1.8)
+		var sh = randf_range(0.3, 0.7)
+		sign_node.mesh.size = Vector2(sw, sh)
+		var sign_color = neon_colors[randi() % neon_colors.size()]
+		sign_node.mesh.material = make_emissive_mat(sign_color, 8.0)
+		var sx = randf_range(-12, 12)
+		var sy = randf_range(1.5, 5)
+		var sz = randf_range(-10, 3)
+		# Mount perpendicular to building — face outward toward street
+		sign_node.rotation_degrees.y = 90 if abs(sx) > 0 else 0
+		sign_node.position = Vector3(sx, sy, sz)
 		objects_container.add_child(sign_node)
+		# Mounting bracket
+		var bracket = MeshInstance3D.new()
+		bracket.mesh = BoxMesh.new()
+		bracket.mesh.size = Vector3(0.05, sh * 0.3, 0.3)
+		var brk_mat = StandardMaterial3D.new()
+		brk_mat.albedo_color = Color(0.15, 0.15, 0.18)
+		brk_mat.metallic = 0.6
+		brk_mat.roughness = 0.4
+		bracket.mesh.material = brk_mat
+		bracket.position = Vector3(sx, sy, sz)
+		objects_container.add_child(bracket)
+		# OmniLight for sign glow
+		var sign_light = OmniLight3D.new()
+		sign_light.light_color = Color.html(sign_color)
+		sign_light.light_energy = 1.5
+		sign_light.omni_range = 3.0
+		sign_light.omni_attenuation = 1.8
+		sign_light.position = Vector3(sx, sy, sz)
+		objects_container.add_child(sign_light)
+
+	# Holographic billboards — 4 large hologram shader panels on building sides
+	var holo_shader = load("res://shaders/hologram.gdshader")
+	var holo_colors = [
+		Color(0.0, 1.0, 0.7),   # cyan-green
+		Color(1.0, 0.0, 0.4),   # hot pink
+		Color(0.3, 0.5, 1.0),   # blue
+		Color(1.0, 0.4, 0.0),   # orange
+	]
+	var holo_positions = [
+		Vector3(-8, 3.5, -6),
+		Vector3(9, 4.0, -3),
+		Vector3(-7, 2.5, 2),
+		Vector3(10, 3.0, -9),
+	]
+	for hi in range(4):
+		var holo_quad = MeshInstance3D.new()
+		holo_quad.mesh = QuadMesh.new()
+		holo_quad.mesh.size = Vector2(2.5, 1.5)
+		var holo_mat = ShaderMaterial.new()
+		holo_mat.shader = holo_shader
+		holo_mat.set_shader_parameter("holo_color", Vector3(holo_colors[hi].r, holo_colors[hi].g, holo_colors[hi].b))
+		holo_mat.set_shader_parameter("scanline_density", 60.0)
+		holo_mat.set_shader_parameter("base_alpha", 0.6)
+		holo_mat.set_shader_parameter("flicker_speed", 10.0)
+		holo_quad.mesh.material = holo_mat
+		holo_quad.position = holo_positions[hi]
+		objects_container.add_child(holo_quad)
+		# Face toward center street (must be in tree for look_at)
+		holo_quad.look_at(Vector3(0, holo_positions[hi].y, holo_positions[hi].z), Vector3.UP)
+		# OmniLight casting billboard color
+		var holo_light = OmniLight3D.new()
+		holo_light.light_color = holo_colors[hi]
+		holo_light.light_energy = 2.0
+		holo_light.omni_range = 5.0
+		holo_light.omni_attenuation = 1.5
+		holo_light.position = holo_positions[hi] + Vector3(0, 0, 0.5)
+		objects_container.add_child(holo_light)
 
 	# Street lamps along corridor — with OmniLights that illuminate the wet street
 	for i in range(6):
@@ -2940,28 +3077,106 @@ func create_neon_city(params: Dictionary):
 			ll.position = Vector3(side, 2.0, lz)
 			objects_container.add_child(ll)
 
-	# Rain — wet cyberpunk atmosphere
-	create_particles("rain", {})
+	# Street-level fog — ground_fog shader quads, purple/teal tinted
+	var fog_shader = load("res://shaders/ground_fog.gdshader")
+	var fog_configs = [
+		{"color": Vector3(0.15, 0.08, 0.25), "z": -3.0},
+		{"color": Vector3(0.08, 0.2, 0.22), "z": -7.0},
+		{"color": Vector3(0.12, 0.06, 0.2), "z": 1.0},
+		{"color": Vector3(0.06, 0.18, 0.2), "z": -11.0},
+	]
+	for fc in fog_configs:
+		var fog_quad = MeshInstance3D.new()
+		fog_quad.mesh = QuadMesh.new()
+		fog_quad.mesh.size = Vector2(12, 5)
+		var fog_mat = ShaderMaterial.new()
+		fog_mat.shader = fog_shader
+		fog_mat.set_shader_parameter("fog_color", fc["color"])
+		fog_mat.set_shader_parameter("fog_alpha", 0.25)
+		fog_mat.set_shader_parameter("cursor_clear_radius", 3.0)
+		fog_mat.set_shader_parameter("noise_scale", 2.5)
+		fog_quad.mesh.material = fog_mat
+		fog_quad.position = Vector3(0, -0.7, fc["z"])
+		fog_quad.rotation_degrees.x = -90
+		objects_container.add_child(fog_quad)
+
+	# Rain — heavier 800-drop emitter with wind angle
+	var rain = GPUParticles3D.new()
+	rain.amount = 800
+	var rain_mat = ParticleProcessMaterial.new()
+	rain_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	rain_mat.emission_box_extents = Vector3(20, 0, 20)
+	rain_mat.gravity = Vector3(0.5, -14, 0)
+	rain_mat.initial_velocity_min = 10.0
+	rain_mat.initial_velocity_max = 14.0
+	rain_mat.direction = Vector3(0.05, -1, 0)
+	rain_mat.scale_min = 0.01
+	rain_mat.scale_max = 0.025
+	rain.lifetime = 1.8
+	rain.position.y = 10
+	rain.process_material = rain_mat
+	var rain_mesh = CylinderMesh.new()
+	rain_mesh.top_radius = 0.005
+	rain_mesh.bottom_radius = 0.005
+	rain_mesh.height = 0.45
+	rain_mesh.material = make_translucent_mat("#99aadd", 0.5)
+	rain.draw_pass_1 = rain_mesh
+	objects_container.add_child(rain)
+
+	# Steam vents — 3 small upward particle emitters at ground level
+	for sv in range(3):
+		var steam = GPUParticles3D.new()
+		steam.amount = 30
+		var steam_mat = ParticleProcessMaterial.new()
+		steam_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+		steam_mat.gravity = Vector3(0, 0.3, 0)
+		steam_mat.initial_velocity_min = 0.3
+		steam_mat.initial_velocity_max = 0.8
+		steam_mat.direction = Vector3(0, 1, 0)
+		steam_mat.spread = 15.0
+		steam_mat.scale_min = 0.03
+		steam_mat.scale_max = 0.08
+		steam.lifetime = 3.0
+		steam.process_material = steam_mat
+		var steam_mesh = SphereMesh.new()
+		steam_mesh.radius = 0.06
+		steam_mesh.height = 0.12
+		steam_mesh.material = make_translucent_mat("#8888aa", 0.3)
+		steam.draw_pass_1 = steam_mesh
+		steam.position = Vector3(randf_range(-2, 2), -0.9, -6 + sv * 5.0)
+		objects_container.add_child(steam)
 
 	spawned_items.append({"type": "scene", "name": "neon_city"})
+
+	# Camera — street-level but high enough to see sky between buildings
+	camera_mode = "orbit"
+	camera_orbit_radius = 5.0
+	camera_orbit_height = 2.5
+	camera_orbit_speed = 0.03
 
 func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color: String):
 	var building = Node3D.new()
 	building.position = pos
 
-	# Main body — concrete, visible against night sky
+	# Main body — varied concrete tones
+	var concrete_tones = [
+		Color(0.22, 0.20, 0.28),
+		Color(0.18, 0.17, 0.24),
+		Color(0.25, 0.22, 0.26),
+		Color(0.20, 0.20, 0.22),
+	]
 	var body = MeshInstance3D.new()
 	body.mesh = BoxMesh.new()
 	body.mesh.size = Vector3(w, h, d)
 	var body_mat = StandardMaterial3D.new()
-	body_mat.albedo_color = Color(0.22, 0.20, 0.28)
+	body_mat.albedo_color = concrete_tones[randi() % concrete_tones.size()]
 	body_mat.metallic = 0.15
 	body_mat.roughness = 0.75
 	body.mesh.material = body_mat
 	body.position.y = h / 2
 	building.add_child(body)
 
-	# Neon trim strips along edges
+	# Horizontal neon trim strips along edges
 	for edge_y in [h * 0.3, h * 0.6, h * 0.9]:
 		var strip = MeshInstance3D.new()
 		strip.mesh = BoxMesh.new()
@@ -2970,41 +3185,128 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 		strip.position.y = edge_y
 		building.add_child(strip)
 
-	# Windows — emissive quads on front AND back faces
+	# Vertical neon edge strips — 1-2 on building corners
+	var vert_count = 1 + randi() % 2
+	var corners = [
+		Vector3(-w / 2 - 0.02, h / 2, d / 2),
+		Vector3(w / 2 + 0.02, h / 2, -d / 2),
+		Vector3(-w / 2 - 0.02, h / 2, -d / 2),
+		Vector3(w / 2 + 0.02, h / 2, d / 2),
+	]
+	corners.shuffle()
+	for vi in range(vert_count):
+		var vstrip = MeshInstance3D.new()
+		vstrip.mesh = BoxMesh.new()
+		vstrip.mesh.size = Vector3(0.04, h, 0.04)
+		vstrip.mesh.material = make_emissive_mat(neon_color, 4.0)
+		vstrip.position = corners[vi]
+		building.add_child(vstrip)
+
+	# Windows — emissive quads on all four faces
 	var win_colors = ["#ffcc66", "#eeddaa", "#aabbcc", "#88ccff"]
 	var rows = int(h / 0.6)
-	var cols = int(w / 0.5)
+	var cols_fb = int(w / 0.5)
+	var cols_lr = int(d / 0.5)
 	for row in range(rows):
-		for col in range(cols):
+		# Front/back windows
+		for col in range(cols_fb):
 			if randf() > 0.8:
-				continue  # most windows lit
+				continue
 			var wc = win_colors[randi() % win_colors.size()]
+			var wx = -w / 2 + 0.3 + col * 0.5
+			var wy = 0.4 + row * 0.6
 			# Front face
 			var win = MeshInstance3D.new()
 			win.mesh = QuadMesh.new()
 			win.mesh.size = Vector2(0.2, 0.3)
 			win.mesh.material = make_emissive_mat(wc, 3.0)
-			win.position = Vector3(
-				-w / 2 + 0.3 + col * 0.5,
-				0.4 + row * 0.6,
-				d / 2 + 0.01
-			)
+			win.position = Vector3(wx, wy, d / 2 + 0.01)
 			building.add_child(win)
-			# Back face too (visible from other angles)
+			# Back face
 			if randf() > 0.4:
 				var win_b = MeshInstance3D.new()
 				win_b.mesh = QuadMesh.new()
 				win_b.mesh.size = Vector2(0.2, 0.3)
 				win_b.mesh.material = make_emissive_mat(wc, 3.0)
-				win_b.position = Vector3(
-					-w / 2 + 0.3 + col * 0.5,
-					0.4 + row * 0.6,
-					-d / 2 - 0.01
-				)
+				win_b.position = Vector3(wx, wy, -d / 2 - 0.01)
 				building.add_child(win_b)
+		# Left/right side windows
+		for col in range(cols_lr):
+			if randf() > 0.75:
+				continue
+			var wc = win_colors[randi() % win_colors.size()]
+			var wz = -d / 2 + 0.3 + col * 0.5
+			var wy = 0.4 + row * 0.6
+			# Left face
+			var win_l = MeshInstance3D.new()
+			win_l.mesh = QuadMesh.new()
+			win_l.mesh.size = Vector2(0.2, 0.3)
+			win_l.mesh.material = make_emissive_mat(wc, 3.0)
+			win_l.position = Vector3(-w / 2 - 0.01, wy, wz)
+			win_l.rotation_degrees.y = 90
+			building.add_child(win_l)
+			# Right face
+			if randf() > 0.4:
+				var win_r = MeshInstance3D.new()
+				win_r.mesh = QuadMesh.new()
+				win_r.mesh.size = Vector2(0.2, 0.3)
+				win_r.mesh.material = make_emissive_mat(wc, 3.0)
+				win_r.position = Vector3(w / 2 + 0.01, wy, wz)
+				win_r.rotation_degrees.y = -90
+				building.add_child(win_r)
 
-	# Roof detail — antenna or AC unit
-	if randf() > 0.5:
+	# Ground-floor shopfronts (30% of buildings) — warm glow + awning
+	if randf() < 0.3:
+		var shop_colors = ["#ffaa44", "#ff8833", "#ffcc55"]
+		var shop_color = shop_colors[randi() % shop_colors.size()]
+		# Emissive storefront panel
+		var shop = MeshInstance3D.new()
+		shop.mesh = QuadMesh.new()
+		shop.mesh.size = Vector2(w * 0.8, 0.6)
+		shop.mesh.material = make_emissive_mat(shop_color, 4.0)
+		shop.position = Vector3(0, 0.35, d / 2 + 0.02)
+		building.add_child(shop)
+		# Awning above storefront
+		var awning = MeshInstance3D.new()
+		awning.mesh = BoxMesh.new()
+		awning.mesh.size = Vector3(w * 0.9, 0.03, 0.4)
+		var awning_mat = StandardMaterial3D.new()
+		awning_mat.albedo_color = Color(0.3, 0.12, 0.1)
+		awning_mat.roughness = 0.8
+		awning.mesh.material = awning_mat
+		awning.position = Vector3(0, 0.7, d / 2 + 0.2)
+		building.add_child(awning)
+		# OmniLight at street level
+		var shop_light = OmniLight3D.new()
+		shop_light.light_color = Color.html(shop_color)
+		shop_light.light_energy = 1.5
+		shop_light.omni_range = 3.0
+		shop_light.omni_attenuation = 1.8
+		shop_light.position = Vector3(0, 0.3, d / 2 + 0.5)
+		building.add_child(shop_light)
+
+	# Balcony ledges (40% of buildings) — protruding shelves between floors
+	if randf() < 0.4:
+		var balcony_rows = int(h / 1.2)
+		for br in range(min(balcony_rows, 4)):
+			var ledge = MeshInstance3D.new()
+			ledge.mesh = BoxMesh.new()
+			ledge.mesh.size = Vector3(w * 0.6, 0.06, 0.25)
+			var ledge_mat = StandardMaterial3D.new()
+			ledge_mat.albedo_color = Color(0.2, 0.2, 0.25)
+			ledge_mat.metallic = 0.2
+			ledge_mat.roughness = 0.7
+			ledge.mesh.material = ledge_mat
+			var ledge_face = d / 2 + 0.12 if randf() > 0.5 else -(d / 2 + 0.12)
+			ledge.position = Vector3(0, 0.8 + br * 1.2, ledge_face)
+			building.add_child(ledge)
+
+	# Roof detail — 4 types: antenna, AC unit, satellite dish, water tank
+	var roof_type = randi() % 4
+	var roof_x = randf_range(-w / 3, w / 3)
+	var roof_z = randf_range(-d / 3, d / 3)
+	if roof_type == 0:
+		# Antenna with blinking light
 		var antenna = MeshInstance3D.new()
 		antenna.mesh = CylinderMesh.new()
 		antenna.mesh.top_radius = 0.01
@@ -3014,17 +3316,17 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 		ant_mat.albedo_color = Color(0.2, 0.2, 0.25)
 		ant_mat.metallic = 0.6
 		antenna.mesh.material = ant_mat
-		antenna.position = Vector3(randf_range(-w/3, w/3), h + 0.4, randf_range(-d/3, d/3))
+		antenna.position = Vector3(roof_x, h + 0.4, roof_z)
 		building.add_child(antenna)
-		# Blinking light on antenna
 		var blink = MeshInstance3D.new()
 		blink.mesh = SphereMesh.new()
 		blink.mesh.radius = 0.03
 		blink.mesh.height = 0.06
 		blink.mesh.material = make_emissive_mat("#ff0000", 6.0)
-		blink.position = antenna.position + Vector3(0, 0.45, 0)
+		blink.position = Vector3(roof_x, h + 0.85, roof_z)
 		building.add_child(blink)
-	else:
+	elif roof_type == 1:
+		# AC unit
 		var ac = MeshInstance3D.new()
 		ac.mesh = BoxMesh.new()
 		ac.mesh.size = Vector3(0.4, 0.25, 0.3)
@@ -3033,8 +3335,47 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 		ac_mat.metallic = 0.4
 		ac_mat.roughness = 0.6
 		ac.mesh.material = ac_mat
-		ac.position = Vector3(randf_range(-w/3, w/3), h + 0.12, randf_range(-d/3, d/3))
+		ac.position = Vector3(roof_x, h + 0.12, roof_z)
 		building.add_child(ac)
+	elif roof_type == 2:
+		# Satellite dish
+		var dish_base = MeshInstance3D.new()
+		dish_base.mesh = CylinderMesh.new()
+		dish_base.mesh.top_radius = 0.03
+		dish_base.mesh.bottom_radius = 0.04
+		dish_base.mesh.height = 0.3
+		var dish_base_mat = StandardMaterial3D.new()
+		dish_base_mat.albedo_color = Color(0.2, 0.2, 0.25)
+		dish_base_mat.metallic = 0.5
+		dish_base.mesh.material = dish_base_mat
+		dish_base.position = Vector3(roof_x, h + 0.15, roof_z)
+		building.add_child(dish_base)
+		var dish = MeshInstance3D.new()
+		dish.mesh = SphereMesh.new()
+		dish.mesh.radius = 0.2
+		dish.mesh.height = 0.1
+		var dish_mat = StandardMaterial3D.new()
+		dish_mat.albedo_color = Color(0.25, 0.25, 0.3)
+		dish_mat.metallic = 0.7
+		dish_mat.roughness = 0.3
+		dish.mesh.material = dish_mat
+		dish.position = Vector3(roof_x, h + 0.35, roof_z)
+		dish.rotation_degrees.x = 30
+		building.add_child(dish)
+	else:
+		# Water tank
+		var tank = MeshInstance3D.new()
+		tank.mesh = CylinderMesh.new()
+		tank.mesh.top_radius = 0.2
+		tank.mesh.bottom_radius = 0.2
+		tank.mesh.height = 0.4
+		var tank_mat = StandardMaterial3D.new()
+		tank_mat.albedo_color = Color(0.16, 0.16, 0.2)
+		tank_mat.metallic = 0.3
+		tank_mat.roughness = 0.7
+		tank.mesh.material = tank_mat
+		tank.position = Vector3(roof_x, h + 0.2, roof_z)
+		building.add_child(tank)
 
 	objects_container.add_child(building)
 
