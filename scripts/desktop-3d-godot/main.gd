@@ -36,6 +36,9 @@ var day_night_enabled: bool = false
 # Flickering lights (abandoned_station)
 var flicker_lights: Array = []
 
+# Flying vehicles (neon_city)
+var neon_city_vehicles: Array = []
+
 # ── Audio reactivity ──
 var mic_player: AudioStreamPlayer = null  # stored for periodic restart (bug #80173)
 var audio_restart_timer: float = 0.0
@@ -171,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -433,6 +436,19 @@ func _process(delta):
 			else:
 				fl.light_energy = lerp(fl.light_energy, lerp(0.5, 1.2, proximity), delta * 3.0)
 
+	# ── Flying vehicles (neon_city) ──
+	for vehicle in neon_city_vehicles:
+		if is_instance_valid(vehicle):
+			var spd = vehicle.get_meta("speed")
+			var dir = vehicle.get_meta("dir")
+			var base_y = vehicle.get_meta("base_y")
+			vehicle.position.x += spd * dir * delta
+			vehicle.position.y = base_y + sin(t * 0.8 + vehicle.get_instance_id() * 0.5) * 0.3
+			if vehicle.position.x > 18:
+				vehicle.position.x = -18
+			elif vehicle.position.x < -18:
+				vehicle.position.x = 18
+
 	# ── Day/night cycle (autumn_campsite) ──
 	if day_night_enabled:
 		var hour_info = Time.get_datetime_dict_from_system()
@@ -614,11 +630,17 @@ func _process(delta):
 func _animate_recursive(node: Node, t: float, idx: int):
 	if node is MeshInstance3D:
 		var mat = node.material_override as StandardMaterial3D
+		if not mat and node.mesh:
+			mat = node.mesh.material as StandardMaterial3D
 		if mat and mat.emission_enabled:
 			if not node.has_meta("base_emission"):
 				node.set_meta("base_emission", mat.emission_energy_multiplier)
 			var base = node.get_meta("base_emission")
-			mat.emission_energy_multiplier = base * (0.7 + 0.3 * sin(t * 1.2 + node.get_instance_id() * 0.001))
+			if node.has_meta("blink_rate"):
+				var rate = node.get_meta("blink_rate")
+				mat.emission_energy_multiplier = base if sin(t * rate + node.get_instance_id() * 0.1) > 0.0 else 0.1
+			else:
+				mat.emission_energy_multiplier = base * (0.7 + 0.3 * sin(t * 1.2 + node.get_instance_id() * 0.001))
 
 	for child in node.get_children():
 		_animate_recursive(child, t, idx)
@@ -642,6 +664,7 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			spawned_items.clear()
 			sky_cycle_enabled = false
 			cloud_nodes.clear()
+			neon_city_vehicles.clear()
 			return {"status": "ok", "message": "Scene cleared"}
 		"mushroom":
 			create_mushroom(params)
@@ -904,6 +927,14 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/waveform.gdshader", params)
 			return {"status": "ok", "message": "Waveform scene loaded"}
+		"sdf_world":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/sdf_world.gdshader", params)
+			return {"status": "ok", "message": "SDF world loaded"}
+		"reaction_diffusion":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/reaction_diffusion.gdshader", params)
+			return {"status": "ok", "message": "Reaction-diffusion loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -2828,7 +2859,8 @@ func apply_neon_environment():
 	env.ssr_max_steps = 96
 	env.glow_intensity = 2.0
 	env.glow_bloom = 0.35
-	env.glow_hdr_threshold = 0.5
+	env.glow_hdr_threshold = 1.2
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
 	env.sdfgi_enabled = true
 	env.ambient_light_energy = 0.9
 	$MoonLight.light_color = Color(0.4, 0.35, 0.6)
@@ -2838,6 +2870,8 @@ func create_neon_city(params: Dictionary):
 	for child in objects_container.get_children():
 		child.queue_free()
 	spawned_items.clear()
+	flicker_lights.clear()
+	neon_city_vehicles.clear()
 	await get_tree().process_frame
 
 	# Wet street — reflective ground
@@ -2846,8 +2880,8 @@ func create_neon_city(params: Dictionary):
 	street.mesh.size = Vector2(40, 40)
 	var street_mat = StandardMaterial3D.new()
 	street_mat.albedo_color = Color(0.12, 0.11, 0.15)
-	street_mat.metallic = 0.7
-	street_mat.roughness = 0.2
+	street_mat.metallic = 0.0
+	street_mat.roughness = 0.08
 	street.mesh.material = street_mat
 	street.position = Vector3(0, -1, 0)
 	objects_container.add_child(street)
@@ -2883,8 +2917,8 @@ func create_neon_city(params: Dictionary):
 		puddle.mesh.size = Vector2(randf_range(1.5, 4), randf_range(1, 3))
 		var puddle_mat = StandardMaterial3D.new()
 		puddle_mat.albedo_color = Color(0.03, 0.03, 0.06)
-		puddle_mat.metallic = 1.0
-		puddle_mat.roughness = 0.01
+		puddle_mat.metallic = 0.0
+		puddle_mat.roughness = 0.05
 		puddle.mesh.material = puddle_mat
 		puddle.position = Vector3(randf_range(-2.5, 2.5), -0.98, randf_range(-10, 5))
 		objects_container.add_child(puddle)
@@ -2905,6 +2939,45 @@ func create_neon_city(params: Dictionary):
 		cw_strip.mesh.material = make_emissive_mat("#ccaa33", 1.2)
 		cw_strip.position = Vector3(0, -0.98, -2.0 + cw * 0.5)
 		objects_container.add_child(cw_strip)
+
+	# Traffic lights at crosswalk
+	for tl_side in [-2.8, 2.8]:
+		var tl_pole = MeshInstance3D.new()
+		tl_pole.mesh = CylinderMesh.new()
+		tl_pole.mesh.top_radius = 0.03
+		tl_pole.mesh.bottom_radius = 0.04
+		tl_pole.mesh.height = 3.5
+		var tl_pole_mat = StandardMaterial3D.new()
+		tl_pole_mat.albedo_color = Color(0.12, 0.12, 0.15)
+		tl_pole_mat.metallic = 0.6
+		tl_pole_mat.roughness = 0.4
+		tl_pole.mesh.material = tl_pole_mat
+		tl_pole.position = Vector3(tl_side, 0.75, -2.0)
+		objects_container.add_child(tl_pole)
+		# Housing
+		var tl_box = MeshInstance3D.new()
+		tl_box.mesh = BoxMesh.new()
+		tl_box.mesh.size = Vector3(0.15, 0.4, 0.12)
+		var tl_box_mat = StandardMaterial3D.new()
+		tl_box_mat.albedo_color = Color(0.08, 0.08, 0.1)
+		tl_box_mat.metallic = 0.3
+		tl_box.mesh.material = tl_box_mat
+		tl_box.position = Vector3(tl_side, 2.6, -2.0)
+		objects_container.add_child(tl_box)
+		# Light spheres (red/yellow/green — only red emissive)
+		var tl_colors = [
+			{"color": "#ff0000", "energy": 5.0, "y_off": 0.12},
+			{"color": "#ffaa00", "energy": 0.3, "y_off": 0.0},
+			{"color": "#00ff00", "energy": 0.3, "y_off": -0.12},
+		]
+		for tld in tl_colors:
+			var tl_light = MeshInstance3D.new()
+			tl_light.mesh = SphereMesh.new()
+			tl_light.mesh.radius = 0.03
+			tl_light.mesh.height = 0.06
+			tl_light.mesh.material = make_emissive_mat(tld["color"], tld["energy"])
+			tl_light.position = Vector3(tl_side, 2.6 + tld["y_off"], -2.0 + 0.07)
+			objects_container.add_child(tl_light)
 
 	# Street props — vending machines, crates, dumpsters on sidewalks
 	var prop_defs = [
@@ -2947,6 +3020,34 @@ func create_neon_city(params: Dictionary):
 				glow_panel.rotation_degrees.y = 180
 			objects_container.add_child(glow_panel)
 
+	# Phone booths on sidewalks
+	for pb_x in [-4.3, 4.5]:
+		var pb_frame = MeshInstance3D.new()
+		pb_frame.mesh = BoxMesh.new()
+		pb_frame.mesh.size = Vector3(0.5, 1.6, 0.5)
+		var pb_mat = StandardMaterial3D.new()
+		pb_mat.albedo_color = Color(0.1, 0.1, 0.14)
+		pb_mat.metallic = 0.5
+		pb_mat.roughness = 0.5
+		pb_frame.mesh.material = pb_mat
+		pb_frame.position = Vector3(pb_x, -0.2, -4.0)
+		objects_container.add_child(pb_frame)
+		# Translucent side panels
+		for pb_face_z in [-0.26, 0.26]:
+			var pb_panel = MeshInstance3D.new()
+			pb_panel.mesh = QuadMesh.new()
+			pb_panel.mesh.size = Vector2(0.45, 1.4)
+			pb_panel.mesh.material = make_translucent_mat("#4466aa", 0.3)
+			pb_panel.position = Vector3(pb_x, -0.2, -4.0 + pb_face_z)
+			objects_container.add_child(pb_panel)
+		# Interior emissive glow
+		var pb_glow = MeshInstance3D.new()
+		pb_glow.mesh = BoxMesh.new()
+		pb_glow.mesh.size = Vector3(0.3, 0.8, 0.3)
+		pb_glow.mesh.material = make_emissive_mat("#4488ff", 2.0)
+		pb_glow.position = Vector3(pb_x, -0.1, -4.0)
+		objects_container.add_child(pb_glow)
+
 	# Manhole covers — metallic circles on street
 	for mi in range(3):
 		var manhole = MeshInstance3D.new()
@@ -2961,6 +3062,28 @@ func create_neon_city(params: Dictionary):
 		manhole.mesh.material = mh_mat
 		manhole.position = Vector3(randf_range(-1.5, 1.5), -0.98, -6 + mi * 5.0)
 		objects_container.add_child(manhole)
+
+	# Storm drain grates along curbs
+	for sdi in range(6):
+		var sd_side = -3.0 if sdi % 2 == 0 else 3.0
+		var sd_grate = MeshInstance3D.new()
+		sd_grate.mesh = BoxMesh.new()
+		sd_grate.mesh.size = Vector3(0.4, 0.02, 0.25)
+		var sd_mat = StandardMaterial3D.new()
+		sd_mat.albedo_color = Color(0.08, 0.08, 0.1)
+		sd_mat.metallic = 0.7
+		sd_mat.roughness = 0.5
+		sd_grate.mesh.material = sd_mat
+		sd_grate.position = Vector3(sd_side, -0.98, -9 + sdi * 3.5)
+		objects_container.add_child(sd_grate)
+		# 40% chance: faint green sewer glow underneath
+		if randf() < 0.4:
+			var sewer_glow = MeshInstance3D.new()
+			sewer_glow.mesh = BoxMesh.new()
+			sewer_glow.mesh.size = Vector3(0.35, 0.01, 0.2)
+			sewer_glow.mesh.material = make_emissive_mat("#22ff44", 2.0)
+			sewer_glow.position = Vector3(sd_side, -1.0, -9 + sdi * 3.5)
+			objects_container.add_child(sewer_glow)
 
 	# Buildings with neon trim + windows
 	var neon_colors = ["#ff0066", "#00ffaa", "#4488ff", "#ff6600", "#aa00ff", "#ffff00"]
@@ -3010,6 +3133,14 @@ func create_neon_city(params: Dictionary):
 		sign_light.omni_attenuation = 1.8
 		sign_light.position = Vector3(sx, sy, sz)
 		objects_container.add_child(sign_light)
+		# Sign flicker patterns — some get cursor-reactive flicker, some are dim/dead
+		var flicker_roll = randf()
+		if flicker_roll < 0.3:
+			flicker_lights.append(sign_light)
+		elif flicker_roll < 0.45:
+			var dim_mat = sign_node.mesh.material as StandardMaterial3D
+			if dim_mat:
+				dim_mat.emission_energy_multiplier = 1.5
 
 	# Holographic billboards — 4 large hologram shader panels on building sides
 	var holo_shader = load("res://shaders/hologram.gdshader")
@@ -3049,7 +3180,26 @@ func create_neon_city(params: Dictionary):
 		holo_light.position = holo_positions[hi] + Vector3(0, 0, 0.5)
 		objects_container.add_child(holo_light)
 
+	# Dramatic spotlight beams from building tops through fog
+	var spot_configs = [
+		{"pos": Vector3(-6, 7, -8), "color": Color(1.0, 0.2, 0.6), "angle": Vector3(35, 20, 0)},
+		{"pos": Vector3(8, 6, -5), "color": Color(0.2, 0.5, 1.0), "angle": Vector3(40, -15, 0)},
+		{"pos": Vector3(-4, 8, 2), "color": Color(0.6, 0.2, 1.0), "angle": Vector3(45, 10, 0)},
+	]
+	for sc in spot_configs:
+		var spot = SpotLight3D.new()
+		spot.light_color = sc["color"]
+		spot.light_energy = 3.0
+		spot.spot_range = 15.0
+		spot.spot_angle = 25.0
+		spot.shadow_enabled = false
+		spot.position = sc["pos"]
+		spot.rotation_degrees = sc["angle"]
+		objects_container.add_child(spot)
+
 	# Street lamps along corridor — with OmniLights that illuminate the wet street
+	var lamp_positions_left: Array = []
+	var lamp_positions_right: Array = []
 	for i in range(6):
 		var lz = -10 + i * 4.0
 		for side in [-2.5, 2.5]:
@@ -3082,6 +3232,50 @@ func create_neon_city(params: Dictionary):
 			ll.omni_attenuation = 1.5
 			ll.position = Vector3(side, 2.0, lz)
 			objects_container.add_child(ll)
+			# Collect lamp-top positions for power lines
+			var lamp_top = Vector3(side, 2.1, lz)
+			if side < 0:
+				lamp_positions_left.append(lamp_top)
+			else:
+				lamp_positions_right.append(lamp_top)
+
+	# Power lines between lamp poles — 2 sagging cables per span
+	var cable_mat = StandardMaterial3D.new()
+	cable_mat.albedo_color = Color(0.06, 0.06, 0.08)
+	cable_mat.roughness = 0.8
+	for lamp_arr in [lamp_positions_left, lamp_positions_right]:
+		for li in range(lamp_arr.size() - 1):
+			var p1 = lamp_arr[li]
+			var p2 = lamp_arr[li + 1]
+			var mid = (p1 + p2) / 2.0
+			mid.y -= 0.3  # sag
+			# Two cables per span with slight horizontal offset
+			for cable_off in [-0.04, 0.04]:
+				var offset = Vector3(cable_off, 0, 0)
+				# Segment 1: p1 to mid
+				var seg1 = MeshInstance3D.new()
+				seg1.mesh = CylinderMesh.new()
+				seg1.mesh.top_radius = 0.008
+				seg1.mesh.bottom_radius = 0.008
+				var s1_len = p1.distance_to(mid)
+				seg1.mesh.height = s1_len
+				seg1.mesh.material = cable_mat
+				seg1.position = (p1 + mid) / 2.0 + offset
+				objects_container.add_child(seg1)
+				seg1.look_at(mid + offset, Vector3.UP)
+				seg1.rotation.x += PI / 2
+				# Segment 2: mid to p2
+				var seg2 = MeshInstance3D.new()
+				seg2.mesh = CylinderMesh.new()
+				seg2.mesh.top_radius = 0.008
+				seg2.mesh.bottom_radius = 0.008
+				var s2_len = mid.distance_to(p2)
+				seg2.mesh.height = s2_len
+				seg2.mesh.material = cable_mat
+				seg2.position = (mid + p2) / 2.0 + offset
+				objects_container.add_child(seg2)
+				seg2.look_at(p2 + offset, Vector3.UP)
+				seg2.rotation.x += PI / 2
 
 	# Street-level fog — ground_fog shader quads, purple/teal tinted
 	var fog_shader = load("res://shaders/ground_fog.gdshader")
@@ -3152,12 +3346,60 @@ func create_neon_city(params: Dictionary):
 		steam.position = Vector3(randf_range(-2, 2), -0.9, -6 + sv * 5.0)
 		objects_container.add_child(steam)
 
+	# Sidewalk debris — scattered paper/trash via MultiMesh (1 draw call)
+	var debris = _create_street_debris_multimesh(60)
+	objects_container.add_child(debris)
+
+	# Flying vehicles — drifting overhead
+	for vi in range(4):
+		var vehicle = Node3D.new()
+		var v_y = randf_range(4.0, 8.0)
+		vehicle.position = Vector3(randf_range(-15, 15), v_y, randf_range(-8, 3))
+		# Body
+		var v_body = MeshInstance3D.new()
+		v_body.mesh = BoxMesh.new()
+		v_body.mesh.size = Vector3(0.3, 0.1, 0.6)
+		var v_body_mat = StandardMaterial3D.new()
+		v_body_mat.albedo_color = Color(0.12, 0.12, 0.18)
+		v_body_mat.metallic = 0.6
+		v_body_mat.roughness = 0.3
+		v_body.mesh.material = v_body_mat
+		vehicle.add_child(v_body)
+		# Canopy — translucent top
+		var v_canopy = MeshInstance3D.new()
+		v_canopy.mesh = BoxMesh.new()
+		v_canopy.mesh.size = Vector3(0.2, 0.06, 0.25)
+		v_canopy.mesh.material = make_translucent_mat("#6688cc", 0.4)
+		v_canopy.position = Vector3(0, 0.08, -0.05)
+		vehicle.add_child(v_canopy)
+		# Thruster glow — rear
+		var v_thruster = MeshInstance3D.new()
+		v_thruster.mesh = BoxMesh.new()
+		v_thruster.mesh.size = Vector3(0.15, 0.04, 0.05)
+		var thruster_colors = ["#00ffaa", "#ff6600", "#4488ff", "#ff0066"]
+		v_thruster.mesh.material = make_emissive_mat(thruster_colors[vi], 6.0)
+		v_thruster.position = Vector3(0, -0.02, 0.33)
+		vehicle.add_child(v_thruster)
+		# Headlight — front
+		var v_headlight = MeshInstance3D.new()
+		v_headlight.mesh = BoxMesh.new()
+		v_headlight.mesh.size = Vector3(0.1, 0.03, 0.03)
+		v_headlight.mesh.material = make_emissive_mat("#ffffff", 4.0)
+		v_headlight.position = Vector3(0, -0.01, -0.32)
+		vehicle.add_child(v_headlight)
+		# Metadata for animation
+		vehicle.set_meta("speed", randf_range(1.5, 4.0))
+		vehicle.set_meta("dir", 1.0 if randf() > 0.5 else -1.0)
+		vehicle.set_meta("base_y", v_y)
+		objects_container.add_child(vehicle)
+		neon_city_vehicles.append(vehicle)
+
 	spawned_items.append({"type": "scene", "name": "neon_city"})
 
-	# Camera — street-level but high enough to see sky between buildings
+	# Camera — elevated enough to see vehicles overhead + street below
 	camera_mode = "orbit"
-	camera_orbit_radius = 5.0
-	camera_orbit_height = 2.5
+	camera_orbit_radius = 7.5
+	camera_orbit_height = 5.0
 	camera_orbit_speed = 0.03
 
 func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color: String):
@@ -3307,6 +3549,45 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 			ledge.position = Vector3(0, 0.8 + br * 1.2, ledge_face)
 			building.add_child(ledge)
 
+	# Fire escape ladders (40% of tall buildings)
+	if h > 3.0 and randf() < 0.4:
+		var fe_face_z = d / 2 + 0.05 if randf() > 0.5 else -(d / 2 + 0.05)
+		var fe_x = randf_range(-w / 4, w / 4)
+		var fe_mat = StandardMaterial3D.new()
+		fe_mat.albedo_color = Color(0.15, 0.15, 0.18)
+		fe_mat.metallic = 0.6
+		fe_mat.roughness = 0.5
+		# Vertical rails
+		for rail_off in [-0.12, 0.12]:
+			var rail = MeshInstance3D.new()
+			rail.mesh = CylinderMesh.new()
+			rail.mesh.top_radius = 0.012
+			rail.mesh.bottom_radius = 0.012
+			rail.mesh.height = min(h, 6.0)
+			rail.mesh.material = fe_mat
+			rail.position = Vector3(fe_x + rail_off, min(h, 6.0) / 2.0, fe_face_z)
+			building.add_child(rail)
+		# Rungs
+		var rung_count = min(int(h / 0.5), 12)
+		for ri in range(rung_count):
+			var rung = MeshInstance3D.new()
+			rung.mesh = CylinderMesh.new()
+			rung.mesh.top_radius = 0.008
+			rung.mesh.bottom_radius = 0.008
+			rung.mesh.height = 0.24
+			rung.mesh.material = fe_mat
+			rung.position = Vector3(fe_x, 0.4 + ri * 0.5, fe_face_z)
+			rung.rotation_degrees.z = 90
+			building.add_child(rung)
+			# Landing platform every 3rd rung
+			if ri > 0 and ri % 3 == 0:
+				var landing = MeshInstance3D.new()
+				landing.mesh = BoxMesh.new()
+				landing.mesh.size = Vector3(0.35, 0.02, 0.2)
+				landing.mesh.material = fe_mat
+				landing.position = Vector3(fe_x, 0.4 + ri * 0.5, fe_face_z)
+				building.add_child(landing)
+
 	# Roof detail — 4 types: antenna, AC unit, satellite dish, water tank
 	var roof_type = randi() % 4
 	var roof_x = randf_range(-w / 3, w / 3)
@@ -3330,6 +3611,7 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 		blink.mesh.height = 0.06
 		blink.mesh.material = make_emissive_mat("#ff0000", 6.0)
 		blink.position = Vector3(roof_x, h + 0.85, roof_z)
+		blink.set_meta("blink_rate", randf_range(2.0, 5.0))
 		building.add_child(blink)
 	elif roof_type == 1:
 		# AC unit
@@ -3382,6 +3664,31 @@ func create_neon_building(pos: Vector3, w: float, h: float, d: float, neon_color
 		tank.mesh.material = tank_mat
 		tank.position = Vector3(roof_x, h + 0.2, roof_z)
 		building.add_child(tank)
+		# Pipes extending from tank toward building edge
+		var pipe_mat = StandardMaterial3D.new()
+		pipe_mat.albedo_color = Color(0.14, 0.14, 0.18)
+		pipe_mat.metallic = 0.5
+		pipe_mat.roughness = 0.5
+		# Pipe along X axis
+		var pipe_x = MeshInstance3D.new()
+		pipe_x.mesh = CylinderMesh.new()
+		pipe_x.mesh.top_radius = 0.025
+		pipe_x.mesh.bottom_radius = 0.025
+		pipe_x.mesh.height = w / 3.0
+		pipe_x.mesh.material = pipe_mat
+		pipe_x.position = Vector3(roof_x + w / 6.0, h + 0.1, roof_z)
+		pipe_x.rotation_degrees.z = 90
+		building.add_child(pipe_x)
+		# Pipe along Z axis
+		var pipe_z = MeshInstance3D.new()
+		pipe_z.mesh = CylinderMesh.new()
+		pipe_z.mesh.top_radius = 0.025
+		pipe_z.mesh.bottom_radius = 0.025
+		pipe_z.mesh.height = d / 3.0
+		pipe_z.mesh.material = pipe_mat
+		pipe_z.position = Vector3(roof_x, h + 0.1, roof_z + d / 6.0)
+		pipe_z.rotation_degrees.x = 90
+		building.add_child(pipe_z)
 
 	objects_container.add_child(building)
 
@@ -4993,6 +5300,33 @@ func create_abandoned_station(params: Dictionary):
 	spawned_items.append({"type": "scene", "name": "abandoned_station"})
 
 # ── Helper: reactive grass multimesh ──
+func _create_street_debris_multimesh(count: int) -> MultiMeshInstance3D:
+	var mm = MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.instance_count = count
+	var piece = PlaneMesh.new()
+	piece.size = Vector2(0.08, 0.08)
+	var debris_mat = StandardMaterial3D.new()
+	debris_mat.albedo_color = Color(0.2, 0.18, 0.15)
+	debris_mat.roughness = 0.9
+	debris_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	piece.material = debris_mat
+	mm.mesh = piece
+	for i in count:
+		var xform = Transform3D()
+		xform = xform.rotated(Vector3.UP, randf() * TAU)
+		var s = randf_range(0.5, 1.5)
+		xform = xform.scaled(Vector3(s, s, s))
+		# Place on sidewalks (|x| > 3.2)
+		var dx = randf_range(3.3, 6.0) * (1.0 if randf() > 0.5 else -1.0)
+		var dz = randf_range(-12.0, 6.0)
+		xform.origin = Vector3(dx, -0.97, dz)
+		mm.set_instance_transform(i, xform)
+	var mmi = MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mmi
+
 func _create_reactive_grass_multimesh(area_size: float, count: int) -> MultiMeshInstance3D:
 	var mm = MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
@@ -6081,6 +6415,8 @@ func toggle_postfx(effect: String):
 		"glitch": "res://shaders/glitch.gdshader",
 		"thermal": "res://shaders/thermal.gdshader",
 		"ascii": "res://shaders/ascii.gdshader",
+		"kuwahara": "res://shaders/kuwahara.gdshader",
+		"oilpaint": "res://shaders/kuwahara.gdshader",
 	}
 
 	if not shader_map.has(effect):
