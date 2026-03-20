@@ -81,6 +81,106 @@ Use `exp(-d * 60.0)` not `exp(-d*d*2000.0)`. Squared-distance creates sub-pixel 
 ### Iteration budgets
 Escape-time fractals: ≤80 max iterations for realtime. 256 is too heavy.
 
+## Setup on a Fresh Machine
+
+### Requirements
+- **GPU:** Any modern GPU with Vulkan support (doesn't need to be NVIDIA)
+- **OS:** Linux with X11 (KDE Plasma tested). Wayland untested.
+- **Godot 4.6** with Forward+ renderer
+- **PipeWire** for audio capture (audio reactivity is optional — scenes animate fine without it)
+
+### System Dependencies (NixOS)
+The NixOS module at `nix/desktop-3d-godot.nix` handles everything. On other distros you need:
+- `godot4` (Godot 4.6+)
+- `python3` + `requests`
+- `pipewire` + `pw-cat` (for audio capture)
+- `xprop`, `xdotool` (X11 window management)
+- `nvidia-smi` or equivalent (optional, for GPU metrics)
+
+### Architecture Overview
+
+```
+┌─────────────┐  UDP 30Hz  ┌──────────────┐  TCP 9877  ┌──────────────┐
+│  pw-cat     │──────────>│  Godot 4.6   │<───────────│  CLI/Web     │
+│  (audio)    │  :9778    │  (renderer)  │            │  (control)   │
+├─────────────┤           ├──────────────┤            ├──────────────┤
+│  sensors.py │──────────>│  main.gd     │            │ desktop-3d.sh│
+│  (metrics)  │  UDP 1Hz  │  (56 scenes) │            │ web.py :9880 │
+└─────────────┘           └──────────────┘            └──────────────┘
+```
+
+Three services work together:
+1. **Godot renderer** — runs the 3D scenes, listens TCP :9877 for commands, UDP :9778 for sensor data
+2. **Sensor daemon** (`scripts/sensors/substrate_sensors.py`) — captures audio via PipeWire `pw-cat`, reads system metrics, sends UDP packets
+3. **Web panel** (`scripts/desktop-3d-web.py`) — HTTP control panel on :9880, proxies to Godot TCP
+
+### Bootstrap Steps
+
+```bash
+# 1. Clone the repo
+git clone git@github.com:substrate-rai/substrate.git
+cd substrate
+
+# 2. NixOS: apply config (creates all 3 systemd user services)
+sudo nixos-rebuild switch --flake .#substrate
+
+# 3. Non-NixOS: run Godot manually
+godot4 --path scripts/desktop-3d-godot/ --rendering-driver vulkan
+
+# 4. Start services
+systemctl --user start substrate-desktop-3d-godot.service
+systemctl --user start substrate-3d-sensors.service   # audio + metrics
+systemctl --user start substrate-3d-web.service        # web panel
+
+# 5. Test
+echo '{"type":"status","params":{}}' | nc -w 2 127.0.0.1 9877
+echo '{"type":"metatron","params":{}}' | nc -w 2 127.0.0.1 9877
+scripts/desktop-3d.sh sacred_geometry
+
+# 6. Web panel
+open http://localhost:9880
+
+# 7. Check logs
+journalctl --user -u substrate-desktop-3d-godot.service -f
+```
+
+### Audio Pipeline (optional)
+Without the sensor daemon, all audio uniforms default to 0.0 and scenes still animate fine — just no audio reactivity. To enable audio:
+
+1. The sensor daemon captures system audio via `pw-cat --record` from PipeWire's default sink monitor
+2. Runs FFT at 22050 Hz, computes 8-band spectrum + beat detection at 30Hz
+3. Sends JSON UDP packets to Godot on port 9778
+4. Godot smooths values with per-band attack/decay and pushes to shader global uniforms
+5. Shaders read `audio_bass`, `audio_mid`, `audio_treble`, `audio_energy`, `beat_intensity` etc.
+
+### Window Stacking (X11)
+The Godot window uses `_NET_WM_STATE_BELOW` + `_NET_WM_STATE_STICKY` via `xprop` to sit above the wallpaper but below all app windows. Mouse passthrough is enabled so clicks go through to apps. **Do not use `_NET_WM_WINDOW_TYPE_DESKTOP`** — KDE renders its wallpaper on top of that.
+
+### Known Issues
+- **Memory leak:** ~20MB/hr drift from Godot/Vulkan. Nightly restart at 4am via systemd timer.
+- **Port conflict:** Old Electron overlay may hold port 9877. Kill it: `ss -tlnp 'sport = :9877'`
+- **SDFGI flicker:** Godot 4.6 bug with fast camera moves
+
+### File Structure
+```
+scripts/desktop-3d-godot/
+├── project.godot          # Godot config (Forward+, audio input, shader globals)
+├── main.tscn              # Main scene
+├── main.gd                # TCP server, scene management, audio, 6000+ lines
+├── shaders/               # 45+ .gdshader files
+│   ├── sacred_geometry.gdshader
+│   ├── metatron.gdshader
+│   ├── burning_ship.gdshader
+│   └── ...
+scripts/
+├── desktop-3d.sh          # CLI client
+├── desktop-3d-web.py      # HTTP panel (:9880)
+├── sensors/
+│   └── substrate_sensors.py  # Audio + system metrics daemon
+nix/
+├── desktop-3d-godot.nix   # NixOS service definitions
+```
+
 ## Next Directions
 - More fractals: Mandelbrot deep zoom, dragon curve, Barnsley fern
 - More sacred geometry: Vesica Piscis, Torus, Platonic solids standalone
