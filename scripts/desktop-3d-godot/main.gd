@@ -174,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -951,6 +951,22 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/metatron.gdshader", params)
 			return {"status": "ok", "message": "Metatron's Cube loaded"}
+		"burning_ship":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/burning_ship.gdshader", params)
+			return {"status": "ok", "message": "Burning Ship fractal loaded"}
+		"newton":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/newton.gdshader", params)
+			return {"status": "ok", "message": "Newton fractal loaded"}
+		"sierpinski":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/sierpinski.gdshader", params)
+			return {"status": "ok", "message": "Sierpinski fractal loaded"}
+		"apollonian":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/apollonian.gdshader", params)
+			return {"status": "ok", "message": "Apollonian gasket loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
