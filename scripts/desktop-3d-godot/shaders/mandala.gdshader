@@ -135,9 +135,7 @@ void fragment() {
 	float energy = audio_energy;
 	float beat = beat_intensity;
 
-	// Breathing scale with bass
-	float breath = 1.0 + bass * 0.12;
-	vec2 p = uv * 1.5 / breath;
+	vec2 p = uv * 1.5;
 
 	// Slow overall rotation
 	p = rot2(p, t * 0.04);
@@ -176,7 +174,7 @@ void fragment() {
 	// Ring 4: Triangles
 	float r4 = base_r * PHI * PHI * PHI;
 	vec2 tri_p = pf - vec2(r4, 0.0);
-	tri_p = rot2(tri_p, t * 0.3);
+	tri_p = rot2(tri_p, t * 0.1);
 	float tri = sdEquilateralTriangle(tri_p, 0.08);
 	float tri_line = aaLine(tri, line_width);
 	col += mix(CYAN, GOLD, 0.5) * tri_line * 0.4;

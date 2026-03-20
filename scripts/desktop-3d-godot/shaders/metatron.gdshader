@@ -53,11 +53,7 @@ void fragment() {
 	float beat = beat_intensity;
 
 	// Slow rotation
-	vec2 p = rot2(uv * 1.3, t * 0.06 + mid * 0.02);
-
-	// Breathing with bass
-	float breath = 1.0 + bass * 0.06;
-	p /= breath;
+	vec2 p = rot2(uv * 1.3, t * 0.06);
 
 	float scale = 0.38;
 
@@ -96,7 +92,7 @@ void fragment() {
 	col += GOLD * line_glow * (0.6 + energy * 1.2);
 
 	// ── 13 circles ──
-	float circle_r = scale * 0.18 + bass * 0.01;
+	float circle_r = scale * 0.18;
 	for (int i = 0; i < 13; i++) {
 		float cd = sdCircleRing(p - pts[i], circle_r);
 		float ring = aaLine(cd, 0.004);

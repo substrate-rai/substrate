@@ -153,7 +153,7 @@ float energyRings(vec2 p, float t, float bass) {
 	float r = length(p);
 	float d = 0.0;
 	for (int i = 0; i < 7; i++) {
-		float ring_r = fract(float(i) * 0.143 + t * (0.08 + bass * 0.04)) * 1.6;
+		float ring_r = fract(float(i) * 0.143 + t * 0.08) * 1.6;
 		float fade = (1.0 - ring_r * 0.625) * 0.5;
 		float ring = sdLine(abs(r - ring_r), 0.006);
 		d += ring * max(fade, 0.0);

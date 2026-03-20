@@ -152,8 +152,7 @@ void fragment() {
 
 	// Slow rotation
 	vec2 p = rot2(uv * 1.3, t * 0.04);
-	// Breathing
-	p /= (1.0 + bass * 0.08);
+	// No breathing — keep geometry stable
 
 	vec3 col = vec3(0.02, 0.01, 0.05);
 

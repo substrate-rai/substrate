@@ -119,14 +119,13 @@ void fragment() {
 	float energy = audio_energy;
 	float beat = beat_intensity;
 
-	// Zoom: oscillates slowly, bass deepens zoom
+	// Zoom: oscillates slowly
 	float zoom_cycle = sin(t * 0.06) * 0.5 + 0.5;
-	float zoom = mix(1.2, 2.5, zoom_cycle) + bass * 0.3;
+	float zoom = mix(1.2, 2.5, zoom_cycle);
 	vec2 p = rot2(uv * zoom, t * 0.03);
 
-	// Iteration depth: treble adds detail
-	int iters = 8 + int(treble * 4.0);
-	iters = clamp(iters, 8, 14);
+	// Iteration depth
+	int iters = 10;
 
 	vec3 col = vec3(0.02, 0.01, 0.04);
 

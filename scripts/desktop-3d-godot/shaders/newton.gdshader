@@ -72,19 +72,19 @@ void fragment() {
 	float energy = audio_energy;
 	float beat = beat_intensity;
 
-	// Polynomial degree: smoothly varies 3-7 with audio
-	int degree = 3 + int(mid * 3.99);
+	// Polynomial degree: cycles slowly over time
+	int degree = 3 + int(mod(t * 0.1, 5.0));
 	degree = clamp(degree, 3, 7);
 
 	// Zoom and rotation
-	float zoom = 1.8 + bass * 0.2;
+	float zoom = 1.8;
 	float angle = t * 0.04;
 	float ca = cos(angle), sa = sin(angle);
 	vec2 p = vec2(uv.x * ca - uv.y * sa, uv.x * sa + uv.y * ca) * zoom;
 
 	// Small constant added to Newton's method for visual interest
 	// a = relaxation parameter (1.0 = standard Newton)
-	float relax = 1.0 + sin(t * 0.15) * 0.15 + treble * 0.1;
+	float relax = 1.0 + sin(t * 0.15) * 0.15;
 
 	// Newton iteration: z_new = z - relax * f(z)/f'(z)
 	// f(z) = z^n - 1

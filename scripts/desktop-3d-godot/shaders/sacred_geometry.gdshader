@@ -167,7 +167,7 @@ float emanationRings(vec2 p, float t, float beat) {
 	for (int i = 0; i < 8; i++) {
 		float ring_r = fract(float(i) * 0.125 + t * 0.15) * 2.0;
 		float fade = 1.0 - ring_r * 0.5;
-		float ring_d = abs(r - ring_r) * (8.0 + beat * 4.0);
+		float ring_d = abs(r - ring_r) * 8.0;
 		d += fade * exp(-ring_d * ring_d);
 	}
 	return d;
@@ -184,40 +184,38 @@ void fragment() {
 	float energy = audio_energy;
 	float beat = beat_intensity;
 
-	// Scale breathing with bass
-	float breath = 1.0 + bass * 0.08;
 	vec2 p = uv * 1.8;
 
 	vec3 col = BG_COLOR;
 	float line_width = 0.008;
 
 	// ── Layer 1: Flower of Life (slowest rotation) ──
-	vec2 p1 = rot2(p / breath, t * 0.05 + mid * 0.02);
+	vec2 p1 = rot2(p, t * 0.05);
 	float fol = flowerOfLife(p1, 0.35);
 	float fol_line = sdLine(p, fol, line_width * 1.2);
 	col += LINE_BLUE * 0.35 * fol_line;
 
 	// ── Layer 2: Metatron's Cube (counter-rotation) ──
-	vec2 p2 = rot2(p / breath, -t * 0.08 + mid * 0.03);
+	vec2 p2 = rot2(p, -t * 0.08);
 	float mc = metatronsCube(p2, 0.3);
 	float mc_line = sdLine(p, mc, line_width);
 	col += VIOLET * 0.5 * mc_line;
 
 	// ── Layer 3: Sri Yantra (subtle rotation) ──
-	vec2 p3 = rot2(p / breath, t * 0.03);
+	vec2 p3 = rot2(p, t * 0.03);
 	float sy = sriYantra(p3, 0.8);
 	float sy_line = sdLine(p, sy, line_width * 0.9);
 	col += GOLD_GLOW * 0.6 * sy_line;
 
-	// ── Layer 4: Seed of Life (pulsing with bass) ──
-	float seed_scale = 0.2 + bass * 0.05;
-	vec2 p4 = rot2(p / breath, t * 0.12);
+	// ── Layer 4: Seed of Life ──
+	float seed_scale = 0.2;
+	vec2 p4 = rot2(p, t * 0.12);
 	float sol = seedOfLife(p4, seed_scale);
 	float sol_line = sdLine(p, sol, line_width * 1.5);
 	col += mix(LINE_BLUE, GOLD_GLOW, 0.5) * 0.45 * sol_line;
 
 	// ── Layer 5: Golden Spiral overlay ──
-	vec2 p5 = rot2(p / breath, -t * 0.06);
+	vec2 p5 = rot2(p, -t * 0.06);
 	float gs = goldenSpiral(p5, t * 0.2);
 	float gs_line = sdLine(p, gs, line_width * 2.0);
 	col += GOLD_GLOW * 0.2 * gs_line;

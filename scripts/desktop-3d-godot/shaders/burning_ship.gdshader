@@ -11,7 +11,7 @@ global uniform float audio_energy;
 global uniform float beat_intensity;
 global uniform vec3 cursor_world_pos;
 
-const int MAX_ITER = 256;
+const int MAX_ITER = 80;
 
 vec3 cosPalette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
 	return a + b * cos(TAU * (c * t + d));
@@ -47,8 +47,8 @@ void fragment() {
 	float energy = audio_energy;
 	float beat = beat_intensity;
 
-	// Zoom and pan — audio reactive slow zoom
-	float zoom = 2.8 - bass * 0.3;
+	// Zoom and pan
+	float zoom = 2.8;
 	// Interesting region of Burning Ship: around (-1.75, -0.04)
 	float cycle = t * 0.02;
 	vec2 center = vec2(
@@ -83,7 +83,7 @@ void fragment() {
 	float n = smooth_iter / float(MAX_ITER);
 
 	vec3 col;
-	if (smooth_iter >= float(MAX_ITER) - 1.0) {
+	if (smooth_iter >= float(MAX_ITER - 1)) {
 		// Interior: deep black with faint ember glow
 		col = vec3(0.01, 0.005, 0.0);
 		float interior_glow = exp(-length(z) * 0.5);
