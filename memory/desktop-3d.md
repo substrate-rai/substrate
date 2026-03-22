@@ -11,7 +11,7 @@ Live 3D desktop wallpaper — Godot 4.6 Forward+ (Vulkan), controlled via TCP on
 - **Test:** `echo '{"type":"scene_name","params":{}}' | nc -w 2 127.0.0.1 9877`
 - **Errors:** `journalctl --user -u substrate-desktop-3d-godot.service --since "30 seconds ago" | grep -i error`
 
-## Scene Count: 56 total
+## Scene Count: 120+ total (64 pioneering math shaders + 56 original)
 - 11 full 3D scenes (REACTIVE_SCENES + hand-built environments)
 - 45 shader art scenes (ART_SCENES array in main.gd ~line 177)
 
@@ -219,3 +219,23 @@ nix/
 - More sacred geometry: Vesica Piscis, Torus, Platonic solids standalone
 - Cursor interactivity via cursor_world_pos
 - Scene transition dissolves between shaders
+
+
+## Substrate Desktop Shell (2026-03-22)
+Mathematical art IS the desktop. Built as CanvasLayer overlays in Godot:
+- **Status bar** (): time, CPU, GPU, battery, WiFi, current shader
+- **App launcher** (): fuzzy search .desktop files, Super+/ to toggle
+- **Auto-rotation**: wallpapers cycle every 60s, built-in Timer (no external script)
+- **Controls**: Super+Right/Left (next/prev), Super+P (pause), TCP commands
+
+## Keyboard Shortcuts
+- Super+/ — app launcher
+- Super+Right — next wallpaper
+- Super+Left — previous wallpaper
+- Super+P — pause/resume rotation
+- Super+Return — kitty terminal
+- Super+W — tabbed window mode
+- Super+F — fullscreen
+- Super+Shift+Q — close window
+- Super+1-5 — workspaces
+- Print — screenshot

@@ -82,3 +82,57 @@ Last updated: 2026-03-10 (Day 3, soul document implemented)
 - GitHub Pages build errors are truncated in annotations — run Jekyll locally via nix-shell to debug
 - Local Jekyll build: `nix-shell -p "ruby.withPackages (ps: with ps; [ jekyll jekyll-redirect-from kramdown-parser-gfm ])" --run "jekyll build"`
 - blog/posts/ exists as source drafts; _posts/ is what Jekyll serves — keep in sync or delete blog/posts/
+
+
+## 2026-03-22 — Gentoo Migration + Mathematical Art Engine
+
+### Migration
+- Migrated from NixOS to Gentoo Linux (OpenRC, BTRFS subvolumes, no LUKS)
+- Full desktop stack: i3, lightdm, kitty, firefox, godot 4.6, blender 4.4
+- NVIDIA RTX 4060 with driver 590.48.01, CUDA 13.1
+- Ollama v0.18.2 + qwen3:8b running on CUDA
+- Snapper BTRFS snapshots with portage pre/post hooks
+- 22 fcron jobs for automation pipeline
+- All NixOS systemd services ported to OpenRC init scripts
+
+### 64 Pioneering Mathematical Art Shaders
+Built 64 GPU shaders rendering pure mathematics in real-time. Many are first-ever GPU implementations:
+- Number theory: eisenstein, prime_gaps, goldbach, mertens, riemann_zeta, collatz, elliptic_finite
+- Algebra: padic, tropical, modular_forms, langlands
+- Geometry: conformal, apollonian3d, kleinian, sol_geometry, ricci_flow, hopf, penrose, polytope5d, polytope_24cell, polytope_120cell, polytope_8d, clifford_torus, seifert
+- Dynamics: standard_map, arnold_tongues, horseshoe, homoclinic, attractor_density, spiral_waves, lorenz_knot, lenia, symplectic
+- Physics: schrodinger, dirac, wigner, dyson, spectral, navier_stokes, yang_mills, kerr_blackhole
+- String theory: calabi_yau, calabi_yau_moduli, kaluza_klein, ads_cft, brane_world, black_string, mirror_symmetry
+- Fractals: hyper_mandelbrot, dual_quat_julia, bicomplex
+- Topology: braid, legendrian, persistence
+- AI/computation: loss_landscape, neural_ode, neural_ca, lbm_fluid, optimal_transport
+- Higher-D: e8_polytope (FIRST real-time GPU render), gosset
+- Other: schmidt (FIRST GPU render), metatron (enhanced), spectral
+
+### Museum Overlay
+All 64 shaders have museum-style descriptions with:
+- Title and mathematical explanation
+- "WHAT YOU SEE" section explaining how visuals map to math
+- Dark background panel for WCAG readability
+
+### Substrate Mathematical Desktop Shell v1
+Custom desktop environment where mathematical art IS the desktop:
+- Status bar: time, CPU%, GPU% + temp, battery, WiFi, current shader name
+- App launcher: fuzzy search through .desktop files (Super+/)
+- Wallpapers auto-rotate every 60 seconds through all 64 shaders
+- Keyboard controls: Super+Right/Left (next/prev), Super+P (pause)
+- Narrative chapter system (8 chapters organizing the 64 shaders)
+
+### System Optimizations
+- CPU governor: performance
+- WiFi: static IP 192.168.1.206, power save disabled (kernel + NM)
+- Kernel: vm.swappiness=10, enlarged network buffers
+- Display sleep disabled
+- Lid close: ignore when docked/external power
+- GPU persistence mode enabled
+- Claude Code v2.1.81 installed
+
+### Infrastructure
+- Sunshine/Moonlight GPU streaming configured
+- External monitor mirroring (HDMI)
+- All committed and pushed to GitHub
