@@ -220,6 +220,7 @@ func _ready():
 	# ── Audio capture ──
 	# Audio analysis is handled externally by substrate_sensors.py (pw-record + FFT).
 	# Audio levels arrive via UDP sensor packets (audio_bass, audio_mid, etc.).
+	_setup_museum_overlay()
 	# This bypasses Godot's AudioStreamMicrophone which doesn't work reliably
 	# with PipeWire monitor sources on Linux.
 	print("Audio: using external sensor daemon (pw-record → UDP)")
@@ -5944,6 +5945,7 @@ func create_shader_scene(shader_path: String, params: Dictionary):
 
 	objects_container.add_child(quad)
 	spawned_items.append({"type": "scene", "name": shader_path.get_file().get_basename()})
+	show_museum_info(shader_path.get_file().get_basename())
 
 	# Lock camera to face the quad — orthographic eliminates perspective tilt
 	camera_mode = "static"
@@ -6876,3 +6878,128 @@ func _transition_to_scene_dissolve(scene_name: String):
 	tw.tween_method(_set_fade_alpha, 1.0, 0.0, fade_duration)
 	tw.tween_callback(func(): is_transitioning = false)
 
+
+# ── Museum Overlay System ──
+var museum_overlay: CanvasLayer
+var museum_title: Label
+var museum_desc: Label
+var museum_tween: Tween
+
+const SCENE_INFO = {
+	"collatz": {
+		"title": "COLLATZ CONJECTURE",
+		"desc": "The simplest unsolved problem in mathematics. Take any number: if even, halve it; if odd, triple and add one. Does every number eventually reach 1? Nobody knows. This shader extends the map to the complex plane via f(z) = ¼(2 + 7z − (2+5z)cos(πz)), revealing fractal structure where the conjecture's mystery lives. First real-time GPU visualization of this frontier.",
+	},
+	"riemann_zeta": {
+		"title": "RIEMANN ZETA FUNCTION",
+		"desc": "The Riemann Hypothesis — worth $1 million — states that all non-trivial zeros of ζ(s) lie on the critical line Re(s) = ½. This shader computes the zeta function in real-time using Borwein-accelerated Dirichlet series (40 terms per pixel), domain-colored to reveal the zeros as phase singularities. The bright golden line is where the zeros should be. Scroll upward to see more.",
+	},
+	"kleinian": {
+		"title": "KLEINIAN GROUP LIMIT SETS",
+		"desc": "From the book 'Indra's Pearls' — these fractals emerge from iterating Möbius transformations (circle inversions) of the complex plane. Four circles define two generators of a Kleinian group. The limit set — where orbits accumulate — is an infinitely detailed fractal gasket. Parameters animate through quasi-Fuchsian space, continuously deforming the fractal. Mathematics: hyperbolic geometry meets group theory.",
+	},
+	"kerr_blackhole": {
+		"title": "KERR BLACK HOLE",
+		"desc": "A rotating black hole solved from Einstein's field equations of general relativity. The asymmetric glow is real physics: Doppler beaming makes the approaching side of the accretion disk brighter (blueshifted) and the receding side dimmer (redshifted). The dark center is the event horizon. The bright inner ring is the photon sphere where light orbits the singularity. Temperature follows the Novikov-Thorne profile T(r) ∝ r^(−¾).",
+	},
+	"spiral_waves": {
+		"title": "FITZHUGH-NAGUMO SPIRAL WAVES",
+		"desc": "The mathematics of excitable media — the same equations that govern cardiac electrical activity, chemical oscillation (Belousov-Zhabotinsky reaction), and neural signal propagation. du/dt = u − u³/3 − v models excitation and recovery. Spiral waves rotate, collide, and break up. When this happens in heart tissue, it causes fibrillation. Mathematics that literally saves lives.",
+	},
+	"arnold_tongues": {
+		"title": "ARNOLD TONGUES",
+		"desc": "When you force an oscillator at a frequency near a rational multiple of its natural frequency, it locks on — mode locking. The Arnold tongue map shows where locking occurs: x-axis is driving frequency Ω, y-axis is coupling strength K. Each flame-shaped tongue grows from a rational number p/q. The boundaries are fractal. Inside a tongue: periodic. Between tongues: quasiperiodic or chaotic. This governs everything from planetary orbits to cardiac pacemakers.",
+	},
+	"standard_map": {
+		"title": "CHIRIKOV STANDARD MAP",
+		"desc": "The most important map in Hamiltonian chaos. p' = p + K·sin(θ), θ' = θ + p'. As kick parameter K increases from 0, integrable tori (smooth curves) fracture into island chains surrounded by chaotic seas. This is the KAM theorem made visible — Kolmogorov, Arnold, and Moser proved that some tori survive perturbation, but others shatter. The transition from order to chaos, animated in real-time.",
+	},
+	"elliptic_finite": {
+		"title": "ELLIPTIC CURVES OVER FINITE FIELDS",
+		"desc": "y² = x³ + ax + b (mod p) — the same mathematics that secures Bitcoin, TLS, and modern cryptography. Over a finite field F_p, the continuous curve becomes a discrete set of points forming a group under geometric addition. As the prime p changes, the pattern completely restructures. Each point satisfies a cubic equation in modular arithmetic. The crystalline patterns encode deep number theory — the Birch and Swinnerton-Dyer conjecture (another 1M problem) lives here.",
+	},
+	"goldbach": {
+		"title": "GOLDBACH COMET",
+		"desc": "Goldbach's conjecture (1742): every even number > 2 is the sum of two primes. Still unproven after 284 years. For each even n, count the number of ways g(n) to write it as a sum of two primes. Plot g(n) vs n and a comet appears — with tail rays at specific slopes corresponding to small primes. The rays exist because if p is a small prime, then n−p is often prime too. Hidden structure in the primes, visible only at scale.",
+	},
+	"hopf": {
+		"title": "HOPF FIBRATION",
+		"desc": "The most beautiful map in topology: S³ → S² with S¹ fibers. Every point on a 2-sphere corresponds to a circle in the 3-sphere, and these circles interlink — every pair is linked exactly once. Projected from 4D to 3D via stereographic projection, the fibers form nested tori of interlocking circles. Discovered by Heinz Hopf in 1931, it reveals that π₃(S²) = ℤ — the third homotopy group of the 2-sphere is infinite.",
+	},
+	"wigner": {
+		"title": "WIGNER QUASIPROBABILITY",
+		"desc": "Quantum mechanics in phase space. The Wigner function W(x,p) is a quasiprobability distribution — it can go negative, which is impossible classically. Blue regions represent negative probability: the signature of quantum interference with no classical analogue. This shows superpositions of harmonic oscillator eigenstates evolving in time, computed via Laguerre polynomials. Where W < 0, classical physics breaks down entirely.",
+	},
+	"tropical": {
+		"title": "TROPICAL GEOMETRY",
+		"desc": "An algebra where addition is replaced by max and multiplication by addition. Tropical polynomials become piecewise-linear functions, and tropical curves become polyhedral graphs — the 'skeleton' of classical algebraic geometry. Deep connection to AI: ReLU neural network decision boundaries ARE tropical hypersurfaces. This shader visualizes tropical curves of degree-2 polynomials with animated coefficients, overlaid with the Newton polygon dual structure.",
+	},
+	"padic": {
+		"title": "P-ADIC NUMBERS",
+		"desc": "An alternative number system where distance is measured by divisibility rather than magnitude. In the p-adic metric, numbers divisible by high powers of p are 'close' to zero. The p-adic integers form a Cantor-like fractal — each level branches into p children. Cycling through primes (2,3,5,7) shows how the tree structure changes. These are the foundation of modern algebraic number theory and the Langlands program. Entirely alien to Euclidean intuition.",
+	},
+	"seifert": {
+		"title": "SEIFERT SURFACE",
+		"desc": "Every knot in 3-space bounds an oriented surface — the Seifert surface. This ray-marches the surface of a trefoil knot (the simplest non-trivial knot, a (2,3)-torus knot). The surface swoops and twists, constrained by the topology of the knot it bounds. Two-sided coloring reveals the orientation. Seifert surfaces connect knot theory to 4-dimensional topology — the genus of this surface is a knot invariant.",
+	},
+	"loss_landscape": {
+		"title": "LOSS LANDSCAPE",
+		"desc": "The terrain that gradient descent navigates when training neural networks. Local minima (blue valleys), saddle points (yellow passes), sharp ridges, and flat plateaus. The loss function L(θ) maps billions of parameters to a single number — how wrong the network is. Training is a walk downhill through this landscape. Flat regions (purple glow) are where learning stalls. This is the geography of artificial intelligence — the literal shape of machine learning.",
+	},
+}
+
+func _setup_museum_overlay():
+	museum_overlay = CanvasLayer.new()
+	museum_overlay.layer = 10
+	add_child(museum_overlay)
+
+	# Title label
+	museum_title = Label.new()
+	museum_title.add_theme_font_size_override("font_size", 42)
+	museum_title.add_theme_color_override("font_color", Color(1.0, 0.95, 0.85, 0.9))
+	museum_title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	museum_title.add_theme_constant_override("shadow_offset_x", 2)
+	museum_title.add_theme_constant_override("shadow_offset_y", 2)
+	museum_title.position = Vector2(60, 40)
+	museum_title.size = Vector2(800, 60)
+	museum_title.modulate.a = 0.0
+	museum_overlay.add_child(museum_title)
+
+	# Description label
+	museum_desc = Label.new()
+	museum_desc.add_theme_font_size_override("font_size", 18)
+	museum_desc.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9, 0.85))
+	museum_desc.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	museum_desc.add_theme_constant_override("shadow_offset_x", 1)
+	museum_desc.add_theme_constant_override("shadow_offset_y", 1)
+	museum_desc.position = Vector2(60, 100)
+	museum_desc.size = Vector2(900, 300)
+	museum_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	museum_desc.modulate.a = 0.0
+	museum_overlay.add_child(museum_desc)
+
+func show_museum_info(scene_name: String):
+	if not museum_overlay:
+		_setup_museum_overlay()
+
+	var info = SCENE_INFO.get(scene_name, null)
+	if not info:
+		museum_title.modulate.a = 0.0
+		museum_desc.modulate.a = 0.0
+		return
+
+	museum_title.text = info["title"]
+	museum_desc.text = info["desc"]
+
+	# Fade in
+	if museum_tween:
+		museum_tween.kill()
+	museum_tween = create_tween()
+	museum_title.modulate.a = 0.0
+	museum_desc.modulate.a = 0.0
+	museum_tween.tween_property(museum_title, "modulate:a", 0.95, 1.0)
+	museum_tween.parallel().tween_property(museum_desc, "modulate:a", 0.85, 1.5)
+	# After 12 seconds, fade to subtle
+	museum_tween.tween_interval(12.0)
+	museum_tween.tween_property(museum_title, "modulate:a", 0.25, 3.0)
+	museum_tween.parallel().tween_property(museum_desc, "modulate:a", 0.15, 3.0)
