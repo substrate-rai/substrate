@@ -120,7 +120,8 @@ The mirror is substrate's self-assessment loop.
 
 ## Session Startup
 1. Read memory/SUMMARY.md for current state
-1.5. Read memory/session.md if <48 hours old
+1.5. Read memory/session-2026-03-22.md for the latest marathon build session
+1.6. Read memory/session.md if <48 hours old
 2. Read memory/bulletin.md for recent memos (last 7 days only)
 3. If working on a build, read latest memory/mirror/*.md for gap report
 4. Check git log --oneline -10 for recent activity
