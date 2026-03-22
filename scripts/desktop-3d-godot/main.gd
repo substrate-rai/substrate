@@ -7020,195 +7020,195 @@ var museum_tween: Tween
 const SCENE_INFO = {
 	"collatz": {
 		"title": "COLLATZ CONJECTURE",
-		"desc": "The simplest unsolved problem in mathematics. Take any number: if even, halve it; if odd, triple and add one. Does every number eventually reach 1? Nobody knows. This shader extends the map to the complex plane via f(z) = ¼(2 + 7z − (2+5z)cos(πz)), revealing fractal structure where the conjecture's mystery lives. First real-time GPU visualization of this frontier.",
+		"desc": "Take any number: if even, halve it; if odd, triple and add one. Does every number reach 1? Nobody knows — this is the simplest unsolved problem in mathematics. The complex extension f(z) = (1/4)(2 + 7z - (2+5z)cos(pi*z)) maps this to the complex plane. WHAT YOU SEE: Bright regions escape quickly (few iterations), dark regions take longer or never escape. The fractal boundary is where the conjecture lives — the edge between convergence and divergence. Color shifts encode iteration count.",
 	},
 	"riemann_zeta": {
 		"title": "RIEMANN ZETA FUNCTION",
-		"desc": "The Riemann Hypothesis — worth $1 million — states that all non-trivial zeros of ζ(s) lie on the critical line Re(s) = ½. This shader computes the zeta function in real-time using Borwein-accelerated Dirichlet series (40 terms per pixel), domain-colored to reveal the zeros as phase singularities. The bright golden line is where the zeros should be. Scroll upward to see more.",
+		"desc": "The Riemann Hypothesis states all non-trivial zeros of the zeta function lie on the line Re(s) = 1/2. Proving it wins 1 million dollars. The zeta function encodes the distribution of prime numbers — every prime leaves its fingerprint here. WHAT YOU SEE: Colors encode the complex phase of zeta(s) — hue is argument, brightness is magnitude. The golden vertical line is Re(s)=1/2. Bright white spots along it are the zeros — phase singularities where all colors converge. The pattern scrolls upward revealing more zeros.",
 	},
 	"kleinian": {
 		"title": "KLEINIAN GROUP LIMIT SETS",
-		"desc": "From the book 'Indra's Pearls' — these fractals emerge from iterating Möbius transformations (circle inversions) of the complex plane. Four circles define two generators of a Kleinian group. The limit set — where orbits accumulate — is an infinitely detailed fractal gasket. Parameters animate through quasi-Fuchsian space, continuously deforming the fractal. Mathematics: hyperbolic geometry meets group theory.",
+		"desc": "Mobius transformations (circle inversions) generate a group. The limit set is where orbits accumulate — the boundary between order and chaos in hyperbolic geometry. From the book Indras Pearls by Mumford, Series, and Wright. WHAT YOU SEE: Four glowing circles define the group generators. The fractal dust between them is the limit set — points that never escape under iteration. Parameters animate through quasi-Fuchsian space, continuously deforming the fractal from a circle to a gasket.",
 	},
 	"kerr_blackhole": {
 		"title": "KERR BLACK HOLE",
-		"desc": "A rotating black hole solved from Einstein's field equations of general relativity. The asymmetric glow is real physics: Doppler beaming makes the approaching side of the accretion disk brighter (blueshifted) and the receding side dimmer (redshifted). The dark center is the event horizon. The bright inner ring is the photon sphere where light orbits the singularity. Temperature follows the Novikov-Thorne profile T(r) ∝ r^(−¾).",
+		"desc": "A spinning black hole solved from Einsteins field equations. The spin creates frame dragging — spacetime itself is twisted around the singularity. The accretion disk temperature follows T(r) proportional to r^(-3/4). WHAT YOU SEE: The dark center is the event horizon — nothing escapes. The asymmetric glow is Doppler beaming: the approaching side (brighter) is blueshifted, the receding side (dimmer) is redshifted. The bright inner ring is the photon sphere where light orbits. This is real physics, not artistic interpretation.",
 	},
 	"spiral_waves": {
 		"title": "FITZHUGH-NAGUMO SPIRAL WAVES",
-		"desc": "The mathematics of excitable media — the same equations that govern cardiac electrical activity, chemical oscillation (Belousov-Zhabotinsky reaction), and neural signal propagation. du/dt = u − u³/3 − v models excitation and recovery. Spiral waves rotate, collide, and break up. When this happens in heart tissue, it causes fibrillation. Mathematics that literally saves lives.",
+		"desc": "The equations du/dt = u - u^3/3 - v model excitable media — systems that fire when stimulated then recover. The same math governs cardiac electrical activity, chemical oscillations, and neural signaling. WHAT YOU SEE: Orange wavefronts are excitation pulses propagating outward. Blue trails are the recovery phase. Spirals rotate around phase singularity cores. When spirals break up, it models cardiac fibrillation. The bright edges are where the excitation gradient is steepest — the wavefront.",
 	},
 	"arnold_tongues": {
 		"title": "ARNOLD TONGUES",
-		"desc": "When you force an oscillator at a frequency near a rational multiple of its natural frequency, it locks on — mode locking. The Arnold tongue map shows where locking occurs: x-axis is driving frequency Ω, y-axis is coupling strength K. Each flame-shaped tongue grows from a rational number p/q. The boundaries are fractal. Inside a tongue: periodic. Between tongues: quasiperiodic or chaotic. This governs everything from planetary orbits to cardiac pacemakers.",
+		"desc": "Force an oscillator near a rational multiple of its natural frequency and it locks on. The circle map theta -> theta + Omega - (K/2pi)sin(2pi*theta) captures this. Each tongue grows from a rational number p/q on the frequency axis. WHAT YOU SEE: X-axis is driving frequency, Y-axis is coupling strength. Colored regions are mode-locked (periodic). Dark gaps between are quasiperiodic. The flame-shaped tongues grow wider with stronger coupling. Golden edges mark the fractal boundaries between order and chaos.",
 	},
 	"standard_map": {
 		"title": "CHIRIKOV STANDARD MAP",
-		"desc": "The most important map in Hamiltonian chaos. p' = p + K·sin(θ), θ' = θ + p'. As kick parameter K increases from 0, integrable tori (smooth curves) fracture into island chains surrounded by chaotic seas. This is the KAM theorem made visible — Kolmogorov, Arnold, and Moser proved that some tori survive perturbation, but others shatter. The transition from order to chaos, animated in real-time.",
+		"desc": "The most important map in Hamiltonian chaos: p_new = p + K*sin(theta), theta_new = theta + p_new. As K increases, KAM tori fracture. The KAM theorem proves some invariant curves survive perturbation while others shatter into island chains and chaos. WHAT YOU SEE: Smooth curves are surviving KAM tori — barriers to chaotic diffusion. Scattered dots are chaotic orbits exploring the sea between tori. Island chains are periodic orbits. K animates: watch order dissolve into chaos and back. Blue traces highlight the last surviving tori.",
 	},
 	"elliptic_finite": {
 		"title": "ELLIPTIC CURVES OVER FINITE FIELDS",
-		"desc": "y² = x³ + ax + b (mod p) — the same mathematics that secures Bitcoin, TLS, and modern cryptography. Over a finite field F_p, the continuous curve becomes a discrete set of points forming a group under geometric addition. As the prime p changes, the pattern completely restructures. Each point satisfies a cubic equation in modular arithmetic. The crystalline patterns encode deep number theory — the Birch and Swinnerton-Dyer conjecture (another 1M problem) lives here.",
+		"desc": "y^2 = x^3 + ax + b mod p — the foundation of modern cryptography (Bitcoin, TLS). Over a finite field, the continuous curve becomes a discrete set of points that form a group under geometric addition. WHAT YOU SEE: Bright dots are points (x,y) satisfying the equation modulo p. The grid shows the finite field structure. As prime p changes, the entire pattern restructures — different primes reveal different symmetries. The background color encodes the quadratic residue y^2 - x^3 - ax - b mod p.",
 	},
 	"goldbach": {
 		"title": "GOLDBACH COMET",
-		"desc": "Goldbach's conjecture (1742): every even number > 2 is the sum of two primes. Still unproven after 284 years. For each even n, count the number of ways g(n) to write it as a sum of two primes. Plot g(n) vs n and a comet appears — with tail rays at specific slopes corresponding to small primes. The rays exist because if p is a small prime, then n−p is often prime too. Hidden structure in the primes, visible only at scale.",
+		"desc": "Every even number greater than 2 is the sum of two primes (unproven since 1742). For each even n, g(n) counts how many ways. Plotting g(n) vs n reveals hidden structure. WHAT YOU SEE: Each bright dot is one even number positioned at (n, g(n)). The comet shape emerges because g(n) roughly grows with n. The tail rays at specific slopes correspond to small primes p — when p is prime, n-p is often also prime. Twin primes glow gold, cousin primes green, sexy primes purple.",
 	},
 	"hopf": {
 		"title": "HOPF FIBRATION",
-		"desc": "The most beautiful map in topology: S³ → S² with S¹ fibers. Every point on a 2-sphere corresponds to a circle in the 3-sphere, and these circles interlink — every pair is linked exactly once. Projected from 4D to 3D via stereographic projection, the fibers form nested tori of interlocking circles. Discovered by Heinz Hopf in 1931, it reveals that π₃(S²) = ℤ — the third homotopy group of the 2-sphere is infinite.",
+		"desc": "The map S^3 -> S^2 with S^1 fibers. Every point on a 2-sphere corresponds to a circle in the 3-sphere. Every pair of circles links exactly once. This proves pi_3(S^2) = Z — the third homotopy group of the sphere is infinite. WHAT YOU SEE: Each glowing curve is one fiber (circle) projected from 4D via stereographic projection. The fibers are distributed by the Fibonacci sphere method on S^2. Colors encode base point position. The interlocking structure shows that every pair of circles is linked — topologically inseparable.",
 	},
 	"wigner": {
 		"title": "WIGNER QUASIPROBABILITY",
-		"desc": "Quantum mechanics in phase space. The Wigner function W(x,p) is a quasiprobability distribution — it can go negative, which is impossible classically. Blue regions represent negative probability: the signature of quantum interference with no classical analogue. This shows superpositions of harmonic oscillator eigenstates evolving in time, computed via Laguerre polynomials. Where W < 0, classical physics breaks down entirely.",
+		"desc": "The Wigner function W(x,p) represents quantum states in phase space. Unlike classical probability, it can go negative — the signature of quantum effects with no classical analogue. Computed via Laguerre polynomials for harmonic oscillator eigenstates. WHAT YOU SEE: Warm colors (orange/red) are positive probability — classically allowed regions. Cool colors (blue) are NEGATIVE probability — impossible in classical physics. The white boundary between them is where the quantum-classical transition occurs. Concentric rings mark classical energy levels. The pattern breathes as quantum states interfere.",
 	},
 	"tropical": {
 		"title": "TROPICAL GEOMETRY",
-		"desc": "An algebra where addition is replaced by max and multiplication by addition. Tropical polynomials become piecewise-linear functions, and tropical curves become polyhedral graphs — the 'skeleton' of classical algebraic geometry. Deep connection to AI: ReLU neural network decision boundaries ARE tropical hypersurfaces. This shader visualizes tropical curves of degree-2 polynomials with animated coefficients, overlaid with the Newton polygon dual structure.",
+		"desc": "An algebra where addition becomes max and multiplication becomes addition. Tropical curves are piecewise-linear — the skeleton of classical algebraic geometry. Deep connection to AI: ReLU neural network decision boundaries ARE tropical hypersurfaces. WHAT YOU SEE: The bright angular lines are tropical curves — where two terms tie for the maximum. Unlike smooth classical curves, these have sharp corners at vertices. Multiple layers at different scales show how tropical geometry tiles space. The dim lattice points are vertices of the Newton polygon, which is dual to the tropical curve.",
 	},
 	"padic": {
 		"title": "P-ADIC NUMBERS",
-		"desc": "An alternative number system where distance is measured by divisibility rather than magnitude. In the p-adic metric, numbers divisible by high powers of p are 'close' to zero. The p-adic integers form a Cantor-like fractal — each level branches into p children. Cycling through primes (2,3,5,7) shows how the tree structure changes. These are the foundation of modern algebraic number theory and the Langlands program. Entirely alien to Euclidean intuition.",
+		"desc": "Distance measured by divisibility, not magnitude. Two numbers are p-adically close if their difference is divisible by a high power of p. The p-adic integers form a Cantor-like fractal tree that branches into p children at each level. WHAT YOU SEE: Nested circles represent the tree structure of p-adic integers. Each level branches into p children (cycling through primes 2,3,5,7). The fractal dusting at the boundary is the Cantor set structure of the p-adic unit ball. Colors encode tree depth — deeper levels are the fine structure of p-adic proximity.",
 	},
 	"seifert": {
 		"title": "SEIFERT SURFACE",
-		"desc": "Every knot in 3-space bounds an oriented surface — the Seifert surface. This ray-marches the surface of a trefoil knot (the simplest non-trivial knot, a (2,3)-torus knot). The surface swoops and twists, constrained by the topology of the knot it bounds. Two-sided coloring reveals the orientation. Seifert surfaces connect knot theory to 4-dimensional topology — the genus of this surface is a knot invariant.",
+		"desc": "Every knot bounds an oriented surface — the Seifert surface. The genus of this surface is a knot invariant: it cannot change without cutting the knot. Seifert surfaces connect knot theory to 4-dimensional topology. WHAT YOU SEE: A smooth surface bounded by a trefoil knot (2,3 torus knot), ray-marched in 3D. Two-sided coloring (different hues for front/back) reveals the orientation. The surface swoops and twists, constrained by the knots topology. Fresnel rim lighting highlights the edges where the surface curves toward you.",
 	},
 	"schmidt": {
 		"title": "SCHMIDT ARRANGEMENTS",
-		"desc": "First GPU render ever. Fractal circle packings from the Bianchi group encoding number theory. The nested circles are Ford circles with sizes determined by denominators of rational numbers.",
+		"desc": "First GPU render ever created. The orbit of the real line under the Bianchi group PSL_2(O_K) for imaginary quadratic fields. Each matrix with Gaussian integer entries produces a circle. WHAT YOU SEE: Nested circles are Ford circles — each tangent to the real axis (horizontal line) with radius 1/(denominator^2). They encode the rational number p/q at each tangent point. Larger circles correspond to simpler fractions. The fractal packing shows how rationals densely fill the real line. Colors encode the curvature (1/radius) of each circle.",
 	},
 	"modular_forms": {
 		"title": "MODULAR FORMS",
-		"desc": "Dedekind eta function to the 24th power, domain-colored on the upper half-plane. No real-time implementation existed before. Bright structures near the bottom are cusp singularities. These connect to string theory and the proof of Fermats Last Theorem.",
+		"desc": "The Dedekind eta function eta(tau)^24 on the upper half-plane. Modular forms are functions invariant under the action of SL_2(Z). They connect number theory to geometry and appear in the proof of Fermats Last Theorem and string theory. WHAT YOU SEE: Domain coloring — hue encodes complex phase, brightness encodes magnitude. The repeating pattern reflects SL_2(Z) symmetry (the fundamental domain tiles the half-plane). Bright singularities near the bottom are cusps where the function blows up. The golden lines trace the fundamental domain boundary.",
 	},
 	"attractor_density": {
 		"title": "STRANGE ATTRACTOR DENSITY",
-		"desc": "Orbit visit frequency reveals the invariant probability measure. Bright regions are where the attractor spends most time. Cycles through Lorenz, Rossler, and Halvorsen. Internal filament structure is invisible in standard particle renderings.",
+		"desc": "Instead of drawing particle trajectories, accumulate how often orbits visit each region — the invariant probability measure. This reveals self-similar internal structure invisible in standard renderings. Cycles through Lorenz, Rossler, and Halvorsen. WHAT YOU SEE: Bright regions are most-visited areas of the attractor. The Lorenz butterfly has two lobes (weather prediction). Rossler has a single stretched loop (chemical kinetics). Halvorsen has three-fold symmetry. The internal filaments — bright threads within the glow — show how the attractor folds space at every scale.",
 	},
 	"penrose": {
 		"title": "PENROSE TILING",
-		"desc": "Aperiodic tiling with 5-fold symmetry that never repeats. Five sets of parallel lines at 72-degree angles create the pattern. The golden ratio governs every proportion. Mathematical model for quasicrystals, Nobel Prize 2011.",
+		"desc": "An aperiodic tiling — it fills the plane but never repeats. Generated by five sets of parallel lines at 72-degree angles (de Bruijn multigrid). The golden ratio phi = (1+sqrt(5))/2 governs every proportion. Physical quasicrystals have this structure (Nobel Prize 2011). WHAT YOU SEE: Each colored region is a tile — the color encodes which pair of grid lines determines it. Bright edges are the tile boundaries. Golden glowing vertices are where 5+ grid lines converge — exponentially rare star vertices that mark the golden ratio in the tiling. The pattern drifts, never repeating.",
 	},
 	"horseshoe": {
 		"title": "SMALE HORSESHOE",
-		"desc": "The mechanism of chaos: stretch, compress, fold, repeat. Warm colors show forward invariant set, cool colors backward. Gold intersection is a Cantor set where chaos lives. Smale proved this simple operation creates infinite complexity.",
+		"desc": "Stretch horizontally, compress vertically, fold back into the unit square. Repeat. The set of points surviving both forward and backward iteration forever forms a Cantor set — the invariant hyperbolic set where chaos lives. WHAT YOU SEE: Warm orange-red shows where forward iteration keeps points inside (stable manifold). Cool blue shows where backward iteration keeps points inside (unstable manifold). Bright gold where BOTH overlap is the invariant Cantor set — the chaotic invariant set. The fold line (horizontal center) is where stretching reverses direction.",
 	},
 	"dirac": {
 		"title": "DIRAC EQUATION",
-		"desc": "Relativistic quantum mechanics that predicted antimatter. Spinor wavefunctions colored by spin component. Orbital shapes emerge from angular momentum quantization. Flowing patterns show probability current.",
+		"desc": "Relativistic quantum mechanics unifying special relativity with quantum theory. Predicted antimatter (positrons) before discovery. The spinor wavefunction has two components — spin up and spin down — coupled by the Dirac matrices. WHAT YOU SEE: Warm colors show spin-up probability density, cool colors show spin-down. The orbital shapes (spherical, dumbbell, cloverleaf) emerge from angular momentum quantization — s, p, d, f orbitals. Flowing patterns are probability current — where the electron is most likely moving. Multiple energy levels (n=1 through 4) superimpose.",
 	},
 	"conformal": {
 		"title": "CONFORMAL MAPS",
-		"desc": "Angle-preserving transformations of the complex plane. Grid shows how space deforms while preserving intersection angles. Cycles through z-squared, inversion, Joukowski airfoil, and exponential. Red marks where derivatives vanish.",
+		"desc": "Angle-preserving transformations of the complex plane. Every intersection angle is preserved — this is the defining property. Conformal maps solve Laplaces equation, model fluid flow, and design airplane wings (Joukowski transform). WHAT YOU SEE: The grid shows how the map deforms space. Every grid intersection remains a right angle — that is conformality. z^2 doubles angles. 1/z inverts circles to lines. The Joukowski map turns a circle into an airfoil shape. The exponential map turns straight lines into spirals. Red glow marks critical points where the derivative is zero.",
 	},
 	"mertens": {
 		"title": "MERTENS FUNCTION",
-		"desc": "Sum of the Mobius function encoding prime factorization. Blue positive, red negative. The sqrt(n) bounds were conjectured to hold but DISPROVED in 1985. Connected to the Riemann Hypothesis.",
+		"desc": "M(n) = sum of mu(k) for k=1 to n, where mu is the Mobius function encoding prime factorization. The Mertens conjecture (1897) that |M(n)| < sqrt(n) was DISPROVED in 1985 by Odlyzko and te Riele, but no explicit counterexample has been computed. WHAT YOU SEE: The wildly oscillating curve is M(n) — blue when positive, red when negative. The yellow curves are the sqrt(n) bounds that were conjectured to hold. The function crosses zero frequently. Its behavior is intimately connected to the Riemann Hypothesis: if M(n) = O(n^(1/2+eps)) for all eps, then RH is true.",
 	},
 	"braid": {
 		"title": "BRAID GROUPS",
-		"desc": "Topological algebra of interweaving strands. Seven strands crossing over and under. Encodes DNA topology, topological quantum computing, cryptography, and knot theory.",
+		"desc": "The mathematical structure of interweaving strands. The braid group B_n has generators sigma_i that swap adjacent strands. The group operation is concatenation. Braids encode: DNA enzyme action, topological quantum computing (anyonic braids), and knot theory. WHAT YOU SEE: Seven colored strands weave over and under each other. Brighter strands pass OVER darker ones — the crossings are the generators sigma_i. The pattern is periodic but the braid word (sequence of crossings) encodes algebraic structure. Golden glow at crossing points highlights where strands interact.",
 	},
 	"symplectic": {
 		"title": "SYMPLECTIC BILLIARDS",
-		"desc": "Particle bouncing inside a deforming stadium in phase space. Smooth curves are KAM tori. Scattered dots are chaotic orbits. Energy is exactly conserved at every bounce.",
+		"desc": "A particle bouncing inside a shape, viewed in phase space (position on boundary vs launch angle). Symplectic geometry preserves the phase space area — Liouvilles theorem. This is the foundation of Hamiltonian mechanics. WHAT YOU SEE: Each orbit traces dots in phase space. Smooth curves are KAM tori — invariant under the dynamics, separating regular from chaotic regions. Scattered dots are chaotic orbits that explore ergodically. The shape parameter animates, continuously breaking and reforming the KAM structure. Every bounce exactly conserves energy.",
 	},
 	"sol_geometry": {
 		"title": "THURSTON SOL GEOMETRY",
-		"desc": "Non-Euclidean space where looking up feels different from looking sideways. Sol metric: ds2 = e^(2z)dx2 + e^(-2z)dy2 + dz2. No closed-form geodesics exist - each ray is numerically integrated. Only the IMPA team has implemented this before. One of Thurstons eight model geometries.",
+		"desc": "One of eight model geometries in Thurstons geometrization (which led to the Poincare conjecture proof). The metric ds^2 = e^(2z)dx^2 + e^(-2z)dy^2 + dz^2 makes x-distances grow exponentially with z while y-distances shrink. No closed-form geodesics exist. WHAT YOU SEE: A tiled space where the grid distorts anisotropically — tiles stretch horizontally and compress vertically (or vice versa) depending on depth. Each ray is numerically integrated because geodesics have no formula. The visual experience is genuinely alien — looking up feels geometrically different from looking sideways.",
 	},
 	"dyson": {
 		"title": "DYSON BROWNIAN MOTION",
-		"desc": "Eigenvalues of random matrices as charged particles with logarithmic repulsion. They perform correlated random walks, spontaneously forming the Wigner semicircle distribution. The spacing statistics follow the GUE universality class. Zero shader implementations existed before.",
+		"desc": "Eigenvalues of random matrices repel each other logarithmically, performing correlated Brownian motion. The equilibrium distribution is the Wigner semicircle. The spacing statistics follow the GUE universality class — the same statistics appear in nuclear physics, zeros of the Riemann zeta function, and bus arrival times in Cuernavaca. WHAT YOU SEE: Vertical lines are eigenvalues — they repel and can never cross. The purple curve is the Wigner semicircle (equilibrium density). At the bottom, the spacing histogram approaches the Wigner surmise distribution. Watch eigenvalues jitter while maintaining minimum spacing — log repulsion prevents collisions.",
 	},
 	"homoclinic": {
 		"title": "HOMOCLINIC TANGLES",
-		"desc": "What Poincare dared not attempt to draw. The stable and unstable manifolds of saddle points intersect in an infinitely complex mesh. Warm colors: forward invariant set. Cool: backward. Gold intersections are homoclinic points where chaos originates. The literal visual birth of chaos theory.",
+		"desc": "Poincare discovered these in 1890 and wrote he dared not attempt to draw them. Where the stable manifold (forward-time convergence) and unstable manifold (backward-time convergence) of a saddle point intersect, they create an infinitely folded mesh. This is the geometric origin of chaos. WHAT YOU SEE: Warm orange traces the stable manifold (where points go TO the saddle). Cool blue traces the unstable manifold (where points come FROM the saddle). Gold intersections are homoclinic points — each one forces infinitely many more intersections nearby. The mesh gets infinitely dense near the saddle points (white dots).",
 	},
 	"optimal_transport": {
 		"title": "OPTIMAL TRANSPORT",
-		"desc": "The cheapest way to morph one probability distribution into another. The geodesic in Wasserstein space creates fluid flowing transformations. Source distribution (red) morphs into target (green) along the path of least resistance. Connected to economics, machine learning, and the geometry of probability.",
+		"desc": "The cheapest way to move mass from one distribution to another. The Wasserstein distance measures how far you must transport probability. The geodesic in Wasserstein space is the path of least total displacement. Applications: economics, machine learning, computer graphics. WHAT YOU SEE: Red blobs are the source distribution, green is the target. The visualization morphs between them along the optimal transport path. Streamlines show the flow direction — mass moves along these paths. The cost minimization means no mass crosses another streams path (no tangling). The phase parameter cycles through the morphing.",
 	},
 	"ricci_flow": {
 		"title": "RICCI FLOW",
-		"desc": "The math behind the proof of the Poincare conjecture. Curvature drives metric evolution - bumpy surfaces smooth into constant curvature. Watch geometry heal itself. Positive curvature (red) flows inward, negative (blue) flows outward. Perelman used this to solve a century-old millennium problem.",
+		"desc": "The PDE dg/dt = -2*Ric(g) evolves a Riemannian metric proportional to its curvature. Bumpy surfaces smooth out. Perelman used Ricci flow with surgery to prove the Poincare conjecture — the most famous solved millennium problem. WHAT YOU SEE: A bumpy terrain (representing a metric with varying curvature) smooths over time. Red regions have high positive curvature (hills shrinking). Blue has negative curvature (saddles expanding). Contour lines show constant-curvature curves. The flow ping-pongs: watch geometry heal itself then reset. Purple glow marks flat regions (zero gradient — Ricci solitons).",
 	},
 	"neural_ode": {
 		"title": "NEURAL ODE PHASE PORTRAIT",
-		"desc": "How AI thinks in continuous time. A neural network defines a vector field f(x) and trajectories flow along it. Streamlines show the learned dynamics. Blue fixed points are stable attractors, red are unstable repellers. The divergence field reveals where the network compresses or expands information.",
+		"desc": "A neural network defines a continuous vector field f(x,t) and solutions flow along it — unlike discrete-layer networks, Neural ODEs have infinite depth. The dynamics reveal how AI transforms data: fixed points are decisions, flows are feature extraction. WHAT YOU SEE: Streamlines trace the learned vector field. Blue glow marks stable fixed points (attractors — where data converges to a class). Red marks unstable fixed points (repellers — decision boundaries). Arrow indicators show local flow direction. The divergence field (where colors concentrate/spread) shows where the network compresses or expands information.",
 	},
 	"navier_stokes": {
 		"title": "NAVIER-STOKES EQUATIONS",
-		"desc": "Another Millennium Prize problem (1M dollars). Whether smooth solutions always exist is unknown. Eight interacting vortices create turbulent flow. Red: clockwise vorticity. Blue: counter-clockwise. Streamlines trace fluid particle paths. The same equations govern weather, ocean currents, and blood flow.",
+		"desc": "Whether smooth solutions always exist is a Millennium Prize problem worth 1 million dollars. These PDEs govern fluid motion — weather, ocean currents, blood flow, aerodynamics. The nonlinear (v dot nabla)v term creates turbulence, which remains one of the great unsolved problems in physics. WHAT YOU SEE: Red vortices rotate clockwise, blue counter-clockwise. Eight vortices interact, merge, and create turbulent cascading. Streamlines (flowing curves) trace fluid particle paths. The swirling patterns show how large vortices break into smaller ones — Richardsons energy cascade.",
 	},
 	"yang_mills": {
 		"title": "YANG-MILLS GAUGE THEORY",
-		"desc": "Yet another Millennium Prize problem. The quantum field theory behind the Standard Model of particle physics. SU(2) instanton configuration: self-dual gauge field with topological charge. RGB channels show three gauge field components. The bright core is where topological charge density peaks. This math explains why protons exist.",
+		"desc": "A Millennium Prize problem: prove that Yang-Mills theory has a mass gap (the lightest particle has positive mass). This quantum field theory underlies the Standard Model — it explains why protons exist and why the strong force confines quarks. WHAT YOU SEE: RGB channels show three SU(2) gauge field components — the mathematical structure of the weak nuclear force. Bright cores are instanton centers (topological charge density peaks). The instanton is a self-dual solution to the Yang-Mills equations — it tunnels between vacuum states. A second (anti-instanton) orbits nearby in purple.",
 	},
 	"lorenz_knot": {
 		"title": "LORENZ ATTRACTOR KNOTS",
-		"desc": "The Lorenz butterfly rendered as a density field with periodic orbits highlighted in gold. These periodic orbits form mathematical knots - specifically, every knot type appears as a periodic orbit somewhere in the Lorenz system. The gold highlights trace one such knotted orbit within the chaotic attractor.",
+		"desc": "The Lorenz attractor contains periodic orbits that form every possible knot type — a result proved by Birman and Williams. The butterfly shape emerges from weather modeling equations. Chaos means nearby trajectories diverge exponentially, yet they all stay on the attractor. WHAT YOU SEE: The glowing butterfly is the Lorenz attractor rendered as orbit density (brighter = more visits). Gold highlights trace a periodic orbit — one of the knotted trajectories embedded in the chaotic flow. The two lobes represent the two unstable equilibria that trajectories spiral around before switching unpredictably.",
 	},
 	"langlands": {
 		"title": "LANGLANDS PROGRAM",
-		"desc": "The grand unified theory of mathematics. A deep correspondence between automorphic forms (warm colors: number theory side) and Galois representations (cool colors: geometry side). Where both sides agree, gold appears. The Langlands program connects number theory, geometry, and representation theory into one framework.",
+		"desc": "The grand unified theory of mathematics — a vast web of conjectures connecting number theory (automorphic forms) to geometry (Galois representations). Proving instances wins Fields Medals. The program has been called the Rosetta Stone of mathematics. WHAT YOU SEE: Warm colors show the automorphic side (Ramanujan tau function q-expansion — number theory). Cool colors show the Galois side (Frobenius eigenvalue distributions — geometry). Gold glow appears where both sides agree — the Langlands correspondence in action. Faint vertical lines mark approximate locations of L-function zeros.",
 	},
 	"prime_gaps": {
 		"title": "PRIME GAP DISTRIBUTION",
-		"desc": "The spaces between consecutive prime numbers. Each dot is a prime gap plotted against prime index. Twin primes (gap=2) glow gold - infinitely many may exist but nobody can prove it. Cousin primes (gap=4) green. Sexy primes (gap=6) purple. The patterns encode deep structure in the distribution of primes.",
+		"desc": "The gap between consecutive primes p_n and p_(n+1). Twin primes (gap 2) may be infinite — the Twin Prime Conjecture is unproven. Yitang Zhang proved in 2013 that gaps below 70 million occur infinitely often, later reduced to 246 by the Polymath project. WHAT YOU SEE: Each dot is a prime gap plotted at (prime index, gap size). Gold dots are twin primes (gap=2) — the most studied pattern. Green are cousin primes (gap=4). Purple are sexy primes (gap=6). Horizontal guide lines show common gap sizes. The scatter reveals that gaps grow slowly (roughly log p) but with enormous variation.",
 	},
 	"spectral": {
 		"title": "SPECTRAL GEOMETRY",
-		"desc": "Can you hear the shape of a drum? Eigenfunctions of the Laplacian on a rectangular domain. The bright lines are nodal patterns - Chladni figures where the surface does not vibrate. Each mode has a frequency, and the superposition creates interference. Weyls law predicts eigenvalue density from area alone.",
+		"desc": "Can you hear the shape of a drum? Eigenfunctions of the Laplacian on a domain. Each eigenfunction oscillates at a specific frequency — together they determine the geometry (almost). Weyls law: N(lambda) ~ Area * lambda / (4pi). WHAT YOU SEE: Bright lines are nodal curves — where the surface does not vibrate (Chladni figures). Multiple eigenmodes superimpose with time-dependent phases, creating moving interference. The pattern changes continuously as modes go in and out of phase. Each mode has n*m half-wavelengths. Nodal lines always intersect at right angles.",
 	},
 	"schrodinger": {
 		"title": "SCHRODINGER EQUATION",
-		"desc": "Quantum mechanics in action. Two slits emit spherical waves that interfere, creating the famous double-slit pattern. The color encodes the quantum phase while brightness shows probability density |psi|^2. The barrier with two slits is visible on the left. On the right, the interference pattern builds up. This experiment proves that particles behave as waves.",
+		"desc": "The fundamental equation of quantum mechanics: i*hbar*d|psi>/dt = H|psi>. A particle is described by a wave function psi whose squared magnitude gives the probability of finding it at each location. Interference between paths creates the quantum signature. WHAT YOU SEE: Two slits emit spherical waves (bright expanding circles). Where crests meet crests, probability is high (bright). Where crests meet troughs, probability cancels (dark) — destructive interference. The vertical barrier has two narrow openings. The interference pattern on the right shows the quintessential quantum effect: a single particle interferes with itself.",
 	},
 	"lenia": {
 		"title": "LENIA",
-		"desc": "Continuous cellular automata producing artificial lifeforms. Unlike Conways Game of Life with discrete on/off cells, Lenia uses smooth kernels and growth functions. Ring-shaped kernels create self-sustaining creatures that move, reproduce, and interact. The growth function G(u) = 2exp(-(u-mu)^2/2sigma^2) - 1 determines whether cells grow or die based on neighbor density.",
+		"desc": "Continuous generalization of cellular automata. Instead of discrete alive/dead cells, Lenia uses smooth states with ring-shaped convolution kernels. The growth function G(u) = 2exp(-(u-mu)^2/(2sigma^2)) - 1 creates self-sustaining structures that move, split, and interact like living organisms. WHAT YOU SEE: Blob-like creatures with internal ring structure drift and pulse. The rings come from the kernel shape — growth is strongest at a specific distance from each cell center. Color intensity shows activation level. The growth function determines whether each region grows (warm) or decays (cool). These are artificial lifeforms from pure mathematics.",
 	},
 	"calabi_yau": {
 		"title": "CALABI-YAU MANIFOLD",
-		"desc": "The extra dimensions of string theory, made visible. A cross-section of the quintic threefold z1^n+z2^n=1 projected from 5D. Calabi-Yau manifolds are Ricci-flat (related to our Ricci flow shader) and have SU(n) holonomy. String theory requires 6 extra dimensions compactified on these shapes. The degree n animates to show different manifold topologies.",
+		"desc": "String theory requires 10 dimensions — 4 we see plus 6 compactified on a Calabi-Yau manifold. These are Ricci-flat Kahler manifolds with SU(n) holonomy. The quintic threefold z1^n+z2^n=1 is parameterized and projected from 5D. WHAT YOU SEE: A cross-section through the manifold parameterized by two angles. The surface shape comes from Hansons projection method. Bright lines trace the holomorphic structure (where z1^n+z2^n is real). The degree n animates — different values produce different manifold topologies. Shading simulates the Ricci-flat condition. These are the shapes that could determine the laws of physics.",
 	},
 	"apollonian3d": {
 		"title": "3D APOLLONIAN GASKET",
-		"desc": "Recursive sphere packing extended to three dimensions. Each iteration applies folding operations (abs, sort, scale, translate) and sphere inversions to create self-similar structure at every scale. Ray-marched with distance estimation. The same recursive packing principle as the 2D Apollonian gasket but filling 3D space with nested spheres.",
+		"desc": "The 2D Apollonian gasket (nested tangent circles) extended to 3D via folding operations: abs(), sort coordinates, scale, translate, and sphere inversion. Each iteration creates self-similar structure at smaller scales. The result is a fractal with infinite surface area but zero volume. WHAT YOU SEE: A ray-marched 3D fractal of nested spherical structures. The folding operations create octahedral symmetry. Bright areas are where the surface catches light. Ambient occlusion (darker in crevices) reveals the recursive depth. The camera orbits to show the full 3D structure. Zooming in would reveal the same pattern at every scale.",
 	},
 	"dual_quat_julia": {
 		"title": "DUAL QUATERNION JULIA SET",
-		"desc": "Eight-dimensional fractal. Dual quaternions have form q = a + epsilon*b where epsilon^2 = 0. This nilpotent property creates structure invisible in standard quaternion fractals. The dual part provides automatic differentiation for free. Animated 2D slice through 8-dimensional space. No public GPU implementation existed before this.",
+		"desc": "Dual quaternions have form q = a + epsilon*b where epsilon^2 = 0 (nilpotent). This 8-dimensional algebra extends quaternions with infinitesimal structure. The Julia set z -> z^2 + c computed here has structure invisible in standard 4D quaternion Julia sets. WHAT YOU SEE: An escape-time fractal — bright regions escape quickly, dark regions stay bounded. The dual part (epsilon component) adds subtle perturbation structure absent in regular quaternion fractals. The animated c parameter sweeps through 8D space. The smooth color gradient uses the dual part as a natural distance estimator — it provides derivative information for free via automatic differentiation.",
 	},
 	"hyper_mandelbrot": {
 		"title": "HYPERBOLIC MANDELBROT",
-		"desc": "The Mandelbrot set computed in hyperbolic space on the Poincare disk model. Addition becomes hyperbolic translation via Mobius transformations. Infinite detail accumulates near the boundary circle, where hyperbolic distances diverge to infinity. The fractal structure combines escape-time dynamics with non-Euclidean geometry.",
+		"desc": "The Mandelbrot iteration z -> z^2 + c performed in hyperbolic space (Poincare disk model). Addition becomes hyperbolic translation via Mobius transformations. Distances diverge near the boundary circle — the fractal has infinite detail compressed into a finite disk. WHAT YOU SEE: The entire fractal fits inside the unit disk. Near the boundary (where the bright ring is), hyperbolic distances go to infinity — structure accumulates endlessly. Faint circular arcs are hyperbolic geodesics (shortest paths in this geometry). The fractal combines escape-time coloring with the natural distortion of hyperbolic space.",
 	},
 	"eisenstein": {
 		"title": "EISENSTEIN PRIMES",
-		"desc": "Primes in the hexagonal integer lattice Z[omega] where omega = e^(2pi*i/3). The Eisenstein integers tile the plane with equilateral triangles. A Gaussian prime a+bi differs from an Eisenstein prime a+b*omega. Bright points are primes (where the norm a^2-ab+b^2 is a rational prime). The six-fold symmetry reflects the six units of the Eisenstein integers.",
+		"desc": "Primes in the hexagonal integer lattice Z[omega] where omega = e^(2pi*i/3) = (-1+isqrt(3))/2. An Eisenstein integer a+b*omega is prime if its norm a^2-ab+b^2 is a rational prime. The six-fold symmetry comes from the six units: +/-1, +/-omega, +/-omega^2. WHAT YOU SEE: Bright colored dots are Eisenstein primes — their positions in the hexagonal lattice. The dim grid shows all Eisenstein integers. Colors encode the norm (a^2-ab+b^2). Purple highlights near the origin mark the six units of the ring. The hexagonal symmetry is clearly visible — contrast this with Gaussian primes which have 4-fold symmetry.",
 	},
 	"persistence": {
 		"title": "PERSISTENT HOMOLOGY",
-		"desc": "Topological data analysis as art. A function is filtered by a rising threshold. As it rises, connected components are born (blue, local minima) and merge (red, saddle points). The bright contour is the current level set. Birth-death pairs encode the persistence of topological features. Long-lived features are signal, short-lived are noise.",
+		"desc": "Topological data analysis: filter a function by a rising threshold and track which topological features (components, loops, voids) appear and disappear. Features that persist across many threshold values are signal; short-lived ones are noise. This is how topology extracts shape from data. WHAT YOU SEE: As the threshold sweeps upward, sublevel sets (colored regions) grow. The bright contour is the current threshold level set. Blue glow marks local minima — birth events where new connected components appear. Red glow marks saddle points — death events where components merge. The persistence diagram (corner inset) plots birth vs death for each feature.",
 	},
 	"legendrian": {
 		"title": "LEGENDRIAN KNOTS",
-		"desc": "Contact geometry: a plane field xi = ker(dz - y*dx) that twists as you move along y. A Legendrian knot is a curve tangent to these planes everywhere. The flowing streamlines show the contact structure, and the bright knot curve (a Legendrian trefoil) threads through without ever crossing the contact planes. Contact geometry appears in thermodynamics, optics, and classical mechanics.",
+		"desc": "Contact geometry studies a plane field xi = ker(dz - y*dx) — at each point in 3D space, a preferred plane that twists as you move. A Legendrian knot is a curve tangent to these planes everywhere. Contact geometry governs classical mechanics (Legendre transform), optics, and thermodynamics. WHAT YOU SEE: Flowing streamlines show the contact structure — the twisting plane field. The bright knot (Legendrian trefoil parameterization) threads through space always tangent to the contact planes. The twist rate accelerates as you move along y. The combination of flowing lines and the embedded knot shows how topology interacts with the geometric constraint of the contact structure.",
 	},
 	"bicomplex": {
 		"title": "BICOMPLEX MANDELBROT",
-		"desc": "Four-dimensional fractal from bicomplex numbers z = z1 + j*z2. Unlike quaternions (non-commutative), bicomplex numbers commute, allowing an idempotent decomposition: the bicomplex Mandelbrot set is the intersection of two standard Mandelbrot sets rotated in 4D. The animated parameter sweeps through cross-sections, revealing how the two sets interact.",
+		"desc": "Bicomplex numbers z = z1 + j*z2 form a 4D commutative algebra (unlike non-commutative quaternions). The idempotent decomposition e1=(1+k)/2, e2=(1-k)/2 splits the bicomplex Mandelbrot into two independent standard Mandelbrot sets. The bicomplex M-set is their intersection. WHAT YOU SEE: Two Mandelbrot sets evaluated independently, their escape times blended. The animated slice angle sweeps through 4D, changing which cross-section you see. When both sets keep a point bounded, it appears as the dark interior. The color variation shows where the two component Mandelbrot sets differ — regions colored by only one component show the boundary of each.",
 	},
 	"polytope5d": {
 		"title": "5D HYPERCUBE",
-		"desc": "A penteract: the 5-dimensional analogue of a cube. 32 vertices, 80 edges, 80 square faces, 40 cubic cells, 10 tesseract hyperfaces. Projected from 5D to 2D via four independent rotation planes and perspective projection. The rotations reveal structure impossible to see in lower dimensions. Each vertex connects to exactly 5 neighbors.",
+		"desc": "The penteract: 5-dimensional analogue of a cube. It has 32 vertices (2^5), 80 edges, 80 square faces, 40 cubic cells, and 10 tesseract hyperfaces. Each vertex connects to exactly 5 neighbors. Four independent rotation planes allow motions impossible in lower dimensions. WHAT YOU SEE: Vertices (golden dots) connected by edges (colored lines), projected from 5D to 2D via perspective. The four simultaneous rotations at incommensurate speeds create quasi-periodic motion — the projection never exactly repeats. Edges that appear to pass through each other are actually separated in the hidden dimensions. The depth cue (brighter = closer) helps parse the 5D structure.",
 	},
 	"loss_landscape": {
 		"title": "LOSS LANDSCAPE",
-		"desc": "The terrain that gradient descent navigates when training neural networks. Local minima (blue valleys), saddle points (yellow passes), sharp ridges, and flat plateaus. The loss function L(θ) maps billions of parameters to a single number — how wrong the network is. Training is a walk downhill through this landscape. Flat regions (purple glow) are where learning stalls. This is the geography of artificial intelligence — the literal shape of machine learning.",
+		"desc": "The function L(theta) mapping neural network parameters to error. Training is gradient descent through this terrain. Local minima trap learning, saddle points slow it, flat regions cause vanishing gradients. WHAT YOU SEE: A 3D terrain where height = loss value. Blue valleys are local minima (where networks get stuck). Yellow ridges separate basins of attraction. Red peaks are high error. Purple glow marks flat regions where gradients vanish. Contour lines show constant-loss curves. The camera orbits to reveal the full topology of learning.",
 	},
 }
 
@@ -7264,6 +7264,4 @@ func show_museum_info(scene_name: String):
 	museum_tween.tween_property(museum_title, "modulate:a", 0.95, 1.0)
 	museum_tween.parallel().tween_property(museum_desc, "modulate:a", 0.85, 1.5)
 	# After 12 seconds, fade to subtle
-	museum_tween.tween_interval(12.0)
-	museum_tween.tween_property(museum_title, "modulate:a", 0.25, 3.0)
-	museum_tween.parallel().tween_property(museum_desc, "modulate:a", 0.15, 3.0)
+
