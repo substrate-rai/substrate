@@ -174,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string", "polytope_120cell", "polytope_8d", "wave_curved", "calabi_yau_moduli"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string", "polytope_120cell", "polytope_8d", "wave_curved", "calabi_yau_moduli"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -1197,6 +1197,22 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/black_string.gdshader", params)
 			return {"status": "ok", "message": "Black string loaded"}
+		"polytope_120cell":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/polytope_120cell.gdshader", params)
+			return {"status": "ok", "message": "120-cell loaded"}
+		"polytope_8d":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/polytope_8d.gdshader", params)
+			return {"status": "ok", "message": "8D hypercube loaded"}
+		"wave_curved":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/wave_curved.gdshader", params)
+			return {"status": "ok", "message": "Wave on torus loaded"}
+		"calabi_yau_moduli":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/calabi_yau_moduli.gdshader", params)
+			return {"status": "ok", "message": "CY moduli space loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -7306,6 +7322,22 @@ const SCENE_INFO = {
 	"black_string": {
 		"title": "BLACK STRING INSTABILITY",
 		"desc": "A higher-dimensional black hole extended along one extra dimension. Gregory and Laflamme proved it is unstable — perturbations grow, pinching the string into a chain of black holes. Never rendered as real-time shader before. WHAT YOU SEE: The dark band is the event horizon, glowing with Hawking radiation. The instability parameter animates from uniform string to pinched chain. Hotter (smaller) regions glow blue, cooler glow red. At maximum instability, individual black holes form along the string.",
+	},
+	"polytope_120cell": {
+		"title": "120-CELL",
+		"desc": "The most complex regular 4D polytope. 600 vertices, 1200 edges, 720 pentagonal faces, 120 dodecahedral cells. The 4D analogue of the dodecahedron. WHAT YOU SEE: Vertices on S3 projected via stereographic projection, creating nested shells of dodecahedral structure. Depth encoding: brighter points are closer in the 4th dimension. Edges connect nearest neighbors on the 3-sphere.",
+	},
+	"polytope_8d": {
+		"title": "8D HYPERCUBE",
+		"desc": "256 vertices (2^8), 1024 edges in 8-dimensional space. Each vertex connects to exactly 8 neighbors. 28 independent rotation planes — we animate 4 simultaneously. WHAT YOU SEE: A dense web of edges projected from 8D to 2D. The pattern appears to breathe and morph because rotations in different planes create quasi-periodic shadow changes. Edges that seem to cross are actually separated in the hidden 6 dimensions.",
+	},
+	"wave_curved": {
+		"title": "WAVES ON A TORUS",
+		"desc": "The wave equation solved on a torus using the Laplace-Beltrami operator. Eigenfunctions are cos(mu)cos(nv) with eigenvalues (m/R)^2+(n/r)^2. Unlike flat-space waves, these wrap around and interfere with themselves. WHAT YOU SEE: Colors encode wave amplitude — warm positive, cool negative. Bright white lines are nodal curves where the wave is zero. The cursor adds a wave source. The toroidal topology means waves leaving one edge return from the opposite side.",
+	},
+	"calabi_yau_moduli": {
+		"title": "CALABI-YAU MODULI SPACE",
+		"desc": "Navigate through the space of all possible Calabi-Yau shapes. The quintic threefold with deformation parameter psi. At psi=1, the conifold singularity — a topology-changing transition where the manifold develops a cusp. WHAT YOU SEE: The cross-section deforms as psi animates. Red glow intensifies near psi=1 (the conifold point). The Hodge structure lines trace where the holomorphic form vanishes. Different psi values could correspond to different laws of physics.",
 	},
 	"loss_landscape": {
 		"title": "LOSS LANDSCAPE",
