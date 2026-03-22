@@ -7088,61 +7088,26 @@ func _update_bloom():
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _transition_to_scene_dissolve(scene_name: String):
-	## Organic crossfade — both scenes visible during transition
+	## Smooth fast fade transition — 0.4s out, load, 0.4s in
 	if is_transitioning:
 		return
 	is_transitioning = true
 
-	var blend_duration = max(1.5, 2.5 - beat_intensity * 0.5)
-
-	# Snapshot current scene children (the old quads)
-	var old_quads: Array[Node] = []
-	for child in objects_container.get_children():
-		old_quads.append(child)
-
-	# Load new scene (this adds new quad(s) to objects_container)
-	_load_scene_direct(scene_name)
-	current_scene_name = scene_name
-
-	# Find the newly added children
-	var new_quads: Array[Node] = []
-	for child in objects_container.get_children():
-		if child not in old_quads:
-			new_quads.append(child)
-			# Start invisible
-			child.modulate = Color(1, 1, 1, 0)
-
-	# Organic crossfade tween
 	var tw = create_tween()
-	tw.tween_method(func(s: float):
-		# Smoothstep for organic feel
-		var smooth_s = s * s * (3.0 - 2.0 * s)
-		# Old fades out
-		for q in old_quads:
-			if is_instance_valid(q):
-				q.modulate = Color(1, 1, 1, 1.0 - smooth_s)
-		# New fades in
-		for q in new_quads:
-			if is_instance_valid(q):
-				q.modulate = Color(1, 1, 1, smooth_s)
-	, 0.0, 1.0, blend_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
+	tw.tween_method(_set_fade_alpha, 0.0, 1.0, 0.4).set_trans(Tween.TRANS_SINE)
+	tw.tween_callback(_clear_and_load.bind(scene_name))
+	tw.tween_interval(0.2)
+	tw.tween_method(_set_fade_alpha, 1.0, 0.0, 0.6).set_trans(Tween.TRANS_SINE)
+	tw.tween_callback(func(): is_transitioning = false)
 
-	# Cleanup old quads after blend
-	tw.tween_callback(func():
-		for q in old_quads:
-			if is_instance_valid(q):
-				q.queue_free()
-		is_transitioning = false
-	)
-
-func _load_scene_direct(scene_name: String):
-	## Load a scene without destroying existing objects first
-	## (the caller manages old object cleanup)
-	var old_clear_behavior = true
-	# Temporarily prevent create_shader_scene from clearing old objects
-	# by loading directly
-	var handler = handle_command({"type": scene_name, "params": {}})
-
+func _clear_and_load(scene_name: String):
+	## Synchronous scene load — no await, no deadlock
+	var shader_path = "res://shaders/" + scene_name + ".gdshader"
+	if ResourceLoader.exists(shader_path):
+		apply_dark_environment()
+		create_shader_scene(shader_path, {})
+		show_museum_info(scene_name)
+		current_scene_name = scene_name
 
 # ── Museum Overlay System ──
 var museum_overlay: CanvasLayer
