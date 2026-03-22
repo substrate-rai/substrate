@@ -1160,6 +1160,11 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/polytope5d.gdshader", params)
 			return {"status": "ok", "message": "5D polytope loaded"}
+		"museum_narration":
+			if museum_chapter:
+				museum_chapter.text = params.get("chapter", "")
+				museum_chapter.modulate.a = 1.0
+			return {"status": "ok", "message": "Narration updated"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -7014,6 +7019,7 @@ func _transition_to_scene_dissolve(scene_name: String):
 # ── Museum Overlay System ──
 var museum_overlay: CanvasLayer
 var museum_title: Label
+var museum_chapter: Label
 var museum_desc: Label
 var museum_tween: Tween
 
@@ -7242,6 +7248,18 @@ func _setup_museum_overlay():
 	museum_desc.modulate.a = 0.0
 	museum_overlay.add_child(museum_desc)
 
+	# Chapter label (above title)
+	museum_chapter = Label.new()
+	museum_chapter.add_theme_font_size_override(&"font_size", 24)
+	museum_chapter.add_theme_color_override(&"font_color", Color(0.7, 0.65, 0.5, 1.0))
+	museum_chapter.add_theme_color_override(&"font_shadow_color", Color(0, 0, 0, 1.0))
+	museum_chapter.add_theme_constant_override(&"shadow_offset_x", 1)
+	museum_chapter.add_theme_constant_override(&"shadow_offset_y", 1)
+	museum_chapter.position = Vector2(60, 15)
+	museum_chapter.size = Vector2(800, 30)
+	museum_chapter.modulate.a = 0.0
+	museum_overlay.add_child(museum_chapter)
+
 func show_museum_info(scene_name: String):
 	if not museum_overlay:
 		_setup_museum_overlay()
@@ -7261,6 +7279,8 @@ func show_museum_info(scene_name: String):
 	museum_tween = create_tween()
 	museum_title.modulate.a = 0.0
 	museum_desc.modulate.a = 0.0
+	if museum_chapter:
+		museum_tween.parallel().tween_property(museum_chapter, "modulate:a", 1.0, 1.0)
 	museum_tween.tween_property(museum_title, "modulate:a", 0.95, 1.0)
 	museum_tween.parallel().tween_property(museum_desc, "modulate:a", 0.85, 1.5)
 	# After 12 seconds, fade to subtle
