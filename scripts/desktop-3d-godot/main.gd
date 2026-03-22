@@ -7088,25 +7088,30 @@ func _update_bloom():
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _transition_to_scene_dissolve(scene_name: String):
-	## Crossfade transition using dissolve shader. Falls back to fade if unavailable.
+	## Mathematical fade transition — non-blocking scene load
 	if is_transitioning:
 		return
 	is_transitioning = true
 
-	# Use the simpler fade transition (the dissolve needs dual SubViewports
-	# which is too complex for the current architecture — save for future)
-	# For now, use an improved fade with audio-reactive speed
-	var fade_duration = max(0.3, 0.6 - beat_intensity * 0.2)  # faster on beats
+	var fade_duration = max(0.5, 1.0 - beat_intensity * 0.3)
 
 	var tw = create_tween()
+	# Fade to black
 	tw.tween_method(_set_fade_alpha, 0.0, 1.0, fade_duration)
+	# Load new scene (non-blocking — no await)
 	tw.tween_callback(func():
-		@warning_ignore("redundant_await")
-		await handle_command({"type": scene_name, "params": {}})
+		_load_scene_direct(scene_name)
 		current_scene_name = scene_name
 	)
+	# Brief pause at black for scene to initialize
+	tw.tween_interval(0.3)
+	# Fade back in
 	tw.tween_method(_set_fade_alpha, 1.0, 0.0, fade_duration)
 	tw.tween_callback(func(): is_transitioning = false)
+
+func _load_scene_direct(scene_name: String):
+	## Load a scene without going through async handle_command
+	var handler = handle_command({"type": scene_name, "params": {}})
 
 
 # ── Museum Overlay System ──
