@@ -7088,29 +7088,59 @@ func _update_bloom():
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _transition_to_scene_dissolve(scene_name: String):
-	## Mathematical fade transition — non-blocking scene load
+	## Organic crossfade — both scenes visible during transition
 	if is_transitioning:
 		return
 	is_transitioning = true
 
-	var fade_duration = max(0.5, 1.0 - beat_intensity * 0.3)
+	var blend_duration = max(1.5, 2.5 - beat_intensity * 0.5)
 
+	# Snapshot current scene children (the old quads)
+	var old_quads: Array[Node] = []
+	for child in objects_container.get_children():
+		old_quads.append(child)
+
+	# Load new scene (this adds new quad(s) to objects_container)
+	_load_scene_direct(scene_name)
+	current_scene_name = scene_name
+
+	# Find the newly added children
+	var new_quads: Array[Node] = []
+	for child in objects_container.get_children():
+		if child not in old_quads:
+			new_quads.append(child)
+			# Start invisible
+			child.modulate = Color(1, 1, 1, 0)
+
+	# Organic crossfade tween
 	var tw = create_tween()
-	# Fade to black
-	tw.tween_method(_set_fade_alpha, 0.0, 1.0, fade_duration)
-	# Load new scene (non-blocking — no await)
+	tw.tween_method(func(s: float):
+		# Smoothstep for organic feel
+		var smooth_s = s * s * (3.0 - 2.0 * s)
+		# Old fades out
+		for q in old_quads:
+			if is_instance_valid(q):
+				q.modulate = Color(1, 1, 1, 1.0 - smooth_s)
+		# New fades in
+		for q in new_quads:
+			if is_instance_valid(q):
+				q.modulate = Color(1, 1, 1, smooth_s)
+	, 0.0, 1.0, blend_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
+
+	# Cleanup old quads after blend
 	tw.tween_callback(func():
-		_load_scene_direct(scene_name)
-		current_scene_name = scene_name
+		for q in old_quads:
+			if is_instance_valid(q):
+				q.queue_free()
+		is_transitioning = false
 	)
-	# Brief pause at black for scene to initialize
-	tw.tween_interval(0.3)
-	# Fade back in
-	tw.tween_method(_set_fade_alpha, 1.0, 0.0, fade_duration)
-	tw.tween_callback(func(): is_transitioning = false)
 
 func _load_scene_direct(scene_name: String):
-	## Load a scene without going through async handle_command
+	## Load a scene without destroying existing objects first
+	## (the caller manages old object cleanup)
+	var old_clear_behavior = true
+	# Temporarily prevent create_shader_scene from clearing old objects
+	# by loading directly
 	var handler = handle_command({"type": scene_name, "params": {}})
 
 
