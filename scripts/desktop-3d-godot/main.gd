@@ -174,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -1116,6 +1116,50 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/spectral.gdshader", params)
 			return {"status": "ok", "message": "Spectral geometry loaded"}
+		"schrodinger":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/schrodinger.gdshader", params)
+			return {"status": "ok", "message": "Schrodinger equation loaded"}
+		"lenia":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/lenia.gdshader", params)
+			return {"status": "ok", "message": "Lenia loaded"}
+		"calabi_yau":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/calabi_yau.gdshader", params)
+			return {"status": "ok", "message": "Calabi-Yau loaded"}
+		"apollonian3d":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/apollonian3d.gdshader", params)
+			return {"status": "ok", "message": "Apollonian 3D loaded"}
+		"dual_quat_julia":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/dual_quat_julia.gdshader", params)
+			return {"status": "ok", "message": "Dual quaternion Julia loaded"}
+		"hyper_mandelbrot":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/hyper_mandelbrot.gdshader", params)
+			return {"status": "ok", "message": "Hyperbolic Mandelbrot loaded"}
+		"eisenstein":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/eisenstein.gdshader", params)
+			return {"status": "ok", "message": "Eisenstein primes loaded"}
+		"persistence":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/persistence.gdshader", params)
+			return {"status": "ok", "message": "Persistent homology loaded"}
+		"legendrian":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/legendrian.gdshader", params)
+			return {"status": "ok", "message": "Legendrian knots loaded"}
+		"bicomplex":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/bicomplex.gdshader", params)
+			return {"status": "ok", "message": "Bicomplex Mandelbrot loaded"}
+		"polytope5d":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/polytope5d.gdshader", params)
+			return {"status": "ok", "message": "5D polytope loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -7117,6 +7161,50 @@ const SCENE_INFO = {
 	"spectral": {
 		"title": "SPECTRAL GEOMETRY",
 		"desc": "Can you hear the shape of a drum? Eigenfunctions of the Laplacian on a rectangular domain. The bright lines are nodal patterns - Chladni figures where the surface does not vibrate. Each mode has a frequency, and the superposition creates interference. Weyls law predicts eigenvalue density from area alone.",
+	},
+	"schrodinger": {
+		"title": "SCHRODINGER EQUATION",
+		"desc": "Quantum mechanics in action. Two slits emit spherical waves that interfere, creating the famous double-slit pattern. The color encodes the quantum phase while brightness shows probability density |psi|^2. The barrier with two slits is visible on the left. On the right, the interference pattern builds up. This experiment proves that particles behave as waves.",
+	},
+	"lenia": {
+		"title": "LENIA",
+		"desc": "Continuous cellular automata producing artificial lifeforms. Unlike Conways Game of Life with discrete on/off cells, Lenia uses smooth kernels and growth functions. Ring-shaped kernels create self-sustaining creatures that move, reproduce, and interact. The growth function G(u) = 2exp(-(u-mu)^2/2sigma^2) - 1 determines whether cells grow or die based on neighbor density.",
+	},
+	"calabi_yau": {
+		"title": "CALABI-YAU MANIFOLD",
+		"desc": "The extra dimensions of string theory, made visible. A cross-section of the quintic threefold z1^n+z2^n=1 projected from 5D. Calabi-Yau manifolds are Ricci-flat (related to our Ricci flow shader) and have SU(n) holonomy. String theory requires 6 extra dimensions compactified on these shapes. The degree n animates to show different manifold topologies.",
+	},
+	"apollonian3d": {
+		"title": "3D APOLLONIAN GASKET",
+		"desc": "Recursive sphere packing extended to three dimensions. Each iteration applies folding operations (abs, sort, scale, translate) and sphere inversions to create self-similar structure at every scale. Ray-marched with distance estimation. The same recursive packing principle as the 2D Apollonian gasket but filling 3D space with nested spheres.",
+	},
+	"dual_quat_julia": {
+		"title": "DUAL QUATERNION JULIA SET",
+		"desc": "Eight-dimensional fractal. Dual quaternions have form q = a + epsilon*b where epsilon^2 = 0. This nilpotent property creates structure invisible in standard quaternion fractals. The dual part provides automatic differentiation for free. Animated 2D slice through 8-dimensional space. No public GPU implementation existed before this.",
+	},
+	"hyper_mandelbrot": {
+		"title": "HYPERBOLIC MANDELBROT",
+		"desc": "The Mandelbrot set computed in hyperbolic space on the Poincare disk model. Addition becomes hyperbolic translation via Mobius transformations. Infinite detail accumulates near the boundary circle, where hyperbolic distances diverge to infinity. The fractal structure combines escape-time dynamics with non-Euclidean geometry.",
+	},
+	"eisenstein": {
+		"title": "EISENSTEIN PRIMES",
+		"desc": "Primes in the hexagonal integer lattice Z[omega] where omega = e^(2pi*i/3). The Eisenstein integers tile the plane with equilateral triangles. A Gaussian prime a+bi differs from an Eisenstein prime a+b*omega. Bright points are primes (where the norm a^2-ab+b^2 is a rational prime). The six-fold symmetry reflects the six units of the Eisenstein integers.",
+	},
+	"persistence": {
+		"title": "PERSISTENT HOMOLOGY",
+		"desc": "Topological data analysis as art. A function is filtered by a rising threshold. As it rises, connected components are born (blue, local minima) and merge (red, saddle points). The bright contour is the current level set. Birth-death pairs encode the persistence of topological features. Long-lived features are signal, short-lived are noise.",
+	},
+	"legendrian": {
+		"title": "LEGENDRIAN KNOTS",
+		"desc": "Contact geometry: a plane field xi = ker(dz - y*dx) that twists as you move along y. A Legendrian knot is a curve tangent to these planes everywhere. The flowing streamlines show the contact structure, and the bright knot curve (a Legendrian trefoil) threads through without ever crossing the contact planes. Contact geometry appears in thermodynamics, optics, and classical mechanics.",
+	},
+	"bicomplex": {
+		"title": "BICOMPLEX MANDELBROT",
+		"desc": "Four-dimensional fractal from bicomplex numbers z = z1 + j*z2. Unlike quaternions (non-commutative), bicomplex numbers commute, allowing an idempotent decomposition: the bicomplex Mandelbrot set is the intersection of two standard Mandelbrot sets rotated in 4D. The animated parameter sweeps through cross-sections, revealing how the two sets interact.",
+	},
+	"polytope5d": {
+		"title": "5D HYPERCUBE",
+		"desc": "A penteract: the 5-dimensional analogue of a cube. 32 vertices, 80 edges, 80 square faces, 40 cubic cells, 10 tesseract hyperfaces. Projected from 5D to 2D via four independent rotation planes and perspective projection. The rotations reveal structure impossible to see in lower dimensions. Each vertex connects to exactly 5 neighbors.",
 	},
 	"loss_landscape": {
 		"title": "LOSS LANDSCAPE",
