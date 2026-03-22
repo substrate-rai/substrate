@@ -174,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -1068,6 +1068,54 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/symplectic.gdshader", params)
 			return {"status": "ok", "message": "Symplectic billiards loaded"}
+		"sol_geometry":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/sol_geometry.gdshader", params)
+			return {"status": "ok", "message": "Sol geometry loaded"}
+		"dyson":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/dyson.gdshader", params)
+			return {"status": "ok", "message": "Dyson Brownian motion loaded"}
+		"homoclinic":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/homoclinic.gdshader", params)
+			return {"status": "ok", "message": "Homoclinic tangle loaded"}
+		"optimal_transport":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/optimal_transport.gdshader", params)
+			return {"status": "ok", "message": "Optimal transport loaded"}
+		"ricci_flow":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/ricci_flow.gdshader", params)
+			return {"status": "ok", "message": "Ricci flow loaded"}
+		"neural_ode":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/neural_ode.gdshader", params)
+			return {"status": "ok", "message": "Neural ODE loaded"}
+		"navier_stokes":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/navier_stokes.gdshader", params)
+			return {"status": "ok", "message": "Navier-Stokes loaded"}
+		"yang_mills":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/yang_mills.gdshader", params)
+			return {"status": "ok", "message": "Yang-Mills loaded"}
+		"lorenz_knot":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/lorenz_knot.gdshader", params)
+			return {"status": "ok", "message": "Lorenz knot loaded"}
+		"langlands":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/langlands.gdshader", params)
+			return {"status": "ok", "message": "Langlands program loaded"}
+		"prime_gaps":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/prime_gaps.gdshader", params)
+			return {"status": "ok", "message": "Prime gaps loaded"}
+		"spectral":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/spectral.gdshader", params)
+			return {"status": "ok", "message": "Spectral geometry loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -7021,6 +7069,54 @@ const SCENE_INFO = {
 	"symplectic": {
 		"title": "SYMPLECTIC BILLIARDS",
 		"desc": "Particle bouncing inside a deforming stadium in phase space. Smooth curves are KAM tori. Scattered dots are chaotic orbits. Energy is exactly conserved at every bounce.",
+	},
+	"sol_geometry": {
+		"title": "THURSTON SOL GEOMETRY",
+		"desc": "Non-Euclidean space where looking up feels different from looking sideways. Sol metric: ds2 = e^(2z)dx2 + e^(-2z)dy2 + dz2. No closed-form geodesics exist - each ray is numerically integrated. Only the IMPA team has implemented this before. One of Thurstons eight model geometries.",
+	},
+	"dyson": {
+		"title": "DYSON BROWNIAN MOTION",
+		"desc": "Eigenvalues of random matrices as charged particles with logarithmic repulsion. They perform correlated random walks, spontaneously forming the Wigner semicircle distribution. The spacing statistics follow the GUE universality class. Zero shader implementations existed before.",
+	},
+	"homoclinic": {
+		"title": "HOMOCLINIC TANGLES",
+		"desc": "What Poincare dared not attempt to draw. The stable and unstable manifolds of saddle points intersect in an infinitely complex mesh. Warm colors: forward invariant set. Cool: backward. Gold intersections are homoclinic points where chaos originates. The literal visual birth of chaos theory.",
+	},
+	"optimal_transport": {
+		"title": "OPTIMAL TRANSPORT",
+		"desc": "The cheapest way to morph one probability distribution into another. The geodesic in Wasserstein space creates fluid flowing transformations. Source distribution (red) morphs into target (green) along the path of least resistance. Connected to economics, machine learning, and the geometry of probability.",
+	},
+	"ricci_flow": {
+		"title": "RICCI FLOW",
+		"desc": "The math behind the proof of the Poincare conjecture. Curvature drives metric evolution - bumpy surfaces smooth into constant curvature. Watch geometry heal itself. Positive curvature (red) flows inward, negative (blue) flows outward. Perelman used this to solve a century-old millennium problem.",
+	},
+	"neural_ode": {
+		"title": "NEURAL ODE PHASE PORTRAIT",
+		"desc": "How AI thinks in continuous time. A neural network defines a vector field f(x) and trajectories flow along it. Streamlines show the learned dynamics. Blue fixed points are stable attractors, red are unstable repellers. The divergence field reveals where the network compresses or expands information.",
+	},
+	"navier_stokes": {
+		"title": "NAVIER-STOKES EQUATIONS",
+		"desc": "Another Millennium Prize problem (1M dollars). Whether smooth solutions always exist is unknown. Eight interacting vortices create turbulent flow. Red: clockwise vorticity. Blue: counter-clockwise. Streamlines trace fluid particle paths. The same equations govern weather, ocean currents, and blood flow.",
+	},
+	"yang_mills": {
+		"title": "YANG-MILLS GAUGE THEORY",
+		"desc": "Yet another Millennium Prize problem. The quantum field theory behind the Standard Model of particle physics. SU(2) instanton configuration: self-dual gauge field with topological charge. RGB channels show three gauge field components. The bright core is where topological charge density peaks. This math explains why protons exist.",
+	},
+	"lorenz_knot": {
+		"title": "LORENZ ATTRACTOR KNOTS",
+		"desc": "The Lorenz butterfly rendered as a density field with periodic orbits highlighted in gold. These periodic orbits form mathematical knots - specifically, every knot type appears as a periodic orbit somewhere in the Lorenz system. The gold highlights trace one such knotted orbit within the chaotic attractor.",
+	},
+	"langlands": {
+		"title": "LANGLANDS PROGRAM",
+		"desc": "The grand unified theory of mathematics. A deep correspondence between automorphic forms (warm colors: number theory side) and Galois representations (cool colors: geometry side). Where both sides agree, gold appears. The Langlands program connects number theory, geometry, and representation theory into one framework.",
+	},
+	"prime_gaps": {
+		"title": "PRIME GAP DISTRIBUTION",
+		"desc": "The spaces between consecutive prime numbers. Each dot is a prime gap plotted against prime index. Twin primes (gap=2) glow gold - infinitely many may exist but nobody can prove it. Cousin primes (gap=4) green. Sexy primes (gap=6) purple. The patterns encode deep structure in the distribution of primes.",
+	},
+	"spectral": {
+		"title": "SPECTRAL GEOMETRY",
+		"desc": "Can you hear the shape of a drum? Eigenfunctions of the Laplacian on a rectangular domain. The bright lines are nodal patterns - Chladni figures where the surface does not vibrate. Each mode has a frequency, and the superposition creates interference. Weyls law predicts eigenvalue density from area alone.",
 	},
 	"loss_landscape": {
 		"title": "LOSS LANDSCAPE",
