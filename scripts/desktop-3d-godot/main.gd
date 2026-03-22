@@ -235,6 +235,7 @@ func _ready():
 	shell_launcher = Launcher.new()
 	add_child(shell_launcher)
 	shell_launcher.visible = false
+	_setup_wallpaper_rotation()
 
 	# This bypasses Godot's AudioStreamMicrophone which doesn't work reliably
 	# with PipeWire monitor sources on Linux.
@@ -1244,6 +1245,20 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/lbm_fluid.gdshader", params)
 			return {"status": "ok", "message": "Lattice Boltzmann loaded"}
+		"next_wallpaper":
+			_next_wallpaper()
+			return {"status": "ok", "message": "Next wallpaper: " + current_scene_name}
+		"prev_wallpaper":
+			wallpaper_index = (wallpaper_index - 2 + WALLPAPER_SCENES.size()) % WALLPAPER_SCENES.size()
+			_next_wallpaper()
+			return {"status": "ok", "message": "Prev wallpaper: " + current_scene_name}
+		"pause_rotation":
+			wallpaper_rotation_enabled = !wallpaper_rotation_enabled
+			return {"status": "ok", "message": "Rotation " + ("paused" if not wallpaper_rotation_enabled else "resumed")}
+		"set_rotation_time":
+			var secs = float(params.get("seconds", 60))
+			wallpaper_timer.wait_time = secs
+			return {"status": "ok", "message": "Rotation interval: " + str(secs) + "s"}
 		"launcher":
 			if shell_launcher:
 				shell_launcher.toggle()
@@ -7127,6 +7142,37 @@ func _clear_and_load(scene_name: String):
 		create_shader_scene(shader_path, {})
 		show_museum_info(scene_name)
 		current_scene_name = scene_name
+
+
+
+# ── Auto-Rotating Wallpaper System ──
+var wallpaper_timer: Timer
+var wallpaper_index: int = 0
+var wallpaper_rotation_enabled: bool = true
+var WALLPAPER_SCENES = ["eisenstein","prime_gaps","goldbach","mertens","riemann_zeta","collatz","padic","tropical","elliptic_finite","modular_forms","langlands","conformal","apollonian3d","kleinian","sol_geometry","ricci_flow","hopf","polytope5d","penrose","standard_map","arnold_tongues","horseshoe","homoclinic","attractor_density","spiral_waves","lorenz_knot","lenia","schrodinger","dirac","wigner","dyson","spectral","navier_stokes","yang_mills","kerr_blackhole","seifert","braid","legendrian","symplectic","persistence","optimal_transport","schmidt","loss_landscape","neural_ode","hyper_mandelbrot","dual_quat_julia","bicomplex","calabi_yau","polytope_24cell","quat_julia_4d","clifford_torus","e8_polytope","kaluza_klein","ads_cft","brane_world","black_string","polytope_120cell","polytope_8d","wave_curved","calabi_yau_moduli","gosset","mirror_symmetry","neural_ca","lbm_fluid"]
+
+func _setup_wallpaper_rotation():
+	wallpaper_timer = Timer.new()
+	wallpaper_timer.wait_time = 60.0  # rotate every 60 seconds
+	wallpaper_timer.autostart = true
+	wallpaper_timer.timeout.connect(_next_wallpaper)
+	add_child(wallpaper_timer)
+	# Load first scene
+	_next_wallpaper()
+
+func _next_wallpaper():
+	if not wallpaper_rotation_enabled:
+		return
+	var scene_name = WALLPAPER_SCENES[wallpaper_index]
+	var shader_path = "res://shaders/" + scene_name + ".gdshader"
+	if ResourceLoader.exists(shader_path):
+		apply_dark_environment()
+		create_shader_scene(shader_path, {})
+		show_museum_info(scene_name)
+		current_scene_name = scene_name
+		if shell_status_bar:
+			shell_status_bar.set_scene_name(scene_name)
+	wallpaper_index = (wallpaper_index + 1) % WALLPAPER_SCENES.size()
 
 # ── Museum Overlay System ──
 var museum_overlay: CanvasLayer

@@ -142,6 +142,10 @@ func _update_stats():
 
 	# WiFi
 	var wifi_output = []
-	OS.execute("ip link show wlo1 | grep -o "state [A-Z]*""], wifi_output, true)
-	if wifi_output.size() > 0 and wifi_output[0].strip_edges() != "":
-		wifi_label.text = "WiFi: %s%%" % wifi_output[0].strip_edges()
+	OS.execute("nmcli", ["-t", "-f", "GENERAL.STATE", "dev", "show", "wlo1"], wifi_output, true)
+	if wifi_output.size() > 0:
+		var wstate = wifi_output[0].strip_edges()
+		if "connected" in wstate.to_lower():
+			wifi_label.text = "WiFi: OK"
+		else:
+			wifi_label.text = "WiFi: --"
