@@ -190,6 +190,11 @@ const SEASON_SCENES = {
 	"winter": ["space_outpost", "abyss_scene", "abandoned_station", "crystal_cave"],
 }
 
+
+# ── Shell Components ──
+var shell_status_bar
+var shell_launcher
+
 func _ready():
 	# Opaque live wallpaper — borderless, below all windows, above KDE wallpaper
 	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, true)
@@ -221,6 +226,16 @@ func _ready():
 	# Audio analysis is handled externally by substrate_sensors.py (pw-record + FFT).
 	# Audio levels arrive via UDP sensor packets (audio_bass, audio_mid, etc.).
 	_setup_museum_overlay()
+	# ── Shell Components ──
+	var StatusBar = load("res://shell/status_bar.gd")
+	shell_status_bar = StatusBar.new()
+	add_child(shell_status_bar)
+
+	var Launcher = load("res://shell/launcher.gd")
+	shell_launcher = Launcher.new()
+	add_child(shell_launcher)
+	shell_launcher.visible = false
+
 	# This bypasses Godot's AudioStreamMicrophone which doesn't work reliably
 	# with PipeWire monitor sources on Linux.
 	print("Audio: using external sensor daemon (pw-record → UDP)")
@@ -1229,6 +1244,10 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/lbm_fluid.gdshader", params)
 			return {"status": "ok", "message": "Lattice Boltzmann loaded"}
+		"launcher":
+			if shell_launcher:
+				shell_launcher.toggle()
+			return {"status": "ok", "message": "Launcher toggled"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -7430,6 +7449,8 @@ func show_museum_info(scene_name: String):
 		return
 
 	museum_title.text = info["title"]
+	if shell_status_bar:
+		shell_status_bar.set_scene_name(scene_name)
 	museum_desc.text = info["desc"]
 
 	# Fade in
