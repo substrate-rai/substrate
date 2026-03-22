@@ -174,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -987,6 +987,26 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/spiral_waves.gdshader", params)
 			return {"status": "ok", "message": "Spiral waves loaded"}
+		"arnold_tongues":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/arnold_tongues.gdshader", params)
+			return {"status": "ok", "message": "Arnold tongues loaded"}
+		"standard_map":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/standard_map.gdshader", params)
+			return {"status": "ok", "message": "Standard map loaded"}
+		"elliptic_finite":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/elliptic_finite.gdshader", params)
+			return {"status": "ok", "message": "Elliptic curves loaded"}
+		"goldbach":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/goldbach.gdshader", params)
+			return {"status": "ok", "message": "Goldbach comet loaded"}
+		"hopf":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/hopf.gdshader", params)
+			return {"status": "ok", "message": "Hopf fibration loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
