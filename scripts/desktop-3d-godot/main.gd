@@ -174,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -1028,6 +1028,46 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/loss_landscape.gdshader", params)
 			return {"status": "ok", "message": "Loss landscape loaded"}
+		"schmidt":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/schmidt.gdshader", params)
+			return {"status": "ok", "message": "Schmidt arrangement loaded"}
+		"modular_forms":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/modular_forms.gdshader", params)
+			return {"status": "ok", "message": "Modular forms loaded"}
+		"attractor_density":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/attractor_density.gdshader", params)
+			return {"status": "ok", "message": "Attractor density loaded"}
+		"penrose":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/penrose.gdshader", params)
+			return {"status": "ok", "message": "Penrose tiling loaded"}
+		"horseshoe":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/horseshoe.gdshader", params)
+			return {"status": "ok", "message": "Smale horseshoe loaded"}
+		"dirac":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/dirac.gdshader", params)
+			return {"status": "ok", "message": "Dirac equation loaded"}
+		"conformal":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/conformal.gdshader", params)
+			return {"status": "ok", "message": "Conformal map loaded"}
+		"mertens":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/mertens.gdshader", params)
+			return {"status": "ok", "message": "Mertens function loaded"}
+		"braid":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/braid.gdshader", params)
+			return {"status": "ok", "message": "Braid group loaded"}
+		"symplectic":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/symplectic.gdshader", params)
+			return {"status": "ok", "message": "Symplectic billiards loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -6941,6 +6981,46 @@ const SCENE_INFO = {
 	"seifert": {
 		"title": "SEIFERT SURFACE",
 		"desc": "Every knot in 3-space bounds an oriented surface — the Seifert surface. This ray-marches the surface of a trefoil knot (the simplest non-trivial knot, a (2,3)-torus knot). The surface swoops and twists, constrained by the topology of the knot it bounds. Two-sided coloring reveals the orientation. Seifert surfaces connect knot theory to 4-dimensional topology — the genus of this surface is a knot invariant.",
+	},
+	"schmidt": {
+		"title": "SCHMIDT ARRANGEMENTS",
+		"desc": "First GPU render ever. Fractal circle packings from the Bianchi group encoding number theory. The nested circles are Ford circles with sizes determined by denominators of rational numbers.",
+	},
+	"modular_forms": {
+		"title": "MODULAR FORMS",
+		"desc": "Dedekind eta function to the 24th power, domain-colored on the upper half-plane. No real-time implementation existed before. Bright structures near the bottom are cusp singularities. These connect to string theory and the proof of Fermats Last Theorem.",
+	},
+	"attractor_density": {
+		"title": "STRANGE ATTRACTOR DENSITY",
+		"desc": "Orbit visit frequency reveals the invariant probability measure. Bright regions are where the attractor spends most time. Cycles through Lorenz, Rossler, and Halvorsen. Internal filament structure is invisible in standard particle renderings.",
+	},
+	"penrose": {
+		"title": "PENROSE TILING",
+		"desc": "Aperiodic tiling with 5-fold symmetry that never repeats. Five sets of parallel lines at 72-degree angles create the pattern. The golden ratio governs every proportion. Mathematical model for quasicrystals, Nobel Prize 2011.",
+	},
+	"horseshoe": {
+		"title": "SMALE HORSESHOE",
+		"desc": "The mechanism of chaos: stretch, compress, fold, repeat. Warm colors show forward invariant set, cool colors backward. Gold intersection is a Cantor set where chaos lives. Smale proved this simple operation creates infinite complexity.",
+	},
+	"dirac": {
+		"title": "DIRAC EQUATION",
+		"desc": "Relativistic quantum mechanics that predicted antimatter. Spinor wavefunctions colored by spin component. Orbital shapes emerge from angular momentum quantization. Flowing patterns show probability current.",
+	},
+	"conformal": {
+		"title": "CONFORMAL MAPS",
+		"desc": "Angle-preserving transformations of the complex plane. Grid shows how space deforms while preserving intersection angles. Cycles through z-squared, inversion, Joukowski airfoil, and exponential. Red marks where derivatives vanish.",
+	},
+	"mertens": {
+		"title": "MERTENS FUNCTION",
+		"desc": "Sum of the Mobius function encoding prime factorization. Blue positive, red negative. The sqrt(n) bounds were conjectured to hold but DISPROVED in 1985. Connected to the Riemann Hypothesis.",
+	},
+	"braid": {
+		"title": "BRAID GROUPS",
+		"desc": "Topological algebra of interweaving strands. Seven strands crossing over and under. Encodes DNA topology, topological quantum computing, cryptography, and knot theory.",
+	},
+	"symplectic": {
+		"title": "SYMPLECTIC BILLIARDS",
+		"desc": "Particle bouncing inside a deforming stadium in phase space. Smooth curves are KAM tori. Scattered dots are chaotic orbits. Energy is exactly conserved at every bounce.",
 	},
 	"loss_landscape": {
 		"title": "LOSS LANDSCAPE",
