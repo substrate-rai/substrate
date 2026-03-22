@@ -174,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -1165,6 +1165,38 @@ func handle_command(msg: Dictionary) -> Dictionary:
 				museum_chapter.text = params.get("chapter", "")
 				museum_chapter.modulate.a = 1.0
 			return {"status": "ok", "message": "Narration updated"}
+		"polytope_24cell":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/polytope_24cell.gdshader", params)
+			return {"status": "ok", "message": "24-cell loaded"}
+		"quat_julia_4d":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/quat_julia_4d.gdshader", params)
+			return {"status": "ok", "message": "Quaternion Julia loaded"}
+		"clifford_torus":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/clifford_torus.gdshader", params)
+			return {"status": "ok", "message": "Clifford torus loaded"}
+		"e8_polytope":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/e8_polytope.gdshader", params)
+			return {"status": "ok", "message": "E8 polytope loaded"}
+		"kaluza_klein":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/kaluza_klein.gdshader", params)
+			return {"status": "ok", "message": "Kaluza-Klein loaded"}
+		"ads_cft":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/ads_cft.gdshader", params)
+			return {"status": "ok", "message": "AdS/CFT loaded"}
+		"brane_world":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/brane_world.gdshader", params)
+			return {"status": "ok", "message": "Brane world loaded"}
+		"black_string":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/black_string.gdshader", params)
+			return {"status": "ok", "message": "Black string loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -6044,8 +6076,13 @@ func apply_dark_environment():
 # ── Full-screen shader scene (fractal, aurora, matrix, mycelium) ─────────────
 
 func create_shader_scene(shader_path: String, params: Dictionary):
+	# Keep old quad for crossfade
+	old_shader_quad = null
 	for child in objects_container.get_children():
-		child.queue_free()
+		if child is MeshInstance3D and child.mesh is QuadMesh:
+			old_shader_quad = child
+		else:
+			child.queue_free()
 	spawned_items.clear()
 	_clear_postfx()
 
@@ -6081,6 +6118,30 @@ func create_shader_scene(shader_path: String, params: Dictionary):
 	quad.position = Vector3(0, 2.5, 0)
 
 	objects_container.add_child(quad)
+	# Crossfade from old quad to new
+	if old_shader_quad:
+		if crossfade_tween:
+			crossfade_tween.kill()
+		crossfade_tween = create_tween()
+		# New quad starts transparent
+		var new_mat = quad.material_override
+		if new_mat:
+			new_mat.set_shader_parameter("crossfade_alpha", 0.0)
+		# Fade old out, new in over 2 seconds
+		var old_ref = old_shader_quad
+		crossfade_tween.tween_method(func(v):
+			if is_instance_valid(old_ref) and old_ref.material_override:
+				old_ref.material_override.set_shader_parameter("crossfade_alpha", 1.0 - v)
+			if new_mat:
+				new_mat.set_shader_parameter("crossfade_alpha", v)
+		, 0.0, 1.0, 2.0)
+		crossfade_tween.tween_callback(func():
+			if is_instance_valid(old_ref):
+				old_ref.queue_free()
+		)
+	else:
+		# No old quad, just show immediately
+		pass
 	spawned_items.append({"type": "scene", "name": shader_path.get_file().get_basename()})
 	show_museum_info(shader_path.get_file().get_basename())
 
@@ -7022,6 +7083,8 @@ var museum_title: Label
 var museum_chapter: Label
 var museum_desc: Label
 var museum_tween: Tween
+var crossfade_tween: Tween
+var old_shader_quad: MeshInstance3D
 
 const SCENE_INFO = {
 	"collatz": {
@@ -7211,6 +7274,38 @@ const SCENE_INFO = {
 	"polytope5d": {
 		"title": "5D HYPERCUBE",
 		"desc": "The penteract: 5-dimensional analogue of a cube. It has 32 vertices (2^5), 80 edges, 80 square faces, 40 cubic cells, and 10 tesseract hyperfaces. Each vertex connects to exactly 5 neighbors. Four independent rotation planes allow motions impossible in lower dimensions. WHAT YOU SEE: Vertices (golden dots) connected by edges (colored lines), projected from 5D to 2D via perspective. The four simultaneous rotations at incommensurate speeds create quasi-periodic motion — the projection never exactly repeats. Edges that appear to pass through each other are actually separated in the hidden dimensions. The depth cue (brighter = closer) helps parse the 5D structure.",
+	},
+	"polytope_24cell": {
+		"title": "24-CELL",
+		"desc": "The ONLY regular polytope in any dimension with no analogue above or below. 24 vertices, 96 edges, 24 octahedral cells. Exists because F4 symmetry is exclusive to 4D. Self-dual. WHAT YOU SEE: Edges connecting 24 vertices, rotating through all 6 independent 4D rotation planes simultaneously. Depth cue: brighter vertices are closer in the projected 4th dimension.",
+	},
+	"quat_julia_4d": {
+		"title": "QUATERNION JULIA SET",
+		"desc": "A true 3D fractal surface computed by iterating z -> z^2 + c in quaternion (4D) space. Ray marched with Keenan Cranes distance estimation technique. WHAT YOU SEE: A bulbous organic surface with fractal detail at every scale. The c parameter animates through 4D, continuously deforming the fractal. Lighting and ambient occlusion reveal the 3D surface structure. Fresnel rim glow highlights edges.",
+	},
+	"clifford_torus": {
+		"title": "CLIFFORD TORUS",
+		"desc": "A perfectly FLAT torus living in the 3-sphere S3. Parameterized as (cos a, sin a, cos b, sin b)/sqrt(2). Stereographically projected to 3D then to 2D. WHAT YOU SEE: A torus-shaped lattice of points. Grid lines highlight the (a,b) parameter curves. The projection point animates, causing the torus to turn inside-out — one of the most mind-bending visualizations in topology.",
+	},
+	"e8_polytope": {
+		"title": "E8 ROOT SYSTEM",
+		"desc": "The most beautiful object in mathematics. 240 vertices in 8-dimensional space forming the root system of the exceptional Lie algebra E8. Connected by 6720 edges. Nobody has shipped a real-time interactive GPU renderer before. WHAT YOU SEE: 112 D8 root vectors projected from 8D to 2D, rotating through 4 of the 28 possible rotation planes. The symmetry is visible in the distribution of vertices around the origin. Golden vertices cluster at symmetry axes.",
+	},
+	"kaluza_klein": {
+		"title": "KALUZA-KLEIN THEORY",
+		"desc": "The first unification of forces: gravity in 5 dimensions = gravity + electromagnetism in 4D. The 5th dimension is a tiny circle at every point in spacetime. WHAT YOU SEE: A grid of circles (the extra dimension fiber) whose radius varies with the EM field. Red circles: positive field. Blue: negative. Golden dots show momentum modes (particles moving around the circle = electric charge). The wave propagating through is an electromagnetic wave emerging from 5D geometry.",
+	},
+	"ads_cft": {
+		"title": "AdS/CFT CORRESPONDENCE",
+		"desc": "The holographic principle: a gravitational theory in the bulk (inside) is equivalent to a quantum field theory on the boundary (the circle). A time-slice of AdS3 IS the Poincare disk. WHAT YOU SEE: A hyperbolic tiling fills the interior (the bulk spacetime). The bright boundary circle is where the CFT lives. Geodesic arcs connect boundary points through the bulk. White particles fall inward from the boundary — information flowing from the CFT into the gravitational bulk.",
+	},
+	"brane_world": {
+		"title": "D-BRANE WORLD",
+		"desc": "In string theory, our universe may be a membrane (D-brane) floating in higher-dimensional space. Open strings (matter, light) are stuck to the brane. Closed strings (gravity) leak into the bulk. WHAT YOU SEE: The horizontal glowing surface is our brane. Colored curves on it are open strings vibrating between endpoints (gold dots). Purple loops floating off the brane are closed strings — gravity leaking into the extra dimension. This explains why gravity is so much weaker than other forces.",
+	},
+	"black_string": {
+		"title": "BLACK STRING INSTABILITY",
+		"desc": "A higher-dimensional black hole extended along one extra dimension. Gregory and Laflamme proved it is unstable — perturbations grow, pinching the string into a chain of black holes. Never rendered as real-time shader before. WHAT YOU SEE: The dark band is the event horizon, glowing with Hawking radiation. The instability parameter animates from uniform string to pinched chain. Hotter (smaller) regions glow blue, cooler glow red. At maximum instability, individual black holes form along the string.",
 	},
 	"loss_landscape": {
 		"title": "LOSS LANDSCAPE",
