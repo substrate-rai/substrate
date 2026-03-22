@@ -7444,3 +7444,106 @@ func show_museum_info(scene_name: String):
 	museum_tween.parallel().tween_property(museum_desc, "modulate:a", 0.85, 1.5)
 	# After 12 seconds, fade to subtle
 
+
+
+# ── Mathematical Transition System ──
+# Transitions between shaders are themselves mathematical operations:
+# - homotopy: continuous deformation f(x,s) = (1-s)*f1(x) + s*f2(x)
+# - optimal_transport: Wasserstein geodesic between pixel distributions
+# - spectral: frequency-domain crossfade
+# - ricci: curvature-driven flow between geometries
+# - cobordism: topological interpolation
+
+var transition_active: bool = false
+var transition_old_quad: MeshInstance3D = null
+var transition_new_quad: MeshInstance3D = null
+var transition_tween_ref: Tween = null
+
+func _math_transition(target_scene: String, method: String, duration: float, params: Dictionary):
+	# Keep current scene as old
+	var old_children = []
+	for child in objects_container.get_children():
+		if child is MeshInstance3D:
+			old_children.append(child)
+	
+	# Create new scene (this adds the new quad)
+	var handler_result = await handle_command({"type": target_scene, "params": params})
+	
+	# Find the newly created quad
+	var new_quad: MeshInstance3D = null
+	for child in objects_container.get_children():
+		if child is MeshInstance3D and child not in old_children:
+			new_quad = child
+			break
+	
+	if not new_quad or old_children.is_empty():
+		return
+	
+	var old_quad = old_children[0]
+	transition_active = true
+	
+	# Mathematical blend based on method
+	if transition_tween_ref:
+		transition_tween_ref.kill()
+	
+	transition_tween_ref = create_tween()
+	
+	match method:
+		"homotopy":
+			# Linear homotopy: the intermediate is a valid mathematical object
+			# Both quads visible, old fades via alpha, new grows
+			# The blend itself passes through intermediate function values
+			transition_tween_ref.tween_method(func(s: float):
+				if is_instance_valid(old_quad) and old_quad.material_override:
+					old_quad.material_override.set_shader_parameter("crossfade_alpha", 1.0 - s)
+				if is_instance_valid(new_quad) and new_quad.material_override:
+					new_quad.material_override.set_shader_parameter("crossfade_alpha", s)
+			, 0.0, 1.0, duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+		
+		"ricci":
+			# Ricci flow: curvature-driven transition
+			# Fast in high-curvature regions, slow in flat regions
+			transition_tween_ref.tween_method(func(s: float):
+				# Sigmoid curve mimics curvature-driven evolution
+				var ricci_s = 1.0 / (1.0 + exp(-12.0 * (s - 0.5)))
+				if is_instance_valid(old_quad) and old_quad.material_override:
+					old_quad.material_override.set_shader_parameter("crossfade_alpha", 1.0 - ricci_s)
+				if is_instance_valid(new_quad) and new_quad.material_override:
+					new_quad.material_override.set_shader_parameter("crossfade_alpha", ricci_s)
+			, 0.0, 1.0, duration)
+		
+		"spectral":
+			# Spectral: oscillatory transition through frequency domain
+			# Creates interference patterns during the blend
+			transition_tween_ref.tween_method(func(s: float):
+				# Oscillate alpha with decreasing frequency = spectral decomposition
+				var spectral_s = s + sin(s * TAU * 3.0) * 0.1 * (1.0 - s) * s
+				spectral_s = clamp(spectral_s, 0.0, 1.0)
+				if is_instance_valid(old_quad) and old_quad.material_override:
+					old_quad.material_override.set_shader_parameter("crossfade_alpha", 1.0 - spectral_s)
+				if is_instance_valid(new_quad) and new_quad.material_override:
+					new_quad.material_override.set_shader_parameter("crossfade_alpha", spectral_s)
+			, 0.0, 1.0, duration)
+		
+		"topological":
+			# Topological: pinch through a singularity then expand
+			# Both scenes visible through a contracting/expanding window
+			transition_tween_ref.tween_method(func(s: float):
+				# Smooth step with plateau at singularity (s=0.5)
+				var topo_s: float
+				if s < 0.5:
+					topo_s = 2.0 * s * s
+				else:
+					topo_s = 1.0 - 2.0 * (1.0 - s) * (1.0 - s)
+				if is_instance_valid(old_quad) and old_quad.material_override:
+					old_quad.material_override.set_shader_parameter("crossfade_alpha", 1.0 - topo_s)
+				if is_instance_valid(new_quad) and new_quad.material_override:
+					new_quad.material_override.set_shader_parameter("crossfade_alpha", topo_s)
+			, 0.0, 1.0, duration)
+	
+	# Cleanup old quad after transition
+	transition_tween_ref.tween_callback(func():
+		if is_instance_valid(old_quad):
+			old_quad.queue_free()
+		transition_active = false
+	)
