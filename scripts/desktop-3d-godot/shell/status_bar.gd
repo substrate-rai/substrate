@@ -26,14 +26,28 @@ func _ready():
 	style.corner_radius_top_left = 8
 	style.corner_radius_top_right = 8
 	bg_panel.add_theme_stylebox_override(&"panel", style)
-	bg_panel.position = Vector2(0, 1400)  # bottom of 1440p
-	bg_panel.size = Vector2(2560, 40)
+	# Position at bottom of whatever resolution
+	var vp_size = Vector2(2560, 1440)  # fallback
+	bg_panel.anchor_top = 1.0
+	bg_panel.anchor_bottom = 1.0
+	bg_panel.anchor_left = 0.0
+	bg_panel.anchor_right = 1.0
+	bg_panel.offset_top = -50
+	bg_panel.offset_bottom = 0
+	bg_panel.offset_left = 0
+	bg_panel.offset_right = 0
 	add_child(bg_panel)
 
 	# Container
 	var hbox = HBoxContainer.new()
-	hbox.position = Vector2(20, 1405)
-	hbox.size = Vector2(2520, 30)
+	hbox.anchor_top = 1.0
+	hbox.anchor_bottom = 1.0
+	hbox.anchor_left = 0.0
+	hbox.anchor_right = 1.0
+	hbox.offset_top = -45
+	hbox.offset_bottom = -5
+	hbox.offset_left = 20
+	hbox.offset_right = -20
 	hbox.add_theme_constant_override(&"separation", 40)
 	add_child(hbox)
 
@@ -128,6 +142,6 @@ func _update_stats():
 
 	# WiFi
 	var wifi_output = []
-	OS.execute("nmcli", ["-t", "-f", "SIGNAL", "dev", "wifi", "list", "--active"], wifi_output, true)
+	OS.execute("ip link show wlo1 | grep -o "state [A-Z]*""], wifi_output, true)
 	if wifi_output.size() > 0 and wifi_output[0].strip_edges() != "":
 		wifi_label.text = "WiFi: %s%%" % wifi_output[0].strip_edges()
