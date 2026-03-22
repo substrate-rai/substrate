@@ -174,8 +174,8 @@ var lsystem_growing: bool = false
 
 # ── Scene lists ──
 const REACTIVE_SCENES = ["haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station"]
-const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string", "polytope_120cell", "polytope_8d", "wave_curved", "calabi_yau_moduli"]
-const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string", "polytope_120cell", "polytope_8d", "wave_curved", "calabi_yau_moduli"]
+const ART_SCENES = ["fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string", "polytope_120cell", "polytope_8d", "wave_curved", "calabi_yau_moduli", "gosset", "mirror_symmetry", "neural_ca", "lbm_fluid"]
+const ALL_SCENES = ["full_scene", "abyss_scene", "crystal_cave", "neon_city", "volcanic", "zen_garden", "fairy_garden", "haunted_graveyard", "space_outpost", "autumn_campsite", "abandoned_station", "fractal", "aurora", "matrix_rain", "mycelium", "attractor", "galaxy", "visualizer", "lsystem", "vine_garden", "fluid", "fire", "victory", "vaporwave", "domain_warp", "ocean", "cloudscape", "physarum", "plasma", "kaleidoscope", "tunnel", "starfield", "julia", "lava", "nebula", "lightning", "blackhole", "metaballs", "menger", "supernova", "synthgrid", "waveform", "castlevania", "mgs", "aquarium", "neon_city_pixel", "sdf_world", "reaction_diffusion", "sacred_geometry", "visionary", "mandala", "metatron", "burning_ship", "newton", "sierpinski", "apollonian", "collatz", "riemann_zeta", "kleinian", "kerr_blackhole", "spiral_waves", "arnold_tongues", "standard_map", "elliptic_finite", "goldbach", "hopf", "wigner", "tropical", "padic", "seifert", "loss_landscape", "schmidt", "modular_forms", "attractor_density", "penrose", "horseshoe", "dirac", "conformal", "mertens", "braid", "symplectic", "sol_geometry", "dyson", "homoclinic", "optimal_transport", "ricci_flow", "neural_ode", "navier_stokes", "yang_mills", "lorenz_knot", "langlands", "prime_gaps", "spectral", "schrodinger", "lenia", "calabi_yau", "apollonian3d", "dual_quat_julia", "hyper_mandelbrot", "eisenstein", "persistence", "legendrian", "bicomplex", "polytope5d", "polytope_24cell", "quat_julia_4d", "clifford_torus", "e8_polytope", "kaluza_klein", "ads_cft", "brane_world", "black_string", "polytope_120cell", "polytope_8d", "wave_curved", "calabi_yau_moduli", "gosset", "mirror_symmetry", "neural_ca", "lbm_fluid"]
 const TIME_SCENES = {
 	"morning": ["fairy_garden", "autumn_campsite", "zen_garden"],
 	"day": ["zen_garden", "crystal_cave", "fairy_garden"],
@@ -1213,6 +1213,22 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			apply_dark_environment()
 			create_shader_scene("res://shaders/calabi_yau_moduli.gdshader", params)
 			return {"status": "ok", "message": "CY moduli space loaded"}
+		"gosset":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/gosset.gdshader", params)
+			return {"status": "ok", "message": "Gosset E6/E7 loaded"}
+		"mirror_symmetry":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/mirror_symmetry.gdshader", params)
+			return {"status": "ok", "message": "Mirror symmetry loaded"}
+		"neural_ca":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/neural_ca.gdshader", params)
+			return {"status": "ok", "message": "Neural CA loaded"}
+		"lbm_fluid":
+			apply_dark_environment()
+			create_shader_scene("res://shaders/lbm_fluid.gdshader", params)
+			return {"status": "ok", "message": "Lattice Boltzmann loaded"}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
@@ -7338,6 +7354,22 @@ const SCENE_INFO = {
 	"calabi_yau_moduli": {
 		"title": "CALABI-YAU MODULI SPACE",
 		"desc": "Navigate through the space of all possible Calabi-Yau shapes. The quintic threefold with deformation parameter psi. At psi=1, the conifold singularity — a topology-changing transition where the manifold develops a cusp. WHAT YOU SEE: The cross-section deforms as psi animates. Red glow intensifies near psi=1 (the conifold point). The Hodge structure lines trace where the holomorphic form vanishes. Different psi values could correspond to different laws of physics.",
+	},
+	"gosset": {
+		"title": "GOSSET POLYTOPES E6/E7",
+		"desc": "The exceptional Gosset family: E6 has 27 vertices in 6 dimensions, E7 has 56 vertices in 7 dimensions. They are hierarchically related — E6 nests inside E7 which nests inside E8. WHAT YOU SEE: Vertices morphing between E6 (27 points) and E7 (56 points). The 7th dimension fades in during the transition. Edges connect nearest neighbors. The golden angle distribution on high-dimensional spheres creates the vertex placement. The bottom bar shows the morph parameter.",
+	},
+	"mirror_symmetry": {
+		"title": "MIRROR SYMMETRY",
+		"desc": "One of the deepest results in string theory: every Calabi-Yau manifold has a mirror partner with swapped Hodge numbers (h11 <-> h21). This exchanges complex structure with Kahler structure. Enumerative geometry on one side becomes period integrals on the other. WHAT YOU SEE: Left half shows a CY manifold, right half its mirror dual. The golden center line is the mirror. Purple horizontal lines connect corresponding features across the duality. The manifolds look different but encode identical physics.",
+	},
+	"neural_ca": {
+		"title": "NEURAL CELLULAR AUTOMATA",
+		"desc": "Learned update rules replacing hand-designed CA rules. A small CNN perceives the neighborhood (Sobel filters), processes through ReLU layers, and outputs state changes. The result: patterns that grow, self-organize, and SELF-HEAL when damaged. WHAT YOU SEE: Ring-shaped growth fronts (gold edges) expand from seed points. Internal patterns are learned structures — concentric rings and angular features. Move cursor near a pattern to damage it — watch the NCA regrow the destroyed region. Self-healing from pure mathematics.",
+	},
+	"lbm_fluid": {
+		"title": "LATTICE BOLTZMANN FLUID",
+		"desc": "An alternative to Navier-Stokes: simulate fluid at the mesoscopic scale via particle distribution functions on a D2Q9 lattice (9 velocity directions per cell). Particles stream along lattice links and collide at nodes. WHAT YOU SEE: Vortex flow colored by velocity direction (hue) and speed (brightness). Streamlines trace fluid particles. The faint grid is the D2Q9 lattice structure. Cursor acts as an obstacle — fluid flows around it. Different visual character from our Navier-Stokes shader because the underlying physics model is different.",
 	},
 	"loss_landscape": {
 		"title": "LOSS LANDSCAPE",
