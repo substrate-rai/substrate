@@ -1,0 +1,77 @@
+[global]
+    # Display
+    monitor = 0
+    follow = mouse
+    width = (200, 450)
+    height = (0, 120)
+    origin = top-center
+    offset = (0, 60)
+    notification_limit = 3
+
+    # Appearance — DS holographic panel
+    font = Space Grotesk Light 15
+    frame_width = 1
+    frame_color = "#1EA5C7"
+    corner_radius = 4
+    transparency = 8
+    separator_height = 1
+    separator_color = "#2a3a4a"
+    padding = 16
+    horizontal_padding = 24
+    gap_size = 8
+
+    # Behavior
+    idle_threshold = 0
+    show_age_threshold = -1
+    sort = yes
+
+    # Text — DS uppercase style
+    line_height = 4
+    markup = full
+    format = "<span letter_spacing='4000'><b>%s</b></span>\n<span font='Space Mono 12' foreground='#7a8a9a'>%b</span>"
+    alignment = center
+    vertical_alignment = center
+    show_indicators = no
+    ellipsize = end
+
+    # Icons
+    enable_recursive_icon_lookup = false
+    icon_position = off
+
+    # History
+    sticky_history = no
+    history_length = 20
+
+    # Mouse actions
+    mouse_left_click = close_current
+    mouse_middle_click = close_all
+    mouse_right_click = do_action
+
+    # Progress bar (for volume/brightness)
+    progress_bar = true
+    progress_bar_height = 8
+    progress_bar_min_width = 200
+    progress_bar_max_width = 350
+    progress_bar_frame_width = 1
+    progress_bar_corner_radius = 2
+
+[urgency_low]
+    background = "#0a0e14e8"
+    foreground = "#5a8a9a"
+    frame_color = "#2a3a4a"
+    highlight = "#2a3a4a"
+    timeout = 2
+
+[urgency_normal]
+    background = "#0a0e14e8"
+    foreground = "#d4dde8"
+    frame_color = "#1EA5C7"
+    highlight = "#1EA5C7"
+    timeout = 3
+
+[urgency_critical]
+    background = "#0a0e14e8"
+    foreground = "#e8f0f8"
+    frame_color = "#c43030"
+    highlight = "#c43030"
+    timeout = 0

@@ -129,18 +129,33 @@ bindsym $mod+Tab exec --no-startup-id python3 /home/operator/substrate/scripts/t
 # Tile current window (escape hatch from floating)
 bindsym $mod+t floating toggle
 
+# Detective mode — system scanner overlay (Cyberpunk 2077 style)
+bindsym $mod+Shift+d exec --no-startup-id /home/operator/substrate/scripts/detective-mode.sh
+
 # Screensaver — shader art on top, move mouse to dismiss
 bindsym $mod+Shift+s exec --no-startup-id /home/operator/substrate/scripts/screensaver.sh
 
-# Screenshot
-bindsym Print exec scrot '/home/operator/Pictures/screenshot_%Y-%m-%d_%H%M%S.png' -e 'notify-send "Screenshot saved"'
-bindsym Shift+Print exec scrot -s '/home/operator/Pictures/screenshot_%Y-%m-%d_%H%M%S.png' -e 'notify-send "Screenshot saved"'
+# Function keys — volume, brightness, media
+bindsym XF86AudioRaiseVolume exec --no-startup-id /home/operator/substrate/scripts/volume.sh up
+bindsym XF86AudioLowerVolume exec --no-startup-id /home/operator/substrate/scripts/volume.sh down
+bindsym XF86AudioMute exec --no-startup-id /home/operator/substrate/scripts/volume.sh mute
+bindsym XF86MonBrightnessUp exec --no-startup-id /home/operator/substrate/scripts/brightness.sh up
+bindsym XF86MonBrightnessDown exec --no-startup-id /home/operator/substrate/scripts/brightness.sh down
+bindsym XF86AudioPlay exec --no-startup-id mpc toggle
+bindsym XF86AudioNext exec --no-startup-id mpc next
+bindsym XF86AudioPrev exec --no-startup-id mpc prev
+
+# Screenshot menu (Print Screen key)
+bindsym Print exec --no-startup-id /home/operator/substrate/scripts/screenshot.sh
 
 # Substrate shell controls
 bindsym $mod+slash exec python3 /home/operator/substrate/scripts/launcher_toggle.py
 bindsym $mod+Right exec python3 /home/operator/substrate/scripts/next_wallpaper.py
 bindsym $mod+Left exec python3 /home/operator/substrate/scripts/prev_wallpaper.py
 bindsym $mod+p exec python3 /home/operator/substrate/scripts/pause_rotation.py
+
+# Notification daemon
+exec_always --no-startup-id bash -c 'pkill dunst; dunst &'
 
 # Compositor — translucent panels, blur, shadows
 exec_always --no-startup-id picom --config ~/.config/picom/picom.conf
@@ -150,6 +165,9 @@ exec_always --no-startup-id ~/.config/polybar/launch.sh
 
 # Wallpaper — DS chiral network
 exec_always --no-startup-id feh --bg-fill /home/operator/Pictures/wallpaper_ds_chiral.png
+
+# UI sounds daemon
+exec --no-startup-id python3 /home/operator/substrate/scripts/ui-sounds.py &
 
 # Autostart Claude Code on workspace 1
 exec --no-startup-id bash -c 'sleep 3 && kitty --name claude --directory /home/operator/substrate -e /home/operator/.npm-global/bin/claude &'
