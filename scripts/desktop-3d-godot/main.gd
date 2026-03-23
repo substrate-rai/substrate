@@ -6199,6 +6199,10 @@ func apply_dark_environment():
 	bloom_base_strength = 1.0
 	bloom_base_bloom = 0.3
 	env.volumetric_fog_enabled = false
+	env.sdfgi_enabled = false
+	env.ssao_enabled = false
+	env.ssr_enabled = false
+	env.fog_enabled = false
 	env.fog_enabled = false
 
 # ── Full-screen shader scene (fractal, aurora, matrix, mycelium) ─────────────
@@ -7216,11 +7220,14 @@ func _clear_and_load(scene_name: String):
 var wallpaper_timer: Timer
 var wallpaper_index: int = 0
 var wallpaper_rotation_enabled: bool = true
-var WALLPAPER_SCENES = ["eisenstein","prime_gaps","goldbach","mertens","riemann_zeta","collatz","padic","tropical","elliptic_finite","modular_forms","langlands","conformal","apollonian3d","kleinian","sol_geometry","ricci_flow","hopf","polytope5d","penrose","standard_map","arnold_tongues","horseshoe","homoclinic","attractor_density","spiral_waves","lorenz_knot","lenia","schrodinger","dirac","wigner","dyson","spectral","navier_stokes","yang_mills","kerr_blackhole","seifert","braid","legendrian","symplectic","persistence","optimal_transport","schmidt","loss_landscape","neural_ode","hyper_mandelbrot","dual_quat_julia","bicomplex","calabi_yau","polytope_24cell","quat_julia_4d","clifford_torus","e8_polytope","kaluza_klein","ads_cft","brane_world","black_string","polytope_120cell","polytope_8d","wave_curved","calabi_yau_moduli","gosset","mirror_symmetry","neural_ca","lbm_fluid"]
+# Lightweight shaders only — keeps GPU under 50%
+var WALLPAPER_SCENES = ["collatz","goldbach","prime_gaps","mertens","riemann_zeta","padic","tropical","eisenstein","elliptic_finite","modular_forms","conformal","penrose","standard_map","arnold_tongues","spiral_waves","symplectic","braid","persistence","loss_landscape"]
+# Full list for manual browsing (Super+Right/Left still cycles all):
+var ALL_WALLPAPER_SCENES = ["eisenstein","prime_gaps","goldbach","mertens","riemann_zeta","collatz","padic","tropical","elliptic_finite","modular_forms","langlands","conformal","apollonian3d","kleinian","sol_geometry","ricci_flow","hopf","polytope5d","penrose","standard_map","arnold_tongues","horseshoe","homoclinic","attractor_density","spiral_waves","lorenz_knot","lenia","schrodinger","dirac","wigner","dyson","spectral","navier_stokes","yang_mills","kerr_blackhole","seifert","braid","legendrian","symplectic","persistence","optimal_transport","schmidt","loss_landscape","neural_ode","hyper_mandelbrot","dual_quat_julia","bicomplex","calabi_yau","polytope_24cell","quat_julia_4d","clifford_torus","e8_polytope","kaluza_klein","ads_cft","brane_world","black_string","polytope_120cell","polytope_8d","wave_curved","calabi_yau_moduli","gosset","mirror_symmetry","neural_ca","lbm_fluid"]
 
 func _setup_wallpaper_rotation():
 	wallpaper_timer = Timer.new()
-	wallpaper_timer.wait_time = 60.0  # rotate every 60 seconds
+	wallpaper_timer.wait_time = 120.0  # rotate every 2 minutes
 	wallpaper_timer.autostart = true
 	wallpaper_timer.timeout.connect(_next_wallpaper)
 	add_child(wallpaper_timer)
