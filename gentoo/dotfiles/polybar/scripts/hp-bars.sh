@@ -1,5 +1,5 @@
 #!/bin/bash
-# Game-style resource bars — HP(bat) MP(ram) SP(cpu) SH(gpu)
+# System resource bars
 
 BAT=$(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null || echo 100)
 RAM=$(free | awk '/Mem:/ {printf "%.0f", $3/$2*100}')
@@ -22,4 +22,4 @@ bc="#30c470"
 [ "$BAT" -lt 30 ] && bc="#FBC02D"
 [ "$BAT" -lt 15 ] && bc="#c43030"
 
-echo "%{F$bc}HP$(bar $BAT)${BAT}%%%{F-}  %{F#1EA5C7}MP$(bar $RAM)${RAM}%%%{F-}  %{F#FBC02D}SP$(bar $CPU)${CPU}%%%{F-}  %{F#3dd8f0}SH$(bar $GPU)${GPU}%%%{F-}"
+echo "%{F$bc}BAT$(bar $BAT)${BAT}%%%{F-}  %{F#1EA5C7}RAM$(bar $RAM)${RAM}%%%{F-}  %{F#FBC02D}CPU$(bar $CPU)${CPU}%%%{F-}  %{F#3dd8f0}GPU$(bar $GPU)${GPU}%%%{F-}"
