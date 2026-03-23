@@ -103,8 +103,13 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
+# All windows float by default (substrate mode feel)
+for_window [class=".*"] floating enable
+# Super+mouse drag to move, Super+right-click drag to resize
+floating_modifier $mod
+
 # Godot wallpaper — float below everything, never steal focus
-for_window [class="Godot"] floating enable, border none, move position 0 0
+for_window [class="Godot"] border none, move position 0 0
 no_focus [class="Godot"]
 focus_on_window_activation urgent
 
@@ -114,6 +119,18 @@ bindsym $mod+grave exec --no-startup-id /home/operator/substrate/scripts/dropdow
 
 # Restart Godot desktop shell
 bindsym $mod+Shift+g exec --no-startup-id /home/operator/substrate/scripts/restart-desktop.sh
+
+# Toggle substrate/i3 mode
+bindsym $mod+Shift+m exec --no-startup-id /home/operator/substrate/scripts/shell_mode.sh toggle
+
+# Task switcher
+bindsym $mod+Tab exec --no-startup-id python3 /home/operator/substrate/scripts/task_switch.py
+
+# Tile current window (escape hatch from floating)
+bindsym $mod+t floating toggle
+
+# Screensaver — shader art on top, move mouse to dismiss
+bindsym $mod+Shift+s exec --no-startup-id /home/operator/substrate/scripts/screensaver.sh
 
 # Screenshot
 bindsym Print exec scrot '/home/operator/Pictures/screenshot_%Y-%m-%d_%H%M%S.png' -e 'notify-send "Screenshot saved"'
@@ -133,6 +150,10 @@ exec_always --no-startup-id ~/.config/polybar/launch.sh
 
 # Wallpaper — DS chiral network
 exec_always --no-startup-id feh --bg-fill /home/operator/Pictures/wallpaper_ds_chiral.png
+
+# Autostart Claude Code on workspace 1
+exec --no-startup-id bash -c 'sleep 3 && kitty --name claude --directory /home/operator/substrate -e /home/operator/.npm-global/bin/claude &'
+assign [instance="claude"] $ws1
 
 # Autostart substrate session
 exec --no-startup-id /home/operator/substrate/gentoo/session.sh
