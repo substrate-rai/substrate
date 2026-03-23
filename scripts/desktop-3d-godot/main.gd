@@ -194,6 +194,7 @@ const SEASON_SCENES = {
 # ── Shell Components ──
 var shell_status_bar
 var shell_launcher
+var shell_notifications
 
 func _ready():
 	# Opaque live wallpaper — borderless, below all windows, above KDE wallpaper
@@ -235,6 +236,11 @@ func _ready():
 	shell_launcher = Launcher.new()
 	add_child(shell_launcher)
 	shell_launcher.visible = false
+
+	var Notifications = load("res://shell/notifications.gd")
+	shell_notifications = Notifications.new()
+	add_child(shell_notifications)
+
 	_setup_wallpaper_rotation()
 
 	# This bypasses Godot's AudioStreamMicrophone which doesn't work reliably
@@ -381,6 +387,8 @@ func _process(delta):
 			var vram_pct = gpu_vram_used / gpu_vram_total
 			if vram_pct > 0.9 and not vram_warning_logged:
 				push_warning("VRAM usage above 90%: ", gpu_vram_used, "/", gpu_vram_total, " MB")
+				if shell_notifications:
+					shell_notifications.push_notification("VRAM Warning", "%d/%d MB (%.0f%%)" % [int(gpu_vram_used), int(gpu_vram_total), vram_pct * 100], "warning", 8.0)
 				vram_warning_logged = true
 			elif vram_pct < 0.85:
 				vram_warning_logged = false
@@ -1259,6 +1267,18 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			var secs = float(params.get("seconds", 60))
 			wallpaper_timer.wait_time = secs
 			return {"status": "ok", "message": "Rotation interval: " + str(secs) + "s"}
+		"notify":
+			if shell_notifications:
+				var title = str(params.get("title", "Notification"))
+				var body = str(params.get("body", ""))
+				var category = str(params.get("category", "info"))
+				var duration = float(params.get("duration", 5.0))
+				shell_notifications.push_notification(title, body, category, duration)
+			return {"status": "ok", "message": "Notification sent"}
+		"notify_clear":
+			if shell_notifications:
+				shell_notifications.clear_all()
+			return {"status": "ok", "message": "Notifications cleared"}
 		"launcher":
 			if shell_launcher:
 				shell_launcher.toggle()
@@ -1360,6 +1380,27 @@ func handle_command(msg: Dictionary) -> Dictionary:
 					return {"status": "ok", "active": pomodoro_active, "remaining": int(pomodoro_remaining), "total": int(pomodoro_total)}
 				_:
 					return {"status": "error", "message": "Unknown pomodoro action: " + action}
+		"reload_shader":
+			var shader_name = params.get("shader", current_scene_name)
+			if shader_name == "":
+				shader_name = current_scene_name
+			if shader_name == "":
+				return {"status": "error", "message": "No shader to reload"}
+			var shader_path = "res://shaders/" + shader_name + ".gdshader"
+			var shader = ResourceLoader.load(shader_path, "", ResourceLoader.CACHE_MODE_REPLACE)
+			if not shader:
+				return {"status": "error", "message": "Failed to load: " + shader_path}
+			# Apply to current quad
+			for child in objects_container.get_children():
+				if child is MeshInstance3D and child.material_override is ShaderMaterial:
+					child.material_override.shader = shader
+					break
+			if shader_name != current_scene_name:
+				current_scene_name = shader_name
+				show_museum_info(shader_name)
+				if shell_status_bar:
+					shell_status_bar.set_scene_name(shader_name)
+			return {"status": "ok", "message": "Reloaded shader: " + shader_name}
 		_:
 			return {"status": "error", "message": "Unknown command: " + type}
 
@@ -6157,10 +6198,15 @@ func create_shader_scene(shader_path: String, params: Dictionary):
 		push_error("Failed to load shader: " + shader_path)
 		return
 
-	# Create a large quad facing the camera
+	# Create a large quad facing the camera — sized to fill actual viewport
 	var quad = MeshInstance3D.new()
 	var qm = QuadMesh.new()
-	qm.size = Vector2(20, -11.25)  # 16:9 aspect, negative flips UV.y
+	var vp_size = get_viewport().get_visible_rect().size
+	if vp_size.x <= 0 or vp_size.y <= 0:
+		vp_size = Vector2(2560, 1440)
+	var aspect = vp_size.x / vp_size.y
+	var quad_height = 11.25
+	qm.size = Vector2(quad_height * aspect, -quad_height)  # negative flips UV.y
 	quad.mesh = qm
 
 	var mat = ShaderMaterial.new()
@@ -6214,7 +6260,7 @@ func create_shader_scene(shader_path: String, params: Dictionary):
 	# Lock camera to face the quad — orthographic eliminates perspective tilt
 	camera_mode = "static"
 	$Camera3D.projection = Camera3D.PROJECTION_ORTHOGONAL
-	$Camera3D.size = 11.25  # match quad height
+	$Camera3D.size = quad_height  # match quad height exactly
 	$Camera3D.position = Vector3(0, 2.5, 8)
 	$Camera3D.look_at(Vector3(0, 2.5, 0))
 

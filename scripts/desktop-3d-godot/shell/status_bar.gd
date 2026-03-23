@@ -22,7 +22,7 @@ func _ready():
 	# Background panel
 	bg_panel = Panel.new()
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.0, 0.0, 0.0, 0.6)
+	style.bg_color = Color(0.039, 0.055, 0.078, 0.7)  # DS panel #0a0e14
 	style.corner_radius_top_left = 8
 	style.corner_radius_top_right = 8
 	bg_panel.add_theme_stylebox_override(&"panel", style)
@@ -91,7 +91,7 @@ func _make_label(text: String) -> Label:
 	var l = Label.new()
 	l.text = text
 	l.add_theme_font_size_override(&"font_size", 16)
-	l.add_theme_color_override(&"font_color", Color(0.85, 0.85, 0.9, 0.9))
+	l.add_theme_color_override(&"font_color", Color(0.831, 0.867, 0.910, 0.9))  # DS text #d4dde8
 	return l
 
 func set_scene_name(name: String):

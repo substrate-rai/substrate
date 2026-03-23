@@ -1,0 +1,32 @@
+#!/sbin/openrc-run
+# Substrate D-Bus notification bridge
+# Forwards freedesktop notifications to the Godot desktop shell
+
+name="substrate-notify-bridge"
+description="D-Bus notification bridge for Substrate desktop shell"
+
+supervisor=supervise-daemon
+command="/usr/bin/python3"
+command_args="/home/operator/substrate/scripts/notify_bridge.py"
+command_user="operator"
+pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/var/log/substrate-notify-bridge.log"
+
+# Needs D-Bus session bus
+start_stop_daemon_args="--env DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+
+respawn_delay=5
+respawn_max=10
+respawn_period=600
+
+depend() {
+    need dbus
+    after lightdm
+}
+
+start_pre() {
+    if ! python3 -c "import dbus_next" 2>/dev/null; then
+        eerror "dbus-next not installed. Run: pip install dbus-next"
+        return 1
+    fi
+}

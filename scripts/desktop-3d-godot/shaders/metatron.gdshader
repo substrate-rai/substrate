@@ -57,22 +57,27 @@ void buildPoints(float scale, out vec2 pts[13]) {
 }
 
 // ── Render one layer of Metatron's Cube ──
-vec3 renderLayer(vec2 p, float scale, float t, float energy, float beat, float treble, float palette_offset, float opacity) {
+// detail_level: 0 = full (main layer), 1 = simplified (background layer)
+vec3 renderLayer(vec2 p, float scale, float t, float energy, float beat, float treble, float palette_offset, float opacity, int detail_level) {
 	vec3 col = vec3(0.0);
+
+	// Early out — skip pixels far from the geometry
+	float r = length(p);
+	float outer_r = scale * 1.732;
+	if (r > outer_r * 1.4) {
+		return col;
+	}
 
 	vec2 pts[13];
 	buildPoints(scale, pts);
 
-	float r = length(p);
-	float outer_r = scale * 1.732;
-
 	// ── Outer bounding circle ──
 	float outer = sdCircleRing(p, outer_r * 1.05);
 	col += pal(palette_offset + 0.7) * 0.2 * aaLine(outer, 0.004);
-	// Inverse-distance glow on outer ring
 	col += pal(palette_offset + 0.7) * clamp(0.004 / abs(outer), 0.0, 1.0) * 0.15;
 
-	// ── 78 connecting lines with energy flow ──
+	// ── 78 connecting lines ──
+	// Only compute glow for main layer; skip energy flow for background layers
 	float line_accum = 0.0;
 	float line_glow = 0.0;
 	float flow_accum = 0.0;
@@ -80,31 +85,29 @@ vec3 renderLayer(vec2 p, float scale, float t, float energy, float beat, float t
 		for (int j = i + 1; j < 13; j++) {
 			float h_param;
 			float d = sdSegment(p, pts[i], pts[j], h_param);
-			// Thin crisp line
 			line_accum += aaLine(d, 0.003);
-			// Inverse-distance glow
-			line_glow += clamp(0.008 / abs(d + 0.001), 0.0, 1.0) * 0.008;
-			// Energy flow along edges
-			float flow = sin((h_param - t * 0.5) * 12.0 * TAU) * 0.5 + 0.5;
-			flow *= smoothstep(0.02, 0.0, d);
-			flow_accum += flow * 0.015;
+			if (detail_level == 0) {
+				line_glow += clamp(0.008 / abs(d + 0.001), 0.0, 1.0) * 0.008;
+				float flow = sin((h_param - t * 0.5) * 12.0 * TAU) * 0.5 + 0.5;
+				flow *= smoothstep(0.02, 0.0, d);
+				flow_accum += flow * 0.015;
+			}
 		}
 	}
-	// Lines with palette color
 	float line_palette_t = fract(t * 0.05 + palette_offset);
 	vec3 line_col = pal(line_palette_t);
 	col += line_col * min(line_accum, 1.0) * 0.45;
-	col += pal(line_palette_t + 0.3) * line_glow * (0.6 + energy * 1.2);
-	// Energy flow: bright white-gold pulses
-	col += mix(WHITE, GOLD, 0.5) * flow_accum * (1.0 + beat * 2.0);
+	if (detail_level == 0) {
+		col += pal(line_palette_t + 0.3) * line_glow * (0.6 + energy * 1.2);
+		col += mix(WHITE, GOLD, 0.5) * flow_accum * (1.0 + beat * 2.0);
+	}
 
-	// ── 13 circles with inverse-distance glow ──
+	// ── 13 circles with glow ──
 	float circle_r = scale * 0.18;
 	for (int i = 0; i < 13; i++) {
 		float cd = sdCircleRing(p - pts[i], circle_r);
 		float ring = aaLine(cd, 0.004);
 
-		// Color from palette based on ring position
 		float ring_t;
 		if (i == 0) ring_t = palette_offset;
 		else if (i < 7) ring_t = palette_offset + 0.33;
@@ -112,70 +115,63 @@ vec3 renderLayer(vec2 p, float scale, float t, float energy, float beat, float t
 
 		vec3 ring_col = pal(ring_t + t * 0.04);
 		col += ring_col * ring * 0.55;
-
-		// Inverse-distance glow per circle
 		col += ring_col * clamp(0.006 / abs(cd + 0.001), 0.0, 1.0) * 0.08;
 
-		// ── 6-fold mandala detail inside each circle ──
-		vec2 local = p - pts[i];
-		float local_r = length(local);
-		if (local_r < circle_r * 0.95) {
-			float local_a = atan(local.y, local.x);
-			// 6-fold fold
-			float seg = TAU / 6.0;
-			local_a -= seg * floor(local_a / seg);
-			local_a = min(local_a, seg - local_a);
-			vec2 folded = vec2(cos(local_a), sin(local_a)) * local_r;
-
-			// Concentric rings inside
-			float inner_rings = sin(local_r / circle_r * 18.0 + t * 0.8) * 0.5 + 0.5;
-			// Radial spokes
-			float spokes = smoothstep(0.02, 0.0, abs(folded.y));
-
-			float mandala = (inner_rings * 0.4 + spokes * 0.3);
-			float fade_in = smoothstep(circle_r, circle_r * 0.5, local_r);
-			col += ring_col * mandala * fade_in * 0.25;
+		// Mandala detail only on main layer and only if pixel is inside the circle
+		if (detail_level == 0) {
+			vec2 local = p - pts[i];
+			float local_r = length(local);
+			if (local_r < circle_r * 0.95) {
+				float local_a = atan(local.y, local.x);
+				float seg = TAU / 6.0;
+				local_a -= seg * floor(local_a / seg);
+				local_a = min(local_a, seg - local_a);
+				float inner_rings = sin(local_r / circle_r * 12.0 + t * 0.8) * 0.5 + 0.5;
+				float fade_in = smoothstep(circle_r, circle_r * 0.5, local_r);
+				col += ring_col * inner_rings * fade_in * 0.2;
+			}
 		}
 	}
 
-	// ── Inner Seed of Life ──
-	float seed_r = scale * 0.52;
-	float seed_accum = 0.0;
-	seed_accum += aaLine(sdCircleRing(p, seed_r), 0.002);
-	for (int i = 0; i < 6; i++) {
-		float a = float(i) * TAU / 6.0 + t * 0.03;
-		vec2 c = vec2(cos(a), sin(a)) * seed_r;
-		seed_accum += aaLine(sdCircleRing(p - c, seed_r), 0.002);
-	}
-	col += GOLD * min(seed_accum, 1.0) * 0.18;
+	// ── Inner Seed of Life (main layer only) ──
+	if (detail_level == 0) {
+		float seed_r = scale * 0.52;
+		float seed_accum = 0.0;
+		seed_accum += aaLine(sdCircleRing(p, seed_r), 0.002);
+		for (int i = 0; i < 6; i++) {
+			float a = float(i) * TAU / 6.0 + t * 0.03;
+			vec2 c = vec2(cos(a), sin(a)) * seed_r;
+			seed_accum += aaLine(sdCircleRing(p - c, seed_r), 0.002);
+		}
+		col += GOLD * min(seed_accum, 1.0) * 0.18;
 
-	// ── Platonic solid edges (rotating cube) ──
-	float cube_s = scale * 0.58;
-	float cube_rot = t * 0.12;
-	float cr = cos(cube_rot), sr = sin(cube_rot);
-	float cr2 = cos(cube_rot * 0.7), sr2 = sin(cube_rot * 0.7);
-
-	vec2 cube_verts[8];
-	for (int i = 0; i < 8; i++) {
-		float x = float((i & 1) * 2 - 1) * cube_s * 0.5;
-		float y = float(((i >> 1) & 1) * 2 - 1) * cube_s * 0.5;
-		float z = float(((i >> 2) & 1) * 2 - 1) * cube_s * 0.5;
-		float rx = x * cr - z * sr;
-		float rz = x * sr + z * cr;
-		float ry = y * cr2 - rz * sr2;
-		float rz2 = y * sr2 + rz * cr2;
-		float proj = 1.0 / (3.0 - rz2);
-		cube_verts[i] = vec2(rx, ry) * proj * 3.0;
+		// ── Platonic solid edges (rotating cube) ──
+		float cube_s = scale * 0.58;
+		float cube_rot = t * 0.12;
+		float cr = cos(cube_rot), sr = sin(cube_rot);
+		float cr2 = cos(cube_rot * 0.7), sr2 = sin(cube_rot * 0.7);
+		vec2 cube_verts[8];
+		for (int i = 0; i < 8; i++) {
+			float x = float((i & 1) * 2 - 1) * cube_s * 0.5;
+			float y = float(((i >> 1) & 1) * 2 - 1) * cube_s * 0.5;
+			float z = float(((i >> 2) & 1) * 2 - 1) * cube_s * 0.5;
+			float rx = x * cr - z * sr;
+			float rz = x * sr + z * cr;
+			float ry = y * cr2 - rz * sr2;
+			float rz2 = y * sr2 + rz * cr2;
+			float proj = 1.0 / (3.0 - rz2);
+			cube_verts[i] = vec2(rx, ry) * proj * 3.0;
+		}
+		int edges_a[12] = int[](0,1,2,3,4,5,6,7,0,1,2,3);
+		int edges_b[12] = int[](1,3,3,2,5,7,7,6,4,5,6,7);
+		float cube_lines = 0.0;
+		for (int i = 0; i < 12; i++) {
+			float h_dummy;
+			float d = sdSegment(p, cube_verts[edges_a[i]], cube_verts[edges_b[i]], h_dummy);
+			cube_lines += aaLine(d, 0.002);
+		}
+		col += WHITE * min(cube_lines, 1.0) * 0.12;
 	}
-	int edges_a[12] = int[](0,1,2,3,4,5,6,7,0,1,2,3);
-	int edges_b[12] = int[](1,3,3,2,5,7,7,6,4,5,6,7);
-	float cube_lines = 0.0;
-	for (int i = 0; i < 12; i++) {
-		float h_dummy;
-		float d = sdSegment(p, cube_verts[edges_a[i]], cube_verts[edges_b[i]], h_dummy);
-		cube_lines += aaLine(d, 0.002);
-	}
-	col += WHITE * min(cube_lines, 1.0) * 0.12;
 
 	return col * opacity;
 }
@@ -192,35 +188,31 @@ void fragment() {
 
 	vec3 col = BG;
 
-	// ── Layer 0: Main geometry (full opacity) ──
+	// ── Layer 0: Main geometry (full detail) ──
 	vec2 p0 = rot2(uv * 1.3, t * 0.06);
-	col += renderLayer(p0, 0.38, t, energy, beat, treble, 0.0, 1.0);
+	col += renderLayer(p0, 0.38, t, energy, beat, treble, 0.0, 1.0, 0);
 
-	// ── Layer 1: Larger, counter-rotating, faded violet ──
+	// ── Layer 1: Larger, counter-rotating (simplified — no mandala, seed, cube) ──
 	vec2 p1 = rot2(uv * 1.3 / 1.15, -t * 0.04);
-	col += renderLayer(p1, 0.38, t, energy, beat, treble, 0.33, 0.22);
+	col += renderLayer(p1, 0.38, t, energy, beat, treble, 0.33, 0.2, 1);
 
-	// ── Layer 2: Smaller, faster rotation, faded blue ──
-	vec2 p2 = rot2(uv * 1.3 / 0.85, t * 0.09);
-	col += renderLayer(p2, 0.38, t, energy, beat, treble, 0.66, 0.15);
-
-	// ── Interference wave overlay (13 sources) ──
+	// ── Interference wave overlay (6 sources instead of 13) ──
 	vec2 pts_main[13];
 	buildPoints(0.38, pts_main);
 	vec2 p_main = rot2(uv * 1.3, t * 0.06);
 	float interference = 0.0;
-	for (int i = 0; i < 13; i++) {
+	for (int i = 0; i < 7; i++) {
 		float d = length(p_main - pts_main[i]);
 		interference += sin(8.0 / (d + 0.05) + t * 0.3);
 	}
-	interference /= 13.0;
+	interference /= 7.0;
 	col += pal(interference * 0.5 + t * 0.02) * abs(interference) * 0.08;
 
 	// ── Emanation pulse rings ──
 	float r = length(p0);
 	float outer_r = 0.38 * 1.732;
-	for (int i = 0; i < 5; i++) {
-		float ring_t = fract(float(i) * 0.2 + t * 0.1);
+	for (int i = 0; i < 4; i++) {
+		float ring_t = fract(float(i) * 0.25 + t * 0.1);
 		float ring_r = ring_t * outer_r * 1.3;
 		float fade = (1.0 - ring_t);
 		float ring = aaLine(abs(r - ring_r), 0.003);
@@ -235,11 +227,9 @@ void fragment() {
 	// ── Beat flash ──
 	col += WHITE * beat * 0.08;
 
-	// ── Treble sparkle on vertices ──
-	vec2 pts_sparkle[13];
-	buildPoints(0.38, pts_sparkle);
-	for (int i = 0; i < 13; i++) {
-		float d = length(p0 - pts_sparkle[i]);
+	// ── Treble sparkle on vertices (7 instead of 13) ──
+	for (int i = 0; i < 7; i++) {
+		float d = length(p0 - pts_main[i]);
 		float spark = exp(-d * 40.0) * treble * 0.8;
 		col += WHITE * spark;
 	}
