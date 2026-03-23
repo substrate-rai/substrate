@@ -23,11 +23,9 @@ set_road() {
     nvidia-smi -pm 0 2>/dev/null
     # WiFi power save
     iw dev wlo1 set power_save on 2>/dev/null
-    # Screen dim
-    brightnessctl set 30% 2>/dev/null
-    # Kill heavy stuff
+    # Kill GPU-heavy stuff only
     pkill -f "godot" 2>/dev/null
-    killall -q picom polybar 2>/dev/null
+    notify-send -t 3000 "ROAD MODE" "Max battery — GPU off, powersave" 2>/dev/null
     echo "ROAD MODE — max battery, minimal services"
 }
 
