@@ -10,6 +10,7 @@ var gpu_label: Label
 var battery_label: Label
 var wifi_label: Label
 var scene_label: Label
+var workspace_container: HBoxContainer
 var bg_panel: Panel
 var update_timer: Timer
 
@@ -51,8 +52,14 @@ func _ready():
 	hbox.add_theme_constant_override(&"separation", 40)
 	add_child(hbox)
 
-	# Labels
+	# Workspace indicators
+	workspace_container = HBoxContainer.new()
+	workspace_container.add_theme_constant_override(&"separation", 4)
+	hbox.add_child(workspace_container)
+
+	# Shader name
 	scene_label = _make_label("SUBSTRATE")
+	scene_label.add_theme_color_override(&"font_color", Color(0.984, 0.753, 0.176, 0.9))  # Porter Gold
 	hbox.add_child(scene_label)
 
 	var spacer1 = Control.new()
@@ -149,3 +156,30 @@ func _update_stats():
 			wifi_label.text = "WiFi: OK"
 		else:
 			wifi_label.text = "WiFi: --"
+
+	# Workspaces
+	_update_workspaces()
+
+func _update_workspaces():
+	for child in workspace_container.get_children():
+		child.queue_free()
+	var ws_output = []
+	OS.execute("i3-msg", ["-t", "get_workspaces"], ws_output, true)
+	if ws_output.size() == 0:
+		return
+	var workspaces = JSON.parse_string(ws_output[0])
+	if not workspaces:
+		return
+	for ws in workspaces:
+		var btn = Label.new()
+		var ws_name = str(ws.get("name", ""))
+		# Strip number prefix (e.g. "1:TERM" -> "TERM")
+		if ":" in ws_name:
+			ws_name = ws_name.split(":")[1]
+		btn.text = ws_name
+		btn.add_theme_font_size_override(&"font_size", 14)
+		if ws.get("focused", false):
+			btn.add_theme_color_override(&"font_color", Color(0.239, 0.847, 0.941, 1.0))  # Cyan bright
+		else:
+			btn.add_theme_color_override(&"font_color", Color(0.478, 0.541, 0.604, 0.7))  # Muted
+		workspace_container.add_child(btn)

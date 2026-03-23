@@ -118,13 +118,22 @@ func _parse_desktop(path: String) -> Dictionary:
 
 func toggle():
 	is_visible = !is_visible
-	visible = is_visible
 	if is_visible:
+		visible = true
 		search_input.text = ""
 		search_input.grab_focus()
 		_show_results(desktop_entries.slice(0, 12))
+		# DS slide-in from right
+		var vp_w = get_viewport().get_visible_rect().size.x
+		bg_panel.position.x = vp_w + 50
+		search_input.position.x = vp_w + 100
+		var tw = create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(bg_panel, "position:x", 680, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(search_input, "position:x", 730, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).set_delay(0.05)
 	else:
 		search_input.release_focus()
+		visible = false
 
 func _on_search_changed(text: String):
 	if text == "":

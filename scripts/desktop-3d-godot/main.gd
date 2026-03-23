@@ -195,6 +195,8 @@ const SEASON_SCENES = {
 var shell_status_bar
 var shell_launcher
 var shell_notifications
+var shell_task_switcher
+var shell_hud_visible: bool = true
 
 func _ready():
 	# Opaque live wallpaper — borderless, below all windows, above KDE wallpaper
@@ -240,6 +242,10 @@ func _ready():
 	var Notifications = load("res://shell/notifications.gd")
 	shell_notifications = Notifications.new()
 	add_child(shell_notifications)
+
+	var TaskSwitcher = load("res://shell/task_switcher.gd")
+	shell_task_switcher = TaskSwitcher.new()
+	add_child(shell_task_switcher)
 
 	_setup_wallpaper_rotation()
 
@@ -1283,6 +1289,21 @@ func handle_command(msg: Dictionary) -> Dictionary:
 			if shell_launcher:
 				shell_launcher.toggle()
 			return {"status": "ok", "message": "Launcher toggled"}
+		"task_switch":
+			if shell_task_switcher:
+				shell_task_switcher.toggle()
+			return {"status": "ok", "message": "Task switcher toggled"}
+		"shell_mode":
+			var mode = params.get("mode", "substrate")
+			if mode == "substrate":
+				shell_hud_visible = true
+				if shell_status_bar:
+					shell_status_bar.visible = true
+			else:
+				shell_hud_visible = false
+				if shell_status_bar:
+					shell_status_bar.visible = false
+			return {"status": "ok", "message": "Shell mode: " + mode}
 		"postfx":
 			var effect = params.get("effect", "none")
 			toggle_postfx(effect)
