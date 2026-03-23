@@ -1,0 +1,102 @@
+/* Death Stranding — rofi theme */
+/* Translucent dark panels, Bridges Cyan accents */
+
+* {
+    bg:             #0a0e14ee;
+    bg-alt:         #121a24cc;
+    bg-selected:    #1a2332ee;
+    fg:             #d4dde8;
+    fg-alt:         #7a8a9a;
+    fg-dim:         #4a5568;
+    cyan:           #1EA5C7;
+    cyan-bright:    #3dd8f0;
+    gold:           #FBC02D;
+    red:            #c43030;
+    border-color:   #2a3a4a;
+
+    background-color:   transparent;
+    text-color:         @fg;
+    font:               "Rajdhani Light 14";
+}
+
+window {
+    width:              600px;
+    background-color:   @bg;
+    border:             1px solid;
+    border-color:       @border-color;
+    border-radius:      4px;
+    padding:            20px;
+}
+
+mainbox {
+    spacing:            15px;
+    children:           [ inputbar, message, listview ];
+}
+
+inputbar {
+    children:           [ prompt, entry ];
+    spacing:            10px;
+    padding:            10px 14px;
+    background-color:   @bg-alt;
+    border:             0 0 1px 0;
+    border-color:       @cyan;
+}
+
+prompt {
+    text-color:         @cyan;
+    font:               "Rajdhani 14";
+}
+
+entry {
+    text-color:         @fg;
+    placeholder:        "SEARCH...";
+    placeholder-color:  @fg-dim;
+}
+
+listview {
+    lines:              8;
+    columns:            1;
+    fixed-height:       true;
+    spacing:            2px;
+    scrollbar:          false;
+}
+
+element {
+    padding:            8px 14px;
+    spacing:            10px;
+    border:             0 0 0 2px;
+    border-color:       transparent;
+}
+
+element normal.normal {
+    background-color:   transparent;
+    text-color:         @fg-alt;
+}
+
+element selected.normal {
+    background-color:   @bg-selected;
+    text-color:         @fg;
+    border-color:       @cyan;
+}
+
+element alternate.normal {
+    background-color:   transparent;
+    text-color:         @fg-alt;
+}
+
+element-icon {
+    size:               22px;
+}
+
+element-text {
+    text-color:         inherit;
+    highlight:          bold underline #3dd8f0;
+}
+
+message {
+    padding:            8px 14px;
+    background-color:   @bg-alt;
+    text-color:         @fg-dim;
+    border:             0 0 0 2px;
+    border-color:       @gold;
+}

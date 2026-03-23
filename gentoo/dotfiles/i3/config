@@ -1,0 +1,138 @@
+# Substrate — Death Stranding i3 config
+# Bridges Cyan + Porter Gold on dark blue-black
+
+set $mod Mod4
+
+# Font — thin futuristic sans-serif
+font pango:Rajdhani Light 10
+
+# Gaps — DS menus are spacious, lets shader wallpaper breathe
+gaps inner 10
+gaps outer 6
+
+# Borders — thin, DS-style
+default_border pixel 2
+default_floating_border pixel 2
+
+# Window colors — Death Stranding palette
+# class                 border  backgr  text    indicator child_border
+client.focused          #1EA5C7 #121a24 #d4dde8 #3dd8f0   #1EA5C7
+client.focused_inactive #2a3a4a #0a0e14 #7a8a9a #2a3a4a   #2a3a4a
+client.unfocused        #2a3a4a #0a0e14 #4a5568 #2a3a4a   #1a2332
+client.urgent           #c43030 #0a0e14 #e8f0f8 #c43030   #c43030
+client.placeholder      #0a0e14 #0a0e14 #4a5568 #0a0e14   #0a0e14
+client.background       #0a0e14
+
+# Terminal (tmux auto-attaches via .bashrc)
+bindsym $mod+Return exec kitty
+# Standalone terminal (no tmux)
+bindsym $mod+Shift+Return exec env NO_TMUX=1 kitty
+
+# Kill window
+bindsym $mod+Shift+q kill
+
+# Launcher — rofi with DS theme
+bindsym $mod+d exec --no-startup-id rofi -show drun -theme death-stranding
+
+# Change focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# Move focused window
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+# Split
+bindsym $mod+b split h
+bindsym $mod+v split v
+
+# Fullscreen
+bindsym $mod+f fullscreen toggle
+
+# Container layout
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# Floating
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+
+# Workspaces — named
+set $ws1 "1:TERM"
+set $ws2 "2:WEB"
+set $ws3 "3:CODE"
+set $ws4 "4:MEDIA"
+set $ws5 "5:SYS"
+
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+
+# Auto-assign apps to workspaces
+assign [class="firefox"] $ws2
+assign [class="Firefox"] $ws2
+assign [class="code-oss"] $ws3
+assign [class="Godot_Editor"] $ws3
+assign [class="Blender"] $ws4
+assign [class="mpv"] $ws4
+
+# Reload/restart
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+
+# Resize mode
+mode "resize" {
+    bindsym h resize shrink width 10 px or 10 ppt
+    bindsym j resize grow height 10 px or 10 ppt
+    bindsym k resize shrink height 10 px or 10 ppt
+    bindsym l resize grow width 10 px or 10 ppt
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# Godot wallpaper — float below everything, never steal focus
+for_window [class="Godot"] floating enable, border none, move position 0 0
+no_focus [class="Godot"]
+focus_on_window_activation urgent
+
+# Dropdown terminal (scratchpad) — Super+` to toggle
+for_window [instance="dropdown"] floating enable, border pixel 2, move scratchpad, scratchpad show, resize set 100 ppt 50 ppt, move position 0 0
+bindsym $mod+grave exec --no-startup-id /home/operator/substrate/scripts/dropdown-terminal.sh
+
+# Restart Godot desktop shell
+bindsym $mod+Shift+g exec --no-startup-id /home/operator/substrate/scripts/restart-desktop.sh
+
+# Screenshot
+bindsym Print exec scrot '/home/operator/Pictures/screenshot_%Y-%m-%d_%H%M%S.png' -e 'notify-send "Screenshot saved"'
+bindsym Shift+Print exec scrot -s '/home/operator/Pictures/screenshot_%Y-%m-%d_%H%M%S.png' -e 'notify-send "Screenshot saved"'
+
+# Substrate shell controls
+bindsym $mod+slash exec python3 /home/operator/substrate/scripts/launcher_toggle.py
+bindsym $mod+Right exec python3 /home/operator/substrate/scripts/next_wallpaper.py
+bindsym $mod+Left exec python3 /home/operator/substrate/scripts/prev_wallpaper.py
+bindsym $mod+p exec python3 /home/operator/substrate/scripts/pause_rotation.py
+
+# Compositor — translucent panels, blur, shadows
+exec_always --no-startup-id picom --config ~/.config/picom/picom.conf
+
+# Polybar — replaces i3status
+exec_always --no-startup-id ~/.config/polybar/launch.sh
+
+# Wallpaper — DS chiral network
+exec_always --no-startup-id feh --bg-fill /home/operator/Pictures/wallpaper_ds_chiral.png
+
+# Autostart substrate session
+exec --no-startup-id /home/operator/substrate/gentoo/session.sh

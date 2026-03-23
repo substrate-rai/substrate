@@ -1,0 +1,6 @@
+export PATH="$HOME/.npm-global/bin:$PATH"
+
+# Auto-attach to tmux session "main" in interactive shells
+if [[ -z "$TMUX" && $- == *i* && -z "$INSIDE_EMACS" && -z "$NO_TMUX" ]]; then
+    exec tmux new-session -A -s main
+fi
